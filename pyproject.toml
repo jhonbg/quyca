@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "digishop-database"
+version = "0.1.0"
+description = ""
+authors = ["Simón <simon.garcial@udea.edu.co>"]
+readme = "README.md"
+packages = [{include = "fast_api_template"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.92.0"
+gunicorn = "^20.1.0"
+pydantic = {extras = ["dotenv", "email"], version = "^1.10.5"}
+sqlalchemy = "^2.0.22"
+psycopg2-binary = "^2.9.9"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+python-multipart = "^0.0.6"
+
+
+[tool.poetry.group.dev.dependencies]
+uvicorn = "^0.20.0"
+autopep8 = "^2.0.1"
+black = "^23.1.0"
+flake8 = "^6.0.0"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.1"
+pytest-cov = "^4.0.0"
+pytest-asyncio = "^0.20.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

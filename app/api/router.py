@@ -1,11 +1,30 @@
-from fastapi import APIRouter
+from flask import Blueprint
 
-from app.api.routes import ping
-from app.api.routes.v1 import user
-from app.api.routes.v1 import auth
+from api.routes.ping import router as ping_router
+from core.config import settings
+from api.routes.v2.search import router as search_router
+from api.routes.v1.search_app import router as search_app_router_v1
+from api.routes.v1.search_api import router as search_api_router_v1
+from api.routes.v1.affiliation_app import router as affiliation_app_router_v1
+from api.routes.v1.affiliation_api import router as affiliation_api_router_v1
+from api.routes.v1.person_app import router as person_app_router_v1
 
-api_router = APIRouter()
+api_router = Blueprint("router", __name__)
 
-api_router.include_router(ping.router, tags=["ping"])
-api_router.include_router(user.router, prefix="/user", tags=["user"])
-api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
+api_router.register_blueprint(ping_router)
+api_router.register_blueprint(search_router, url_prefix=f"{settings.APP_V2_STR}")
+api_router.register_blueprint(
+    search_app_router_v1, url_prefix=f"{settings.APP_V1_STR}/search"
+)
+api_router.register_blueprint(
+    search_api_router_v1, url_prefix=f"{settings.API_V1_STR}/search"
+)
+api_router.register_blueprint(
+    affiliation_app_router_v1, url_prefix=f"{settings.APP_V1_STR}/affiliation"
+)
+api_router.register_blueprint(
+    affiliation_api_router_v1, url_prefix=f"{settings.API_V1_STR}/affiliation"
+)
+api_router.register_blueprint(
+    person_app_router_v1, url_prefix=f"{settings.APP_V1_STR}/person"
+)

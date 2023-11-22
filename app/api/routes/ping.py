@@ -1,9 +1,11 @@
-from fastapi import APIRouter
+from flask import Blueprint
 
-router = APIRouter()
+from core.config import settings
 
+router = Blueprint("ping", __name__)
 
-@router.get("/ping")
+@router.route('/ping', methods=['GET'])
 def read_root():
     """Ping the API."""
-    return {"ping": "pong"}
+    result = {"ping": settings.MONGO_URI}
+    return result

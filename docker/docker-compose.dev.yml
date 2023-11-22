@@ -1,41 +1,35 @@
 version: '3.9'
 
 services:
-    cotizador-database-service:
+    impactu-database-service:
         build:
             context: ..
             dockerfile: docker/Dockerfile.dev
-        command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8010
+        command: python app/main.py
         volumes:
             - ../:/usr/src/app/
         ports:
             - "8002:8010"
+            - "10001:10001"
         env_file:
             - ../.env
         networks:
-            - cotizador
-        depends_on:
-            - cotizador-postgres-db
+            - impactu
         restart: on-failure
-            
-    cotizador-postgres-db:
-        build:
-            context: ../config_db
-            dockerfile: Dockerfile
-        volumes:
-            - cotizador-postgres:/var/lib/postgresql/data
+
+    mongo:
+        image: mongo:6.0.11
+        restart: always
         ports:
-            - "5432:5432"
-        environment:
-            - POSTGRES_USER=postgres
-            - POSTGRES_PASSWORD=postgres
+        - '27017:27017'
+        env_file:
+        - ../.env
         networks:
-            - cotizador
+        - impactu
+        volumes:
+        - ../db/mongo-data:/data/db
+            
 
 networks:
-    cotizador:
+    impactu:
         external: True
-
-volumes:
-    cotizador-postgres:
-        external: true

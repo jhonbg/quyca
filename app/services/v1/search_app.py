@@ -270,13 +270,12 @@ class SearchAppService:
                 for ext in affiliation["external_urls"]:
                     if ext["source"] == "logo":
                         entry["logo"] = ext["url"]
+                        affiliation["external_urls"].remove(ext)
 
                 affiliation_list.append(entry)
 
             return {
                 "total_results": total,
-                "count": len(affiliation_list),
-                "page": page,
                 "data": affiliation_list,
             }
         else:

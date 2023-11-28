@@ -1,5 +1,4 @@
 import json
-from typing import Any
 import io
 import csv
 
@@ -12,26 +11,24 @@ from utils.flatten_json import flatten_json_list
 router = Blueprint("person_app_v1", __name__)
 
 
-def person(request: Request):
+def person(request: Request, id: str | None):
     section = request.args.get("section")
     tab = request.args.get("tab")
     data = request.args.get("data")
-    idx = request.args.get("id")
     typ = request.args.get("typ", None)
 
     result = None
 
     if section == "info":
-        result = person_app_service.get_info(idx)
+        result = person_app_service.get_info(id)
     elif section == "research":
         if tab == "products":
             plot = request.args.get("plot")
             if plot:
                 level = request.args.get("level", 0)
-                args = (idx, level) if plot == "products_subject" else (idx)
+                args = (id, level) if plot == "products_subject" else (id)
                 result = person_app_service.plot_mappings(*args)
             else:
-                idx = request.args.get("id")
                 typ = request.args.get("type")
                 start_year = request.args.get("start_year")
                 endt_year = request.args.get("end_year")
@@ -39,7 +36,7 @@ def person(request: Request):
                 max_results = request.args.get("max_results")
                 sort = request.args.get("sort")
                 result = person_app_service.get_research_products(
-                    idx=idx,
+                    idx=id,
                     typ=typ,
                     start_year=start_year,
                     end_year=endt_year,
@@ -51,9 +48,10 @@ def person(request: Request):
         result = None
     return result
 
-@router.route("", methods=["GET"])
-def get_person():
-    result = person(request)
+
+@router.route("/<id>", methods=["GET"])
+def get_person(id: str | None = None):
+    result = person(request, id=id)
     if result:
         response = Response(
             response=json.dumps(result, cls=JsonEncoder),
@@ -66,14 +64,12 @@ def get_person():
             status=204,
             mimetype="application/json",
         )
-
-    response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
 
-@router.route("/csv", methods=["GET"])
-def get_person_csv():
-    result = person(request)
+@router.route("/<id>/csv", methods=["GET"])
+def get_person_csv(id: str | None = None):
+    result = person(request, id=id)
     if result:
         config = {
             "authors": ["full_name"],
@@ -99,6 +95,4 @@ def get_person_csv():
             status=204,
             mimetype="application/json",
         )
-
-    response.headers["Access-Control-Allow-Origin"] = "*"
     return response

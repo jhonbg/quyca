@@ -12,12 +12,11 @@ from utils.flatten_json import flatten_json_list
 router = Blueprint("affiliation_app_v1", __name__)
 
 
-def affiliation(request: Request) -> dict[str, Any] | None:
+def affiliation(
+    request: Request, idx: str | None = None, typ: str | None = None
+) -> dict[str, Any] | None:
     section = request.args.get("section")
     tab = request.args.get("tab")
-    data = request.args.get("data")
-    idx = request.args.get("id")
-    typ = request.args.get("type")
 
     result = None
 
@@ -33,8 +32,6 @@ def affiliation(request: Request) -> dict[str, Any] | None:
                 args = (idx, typ, level) if plot == "products_subject" else (idx, typ)
                 result = affiliation_app_service.plot_mappings[plot](*args)
             else:
-                idx = request.args.get("id")
-                typ = request.args.get("type")
                 start_year = request.args.get("start_year")
                 end_year = request.args.get("end_year")
                 page = request.args.get("page")
@@ -54,9 +51,9 @@ def affiliation(request: Request) -> dict[str, Any] | None:
     return result
 
 
-@router.route("", methods=["GET"])
-def get_affiliation():
-    result = affiliation(request)
+@router.route("/<typ>/<id>", methods=["GET"])
+def get_affiliation(id: str | None, typ: str | None = None):
+    result = affiliation(request, idx=id, typ=typ)
     if result:
         response = Response(
             response=json.dumps(result, cls=JsonEncoder),
@@ -70,13 +67,12 @@ def get_affiliation():
             mimetype="application/json",
         )
 
-    response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
 
-@router.route("/csv", methods=["GET"])
-def get_affiliation_csv():
-    result = affiliation(request)
+@router.route("/<typ>/<id>/csv", methods=["GET"])
+def get_affiliation_csv(id: str | None, typ: str | None = None):
+    result = affiliation(request, idx=id, typ=typ)
     if result:
         config = {
             "authors": ["full_name"],
@@ -103,5 +99,4 @@ def get_affiliation_csv():
             mimetype="application/json",
         )
 
-    response.headers["Access-Control-Allow-Origin"] = "*"
     return response

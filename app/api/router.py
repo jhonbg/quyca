@@ -8,6 +8,8 @@ from api.routes.v1.search_api import router as search_api_router_v1
 from api.routes.v1.affiliation_app import router as affiliation_app_router_v1
 from api.routes.v1.affiliation_api import router as affiliation_api_router_v1
 from api.routes.v1.person_app import router as person_app_router_v1
+from api.routes.v1.person_api import router as person_api_router_v1
+from api.routes.v1.work_app import router as work_app_router_v1
 
 api_router = Blueprint("router", __name__)
 
@@ -27,4 +29,10 @@ api_router.register_blueprint(
 )
 api_router.register_blueprint(
     person_app_router_v1, url_prefix=f"{settings.APP_V1_STR}/person"
+)
+api_router.register_blueprint(
+    person_api_router_v1, url_prefix=f"{settings.API_V1_STR}/person"
+)
+api_router.register_blueprint(
+    work_app_router_v1, url_prefix=f"{settings.APP_V1_STR}/work"
 )

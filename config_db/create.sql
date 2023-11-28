@@ -1,1 +1,0 @@
-CREATE DATABASE cotizador_db;

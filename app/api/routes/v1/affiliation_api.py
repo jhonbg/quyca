@@ -9,12 +9,9 @@ from utils.encoder import JsonEncoder
 router = Blueprint("affiliation_api_v1", __name__)
 
 
-def affiliation(request: Request) -> dict[str, Any] | None:
+def affiliation(request: Request, idx: str | None = None) -> dict[str, Any] | None:
     section = request.args.get("section")
     tab = request.args.get("tab")
-    data = request.args.get("data")
-    idx = request.args.get("id")
-    typ = request.args.get("type")
 
     result = None
     if section == "info":
@@ -25,7 +22,6 @@ def affiliation(request: Request) -> dict[str, Any] | None:
             if plot:
                 result = None
             else:
-                idx = request.args.get("id")
                 start_year = request.args.get("start_year")
                 end_year = request.args.get("end_year")
                 page = request.args.get("page")
@@ -44,8 +40,8 @@ def affiliation(request: Request) -> dict[str, Any] | None:
     return result
 
 
-@router.route("", methods=["GET"])
-def api_affiliation():
+@router.route("/<id>", methods=["GET"])
+def api_affiliation(id: str | None):
     result = affiliation(request)
     if result:
         response = Response(

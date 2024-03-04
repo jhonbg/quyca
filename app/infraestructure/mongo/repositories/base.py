@@ -24,13 +24,13 @@ class RepositorieBase(Generic[ModelType]):
                 limit=limit,
                 sort=getattr(self.model, sort, None),
             )
-        return [loads(result.json()) for result in results]
+        return [loads(result.model_dump_json()) for result in results]
 
     def get_by_id(self, *, id: str) -> ModelType | None:
         with engine.session() as session:
             results = session.find_one(self.model, self.model.id == id)
         return results
-
+    
     def search(
         self,
         *,
@@ -59,7 +59,7 @@ class RepositorieBase(Generic[ModelType]):
                 sort=sort_expresion,
             )
             count = session.count(self.model, filter_criteria)
-        return [loads(result.json()) for result in results], count
+        return [loads(result.model_dump_json()) for result in results], count
 
     def count(self) -> int:
         with engine.session() as session:

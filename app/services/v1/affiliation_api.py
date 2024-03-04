@@ -80,13 +80,8 @@ class AffiliationApiService:
                     if subject["source"]=="openalex":
                         sub_entry["subjects"]=[]
                         for sub in subject["subjects"]:
-                            name=None
-                            lang=None
-                            for n in sub["names"]:
-                                if n["lang"]=="en":
-                                    name=n["name"]
-                                    lang=n["lang"]
-                                    break    
+                            name = sub.get("name", "No name specified in DB")
+                            lang = sub.get("lang", "No language specified in DB")
                             sub["names"]=[{"name":name,"lang":lang}]
                             sub_entry["subjects"].append(sub)
                     subjects.append(sub_entry)
@@ -162,7 +157,6 @@ class AffiliationApiService:
                                             elif n["lang"]=="en":
                                                 name=n["name"]
                                                 lang=n["lang"]
-                                    del(aff["names"])
                                     aff["name"]=name
                                     if "types" in aff.keys():
                                         for typ in aff["types"]:

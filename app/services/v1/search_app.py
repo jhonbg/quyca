@@ -131,28 +131,28 @@ class SearchAppService:
         institution_ids = []
         groups_ids = []
 
-        for author in filter_cursor:
-            if "affiliations" in author.keys():
-                if len(author["affiliations"]) > 0:
-                    for aff in author["affiliations"]:
-                        if "types" in aff.keys():
-                            for typ in aff["types"]:
-                                if typ["type"] == "group":
-                                    if not str(aff["id"]) in groups_ids:
-                                        groups_ids.append(str(aff["id"]))
-                                        group_filters.append(
-                                            {"id": str(aff["id"]), "name": aff["name"]}
-                                        )
-                                else:
-                                    if not str(aff["id"]) in institution_ids:
-                                        institution_ids.append(str(aff["id"]))
-                                        entry = {
-                                            "id": str(aff["id"]),
-                                            "name": aff["name"],
-                                        }
-                                        institution_filters.append(entry)
-
-        cursor.sort([("score", {"$meta": "textScore"})])
+        # for author in filter_cursor:
+        #     if "affiliations" in author.keys():
+        #         if len(author["affiliations"]) > 0:
+        #             for aff in author["affiliations"]:
+        #                 if "types" in aff.keys():
+        #                     for typ in aff["types"]:
+        #                         if typ["type"] == "group":
+        #                             if not str(aff["id"]) in groups_ids:
+        #                                 groups_ids.append(str(aff["id"]))
+        #                                 group_filters.append(
+        #                                     {"id": str(aff["id"]), "name": aff["name"]}
+        #                                 )
+        #                         else:
+        #                             if not str(aff["id"]) in institution_ids:
+        #                                 institution_ids.append(str(aff["id"]))
+        #                                 entry = {
+        #                                     "id": str(aff["id"]),
+        #                                     "name": aff["name"],
+        #                                 }
+        #                                 institution_filters.append(entry)
+        if keywords:
+            cursor.sort([("score", {"$meta": "textScore"})])
 
         total = self.colav_db["person"].count_documents(search_dict)
         if not page:
@@ -180,7 +180,8 @@ class SearchAppService:
             group_name = ""
             group_id = ""
             for author in cursor:
-                del author["score"]
+                if "score" in author:
+                    del author["score"]
                 ext_ids = []
                 for ext in author["external_ids"]:
                     if ext["source"] in [
@@ -384,13 +385,7 @@ class SearchAppService:
                 for subs in paper["subjects"]:
                     if subs["source"] == "openalex":
                         for sub in subs["subjects"]:
-                            name = sub["names"][0]["name"]
-                            for n in sub["names"]:
-                                if n["lang"] == "es":
-                                    name = n["name"]
-                                    break
-                                if n["lang"] == "en":
-                                    name = n["name"]
+                            name = sub["name"]
                             entry["subjects"].append({"name": name, "id": sub["id"]})
                         break
 
@@ -471,7 +466,6 @@ class SearchAppService:
                                             elif n["lang"] == "en":
                                                 name = n["name"]
                                                 lang = n["lang"]
-                                    del aff["names"]
                                     aff["name"] = name
                                     if "types" in aff.keys():
                                         for typ in aff["types"]:

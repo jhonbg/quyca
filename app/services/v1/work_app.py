@@ -125,7 +125,6 @@ class WorkAppService:
                                         elif n["lang"] == "en":
                                             name = n["name"]
                                             lang = n["lang"]
-                                del aff["names"]
                                 aff["name"] = name
                                 if "types" in aff.keys():
                                     for typ in aff["types"]:

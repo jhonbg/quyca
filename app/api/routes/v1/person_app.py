@@ -26,8 +26,8 @@ def person(request: Request, id: str | None):
             plot = request.args.get("plot")
             if plot:
                 level = request.args.get("level", 0)
-                args = (id, level) if plot == "products_subject" else (id)
-                result = person_app_service.plot_mappings(*args)
+                args = (id, level) if plot == "products_subject" else (id,)
+                result = person_app_service.plot_mapping[plot](*args)
             else:
                 typ = request.args.get("type")
                 start_year = request.args.get("start_year")

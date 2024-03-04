@@ -52,7 +52,7 @@ def read_works():
         start_year=query_params.start_year,
         end_year=query_params.end_year,
         sort=query_params.sort,
-        directions="descending",
+        direction="descending",
         tipo=query_params.type,
         institutions=query_params.institutions,
         groups=query_params.groups,

@@ -1,4 +1,4 @@
-from typing import TypeVar, Any
+from typing import TypeVar, Any, Generic
 
 from pydantic import BaseModel, validator, Field
 from odmantic.bson import BSON_TYPES_ENCODERS
@@ -7,7 +7,7 @@ DBSchemaType = TypeVar("DBSchemaType", bound=BaseModel)
 
 class Type(BaseModel):
     source: str
-    type: str
+    type: str | None
 
 
 class Updated(BaseModel):
@@ -20,7 +20,7 @@ class ExternalId(BaseModel):
     source: str | None
 
 class ExternalURL(BaseModel):
-    url: str | None
+    url: str | int | None
     source: str | None
 
 
@@ -49,11 +49,13 @@ class QueryBase(BaseModel):
     @validator("skip", always=True)
     def skip_validator(cls, v, values):
         return v if v else (values["page"] - 1) * values["limit"]
+    
+    @property
+    def get_search(self) -> dict[str, Any]:
+        return {}
 
 
-class GeneralMultiResponse(BaseModel):
+class GeneralMultiResponse(BaseModel, Generic[DBSchemaType]):
     total_results: int | None
-    data: list[Any] | None = Field(default_factory=list)
-
-    class Config:
-        json_encoders = {**BSON_TYPES_ENCODERS}
+    data: list[DBSchemaType] | None = Field(default_factory=list)
+    model_config = {"json_encoders": BSON_TYPES_ENCODERS}

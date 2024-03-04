@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
     \
-    POETRY_VERSION=1.2.0 \
+    POETRY_VERSION=1.6.1 \
     POETRY_HOME="/opt/poetry" \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1 \
@@ -30,9 +30,7 @@ WORKDIR $PYSETUP_PATH
 RUN poetry config virtualenvs.options.system-site-packages true
 
 WORKDIR /usr/src/app
-COPY pyproject.toml ./
-
-RUN poetry lock
+COPY pyproject.toml poetry.lock ./
 
 RUN poetry export --without-hashes --with dev --format=requirements.txt > requirements.txt
 
@@ -59,5 +57,6 @@ ENV PYTHONUNBUFFERED TRUE
 COPY --from=compile-image /home/venv /home/venv
 ENV PATH="/home/venv/bin:$PATH"
 WORKDIR /usr/src/app
+COPY .dockerignore .dockerignore
 EXPOSE 80
-COPY . .
+COPY app/ app/

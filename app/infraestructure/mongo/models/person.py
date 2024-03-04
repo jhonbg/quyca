@@ -53,8 +53,7 @@ class Person(Model):
     degrees: list[Degree]
     subjects: list[Any]
 
-    class Config:
-        collection = "person"
+    model_config = {"collection": "person"}
 
     @validator("external_ids")
     def source_validator(cls, v: list[ExternalId], values):

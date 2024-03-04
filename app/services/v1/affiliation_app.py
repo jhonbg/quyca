@@ -10,7 +10,6 @@ from utils.bars import bars
 from utils.maps import maps
 from utils.pies import pies
 
-
 class AffiliationAppService:
     def __init__(self):
         self.colav_db = client[settings.MONGO_INITDB_DATABASE]
@@ -19,24 +18,80 @@ class AffiliationAppService:
         self.pies = pies()
         self.maps = maps()
 
-    def get_info(self, idx, start_year=None, end_year=None):
-        initial_year = 9999
-        final_year = 0
+    def get_info(self, idx, typ, start_year=None, end_year=None):
 
-        if start_year:
-            try:
-                start_year = int(start_year)
-            except:
-                print("Could not convert start year to int")
-                return None
-        if end_year:
-            try:
-                end_year = int(end_year)
-            except:
-                print("Could not convert end year to int")
-                return None
+        pipeline = [
+            {"$match": {"_id": ObjectId(idx)}},
+            {
+                "$project": {
+                    "_id": 1,
+                    "names": 1,
+                    "citations": 1,
+                    "external_urls": 1,
+                    "relations": 1,
+                    "university": {
+                        "$arrayElemAt": [
+                            {
+                                "$filter": {
+                                    "input": "$relations",
+                                    "as": "rel",
+                                    "cond": {
+                                        "$and": [
+                                            {
+                                                "$in": [
+                                                    "education",
+                                                    {
+                                                        "$map": {
+                                                            "input": "$$rel.types",
+                                                            "as": "t",
+                                                            "in": {
+                                                                "$toLower": "$$t.type"
+                                                            },
+                                                        }
+                                                    },
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                }
+                            },
+                            0,
+                        ]
+                    },
+                    "faculty": {
+                        "$arrayElemAt": [
+                            {
+                                "$filter": {
+                                    "input": "$relations",
+                                    "as": "rel",
+                                    "cond": {
+                                        "$and": [
+                                            {
+                                                "$in": [
+                                                    "faculty",
+                                                    {
+                                                        "$map": {
+                                                            "input": "$$rel.types",
+                                                            "as": "t",
+                                                            "in": {
+                                                                "$toLower": "$$t.type"
+                                                            },
+                                                        }
+                                                    },
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                }
+                            },
+                            0,
+                        ]
+                    },
+                }
+            },
+        ]
 
-        affiliation = self.colav_db["affiliations"].find_one({"_id": ObjectId(idx)})
+        affiliation = next(self.colav_db["affiliations"].aggregate(pipeline), None)
         if affiliation:
             name = ""
             for n in affiliation["names"]:
@@ -53,9 +108,11 @@ class AffiliationAppService:
             entry = {
                 "id": affiliation["_id"],
                 "name": name,
-                "citations": affiliation["citations_count"]
-                if "citations_count" in affiliation.keys()
-                else None,
+                "citations": (
+                    affiliation["citations_count"]
+                    if "citations_count" in affiliation.keys()
+                    else None
+                ),
                 "external_urls": [
                     ext
                     for ext in affiliation["external_urls"]
@@ -63,36 +120,24 @@ class AffiliationAppService:
                 ],
                 "logo": logo,
             }
-            index_list = []
+            (
+                entry.update({"university": affiliation.get("university", None)})
+                if typ in ("department", "faculty", "group")
+                else None
+            )
 
-            filters = {"years": {}}
-            for reg in (
-                self.colav_db["works"]
-                .find(
-                    {
-                        "authors.affiliations.id": ObjectId(idx),
-                        "year_published": {"$exists": 1},
-                    }
+            (
+                entry.update({"faculty": affiliation.get("faculty", None)})
+                if typ
+                in (
+                    "department",
+                    "faculty",
+                    "group",
                 )
-                .sort([("year_published", ASCENDING)])
-                .limit(1)
-            ):
-                filters["years"]["start_year"] = reg["year_published"]
-            for reg in (
-                self.colav_db["works"]
-                .find(
-                    {
-                        "authors.affiliations.id": ObjectId(idx),
-                        "year_published": {"$exists": 1},
-                    }
-                )
-                .sort([("year_published", DESCENDING)])
-                .limit(1)
-            ):
-                filters["years"]["end_year"] = reg["year_published"]
-            filters["types"] = []
+                else None
+            )
 
-            return {"data": entry, "filters": filters}
+            return {"data": entry}
         else:
             return None
 
@@ -181,13 +226,15 @@ class AffiliationAppService:
             "title": "",
             "authors": [],
             "source": {},
-            "year_published": work["year_published"]
-            if "year_published" in work.keys()
-            else None,
+            "year_published": (
+                work["year_published"] if "year_published" in work.keys() else None
+            ),
             "citations_count": work["citations_count"],
-            "open_access_status": work["bibliographic_info"]["open_access_status"]
-            if "open_access_status" in work["bibliographic_info"]
-            else "",
+            "open_access_status": (
+                work["bibliographic_info"]["open_access_status"]
+                if "open_access_status" in work["bibliographic_info"]
+                else ""
+            ),
             "subjects": [],
         }
 
@@ -213,13 +260,7 @@ class AffiliationAppService:
         for subs in work["subjects"]:
             if subs["source"] == "openalex":
                 for sub in subs["subjects"]:
-                    name = sub["names"][0]["name"]
-                    for n in sub["names"]:
-                        if n["lang"] == "es":
-                            name = n["name"]
-                            break
-                        if n["lang"] == "en":
-                            name = n["name"]
+                    name = sub.get("name", "no subject name founded in db")
                     paper["subjects"].append({"name": name, "id": sub["id"]})
                 break
 
@@ -279,7 +320,6 @@ class AffiliationAppService:
                                     elif n["lang"] == "en":
                                         name = n["name"]
                                         lang = n["lang"]
-                            del aff["names"]
                             aff["name"] = name
                             if "types" in aff.keys():
                                 for typ in aff["types"]:
@@ -517,47 +557,40 @@ class AffiliationAppService:
             return {"plot": None}
 
     def get_products_by_affiliation_by_type(self, idx, typ):
-        affiliations = []
-        aff_ids = []
         if not typ in ["group", "department", "faculty"]:
             return None
-        for aff in self.colav_db["affiliations"].find(
-            {"relations.id": ObjectId(idx), "types.type": typ}
-        ):
-            name = aff["names"][0]["name"]
-            for n in aff["names"]:
-                if n["lang"] == "es":
-                    name = n["name"]
-                    break
-                if n["lang"] == "en":
-                    name = n["name"]
-            affiliations.append((aff["_id"], name))
-        data = {}
-        for aff_id, name in affiliations:
-            data[name] = []
-            for author in self.colav_db["person"].find({"affiliations.id": aff_id}):
-                aff_start_date = None
-                aff_end_date = None
-                for aff in author["affiliations"]:
-                    if aff["id"] == aff_id:
-                        aff_start_date = (
-                            aff["start_date"] if aff["start_date"] != -1 else 9999999999
-                        )
-                        aff_end_date = (
-                            aff["end_date"] if aff["end_date"] != -1 else 9999999999
-                        )
-                        break
-                query_dict = {
-                    "authors.id": author["_id"],
-                    "types": {"$ne": []},
-                    "$and": [
-                        {"date_published": {"$lte": aff_end_date}},
-                        {"date_published": {"$gte": aff_start_date}},
-                    ],
+        pipeline = [
+            {
+                "$match": {
+                    "affiliations.types.type": typ,
+                    "affiliations.id": ObjectId("65a9aa37e5b59075e52f6ec5"),
                 }
-
-                for work in self.colav_db["works"].find(query_dict, {"types": 1}):
-                    data[name].append(work)
+            },
+            {"$unwind": "$affiliations"},
+            {"$match": {"affiliations.types.type": typ}},
+            {"$project": {"authorIds": "$_id", "_id": 0, "affiliations": 1}},
+            {
+                "$lookup": {
+                    "from": "works",
+                    "localField": "authorIds",
+                    "foreignField": "authors.id",
+                    "as": "works",
+                }
+            },
+            {"$unwind": "$works"},
+            {"$match": {"works.types": {"$ne": []}}},
+            {
+                "$project": {
+                    "name": "$affiliations.name",
+                    "work": {"types": "$works.types"},
+                }
+            },
+        ]
+        data = {}
+        for _data in self.colav_db["person"].aggregate(pipeline):
+            if not data.get(_data["name"], False):
+                data[_data["name"]] = []
+            data[_data["name"]].append(_data["work"])
 
         return {"plot": self.bars.products_by_affiliation_by_type(data)}
 
@@ -617,7 +650,7 @@ class AffiliationAppService:
                         if source_db["apc"]:
                             data.append(
                                 {
-                                    "year_published": work["year_published"],
+                                    "year_published": work["year_published"] or 2020,
                                     "apc": source_db["apc"],
                                 }
                             )
@@ -641,7 +674,7 @@ class AffiliationAppService:
                     if source_db["apc"]:
                         data.append(
                             {
-                                "year_published": work["year_published"],
+                                "year_published": work["year_published"] or 2020,
                                 "apc": source_db["apc"],
                             }
                         )
@@ -660,20 +693,20 @@ class AffiliationAppService:
                 for work in self.colav_db["works"].find(
                     {
                         "authors.id": author["_id"],
-                        "year_published": {"$exists": 1},
-                        "bibliographic_info.is_open_acess": {"$exists": 1},
+                        "bibliographic_info.is_open_access": {"$ne": None},
+                        "year_published": {"$ne": None},
                     },
-                    {"year_published": 1, "bibliographic_info.is_open_acess": 1},
+                    {"year_published": 1, "bibliographic_info.is_open_access": 1},
                 ):
                     data.append(work)
         else:
             for work in self.colav_db["works"].find(
                 {
                     "authors.affiliations.id": ObjectId(idx),
-                    "year_published": {"$exists": 1},
-                    "bibliographic_info.is_open_acess": {"$exists": 1},
+                    "bibliographic_info.is_open_access": {"$ne": None},
+                    "year_published": {"$ne": None},
                 },
-                {"year_published": 1, "bibliographic_info.is_open_acess": 1},
+                {"year_published": 1, "bibliographic_info.is_open_access": 1},
             ):
                 data.append(work)
 
@@ -776,7 +809,7 @@ class AffiliationAppService:
                 {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
             ):
                 pipeline = [
-                    {"$match": {"authors.id": author["_id"]}},
+                    {"$match": {"authors.id": author["_id"], "year_published": {"$ne": None}}},
                     {"$project": {"year_published": 1, "authors": 1}},
                     {"$unwind": "$authors"},
                     {
@@ -808,7 +841,7 @@ class AffiliationAppService:
                                 )
         else:
             pipeline = [
-                {"$match": {"authors.affiliations.id": ObjectId(idx)}},
+                {"$match": {"authors.affiliations.id": ObjectId(idx), "year_published": {"$ne": None}}},
                 {"$project": {"year_published": 1, "authors": 1}},
                 {"$unwind": "$authors"},
                 {"$match": {"authors.affiliations.id": ObjectId(idx)}},
@@ -1169,7 +1202,7 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_products_by_subject(self, idx, level=0, typ=None):
+    def get_products_by_subject(self, idx, level: int = 0, typ: str = None):
         if not level:
             level = 0
         data = []
@@ -1210,13 +1243,7 @@ class AffiliationAppService:
                     for subject in subjects["subjects"]:
                         if subject["level"] != level:
                             continue
-                        name = subject["names"][0]["name"]
-                        for n in subject["names"]:
-                            if n["lang"] == "es":
-                                name = n["name"]
-                                break
-                            elif n["lang"] == "en":
-                                name = n["name"]
+                        name = subject.get("name", "No name specified")
                         data.append({"subject": {"name": name}})
 
         result = self.pies.products_by_subject(data)
@@ -1338,7 +1365,12 @@ class AffiliationAppService:
                 {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
             ):
                 pipeline = [
-                    {"$match": {"authors.id": author["_id"]}},
+                    {
+                        "$match": {
+                            "authors.id": author["_id"],
+                            "date_published": {"$ne": None},
+                        },
+                    },
                     {
                         "$project": {
                             "authors": 1,
@@ -1363,13 +1395,18 @@ class AffiliationAppService:
                             "year_published": 1,
                         }
                     },
-                    {"$match": {"author.birthdate": {"$ne": -1, "$exists": 1}}},
+                    {"$match": {"author.birthdate": {"$nin": [-1, ""], "$exists": 1}}},
                 ]
                 for work in self.colav_db["works"].aggregate(pipeline):
                     data.append(work)
         else:
             pipeline = [
-                {"$match": {"authors.affiliations.id": ObjectId(idx)}},
+                {
+                    "$match": {
+                        "authors.affiliations.id": ObjectId(idx),
+                        "date_published": {"$ne": None},
+                    }
+                },
                 {"$project": {"authors": 1, "date_published": 1, "year_published": 1}},
                 {"$unwind": "$authors"},
                 {"$match": {"authors.affiliations.id": ObjectId(idx)}},
@@ -1388,7 +1425,7 @@ class AffiliationAppService:
                         "year_published": 1,
                     }
                 },
-                {"$match": {"author.birthdate": {"$ne": -1, "$exists": 1}}},
+                {"$match": {"author.birthdate": {"$nin": [-1, ""], "$exists": 1}}},
             ]
             for work in self.colav_db["works"].aggregate(pipeline):
                 data.append(work)
@@ -1429,7 +1466,12 @@ class AffiliationAppService:
                 {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
             ):
                 pipeline = [
-                    {"$match": {"authors.id": author["_id"]}},
+                    {
+                        "$match": {
+                            "authors.id": author["_id"],
+                            "date_published": {"$ne": None},
+                        }
+                    },
                     {"$project": {"source": 1, "date_published": 1}},
                     {
                         "$lookup": {
@@ -1446,7 +1488,12 @@ class AffiliationAppService:
                     data.append(work)
         else:
             pipeline = [
-                {"$match": {"authors.affiliations.id": ObjectId(idx)}},
+                {
+                    "$match": {
+                        "authors.affiliations.id": ObjectId(idx),
+                        "date_published": {"$ne": None},
+                    }
+                },
                 {"$project": {"source": 1, "date_published": 1}},
                 {
                     "$lookup": {

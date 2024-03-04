@@ -1,7 +1,8 @@
 from typing import Any
 
-from odmantic import Model, Field
-from pydantic import BaseModel
+from bson import ObjectId
+from odmantic import Model, Field, EmbeddedModel
+from odmantic.bson import BaseBSONModel
 
 from infraestructure.mongo.models.general import (
     Type,
@@ -13,17 +14,17 @@ from infraestructure.mongo.models.general import (
 )
 
 
-class Address(BaseModel):
-    city: str
-    country: str
-    country_code: str
+class Address(BaseBSONModel):
+    city: str | None
+    country: str | None
+    country_code: str | None
     lat: float | str | None
     lng: float | str | None
-    postcode: str
+    postcode: str | None = None
     state: str | None
 
 
-class DescriptionEmbedded(BaseModel):
+class DescriptionEmbedded(BaseBSONModel):
     TXT_ESTADO_ARTE: str
     TXT_OBJETIVOS: str
     TXT_PLAN_TRABAJO: str
@@ -32,42 +33,43 @@ class DescriptionEmbedded(BaseModel):
     TXT_VISION: str
 
 
-class Description(BaseModel):
+class Description(BaseBSONModel):
     description: DescriptionEmbedded
     source: str
 
 
-class Ranking(BaseModel):
-    date: int | Any
-    from_date: int | Any
-    order: int | Any
-    rank: str | None
-    source: str | None
-    to_date: str | Any
+class Ranking(BaseBSONModel):
+    date: int | Any = None
+    from_date: int | Any = None
+    order: int | Any = None
+    rank: str | None = None
+    source: str | None = None
+    to_date: str | Any = None
 
-class Relation(BaseModel):
-    id: Any
+class Relation(EmbeddedModel):
+    id: ObjectId | None | str = None
     name: str | None
-    type: Type | None
-
+    type: Type | None = None
+    
 
 class Affiliation(Model):
     abbreviations: list[str] | None = Field(default_factory=list)
-    addresses: list[Address] | None = Field(default_factory=list)
     aliases: list[str] | None = Field(default_factory=list)
-    birthdate: int | Any
+    ranking: list[Ranking] | None = None
+    status: Any#Status | list[Status] | None | str = None
+    subjects: list[Any] | None = Field(default_factory=list)
+    updated: list[Updated] | None = Field(default_factory=list)
+    year_established: int | None = None
+    names: list[Name] | None = Field(default_factory=list)
+    relations: list[Relation] | None = Field(default_factory=list)
+    addresses: list[Address] | None = Field(default_factory=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
-    names: list[Name] | None = Field(default_factory=list)
-    ranking: Ranking | None
-    relations: list[Relation] | None = Field(default_factory=list)
-    status: Status | None
-    subjects: list[Any] | None = Field(default_factory=list)
     types: list[Type] | None = Field(default_factory=list)
-    updated: list[Updated] | None = Field(default_factory=list)
-    year_established: int
 
-    class Config:
-        collection = "affiliations"
+    model_config = {
+        "collection": "affiliations"
+    }
+    
 
 

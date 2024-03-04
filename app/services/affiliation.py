@@ -1,5 +1,5 @@
 from services.base import ServiceBase
-from schemas.affiliation import AffiliationQueryParams
+from schemas.affiliation import AffiliationQueryParams, AffiliationSearch
 from infraestructure.mongo.models.affiliation import Affiliation
 from infraestructure.mongo.repositories.affiliation import (
     AffiliationRepository,
@@ -7,8 +7,11 @@ from infraestructure.mongo.repositories.affiliation import (
 )
 
 
-class AffiliationService(ServiceBase[Affiliation, AffiliationRepository, AffiliationQueryParams]):
-    ...
+class AffiliationService(
+    ServiceBase[
+        Affiliation, AffiliationRepository, AffiliationQueryParams, AffiliationSearch
+    ]
+): ...
 
 
-affiliation_service = AffiliationService(affiliation_repository)
+affiliation_service = AffiliationService(affiliation_repository, AffiliationSearch)

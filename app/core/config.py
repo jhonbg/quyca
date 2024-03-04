@@ -1,9 +1,9 @@
 from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseSettings, validator, MongoDsn
+from pydantic import validator, MongoDsn
 
-# from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     MONGO_INITDB_ROOT_USERNAME: str
     MONGO_INITDB_ROOT_PASSWORD: str
     MONGO_INITDB_DATABASE: str
-    MONGO_INITDB_PORT: str | int = "27017"
+    MONGO_INITDB_PORT: int = 27017
     MONGO_IMPACTU_DB: str
 
     MONGO_URI: Optional[MongoDsn] = None
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
         return MongoDsn.build(
             scheme="mongodb",
             host=values.get("MONGO_SERVER"),
-            user=values.get("MONGO_INITDB_ROOT_USERNAME"),
+            username=values.get("MONGO_INITDB_ROOT_USERNAME"),
             password=values.get("MONGO_INITDB_ROOT_PASSWORD"),
             port=values.get("MONGO_INITDB_PORT"),
         )

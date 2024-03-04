@@ -1,5 +1,5 @@
 from odmantic import EmbeddedModel, ObjectId
-from pydantic import BaseModel
+from odmantic.bson import BaseBSONModel
 
 
 class Type(EmbeddedModel):
@@ -13,20 +13,20 @@ class Updated(EmbeddedModel):
 
 
 class ExternalId(EmbeddedModel):
-    id: ObjectId | None | str
+    id: ObjectId | None | str | int
     source: str | None
 
 
 class ExternalURL(EmbeddedModel):
-    url: str | None
+    url: str | int | None
     source: str | None
 
 
-class Name(BaseModel):
+class Name(BaseBSONModel):
     name: str | None
     lang: str | None
 
 
-class Status(BaseModel):
+class Status(BaseBSONModel):
     source: str | None
     status: str | None

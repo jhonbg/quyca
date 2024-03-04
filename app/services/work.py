@@ -7,8 +7,8 @@ from infraestructure.mongo.repositories.work import (
 )
 
 
-class WorkService(ServiceBase[Work, WorkRepository, WorkQueryParams]):
+class WorkService(ServiceBase[Work, WorkRepository, WorkQueryParams, Work]):
     ...
 
 
-work_service = WorkService(work_repository)
+work_service = WorkService(work_repository, Work)

@@ -21,15 +21,15 @@ def affiliation(
     result = None
 
     if section == "info":
-        result = affiliation_app_service.get_info(idx)
+        result = affiliation_app_service.get_info(idx, typ)
     elif section == "affiliations":
         result = affiliation_app_service.get_affiliations(idx, typ=typ)
     elif section == "research":
         if tab == "products":
             plot = request.args.get("plot")
             if plot:
-                level = request.args.get("level", 0)
-                args = (idx, typ, level) if plot == "products_subject" else (idx, typ)
+                level = int(request.args.get("level", 0))
+                args = (idx, level, typ) if plot == "products_subject" else (idx, typ)
                 result = affiliation_app_service.plot_mappings[plot](*args)
             else:
                 start_year = request.args.get("start_year")

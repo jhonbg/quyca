@@ -7,8 +7,8 @@ from infraestructure.mongo.repositories.person import (
 )
 
 
-class PersonService(ServiceBase[Person, PersonRepository, PersonQueryParams]):
+class PersonService(ServiceBase[Person, PersonRepository, PersonQueryParams, Person]):
     ...
 
 
-person_service = PersonService(person_repository)
+person_service = PersonService(person_repository, Person)

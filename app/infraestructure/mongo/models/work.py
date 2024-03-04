@@ -38,7 +38,7 @@ class Affiliation(EmbeddedModel):
 class Author(EmbeddedModel):
     id: Any
     full_name: str
-    affiliations: list[Affiliation] | None = Field(default_affiliation=list)
+    affiliations: list[Affiliation] | None = Field(default_factory=list)
 
 
 class Source(EmbeddedModel):
@@ -82,5 +82,4 @@ class Work(Model):
     citations_by_year: list[CitationByYear] | None = Field(default_factory=list)
     authors: list[Author]
 
-    class Config:
-        collection = "works"
+    model_config = {"collection": "works"}

@@ -370,15 +370,17 @@ class SearchAppService:
                     "title": paper["titles"][0]["title"],
                     "authors": [],
                     "source": "",
-                    "open_access_status": paper["bibliographic_info"][
-                        "open_access_status"
-                    ]
-                    if "open_access_status" in paper["bibliographic_info"]
-                    else "",
+                    "open_access_status": (
+                        paper["bibliographic_info"]["open_access_status"]
+                        if "open_access_status" in paper["bibliographic_info"]
+                        else ""
+                    ),
                     "year_published": paper["year_published"],
-                    "citations_count": paper["citations_count"]
-                    if "citations_count" in paper.keys()
-                    else 0,
+                    "citations_count": (
+                        paper["citations_count"]
+                        if "citations_count" in paper.keys()
+                        else 0
+                    ),
                     "subjects": [],
                 }
 

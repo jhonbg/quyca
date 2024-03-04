@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from schemas.general import QueryBase
 
@@ -48,16 +48,19 @@ class Degree(BaseModel):
     source: str | None
 
 
-class Person(BaseModel):
-    updated: list[Updated]
+class PersonBase(BaseModel):
     full_name: str | None
+    external_ids: list[ExternalId] = Field(default_factory=list)
+    affiliations: list[Affiliation] = Field(default_factory=list)
+
+
+class Person(PersonBase):
+    updated: list[Updated]
     first_names: list[str]
     last_names: list[str]
     initials: str | None
     aliases: list[str]
-    affiliations: list[Affiliation] = Field(default_factory=list)
     keywords: list[str]
-    external_ids: list[ExternalId]
     sex: str | None
     marital_status: str | None
     ranking: list[Ranking | list[Ranking]]
@@ -67,8 +70,29 @@ class Person(BaseModel):
     subjects: list[Any]
 
 
+class PersonSearch(PersonBase):
+    @field_validator("external_ids")
+    @classmethod
+    def remove_sensitive_ids(cls, v: list[ExternalId]) -> list[ExternalId]:
+        return list(
+            filter(
+                lambda x: x.source
+                not in [
+                    "Cédula de Ciudadanía",
+                    "Cédula de Extranjería",
+                    "Passport",
+                ],
+                v,
+            )
+        )
+
+
 class PersonQueryParams(QueryBase):
     groups: str | None = None
     institutions: str | None = None
     country: str | None = None
-    sort: str = "citations"
+    sort: str = ""
+
+    @property
+    def get_search(self) -> dict[str, Any]:
+        return {"external_ids": {"$ne": []}}

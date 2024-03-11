@@ -11,9 +11,9 @@ from utils.flatten_json import flatten_json_list
 router = Blueprint("person_app_v1", __name__)
 
 
-def person(request: Request, id: str | None):
-    section = request.args.get("section")
-    tab = request.args.get("tab")
+def person(
+    request: Request, id: str | None, section: str | None = None, tab: str | None = None
+):
     data = request.args.get("data")
     typ = request.args.get("typ", None)
 
@@ -50,8 +50,11 @@ def person(request: Request, id: str | None):
 
 
 @router.route("/<id>", methods=["GET"])
-def get_person(id: str | None = None):
-    result = person(request, id=id)
+@router.route("/<id>/<section>/<tab>", methods=["GET"])
+def get_person(
+    id: str | None = None, section: str | None = "info", tab: str | None = None
+):
+    result = person(request, id=id, section=section, tab=tab)
     if result:
         response = Response(
             response=json.dumps(result, cls=JsonEncoder),

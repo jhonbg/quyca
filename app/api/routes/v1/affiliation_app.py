@@ -13,13 +13,14 @@ router = Blueprint("affiliation_app_v1", __name__)
 
 
 def affiliation(
-    request: Request, idx: str | None = None, typ: str | None = None
+    request: Request,
+    *,
+    idx: str | None = None,
+    typ: str | None = None,
+    section: str | None = None,
+    tab: str | None = None,
 ) -> dict[str, Any] | None:
-    section = request.args.get("section")
-    tab = request.args.get("tab")
-
     result = None
-
     if section == "info":
         result = affiliation_app_service.get_info(idx, typ)
     elif section == "affiliations":
@@ -52,8 +53,15 @@ def affiliation(
 
 
 @router.route("/<typ>/<id>", methods=["GET"])
-def get_affiliation(id: str | None, typ: str | None = None):
-    result = affiliation(request, idx=id, typ=typ)
+@router.route("/<typ>/<id>/<section>", methods=["GET"])
+@router.route("/<typ>/<id>/<section>/<tab>", methods=["GET"])
+def get_affiliation(
+    id: str | None,
+    typ: str | None = None,
+    section: str | None = "info",
+    tab: str | None = None,
+):
+    result = affiliation(request, idx=id, typ=typ, section=section, tab=tab)
     if result:
         response = Response(
             response=json.dumps(result, cls=JsonEncoder),

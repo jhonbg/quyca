@@ -9,10 +9,13 @@ from utils.encoder import JsonEncoder
 router = Blueprint("affiliation_api_v1", __name__)
 
 
-def affiliation(request: Request, idx: str | None = None) -> dict[str, Any] | None:
-    section = request.args.get("section")
-    tab = request.args.get("tab")
-
+def affiliation(
+    request: Request,
+    *,
+    idx: str | None = None,
+    section: str | None = "info",
+    tab: str | None = None,
+) -> dict[str, Any] | None:
     result = None
     if section == "info":
         result = affiliation_api_service.get_info(idx)
@@ -40,9 +43,16 @@ def affiliation(request: Request, idx: str | None = None) -> dict[str, Any] | No
     return result
 
 
-@router.route("/<id>", methods=["GET"])
-def api_affiliation(id: str | None):
-    result = affiliation(request)
+@router.route("/<typ>/<id>", methods=["GET"])
+@router.route("/<typ>/<id>/<section>", methods=["GET"])
+@router.route("/<typ>/<id>/<section>/<tab>", methods=["GET"])
+def api_affiliation(
+    id: str | None,
+    section: str | None = "info",
+    tab: str | None = None,
+    typ: str | None = None,
+):
+    result = affiliation(request, idx=id, typ=typ, section=section, tab=tab)
     if result:
         response = Response(
             response=json.dumps(result, cls=JsonEncoder),

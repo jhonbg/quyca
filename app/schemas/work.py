@@ -28,25 +28,25 @@ class Name(BaseModel):
 
 
 class Affiliation(BaseModel):
-    id: Any
+    id: str
     names: list[Name] | None = Field(default_factory=list)
     types: list[Type] | None = Field(default_factory=list)
 
 
 class Author(BaseModel):
-    id: Any
+    id: str
     full_name: str
     affiliations: list[Affiliation] | None = Field(default_affiliation=list)
 
 
 class Source(BaseModel):
-    id: Any
+    id: str
     names: list[Name] | None = Field(default_factory=list)
 
 
 class SubjectEmbedded(BaseModel):
-    id: Any
-    names: list[Name] | None = Field(default_factory=list)
+    id: str
+    name: str | None
     level: int
 
 
@@ -60,8 +60,28 @@ class CitationByYear(BaseModel):
     year: int | None
 
 
+class CitationsCount(BaseModel):
+    source: str | None
+    count: int | None
+
+
+class WorkBase(BaseModel):
+    id: str | None
+    title: list[Title] | None = Field(default_factory=list, alias="titles")
+    authors: list[Author] = Field(default_factory=list)
+    source: Source | None = Field(default_factory=dict)
+    citations_count: list[CitationsCount]
+    subjects: list[Subject]
+
+
+class WorkSearch(WorkBase):
+    @field_validator("citations_count")
+    @classmethod
+    def sort_citations_count(cls, v: list[CitationsCount]):
+        return list(sorted(v, key=lambda x: x.count, reverse=True))
+
+
 class Work(BaseModel):
-    titles: list[Title] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
     subtitle: str
     abstract: str
@@ -76,11 +96,8 @@ class Work(BaseModel):
     references: list[Any] | None = Field(default_factory=list)
     citations: list[CitationsCount] | None = Field(default_factory=list)
     author_count: int
-    source: Source | None = Field(default_factory=dict)
-    citations_by_year: list[CitationByYear] | None = Field(default_factory=list)
-    authors: list[Author]
 
-    
+    citations_by_year: list[CitationByYear] | None = Field(default_factory=list)
 
 
 class WorkQueryParams(QueryBase):

@@ -20,9 +20,12 @@ class Title(EmbeddedModel):
 
 
 class BiblioGraphicInfo(BaseModel):
-    volume: str | int | None
-    is_open_access: bool | None
-    open_access_status: str | None
+    volume: str | int | None = None
+    is_open_access: bool | None = None
+    open_access_status: str | None = None
+    end_page: str | None = None
+    issue: str | None = None
+    start_page: str | None = None
 
 
 class CitationsCount(EmbeddedModel):
@@ -67,6 +70,16 @@ class CitationsCount(EmbeddedModel):
     count: int | None
 
 
+class SubjectEmbedded(EmbeddedModel):
+    id: ObjectId | str | None = None
+    level: int
+    name: str
+
+
+class Subject(EmbeddedModel):
+    source: str | None
+    subjects: list[SubjectEmbedded]
+
 class Work(Model):
     titles: list[Title] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
@@ -76,16 +89,17 @@ class Work(Model):
     types: list[Type] | None = Field(default_factory=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
-    date_published: int
-    year_published: int
+    date_published: int | None
+    year_published: int | None
     bibliographic_info: BiblioGraphicInfo | None
     references_count: int | None
     references: list[Any] | None = Field(default_factory=list)
     citations: list[CitationsCount] | None = Field(default_factory=list)
     author_count: int
-    source: Any  # Source | None = Field(default_factory=dict)
+    source: Source | None = Field(default_factory=dict)
     citations_by_year: list[CitationByYear] | None = Field(default_factory=list)
     authors: list[Author]
     citations_count: list[CitationsCount]
+    subjects: list[Subject] | None = Field(default_factory=list)
 
     model_config = {"collection": "works"}

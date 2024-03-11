@@ -49,6 +49,7 @@ class Degree(BaseModel):
 
 
 class PersonBase(BaseModel):
+    id: str | None
     full_name: str | None
     external_ids: list[ExternalId] = Field(default_factory=list)
     affiliations: list[Affiliation] = Field(default_factory=list)

@@ -387,7 +387,7 @@ class SearchAppService:
                 for subs in paper["subjects"]:
                     if subs["source"] == "openalex":
                         for sub in subs["subjects"]:
-                            name = sub["name"]
+                            name = sub.get("name", "No name in db")
                             entry["subjects"].append({"name": name, "id": sub["id"]})
                         break
 

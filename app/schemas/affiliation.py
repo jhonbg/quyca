@@ -54,6 +54,7 @@ class Relation(BaseModel):
 
 
 class AffiliationBase(BaseModel):
+    id: str | None 
     names: list[Name] | None = Field(default_factory=list)
     relations: list[Relation] | None = Field(default_factory=list)
     addresses: list[Address] | Address | None = Field(default_factory=list)

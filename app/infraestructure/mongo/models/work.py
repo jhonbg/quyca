@@ -31,24 +31,24 @@ class CitationsCount(EmbeddedModel):
 
 
 class Affiliation(EmbeddedModel):
-    id: str | ObjectId | None
+    id: ObjectId | str | None
     names: list[Name] | None = Field(default_factory=list)
     types: list[Type] | None = Field(default_factory=list)
 
 
 class Author(EmbeddedModel):
-    id: str | ObjectId | None
+    id: ObjectId | str | None
     full_name: str
     affiliations: list[Affiliation] | None = Field(default_factory=list)
 
 
 class Source(EmbeddedModel):
-    id: str | ObjectId | None
+    id: ObjectId | str | None
     names: list[Name] | None = Field(default_factory=list)
 
 
 class SubjectEmbedded(EmbeddedModel):
-    id: str | ObjectId | None
+    id: ObjectId | str | None
     names: list[Name] | None = Field(default_factory=list)
     level: int
 

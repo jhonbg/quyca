@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from schemas.general import Type, Updated, ExternalId, ExternalURL, QueryBase
 
@@ -80,8 +80,7 @@ class Work(BaseModel):
     citations_by_year: list[CitationByYear] | None = Field(default_factory=list)
     authors: list[Author]
 
-    class Config:
-        collection = "works"
+    
 
 
 class WorkQueryParams(QueryBase):

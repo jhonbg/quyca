@@ -2,6 +2,7 @@ from typing import Any
 
 from odmantic import Model, EmbeddedModel, Field
 from pydantic import BaseModel
+from bson import ObjectId
 
 from infraestructure.mongo.models.general import (
     Type,
@@ -30,24 +31,24 @@ class CitationsCount(EmbeddedModel):
 
 
 class Affiliation(EmbeddedModel):
-    id: Any
+    id: str | ObjectId | None
     names: list[Name] | None = Field(default_factory=list)
     types: list[Type] | None = Field(default_factory=list)
 
 
 class Author(EmbeddedModel):
-    id: Any
+    id: str | ObjectId | None
     full_name: str
     affiliations: list[Affiliation] | None = Field(default_factory=list)
 
 
 class Source(EmbeddedModel):
-    id: Any
+    id: str | ObjectId | None
     names: list[Name] | None = Field(default_factory=list)
 
 
 class SubjectEmbedded(EmbeddedModel):
-    id: Any
+    id: str | ObjectId | None
     names: list[Name] | None = Field(default_factory=list)
     level: int
 
@@ -60,6 +61,10 @@ class Subject(EmbeddedModel):
 class CitationByYear(EmbeddedModel):
     cited_by_count: int | None
     year: int | None
+
+class CitationsCount(EmbeddedModel):
+    source: str | None
+    count: int | None
 
 
 class Work(Model):
@@ -81,5 +86,6 @@ class Work(Model):
     source: Any  # Source | None = Field(default_factory=dict)
     citations_by_year: list[CitationByYear] | None = Field(default_factory=list)
     authors: list[Author]
+    citations_count: list[CitationsCount]
 
     model_config = {"collection": "works"}

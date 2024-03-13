@@ -202,8 +202,9 @@ class PersonAppService:
                 for subs in paper["subjects"]:
                     if subs["source"] == "openalex":
                         for sub in subs["subjects"]:
-                            name = sub["name"]
-                            entry["subjects"].append({"name": name, "id": sub["id"]})
+                            name = sub.get("name", None)
+                            if name is not None:
+                                entry["subjects"].append({"name": name, "id": sub["id"]})
                         break
 
                 if "source" in paper.keys():

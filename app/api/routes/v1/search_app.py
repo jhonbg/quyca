@@ -67,8 +67,8 @@ def read_works():
     )
 
 
-@router.route("/affiliations", methods=["GET"])
-def read_affiliations():
+@router.route("/affiliations/<type>", methods=["GET"])
+def read_affiliations(type: str | None = None):
     try:
         query_params = AffiliationQueryParams(**request.args)
     except ValidationError as e:
@@ -78,7 +78,7 @@ def read_affiliations():
         max_results=query_params.limit,
         page=query_params.page,
         sort=query_params.sort,
-        aff_type=query_params.type,
+        aff_type=type,
     )
     return Response(
         response=json.dumps(

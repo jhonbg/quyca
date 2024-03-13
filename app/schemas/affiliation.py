@@ -91,7 +91,7 @@ class AffiliationSearch(AffiliationBase):
 
 
 class AffiliationQueryParams(QueryBase):
-    type: str | None = None
+    # type: str | None = None
 
     @property
     def get_search(self) -> dict[str, Any]:

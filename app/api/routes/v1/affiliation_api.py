@@ -28,7 +28,7 @@ def affiliation(
                 start_year = request.args.get("start_year")
                 end_year = request.args.get("end_year")
                 page = request.args.get("page")
-                max_results = request.args.get("max_results")
+                max_results = request.args.get("max")
                 sort = request.args.get("sort")
                 result = affiliation_api_service.get_production(
                     idx=idx,

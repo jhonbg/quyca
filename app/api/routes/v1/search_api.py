@@ -25,7 +25,7 @@ def read_person():
         keywords=query_params.keywords,
         institutions=query_params.institutions,
         groups=query_params.groups,
-        max_results=query_params.limit,
+        max_results=query_params.max,
         page=query_params.page,
         sort=query_params.sort,
     )

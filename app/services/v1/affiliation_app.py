@@ -10,6 +10,7 @@ from utils.bars import bars
 from utils.maps import maps
 from utils.pies import pies
 
+
 class AffiliationAppService:
     def __init__(self):
         self.colav_db = client[settings.MONGO_INITDB_DATABASE]
@@ -435,6 +436,19 @@ class AffiliationAppService:
                     },
                     {"$unwind": "$works"},
                     {"$match": match_works},
+                    {"$group": {"_id": "$works._id", "works": {"$first": "$works"}}},
+                    {
+                        "$project": {
+                            "works._id": 1,
+                            "works.citations_count": 1,
+                            "works.year_published": 1,
+                            "works.titles": 1,
+                            "works.source": 1,
+                            "works.authors": 1,
+                            "works.subjects": 1,
+                            "works.bibliographic_info": 1,
+                        }
+                    },
                     {
                         "$project": {
                             "works._id": 1,
@@ -809,7 +823,12 @@ class AffiliationAppService:
                 {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
             ):
                 pipeline = [
-                    {"$match": {"authors.id": author["_id"], "year_published": {"$ne": None}}},
+                    {
+                        "$match": {
+                            "authors.id": author["_id"],
+                            "year_published": {"$ne": None},
+                        }
+                    },
                     {"$project": {"year_published": 1, "authors": 1}},
                     {"$unwind": "$authors"},
                     {
@@ -841,7 +860,12 @@ class AffiliationAppService:
                                 )
         else:
             pipeline = [
-                {"$match": {"authors.affiliations.id": ObjectId(idx), "year_published": {"$ne": None}}},
+                {
+                    "$match": {
+                        "authors.affiliations.id": ObjectId(idx),
+                        "year_published": {"$ne": None},
+                    }
+                },
                 {"$project": {"year_published": 1, "authors": 1}},
                 {"$unwind": "$authors"},
                 {"$match": {"authors.affiliations.id": ObjectId(idx)}},

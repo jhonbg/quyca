@@ -75,7 +75,7 @@ def read_affiliations(type: str | None = None):
         return jsonify({"error": str(e)}, 400)
     results = search_app_service.search_affiliations(
         keywords=query_params.keywords,
-        max_results=query_params.limit,
+        max_results=query_params.max,
         page=query_params.page,
         sort=query_params.sort,
         aff_type=type,

@@ -33,7 +33,7 @@ def person(
                 start_year = request.args.get("start_year")
                 endt_year = request.args.get("end_year")
                 page = request.args.get("page")
-                max_results = request.args.get("max_results")
+                max_results = request.args.get("max")
                 sort = request.args.get("sort")
                 result = person_app_service.get_research_products(
                     idx=id,

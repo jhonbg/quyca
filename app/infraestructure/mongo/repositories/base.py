@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Any
+from typing import Generic, TypeVar, Any, Literal
 from json import loads
 
 from odmantic import Model
@@ -9,7 +9,7 @@ from infraestructure.mongo.utils.session import engine
 ModelType = TypeVar("ModelType", bound=Model)
 
 
-class RepositorieBase(Generic[ModelType]):
+class RepositoryBase(Generic[ModelType]):
     def __init__(self, model: type[ModelType]):
         self.model = model
 
@@ -69,3 +69,20 @@ class RepositorieBase(Generic[ModelType]):
     def count(self) -> int:
         with engine.session() as session:
             return session.count(self.model)
+
+    @staticmethod
+    def get_sort_direction(sort: str) -> tuple[str, Literal[1, -1]]:
+        if sort.endswith("-"):
+            sort_field = sort[:-1]
+            direction_value = -1
+        else:
+            sort_field = sort
+            direction_value = 1
+        return sort_field, direction_value
+
+    @classmethod
+    def count_pipeline(cls, pipeline: list[dict[str, Any]], collection: ModelType):
+        collection = engine.get_collection(collection)
+        aggregation = collection.aggregate(pipeline + [{"$count": "total"}])
+        total = next(aggregation, {"total": 0}).get("total", 0)
+        return total

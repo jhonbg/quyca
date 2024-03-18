@@ -1,8 +1,8 @@
-from infraestructure.mongo.repositories.base import RepositorieBase
+from infraestructure.mongo.repositories.base import RepositoryBase
 from infraestructure.mongo.models.affiliation import Affiliation
 
 
-class AffiliationRepository(RepositorieBase):
+class AffiliationRepository(RepositoryBase):
     ...
 
 affiliation_repository = AffiliationRepository(Affiliation)

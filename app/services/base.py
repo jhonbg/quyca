@@ -4,12 +4,12 @@ from json import loads
 from odmantic import Model
 from pydantic import BaseModel
 
-from infraestructure.mongo.repositories.base import RepositorieBase
+from infraestructure.mongo.repositories.base import RepositoryBase
 from schemas.general import QueryBase, GeneralMultiResponse
 
 
 ModelType = TypeVar("ModelType", bound=Model)
-RepositoryType = TypeVar("RepositoryType", bound=RepositorieBase)
+RepositoryType = TypeVar("RepositoryType", bound=RepositoryBase)
 ParamsType = TypeVar("ParamsType", bound=QueryBase)
 SearchType = TypeVar("SearchType", bound=BaseModel)
 

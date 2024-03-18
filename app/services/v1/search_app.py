@@ -2,6 +2,7 @@ from bson import ObjectId
 from pymongo import ASCENDING, DESCENDING
 
 from infraestructure.mongo.utils.session import client
+from infraestructure.mongo.repositories.work import WorkRepository
 from core.config import settings
 
 
@@ -272,6 +273,51 @@ class SearchAppService:
                     if ext["source"] == "logo":
                         entry["logo"] = ext["url"]
                         affiliation["external_urls"].remove(ext)
+                # count_products and citations
+                aff_type = entry["types"][0]["type"]
+                aff_type = "institution" if aff_type == "Education" else aff_type
+                count_papers_pipeline = WorkRepository.wrap_pipeline(
+                    str(entry["_id"]), aff_type
+                )
+                count_papers_pipeline_total = count_papers_pipeline + [
+                    {"$count": "total"}
+                ]
+                collection = "person" if aff_type != "institution" else "works"
+                products_count = next(
+                    self.colav_db[collection].aggregate(count_papers_pipeline_total),
+                    {"total": 0},
+                ).get("total", 0)
+                entry["products_count"] = products_count
+
+                # count citations
+                count_citations_pipeline = count_papers_pipeline + [
+                    {
+                        "$project": {
+                            "citations_count": f"${'works.' if aff_type!='institution' else ''}citations_count"
+                        }
+                    },
+                    {"$unwind": "$citations_count"},
+                    {
+                        "$group": {
+                            "_id": "$citations_count.source",
+                            "count": {"$sum": "$citations_count.count"},
+                        }
+                    },
+                    {"$project": {"_id": 0, "source": "$_id", "count": 1}},
+                    {
+                        "$group": {
+                            "_id": None,
+                            "counts": {
+                                "$push": {"source": "$source", "count": "$count"}
+                            },
+                        }
+                    },
+                    {"$project": {"_id": 0, "counts": 1}},
+                ]
+                citations_count = next(
+                    self.colav_db[collection].aggregate(count_citations_pipeline), {}
+                )
+                entry["citations_count"] = citations_count.get("counts", [])
 
                 affiliation_list.append(entry)
 

@@ -80,6 +80,7 @@ class PersonAppService:
                 if "external_ids" in person.keys()
                 else None,
                 "logo": logo,
+                "affiliations": person["affiliations"]
             }
             index_list = []
 

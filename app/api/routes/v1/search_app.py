@@ -25,7 +25,7 @@ def read_person():
         keywords=query_params.keywords,
         institutions=query_params.institutions,
         groups=query_params.groups,
-        max_results=query_params.limit,
+        max_results=query_params.max,
         page=query_params.page,
         sort=query_params.sort,
     )
@@ -47,7 +47,7 @@ def read_works():
         return jsonify({"error": str(e)}, 400)
     results = search_app_service.search_work(
         keywords=query_params.keywords,
-        max_results=query_params.limit,
+        max_results=query_params.max,
         page=query_params.page,
         start_year=query_params.start_year,
         end_year=query_params.end_year,
@@ -98,7 +98,7 @@ def read_subjects():
         return jsonify({"error": str(e)}, 400)
     results = search_app_service.search_subjects(
         keywords=query_params.keywords,
-        max_results=query_params.limit,
+        max_results=query_params.max,
         page=query_params.page,
         sort=query_params.sort,
         direction="descending",

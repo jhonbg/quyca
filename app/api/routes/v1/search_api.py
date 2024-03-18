@@ -47,7 +47,7 @@ def read_works():
         return jsonify({"error": str(e)}, 400)
     results = search_api_service.search_work(
         keywords=query_params.keywords,
-        max_results=query_params.limit,
+        max_results=query_params.max,
         page=query_params.page,
         start_year=query_params.start_year,
         end_year=query_params.end_year,
@@ -75,7 +75,7 @@ def read_affiliations():
         return jsonify({"error": str(e)}, 400)
     results = search_api_service.search_affiliations(
         keywords=query_params.keywords,
-        max_results=query_params.limit,
+        max_results=query_params.max,
         page=query_params.page,
         sort=query_params.sort,
         aff_type=query_params.type,
@@ -98,7 +98,7 @@ def read_subjects():
         return jsonify({"error": str(e)}, 400)
     results = search_api_service.search_subjects(
         keywords=query_params.keywords,
-        max_results=query_params.limit,
+        max_results=query_params.max,
         page=query_params.page,
         sort=query_params.sort,
         direction="descending",

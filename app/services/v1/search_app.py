@@ -127,10 +127,10 @@ class SearchAppService:
 
         cursor = self.colav_db["person"].find(search_dict, var_dict)
 
-        institution_filters = []
-        group_filters = []
-        institution_ids = []
-        groups_ids = []
+        # institution_filters = []
+        # group_filters = []
+        # institution_ids = []
+        # groups_ids = []
 
         # for author in filter_cursor:
         #     if "affiliations" in author.keys():
@@ -178,8 +178,8 @@ class SearchAppService:
         if cursor:
             author_list = []
             keywords = []
-            group_name = ""
-            group_id = ""
+            # group_name = ""
+            # group_id = ""
             for author in cursor:
                 if "score" in author:
                     del author["score"]

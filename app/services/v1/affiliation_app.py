@@ -121,22 +121,17 @@ class AffiliationAppService:
                 ],
                 "logo": logo,
             }
-            (
-                entry.update({"university": affiliation.get("university", None)})
-                if typ in ("department", "faculty", "group")
-                else None
-            )
+            university = affiliation.get("university", {})
+            faculty = affiliation.get("faculty", {})
+            if isinstance(university.get("name", None), dict):
+                university["name"] = university["name"]["name"]
+            if isinstance(faculty.get("name", None), dict):
+                faculty["name"] = faculty["name"]["name"]
 
-            (
-                entry.update({"faculty": affiliation.get("faculty", None)})
-                if typ
-                in (
-                    "department",
-                    "faculty",
-                    "group",
-                )
-                else None
-            )
+            affiliations = []
+            affiliations += [university] if typ in ("faculty", "department", "group") else []
+            affiliations += [faculty] if typ in ("department", "group") else []
+            entry.update({"affiliations": affiliations})
 
             return {"data": entry}
         else:

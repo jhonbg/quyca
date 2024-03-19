@@ -5,6 +5,7 @@ from bson import ObjectId
 from pymongo import ASCENDING, DESCENDING
 
 from infraestructure.mongo.utils.session import client
+from infraestructure.mongo.repositories.work import WorkRepository
 from core.config import settings
 from utils.bars import bars
 from utils.maps import maps
@@ -29,6 +30,9 @@ class AffiliationAppService:
                     "names": 1,
                     "citations": 1,
                     "external_urls": 1,
+                    "types": 1,
+                    "external_ids": 1,
+                    "addresses": 1,
                     "relations": 1,
                     "university": {
                         "$arrayElemAt": [
@@ -109,16 +113,22 @@ class AffiliationAppService:
             entry = {
                 "id": affiliation["_id"],
                 "name": name,
-                "citations": (
-                    affiliation["citations_count"]
-                    if "citations_count" in affiliation.keys()
-                    else None
+                "citations_count": WorkRepository.count_citations(
+                    affiliation_id=affiliation["_id"],
+                    affiliation_type=affiliation["types"][0]["type"],
+                ),
+                "products_count": WorkRepository.count_papers(
+                    affiliation_id=affiliation["_id"],
+                    affiliation_type=affiliation["types"][0]["type"],
                 ),
                 "external_urls": [
                     ext
                     for ext in affiliation["external_urls"]
                     if ext["source"] != "logo"
                 ],
+                "external_ids": affiliation["external_ids"],
+                "types": affiliation["types"],
+                "addresses": affiliation["addresses"],
                 "logo": logo,
             }
             university = affiliation.get("university", {})
@@ -129,7 +139,9 @@ class AffiliationAppService:
                 faculty["name"] = faculty["name"]["name"]
 
             affiliations = []
-            affiliations += [university] if typ in ("faculty", "department", "group") else []
+            affiliations += (
+                [university] if typ in ("faculty", "department", "group") else []
+            )
             affiliations += [faculty] if typ in ("department", "group") else []
             entry.update({"affiliations": affiliations})
 

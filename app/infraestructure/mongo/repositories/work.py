@@ -31,10 +31,10 @@ class WorkRepository(RepositoryBase):
             pipeline = [
                 {
                     "$match": {
-                        "authors.affiliations.id": ObjectId("65efffc746fdfdf449882feb"),
+                        "authors.affiliations.id": ObjectId(affiliation_id),
                     },
                 },
-                {"$sort": {sort_field: direction}}
+                {"$sort": {sort_field: direction}},
             ]
             year_published_match = (
                 [{"$match": {"year_published": {"$gte": start_year, "$lte": end_year}}}]
@@ -71,6 +71,53 @@ class WorkRepository(RepositoryBase):
             {"$sort": {sort_field: direction}},
         ]
         return pipeline
+
+    @classmethod
+    def count_papers(cls, *, affiliation_id: str, affiliation_type: str) -> int:
+        affiliation_type = (
+            "institution" if affiliation_type == "Education" else affiliation_type
+        )
+        count_papers_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
+        count_papers_pipeline.append({"$count": "total"})
+        collection = Person if affiliation_type != "institution" else Work
+        papers_count = next(
+            engine.get_collection(collection).aggregate(count_papers_pipeline),
+            {"total", 0},
+        ).get("total", 0)
+        return papers_count
+
+    @classmethod
+    def count_citations(
+        cls, *, affiliation_id: str, affiliation_type: str
+    ) -> list[dict[str, str | int]]:
+        count_citations_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
+        count_citations_pipeline += [
+            {
+                "$project": {
+                    "citations_count": f"${'works.' if affiliation_type!='institution' else ''}citations_count"
+                }
+            },
+            {"$unwind": "$citations_count"},
+            {
+                "$group": {
+                    "_id": "$citations_count.source",
+                    "count": {"$sum": "$citations_count.count"},
+                }
+            },
+            {"$project": {"_id": 0, "source": "$_id", "count": 1}},
+            {
+                "$group": {
+                    "_id": None,
+                    "counts": {"$push": {"source": "$source", "count": "$count"}},
+                }
+            },
+            {"$project": {"_id": 0, "counts": 1}},
+        ]
+        collection = Person if affiliation_type != "institution" else Work
+        citations_count = next(
+            engine.get_collection(collection).aggregate(count_citations_pipeline), {}
+        ).get("counts", [])
+        return citations_count
 
     def get_research_products_by_affiliation(
         self,

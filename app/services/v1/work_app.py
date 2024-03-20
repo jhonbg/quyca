@@ -48,14 +48,16 @@ class WorkAppService:
                         break
                     elif cite["source"] == "openalex":
                         entry["citations_count"] = cite["count"]
-            if "source" in document.keys():
+            if "source" in document.keys() and document["source"]["id"]:
                 source = self.colav_db["sources"].find_one(
                     {"_id": document["source"]["id"]}
                 )
                 entry_source = {
-                    "name": document["source"]["names"][0]
-                    if "names" in document["source"].keys()
-                    else document["source"]["name"],
+                    "name": (
+                        document["source"]["names"][0]
+                        if "names" in document["source"].keys()
+                        else document["source"]["name"]
+                    ),
                     "serials": {},
                 }
                 for serial in source.get("external_ids", []):

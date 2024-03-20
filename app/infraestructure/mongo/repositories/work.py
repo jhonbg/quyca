@@ -11,6 +11,10 @@ from infraestructure.mongo.utils.session import engine
 
 
 class WorkRepository(RepositoryBase):
+    @property
+    def sort(self) -> dict[str, str]:
+        return {"citations": "works.citations_count.count"}
+
     @classmethod
     def wrap_pipeline(
         cls,
@@ -34,7 +38,7 @@ class WorkRepository(RepositoryBase):
                         "authors.affiliations.id": ObjectId(affiliation_id),
                     },
                 },
-                {"$sort": {sort_field: direction}},
+                {"$sort": {cls.sort[sort_field]: -1}},
             ]
             year_published_match = (
                 [{"$match": {"year_published": {"$gte": start_year, "$lte": end_year}}}]
@@ -68,7 +72,7 @@ class WorkRepository(RepositoryBase):
                     "works.bibliographic_info": 1,
                 }
             },
-            {"$sort": {sort_field: direction}},
+            {"$sort": {cls.sort[sort_field]: -1}},
         ]
         return pipeline
 
@@ -82,7 +86,7 @@ class WorkRepository(RepositoryBase):
         collection = Person if affiliation_type != "institution" else Work
         papers_count = next(
             engine.get_collection(collection).aggregate(count_papers_pipeline),
-            {"total", 0},
+            {"total": 0},
         ).get("total", 0)
         return papers_count
 
@@ -115,7 +119,8 @@ class WorkRepository(RepositoryBase):
         ]
         collection = Person if affiliation_type != "institution" else Work
         citations_count = next(
-            engine.get_collection(collection).aggregate(count_citations_pipeline), {}
+            engine.get_collection(collection).aggregate(count_citations_pipeline),
+            {"counts": []},
         ).get("counts", [])
         return citations_count
 

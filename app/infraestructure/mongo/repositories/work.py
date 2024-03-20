@@ -11,9 +11,7 @@ from infraestructure.mongo.utils.session import engine
 
 
 class WorkRepository(RepositoryBase):
-    @property
-    def sort(self) -> dict[str, str]:
-        return {"citations": "works.citations_count.count"}
+    sort_traduction: dict[str, str] = {"citations": "works.citations_count.count"}
 
     @classmethod
     def wrap_pipeline(
@@ -38,7 +36,7 @@ class WorkRepository(RepositoryBase):
                         "authors.affiliations.id": ObjectId(affiliation_id),
                     },
                 },
-                {"$sort": {cls.sort[sort_field]: -1}},
+                # {"$sort": {cls.sort_traduction[sort_field]: -1}},
             ]
             year_published_match = (
                 [{"$match": {"year_published": {"$gte": start_year, "$lte": end_year}}}]
@@ -72,7 +70,7 @@ class WorkRepository(RepositoryBase):
                     "works.bibliographic_info": 1,
                 }
             },
-            {"$sort": {cls.sort[sort_field]: -1}},
+            # {"$sort": {cls.sort_traduction[sort_field]: -1}},
         ]
         return pipeline
 

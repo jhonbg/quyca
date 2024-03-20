@@ -58,7 +58,7 @@ class WorkAppService:
                     else document["source"]["name"],
                     "serials": {},
                 }
-                for serial in source["external_ids"]:
+                for serial in source.get("external_ids", []):
                     if not serial["source"] in entry_source["serials"].keys():
                         entry_source["serials"][serial["source"]] = serial["id"]
                 entry["source"] = entry_source

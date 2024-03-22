@@ -256,12 +256,12 @@ class AffiliationAppService:
             if "id" in work["source"].keys():
                 if "name" in work["source"].keys():
                     paper["source"] = {
-                        "name": work["source"]["name"],
+                        "name": work["source"].get("name", ""),
                         "id": work["source"]["id"],
                     }
                 elif "names" in paper["source"].keys():
                     paper["source"] = {
-                        "name": work["source"]["names"][0]["name"],
+                        "name": work["source"]["names"][0].get("name", ""),
                         "id": work["source"]["id"],
                     }
 

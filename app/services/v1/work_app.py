@@ -15,6 +15,7 @@ class WorkAppService:
             entry = {
                 "id": document["_id"],
                 "title": document["titles"][0]["title"],
+                "abstract": document.get("abstract", ""),
                 "source": {},
                 "year_published": document["year_published"],
                 "language": "",

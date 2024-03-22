@@ -75,6 +75,52 @@ class WorkRepository(RepositoryBase):
         return pipeline
 
     @classmethod
+    def count_citations_by_author(cls, *, author_id: str) -> int:
+        count_citations_pipeline = [
+            {
+                "$match": {
+                    "authors.id": ObjectId(author_id),
+                },
+            },
+            {"$unwind": "$citations_count"},
+            {
+                "$group": {
+                    "_id": "$citations_count.source",
+                    "count": {"$sum": "$citations_count.count"},
+                },
+            },
+            {
+                "$group": {
+                    "_id": None,
+                    "counts": {
+                        "$push": {
+                            "source": "$_id",
+                            "count": "$count",
+                        },
+                    },
+                },
+            },
+            {"$project": {"_id": 0, "counts": 1}},
+        ]
+        citations_count = next(
+            engine.get_collection(Work).aggregate(count_citations_pipeline),
+            {"counts": []},
+        ).get("counts")
+        return citations_count
+
+    @classmethod
+    def count_papers_by_author(cls, *, author_id: str) -> int:
+        count_papers_pipeline = [
+            {"$match": {"authors.id": ObjectId(author_id)}},
+            {"$count": "total"},
+        ]
+        papers_count = next(
+            engine.get_collection(Work).aggregate(count_papers_pipeline),
+            {"total": 0},
+        ).get("total", 0)
+        return papers_count
+
+    @classmethod
     def count_papers(cls, *, affiliation_id: str, affiliation_type: str) -> int:
         affiliation_type = (
             "institution" if affiliation_type == "Education" else affiliation_type

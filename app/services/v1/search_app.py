@@ -193,6 +193,12 @@ class SearchAppService:
                         continue
                     ext_ids.append(ext)
                 author["external_ids"] = ext_ids
+                author["products_count"] = WorkRepository.count_papers_by_author(
+                    author_id=author["_id"]
+                )
+                author["citations_count"] = WorkRepository.count_citations_by_author(
+                    author_id=author["_id"]
+                )
                 author_list.append(author)
 
             return {

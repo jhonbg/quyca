@@ -254,7 +254,8 @@ class AffiliationAppService:
 
         if "source" in work.keys():
             if "id" in work["source"].keys():
-                if "name" in work["source"].keys():
+                if ("name" in work["source"].keys() and 
+                    isinstance(work["source"].get("name", ""), str)):
                     paper["source"] = {
                         "name": work["source"].get("name", ""),
                         "id": work["source"]["id"],

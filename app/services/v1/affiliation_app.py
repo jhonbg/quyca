@@ -1737,9 +1737,9 @@ class AffiliationAppService:
     def plot_mappings(self) -> dict[str, Callable[[Any, Any], dict[str, list] | None]]:
         return {
             "year_type": self.get_products_by_year_by_type,
-            "faculty_type": self.get_products_by_affiliation_by_type,
-            "department_type": self.get_products_by_affiliation_by_type,
-            "group_type": self.get_products_by_affiliation_by_type,
+            "type,faculty": self.get_products_by_affiliation_by_type,
+            "type,department": self.get_products_by_affiliation_by_type,
+            "type,group": self.get_products_by_affiliation_by_type,
             "year_citations": self.get_citations_by_year,
             "year_apc": self.get_apc_by_year,
             "year_oa": self.get_oa_by_year,

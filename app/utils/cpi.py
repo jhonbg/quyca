@@ -1,2 +1,2 @@
-def inflate(v, d1, d2):
+def inflate(v, d1, **kwargs):
     return v * 1.1

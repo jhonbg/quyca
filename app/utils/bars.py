@@ -1,6 +1,6 @@
 import datetime
 
-from utils.cpi import inflate
+from cpi import inflate
 from currency_converter import CurrencyConverter
 
 from utils.hindex import hindex
@@ -79,7 +79,10 @@ class bars:
                 if name not in result.keys():
                     result[name] = {}
                 for typ in work["types"]:
-                    if typ["source"] == "scienti" and typ["type"] == "Publicado en revista especializada":
+                    if (
+                        typ["source"] == "scienti"
+                        and typ["type"] == "Publicado en revista especializada"
+                    ):
                         # if typ["level"] == 2:
                         if typ["type"] not in result[name].keys():
                             result[name][typ["type"]] = 1
@@ -143,7 +146,9 @@ class bars:
             if reg["apc"]["currency"] == "USD":
                 raw_value = reg["apc"]["charges"]
                 value = inflate(
-                    raw_value, reg["year_published"], to=base_year
+                    raw_value,
+                    reg["year_published"],
+                    to=max(base_year, reg["year_published"]),
                 )
             else:
                 try:
@@ -151,7 +156,9 @@ class bars:
                         reg["apc"]["xcharges"], reg["apc"]["currency"], "USD"
                     )
                     value = inflate(
-                        raw_value, reg["year_published"], to=base_year
+                        raw_value,
+                        reg["year_published"],
+                        to=max(base_year, reg["year_published"]),
                     )
                 except Exception as e:
                     # print("Could not convert currency with error: ",e)

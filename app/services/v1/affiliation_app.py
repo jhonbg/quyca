@@ -1032,7 +1032,7 @@ class AffiliationAppService:
                 ):
                     data[name].append(work)
 
-        return {"plot": self.pies.citations_by_affiliation(data)}
+        return self.pies.citations_by_affiliation(data)
 
     def get_products_by_affiliations(self, idx, typ):
         affiliations = []
@@ -1076,7 +1076,7 @@ class AffiliationAppService:
 
                 data[name] += self.colav_db["works"].count_documents(query_dict)
 
-        return {"plot": self.pies.products_by_affiliation(data)}
+        return self.pies.products_by_affiliation(data)
 
     def get_apc_by_affiliations(self, idx, typ):
         affiliations = []
@@ -1132,7 +1132,7 @@ class AffiliationAppService:
                             source_db["apc"]["year_published"] = work["year_published"]
                             data[name].append(source_db["apc"])
 
-        return {"plot": self.pies.apc_by_affiliation(data, 2022)}
+        return self.pies.apc_by_affiliation(data, 2022)
 
     def get_h_by_affiliations(self, idx, typ):
         affiliations = []
@@ -1190,7 +1190,7 @@ class AffiliationAppService:
                         continue
                     data[name].append(citations)
 
-        return {"plot": self.pies.hindex_by_affiliation(data)}
+        return self.pies.hindex_by_affiliation(data)
 
     def get_products_by_publisher(self, idx, typ=None):
         data = []
@@ -1230,7 +1230,7 @@ class AffiliationAppService:
 
         result = self.pies.products_by_publisher(data)
         if result:
-            return {"plot": result}
+            return result
         else:
             return {"plot": None}
 
@@ -1280,7 +1280,7 @@ class AffiliationAppService:
 
         result = self.pies.products_by_subject(data)
         if result:
-            return {"plot": result}
+            return result
         else:
             return {"plot": None}
 
@@ -1302,7 +1302,7 @@ class AffiliationAppService:
 
         result = self.pies.products_by_database(data)
         if result:
-            return {"plot": result}
+            return result
         else:
             return {"plot": None}
 
@@ -1337,10 +1337,7 @@ class AffiliationAppService:
                 data.append(work["bibliographic_info"]["open_access_status"])
 
         result = self.pies.products_by_open_access_status(data)
-        return {
-            "plot": result,
-            "openSum": sum([oa["value"] for oa in result if oa["name"] != "closed"]),
-        }
+        return result
 
     def get_products_by_author_sex(self, idx, typ=None):
         data = []
@@ -1386,7 +1383,7 @@ class AffiliationAppService:
 
         result = self.pies.products_by_sex(data)
         if result:
-            return {"plot": result}
+            return result
         else:
             return {"plot": None}
 
@@ -1464,7 +1461,7 @@ class AffiliationAppService:
 
         result = self.pies.products_by_age(data)
         if result:
-            return {"plot": result}
+            return result
         else:
             return {"plot": None}
 
@@ -1487,7 +1484,7 @@ class AffiliationAppService:
                 data.append(work)
         result = self.pies.products_by_scienti_rank(data)
         if result:
-            return {"plot": result}
+            return result
         else:
             return {"plot": None}
 
@@ -1543,7 +1540,7 @@ class AffiliationAppService:
 
         result = self.pies.products_by_scimago_rank(data)
         if result:
-            return {"plot": result}
+            return result
         else:
             return {"plot": None}
 
@@ -1576,7 +1573,7 @@ class AffiliationAppService:
             data.append(work)
         result = self.pies.products_editorial_same_institution(data, institution)
         if result:
-            return {"plot": result}
+            return result
         else:
             return {"plot": None}
 

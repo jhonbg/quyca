@@ -64,11 +64,19 @@ class pies:
                 value = 0
                 if apc["currency"] == "USD":
                     raw_value = apc["charges"]
-                    value = inflate(raw_value, apc["year_published"], to=base_year)
+                    value = inflate(
+                        raw_value,
+                        apc["year_published"],
+                        to=max(base_year, apc["year_published"]),
+                    )
                 else:
                     try:
                         raw_value = c.convert(apc["xcharges"], apc["currency"], "USD")
-                        value = inflate(raw_value, apc["year_published"], to=base_year)
+                        value = inflate(
+                            raw_value,
+                            apc["year_published"],
+                            to=max(base_year, apc["year_published"]),
+                        )
                     except Exception as e:
                         # print("Could not convert currency with error: ",e)
                         value = 0

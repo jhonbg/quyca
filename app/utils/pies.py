@@ -10,6 +10,16 @@ class pies:
     def __init__(self):
         pass
 
+    @classmethod
+    def get_percentage(
+        cls, data: list[dict[str, str | int]]
+    ) -> dict[str, list[dict[str, str | int]] | int]:
+        total = sum([i["value"] for i in data])
+        for i in data:
+            i["percentage"] = round((i["value"] / total) * 100, 2)
+        result = {"plot": data, "sum": total}
+        return result
+
     # Accumulated citations for each faculty department or group
     def citations_by_affiliation(self, data):
         results = {}
@@ -33,6 +43,7 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
+        result_list = self.get_percentage(result_list)
         return result_list
 
     # Accumulated papers for each faculty department or group
@@ -40,6 +51,7 @@ class pies:
         result_list = []
         for idx, value in data.items():
             result_list.append({"name": idx, "value": value})
+        result_list = self.get_percentage(result_list)
         return result_list
 
     # APC cost for each faculty department or group
@@ -68,6 +80,7 @@ class pies:
         result_list = []
         for idx, value in result.items():
             result_list.append({"name": idx, "value": int(value)})
+        result_list = self.get_percentage(result_list)
         return result_list
 
     # H index for each faculty department or group
@@ -75,6 +88,7 @@ class pies:
         result_list = []
         for idx, value in data.items():
             result_list.append({"name": idx, "value": hindex(value)})
+        result_list = self.get_percentage(result_list)
         return result_list
 
     # Ammount of papers per publisher
@@ -89,6 +103,7 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
+        result_list = self.get_percentage(result_list)
         return result_list
 
     # ammount of papers per openalex subject
@@ -102,6 +117,7 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
+        result_list = self.get_percentage(result_list)
         return result_list
 
     # Ammount of papers per database
@@ -116,6 +132,7 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
+        result_list = self.get_percentage(result_list)
         return result_list
 
     # Ammount of papers per open access status
@@ -129,6 +146,7 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
+        result_list = self.get_percentage(result_list)
         return result_list
 
     # Ammount of papers per author sex
@@ -142,6 +160,7 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
+        result_list = self.get_percentage(result_list)
         return result_list
 
     # Ammount of papers per author age intervals 14-26 años, 27-59 años 60 años en adelante
@@ -162,6 +181,7 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
+        result_list = self.get_percentage(result_list)
         return result_list
 
     # Ammount of papers per scienti rank
@@ -181,6 +201,7 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
+        result_list = self.get_percentage(result_list)
         return result_list
 
     # Ammount of papers per journal on scimago
@@ -201,6 +222,7 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
+        result_list = self.get_percentage(result_list)
         return result_list
 
     # Ammmount of papers published on a journal of the same institution
@@ -217,4 +239,5 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
+        result_list = self.get_percentage(result_list)
         return result_list

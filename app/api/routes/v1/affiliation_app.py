@@ -30,6 +30,7 @@ def affiliation(
             plot = request.args.get("plot")
             if plot:
                 level = int(request.args.get("level", 0))
+                typ = plot.split(",")[-1] if "," in plot else typ
                 args = (idx, level, typ) if plot == "products_subject" else (idx, typ)
                 result = affiliation_app_service.plot_mappings[plot](*args)
             else:

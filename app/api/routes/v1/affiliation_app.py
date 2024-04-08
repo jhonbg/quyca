@@ -45,7 +45,7 @@ def affiliation(
                 sort = request.args.get("sort")
                 result = affiliation_app_service.get_research_products(
                     idx=idx,
-                    typ=typ,
+                    typ=aff_type,
                     start_year=start_year,
                     end_year=end_year,
                     page=page,

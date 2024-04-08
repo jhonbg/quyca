@@ -22,9 +22,9 @@ def affiliation(
 ) -> dict[str, Any] | None:
     result = None
     if section == "info":
-        result = affiliation_app_service.get_info(idx, typ)
+        result = affiliation_app_service.get_info(idx, aff_type)
     elif section == "affiliations":
-        result = affiliation_app_service.get_affiliations(idx, typ=typ)
+        result = affiliation_app_service.get_affiliations(idx, typ=aff_type)
     elif section == "research":
         if tab == "products":
             plot = request.args.get("plot")

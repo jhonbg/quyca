@@ -2,6 +2,7 @@ from typing import Any
 
 from bson import ObjectId
 from odmantic import Model, Field, EmbeddedModel
+from pydantic import Field as pydantic_field
 from odmantic.bson import BaseBSONModel
 
 from infraestructure.mongo.models.general import (
@@ -48,7 +49,7 @@ class Ranking(BaseBSONModel):
 
 class Relation(EmbeddedModel):
     id: ObjectId | None | str = None
-    name: str | None
+    name: str | None | Name
     type: Type | None = None
     
 

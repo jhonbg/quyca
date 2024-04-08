@@ -16,7 +16,7 @@ def affiliation(
     request: Request,
     *,
     idx: str | None = None,
-    typ: str | None = None,
+    aff_type: str | None = None,
     section: str | None = None,
     tab: str | None = None,
 ) -> dict[str, Any] | None:
@@ -30,8 +30,12 @@ def affiliation(
             plot = request.args.get("plot")
             if plot:
                 level = int(request.args.get("level", 0))
-                typ = plot.split(",")[-1] if "," in plot else typ
-                args = (idx, level, typ) if plot == "products_subject" else (idx, typ)
+                typ = plot.split(",")[-1] if "," in plot else aff_type
+                args = (
+                    (idx, level, typ, aff_type)
+                    if plot == "products_subject"
+                    else (idx, typ, aff_type)
+                )
                 result = affiliation_app_service.plot_mappings[plot](*args)
             else:
                 start_year = request.args.get("start_year")
@@ -62,7 +66,7 @@ def get_affiliation(
     section: str | None = "info",
     tab: str | None = None,
 ):
-    result = affiliation(request, idx=id, typ=typ, section=section, tab=tab)
+    result = affiliation(request, idx=id, aff_type=typ, section=section, tab=tab)
     if result:
         response = Response(
             response=json.dumps(result, cls=JsonEncoder),

@@ -49,12 +49,12 @@ class Ranking(BaseModel):
 
 class Relation(BaseModel):
     id: str | None = None
-    name: str | None
+    name: str | None | Name
     type: Type | None = None
 
 
 class AffiliationBase(BaseModel):
-    id: str | None 
+    id: str | None | Any
     names: list[Name] | None = Field(default_factory=list)
     relations: list[Relation] | None = Field(default_factory=list)
     addresses: list[Address] | Address | None = Field(default_factory=list)
@@ -73,6 +73,17 @@ class Affiliation(AffiliationBase):
     updated: list[Updated] | None = Field(default_factory=list)
     year_established: int | None
 
+
+class AffiliationRelated(AffiliationBase):
+    name: str | None = None
+    @model_validator(mode="after")
+    def get_name(self) -> Self:
+        es_name = next(filter(lambda x: x.lang == "es", self.names), None)
+        self.name = es_name.name if es_name else self.names[0].name
+        if not isinstance(self.id, str):
+            self.id = str(self.id)
+        return self
+    
 
 class AffiliationSearch(AffiliationBase):
     name: str | None = None

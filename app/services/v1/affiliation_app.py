@@ -6,6 +6,10 @@ from pymongo import ASCENDING, DESCENDING
 
 from infraestructure.mongo.utils.session import client
 from infraestructure.mongo.repositories.work import WorkRepository
+from infraestructure.mongo.repositories.affiliation import (
+    AffiliationRepository,
+    affiliation_repository,
+)
 from core.config import settings
 from utils.bars import bars
 from utils.maps import maps
@@ -149,7 +153,7 @@ class AffiliationAppService:
         else:
             return None
 
-    def get_affiliations(self, idx, typ=None):
+    def get_affiliations(self, idx, typ=None, aff_type: str | None = None):
         if typ not in ["group", "faculty", "department"]:
             data = {"departments": [], "faculties": [], "groups": []}
             for aff in self.colav_db["affiliations"].find(
@@ -254,8 +258,9 @@ class AffiliationAppService:
 
         if "source" in work.keys():
             if "id" in work["source"].keys():
-                if ("name" in work["source"].keys() and 
-                    isinstance(work["source"].get("name", ""), str)):
+                if "name" in work["source"].keys() and isinstance(
+                    work["source"].get("name", ""), str
+                ):
                     paper["source"] = {
                         "name": work["source"].get("name", ""),
                         "id": work["source"]["id"],
@@ -552,7 +557,7 @@ class AffiliationAppService:
         else:
             return None
 
-    def get_products_by_year_by_type(self, idx, typ=None):
+    def get_products_by_year_by_type(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -578,7 +583,9 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_products_by_affiliation_by_type(self, idx, typ):
+    def get_products_by_affiliation_by_type(
+        self, idx, typ, aff_type: str | None = None
+    ):
         if not typ in ["group", "department", "faculty"]:
             return None
         pipeline = [
@@ -616,7 +623,7 @@ class AffiliationAppService:
 
         return {"plot": self.bars.products_by_affiliation_by_type(data)}
 
-    def get_citations_by_year(self, idx, typ=None):
+    def get_citations_by_year(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -647,7 +654,7 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_apc_by_year(self, idx, typ=None):
+    def get_apc_by_year(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -706,7 +713,7 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_oa_by_year(self, idx, typ=None):
+    def get_oa_by_year(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -738,7 +745,9 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_products_by_year_by_publisher(self, idx, typ=None):
+    def get_products_by_year_by_publisher(
+        self, idx, typ=None, aff_type: str | None = None
+    ):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -798,7 +807,7 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_h_by_year(self, idx, typ=None):
+    def get_h_by_year(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -824,7 +833,9 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_products_by_year_by_researcher_category(self, idx, typ=None):
+    def get_products_by_year_by_researcher_category(
+        self, idx, typ=None, aff_type: str | None = None
+    ):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -904,7 +915,9 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_products_by_year_by_group_category(self, idx, typ=None):
+    def get_products_by_year_by_group_category(
+        self, idx, typ=None, aff_type: str | None = None
+    ):
         data = []
         info_db = self.colav_db["affiliations"].find_one(
             {"_id": ObjectId(idx)}, {"types": 1, "relations": 1, "ranking": 1}
@@ -974,7 +987,7 @@ class AffiliationAppService:
         result = self.bars.products_by_year_by_group_category(data)
         return {"plot": result}
 
-    def get_title_words(self, idx, typ=None):
+    def get_title_words(self, idx, typ=None, aff_type: str | None = None):
         data = self.impactu_db["affiliations"].find_one(
             {"_id": ObjectId(idx)}, {"top_words": 1}
         )
@@ -986,27 +999,17 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_citations_by_affiliations(self, idx, typ):
-        affiliations = []
-        aff_ids = []
+    def get_citations_by_affiliations(self, idx, typ, aff_type: str | None = None):
         if not typ in ["group", "department", "faculty"]:
             return None
-        for aff in self.colav_db["affiliations"].find(
-            {"relations.id": ObjectId(idx), "types.type": typ}
-        ):
-            name = aff["names"][0]["name"]
-            for n in aff["names"]:
-                if n["lang"] == "es":
-                    name = n["name"]
-                    break
-                if n["lang"] == "en":
-                    name = n["name"]
-            affiliations.append((aff["_id"], name))
+        affiliations = affiliation_repository.get_affiliations_related_type(idx, typ, aff_type)
 
         data = {}
-        for aff_id, name in affiliations:
+        for aff in affiliations:
+            aff_id = aff.id
+            name = aff.name
             data[name] = []
-            for author in self.colav_db["person"].find({"affiliations.id": aff_id}):
+            for author in self.colav_db["person"].find({"affiliations.id": ObjectId(aff_id)}):
                 aff_start_date = None
                 aff_end_date = None
                 for aff in author["affiliations"]:
@@ -1034,27 +1037,15 @@ class AffiliationAppService:
 
         return self.pies.citations_by_affiliation(data)
 
-    def get_products_by_affiliations(self, idx, typ):
-        affiliations = []
-        aff_ids = []
-        if not typ in ["group", "department", "faculty"]:
-            return None
-        for aff in self.colav_db["affiliations"].find(
-            {"relations.id": ObjectId(idx), "types.type": typ}
-        ):
-            name = aff["names"][0]["name"]
-            for n in aff["names"]:
-                if n["lang"] == "es":
-                    name = n["name"]
-                    break
-                if n["lang"] == "en":
-                    name = n["name"]
-            affiliations.append((aff["_id"], name))
+    def get_products_by_affiliations(self, idx, typ, aff_type: str | None = None):
+        affiliations = affiliation_repository.get_affiliations_related_type(idx, typ, aff_type)
 
         data = {}
-        for aff_id, name in affiliations:
+        for aff in affiliations:
+            aff_id = aff.id
+            name = aff.name
             data[name] = 0
-            for author in self.colav_db["person"].find({"affiliations.id": aff_id}):
+            for author in self.colav_db["person"].find({"affiliations.id": ObjectId(aff_id)}):
                 aff_start_date = None
                 aff_end_date = None
                 for aff in author["affiliations"]:
@@ -1078,27 +1069,15 @@ class AffiliationAppService:
 
         return self.pies.products_by_affiliation(data)
 
-    def get_apc_by_affiliations(self, idx, typ):
-        affiliations = []
-        aff_ids = []
-        if not typ in ["group", "department", "faculty"]:
-            return None
-        for aff in self.colav_db["affiliations"].find(
-            {"relations.id": ObjectId(idx), "types.type": typ}
-        ):
-            name = aff["names"][0]["name"]
-            for n in aff["names"]:
-                if n["lang"] == "es":
-                    name = n["name"]
-                    break
-                if n["lang"] == "en":
-                    name = n["name"]
-            affiliations.append((aff["_id"], name))
+    def get_apc_by_affiliations(self, idx, typ, aff_type: str | None = None):
+        affiliations = affiliation_repository.get_affiliations_related_type(idx, typ, aff_type)
 
         data = {}
-        for aff_id, name in affiliations:
+        for aff in affiliations:
+            aff_id = aff.id
+            name = aff.name
             data[name] = []
-            for author in self.colav_db["person"].find({"affiliations.id": aff_id}):
+            for author in self.colav_db["person"].find({"affiliations.id": ObjectId(aff_id)}):
                 aff_start_date = None
                 aff_end_date = None
                 for aff in author["affiliations"]:
@@ -1134,27 +1113,15 @@ class AffiliationAppService:
 
         return self.pies.apc_by_affiliation(data, 2022)
 
-    def get_h_by_affiliations(self, idx, typ):
-        affiliations = []
-        aff_ids = []
-        if not typ in ["group", "department", "faculty"]:
-            return None
-        for aff in self.colav_db["affiliations"].find(
-            {"relations.id": ObjectId(idx), "types.type": typ}
-        ):
-            name = aff["names"][0]["name"]
-            for n in aff["names"]:
-                if n["lang"] == "es":
-                    name = n["name"]
-                    break
-                if n["lang"] == "en":
-                    name = n["name"]
-            affiliations.append((aff["_id"], name))
+    def get_h_by_affiliations(self, idx, typ, aff_type: str | None = None):
+        affiliations = affiliation_repository.get_affiliations_related_type(idx, typ, aff_type)
 
         data = {}
-        for aff_id, name in affiliations:
+        for aff in affiliations:
+            aff_id = aff.id
+            name = aff.name
             data[name] = []
-            for author in self.colav_db["person"].find({"affiliations.id": aff_id}):
+            for author in self.colav_db["person"].find({"affiliations.id": ObjectId(aff_id)}):
                 aff_start_date = None
                 aff_end_date = None
                 for aff in author["affiliations"]:
@@ -1192,7 +1159,7 @@ class AffiliationAppService:
 
         return self.pies.hindex_by_affiliation(data)
 
-    def get_products_by_publisher(self, idx, typ=None):
+    def get_products_by_publisher(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -1234,7 +1201,9 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_products_by_subject(self, idx, level: int = 0, typ: str = None):
+    def get_products_by_subject(
+        self, idx, level: int = 0, typ: str = None, aff_type: str | None = None
+    ):
         if not level:
             level = 0
         data = []
@@ -1254,13 +1223,7 @@ class AffiliationAppService:
                         for subject in subjects["subjects"]:
                             if subject["level"] != level:
                                 continue
-                            name = subject["names"][0]["name"]
-                            for n in subject["names"]:
-                                if n["lang"] == "es":
-                                    name = n["name"]
-                                    break
-                                elif n["lang"] == "en":
-                                    name = n["name"]
+                            name = subject.get("name", "No name specified")
                             data.append({"subject": {"name": name}})
         else:
             for work in self.colav_db["works"].find(
@@ -1284,7 +1247,7 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_products_by_database(self, idx, typ=None):
+    def get_products_by_database(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -1306,7 +1269,9 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_products_by_open_access_status(self, idx, typ=None):
+    def get_products_by_open_access_status(
+        self, idx, typ=None, aff_type: str | None = None
+    ):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -1339,7 +1304,7 @@ class AffiliationAppService:
         result = self.pies.products_by_open_access_status(data)
         return result
 
-    def get_products_by_author_sex(self, idx, typ=None):
+    def get_products_by_author_sex(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -1387,7 +1352,7 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_products_by_author_age(self, idx, typ=None):
+    def get_products_by_author_age(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -1465,20 +1430,20 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_products_by_scienti_rank(self, idx, typ=None):
+    def get_products_by_scienti_rank(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
                 {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
             ):
                 for work in self.colav_db["works"].find(
-                    {"authors.id": author["_id"], "ranking": {"$ne": []}},
+                    {"authors.id": author["_id"], "ranking": {"$ne": []}, "ranking.rank": {"$ne": None}},
                     {"ranking": 1},
                 ):
                     data.append(work)
         else:
             for work in self.colav_db["works"].find(
-                {"authors.affiliations.id": ObjectId(idx), "ranking": {"$ne": []}},
+                {"authors.affiliations.id": ObjectId(idx), "ranking": {"$ne": []}, "ranking.rank": {"$ne": None}},
                 {"ranking": 1},
             ):
                 data.append(work)
@@ -1488,7 +1453,7 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_products_by_scimago_rank(self, idx, typ=None):
+    def get_products_by_scimago_rank(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -1544,13 +1509,36 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_publisher_same_institution(self, idx, typ=None):
+    def get_publisher_same_institution(
+        self, idx, typ=None, aff_type: str | None = None
+    ):
         data = []
         institution = self.colav_db["affiliations"].find_one(
             {"_id": ObjectId(idx)}, {"names": 1}
         )
         pipeline = [
-            {"$match": {"authors.affiliations.id": ObjectId(idx)}},
+            {
+                '$match': {
+                    'affiliations.id': ObjectId(idx)
+                }
+            }, {
+                '$project': {
+                    '_id': 1
+                }
+            }, {
+                '$lookup': {
+                    'from': 'works', 
+                    'localField': '_id', 
+                    'foreignField': 'authors.id', 
+                    'as': 'work'
+                }
+            }, {
+                '$unwind': '$work'
+            }, {
+                '$replaceRoot': {
+                    'newRoot': '$work'
+                }
+            },
             {"$project": {"source": 1}},
             {
                 "$lookup": {
@@ -1564,12 +1552,12 @@ class AffiliationAppService:
             {"$project": {"source.publisher": 1}},
             {
                 "$match": {
-                    "source.publisher": {"$ne": nan, "$exists": 1, "$ne": ""},
-                    "source.publisher.name": {"$ne": nan},
+                    "source.publisher": {"$exists": 1, "$not": {"$type": "string"}},
+                    "source.publisher.name": {"$type": "string"},
                 }
             },
         ]
-        for work in self.colav_db["works"].aggregate(pipeline):
+        for work in self.colav_db["person"].aggregate(pipeline):
             data.append(work)
         result = self.pies.products_editorial_same_institution(data, institution)
         if result:
@@ -1577,7 +1565,7 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_coauthorships_worldmap(self, idx, typ=None):
+    def get_coauthorships_worldmap(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -1645,7 +1633,7 @@ class AffiliationAppService:
         else:
             return {"plot": None}
 
-    def get_coauthorships_colombiamap(self, idx, typ=None):
+    def get_coauthorships_colombiamap(self, idx, typ=None, aff_type: str | None = None):
         data = []
         if typ in ["group", "department", "faculty"]:
             for author in self.colav_db["person"].find(
@@ -1710,7 +1698,7 @@ class AffiliationAppService:
         result = self.maps.get_coauthorship_colombia_map(data)
         return {"plot": result}
 
-    def get_coauthorships_network(self, idx, typ=None):
+    def get_coauthorships_network(self, idx, typ=None, aff_type: str | None = None):
         if typ in ["group", "department", "faculty"]:
             return {"plot": None}
         data = self.impactu_db["affiliations"].find_one(

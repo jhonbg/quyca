@@ -71,12 +71,15 @@ def get_person(
 
 
 @router.route("/<id>/csv", methods=["GET"])
-def get_person_csv(id: str | None = None):
-    result = person(request, id=id)
+@router.route("/<id>/<section>/<tab>/csv", methods=["GET"])
+def get_person_csv(
+    id: str | None = None, section: str | None = "info", tab: str | None = None
+):
+    result = person(request, id=id, section=section, tab=tab)
     if result:
         config = {
             "authors": ["full_name"],
-            "citations_count": ["source", "count"],
+            "citations_count": ["count"],
             "subjects": ["name"],
         }
         flat_data_list = flatten_json_list(result["data"], config, 1)

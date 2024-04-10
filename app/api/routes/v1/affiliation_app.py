@@ -84,12 +84,19 @@ def get_affiliation(
 
 
 @router.route("/<typ>/<id>/csv", methods=["GET"])
-def get_affiliation_csv(id: str | None, typ: str | None = None):
-    result = affiliation(request, idx=id, typ=typ)
+@router.route("/<typ>/<id>/<section>/csv", methods=["GET"])
+@router.route("/<typ>/<id>/<section>/<tab>/csv", methods=["GET"])
+def get_affiliation_csv(
+    id: str | None,
+    typ: str | None = None,
+    section: str | None = "info",
+    tab: str | None = None,
+):
+    result = affiliation(request, idx=id, aff_type=typ, section=section, tab=tab)
     if result:
         config = {
             "authors": ["full_name"],
-            "citations_count": ["source", "count"],
+            "citations_count": ["count"],
             "subjects": ["name"],
         }
         flat_data_list = flatten_json_list(result["data"], config, 1)

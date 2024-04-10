@@ -5,6 +5,7 @@ from bson import ObjectId
 from pymongo import ASCENDING, DESCENDING
 
 from infraestructure.mongo.utils.session import client
+from infraestructure.mongo.repositories.work import WorkRepository
 from core.config import settings
 from utils.bars import bars
 from utils.maps import maps
@@ -61,9 +62,8 @@ class PersonAppService:
             entry = {
                 "id": person["_id"],
                 "name": person["full_name"],
-                "citations": person["citations_count"]
-                if "citations_count" in person.keys()
-                else None,
+                "citations_count": WorkRepository.count_citations_by_author(author_id=idx),
+                "products_count": WorkRepository.count_papers_by_author(author_id=idx),
                 "external_urls": [
                     ext
                     for ext in person["external_urls"]

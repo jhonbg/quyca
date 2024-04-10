@@ -138,6 +138,9 @@ class WorkRepository(RepositoryBase):
     def count_citations(
         cls, *, affiliation_id: str, affiliation_type: str
     ) -> list[dict[str, str | int]]:
+        affiliation_type = (
+            "institution" if affiliation_type == "Education" else affiliation_type
+        )
         count_citations_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
         count_citations_pipeline += [
             {

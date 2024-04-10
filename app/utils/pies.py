@@ -1,6 +1,6 @@
 import datetime
 
-from utils.cpi import inflate
+from cpi import inflate
 from currency_converter import CurrencyConverter
 
 from utils.hindex import hindex

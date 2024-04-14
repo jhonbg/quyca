@@ -25,19 +25,19 @@ def flatten_json(
             for item in value:
                 list_data.append(flatten_json(item, config, level - 1, separator))
             if new_key in config.keys():
-                flat_data[new_key] = " & ".join(
+                flat_data[new_key] = " | ".join(
                     map(
                         lambda x: " / ".join(str(x[_key]) for _key in config[new_key]),
                         list_data,
                     )
                 )
-        elif new_key in config and not isinstance(value, dict):
+        elif new_key in config and isinstance(value, dict):
             attributes = config[new_key]
             combined_values = [f"{attr}:{value.get(attr, '')}" for attr in attributes]
-            flat_data[new_key] = " & ".join(combined_values)
+            flat_data[new_key] = " | ".join(combined_values)
         else:
             if not isinstance(value, dict) or not isinstance(value, list):
-                flat_data[new_key] = value
+                flat_data[new_key] = str(value)
 
     return flat_data
 

@@ -81,6 +81,7 @@ def get_person_csv(
             "authors": ["full_name"],
             "citations_count": ["count"],
             "subjects": ["name"],
+            "source": ["name"]
         }
         flat_data_list = flatten_json_list(result["data"], config, 1)
         all_keys = set()

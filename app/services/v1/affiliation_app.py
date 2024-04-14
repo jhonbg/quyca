@@ -248,6 +248,7 @@ class AffiliationAppService:
                 else ""
             ),
             "subjects": [],
+            "external_ids": work["external_ids"]
         }
 
         paper["title"] = work["titles"][0]["title"] if "titles" in work.keys() else ""
@@ -460,20 +461,9 @@ class AffiliationAppService:
                             "works.authors": 1,
                             "works.subjects": 1,
                             "works.bibliographic_info": 1,
+                            "works.external_ids": 1
                         }
-                    },
-                    {
-                        "$project": {
-                            "works._id": 1,
-                            "works.citations_count": 1,
-                            "works.year_published": 1,
-                            "works.titles": 1,
-                            "works.source": 1,
-                            "works.authors": 1,
-                            "works.subjects": 1,
-                            "works.bibliographic_info": 1,
-                        }
-                    },
+                    }
                 ]
 
                 if sort == "citations" and direction == "ascending":

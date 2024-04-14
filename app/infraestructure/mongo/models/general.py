@@ -3,30 +3,30 @@ from odmantic.bson import BaseBSONModel
 
 
 class Type(EmbeddedModel):
-    source: str | None
-    type: str | None
+    source: str | None = None
+    type: str | None = None
 
 
 class Updated(EmbeddedModel):
-    time: int | None
-    source: str | None
+    time: int | None = None
+    source: str | None = None
 
 
 class ExternalId(EmbeddedModel):
-    id: ObjectId | None | str | int
-    source: str | None
+    id: ObjectId | None | str | int = None
+    source: str | None = None
 
 
 class ExternalURL(EmbeddedModel):
-    url: str | int | None
-    source: str | None
+    url: str | int | None = None
+    source: str | None = None
 
 
 class Name(BaseBSONModel):
-    name: str | None
-    lang: str | None
+    name: str | None = None
+    lang: str | None = None
 
 
 class Status(BaseBSONModel):
-    source: str | None
-    status: str | None
+    source: str | None = None
+    status: str | None = None

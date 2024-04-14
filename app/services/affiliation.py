@@ -9,9 +9,9 @@ from infraestructure.mongo.repositories.affiliation import (
 
 class AffiliationService(
     ServiceBase[
-        Affiliation, AffiliationRepository, AffiliationQueryParams, AffiliationSearch
+        Affiliation, AffiliationRepository, AffiliationQueryParams, AffiliationSearch, AffiliationSearch
     ]
 ): ...
 
 
-affiliation_service = AffiliationService(affiliation_repository, AffiliationSearch)
+affiliation_service = AffiliationService(affiliation_repository, AffiliationSearch, AffiliationSearch)

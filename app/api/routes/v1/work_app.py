@@ -2,7 +2,7 @@ import json
 
 from flask import Blueprint, request, Response
 
-from services.v1.work_app import work_app_service
+from services.work import work_service
 from utils.encoder import JsonEncoder
 
 router = Blueprint("work_app_v1", __name__)
@@ -10,12 +10,8 @@ router = Blueprint("work_app_v1", __name__)
 
 @router.route("/<id>", methods=["GET"])
 def get_work(id: str | None):
-    section = request.args.get("section")
 
-    result = None
-
-    if section == "info":
-        result = work_app_service.get_info(id)
+    result = work_service.get_info(id=id)
 
     if result:
         response = Response(

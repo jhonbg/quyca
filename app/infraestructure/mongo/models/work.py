@@ -1,8 +1,7 @@
 from typing import Any
 
-from odmantic import Model, EmbeddedModel, Field
+from odmantic import Model, EmbeddedModel, Field, ObjectId
 from pydantic import BaseModel
-from bson import ObjectId
 
 from infraestructure.mongo.models.general import (
     Type,
@@ -26,6 +25,8 @@ class BiblioGraphicInfo(BaseModel):
     end_page: str | None = None
     issue: str | None = None
     start_page: str | None = None
+    bibtex: str | None = None
+    pages: str | None = None
 
 
 class CitationsCount(EmbeddedModel):
@@ -35,7 +36,7 @@ class CitationsCount(EmbeddedModel):
 
 class Affiliation(EmbeddedModel):
     id: ObjectId | str | None
-    names: list[Name] | None = Field(default_factory=list)
+    name: str | None
     types: list[Type] | None = Field(default_factory=list)
 
 
@@ -45,9 +46,9 @@ class Author(EmbeddedModel):
     affiliations: list[Affiliation] | None = Field(default_factory=list)
 
 
-class Source(EmbeddedModel):
+class Source(BaseModel):
     id: ObjectId | str | None
-    names: list[Name] | None = Field(default_factory=list)
+    name: str | Any | None = None
 
 
 class SubjectEmbedded(EmbeddedModel):
@@ -96,8 +97,8 @@ class Work(Model):
     references: list[Any] | None = Field(default_factory=list)
     citations: list[CitationsCount] | None = Field(default_factory=list)
     author_count: int
-    source: Source | None = Field(default_factory=dict)
-    citations_by_year: list[CitationByYear] | None = Field(default_factory=list)
+    source: Source | None = None
+    citations_by_year: list[CitationByYear] | None | Any = Field(default_factory=list)
     authors: list[Author]
     citations_count: list[CitationsCount]
     subjects: list[Subject] | None = Field(default_factory=list)

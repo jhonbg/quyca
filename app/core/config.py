@@ -42,6 +42,14 @@ class Settings(BaseSettings):
             port=values.get("MONGO_INITDB_PORT"),
         )
 
+    EXTERNAL_IDS_MAP: dict[str, str] = {
+        "scholar": "https://scholar.google.com/scholar?hl="
+        "en&as_sdt=0%2C5&q=info%3A{id}%3Ascholar.google.com",
+        "doi": "https://doi.org/{id}",
+        "lens": "https://www.lens.org/lens/scholar/article/{id}",
+        "minciencias": "",
+    }
+
 
 @lru_cache()
 def get_settings() -> BaseSettings:

@@ -1,7 +1,7 @@
 from typing import Generic, TypeVar, Any, Literal
 from json import loads
 
-from odmantic import Model
+from odmantic import Model, ObjectId
 from odmantic.query import desc, asc
 
 from infraestructure.mongo.utils.session import engine
@@ -26,10 +26,10 @@ class RepositoryBase(Generic[ModelType]):
             )
         return [loads(result.model_dump_json()) for result in results]
 
-    def get_by_id(self, *, id: str) -> ModelType | None:
+    def get_by_id(self, *, id: str) -> str:
         with engine.session() as session:
-            results = session.find_one(self.model, self.model.id == id)
-        return results
+            results = session.find_one(self.model, self.model.id == ObjectId(id))
+        return results.model_dump_json()
 
     def search(
         self,

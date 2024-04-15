@@ -71,6 +71,10 @@ class Person(PersonBase):
     subjects: list[Any]
 
 
+class PersonList(BaseModel):
+    id: str
+    full_name: str
+
 class PersonSearch(PersonBase):
     @field_validator("external_ids")
     @classmethod

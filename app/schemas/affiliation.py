@@ -12,6 +12,7 @@ from schemas.general import (
     Status,
     Name,
 )
+from schemas.person import PersonList
 
 
 class Address(BaseModel):
@@ -99,6 +100,16 @@ class AffiliationSearch(AffiliationBase):
                 self.logo = ext.url
                 self.external_urls.remove(ext)
         return self
+
+class AffiliationReduced(BaseModel):
+    id: str
+    name: str | None = None
+
+class AffiliationRelatedInfo(BaseModel):
+    authors: list[PersonList] | None = None
+    groups: list[AffiliationReduced] | None = None
+    departments: list[AffiliationReduced] | None = None
+    faculties: list[AffiliationReduced] | None = None
 
 
 class AffiliationQueryParams(QueryBase):

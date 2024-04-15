@@ -14,6 +14,7 @@ from core.config import settings
 from utils.bars import bars
 from utils.maps import maps
 from utils.pies import pies
+from schemas.affiliation import AffiliationRelatedInfo
 
 
 class AffiliationAppService:
@@ -153,84 +154,20 @@ class AffiliationAppService:
         else:
             return None
 
-    def get_affiliations(self, idx, typ=None, aff_type: str | None = None):
-        if typ not in ["group", "faculty", "department"]:
-            data = {"departments": [], "faculties": [], "groups": []}
-            for aff in self.colav_db["affiliations"].find(
-                {"relations.id": ObjectId(idx)}, {"types": 1, "names": 1}
-            ):
-                if aff["types"]:
-                    for types in aff["types"]:
-                        # There is no actual relationship between groups and institutions
-                        if types["type"] == "group":
-                            data["groups"].append(
-                                {"id": aff["_id"], "name": aff["names"][0]["name"]}
-                            )
-                            break
-                        elif types["type"] == "department":
-                            data["departments"].append(
-                                {"id": aff["_id"], "name": aff["names"][0]["name"]}
-                            )
-                            break
-                        elif types["type"] == "faculty":
-                            data["faculties"].append(
-                                {"id": aff["_id"], "name": aff["names"][0]["name"]}
-                            )
-                            break
-        elif typ == "faculty":
-            data = {"groups": [], "departments": [], "authors": []}
-            aff_ids = []
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"full_name": 1, "affiliations": 1}
-            ):
-                data["authors"].append(
-                    {"full_name": author["full_name"], "id": author["_id"]}
-                )
-                for aff in author["affiliations"]:
-                    if aff["id"] in aff_ids:
-                        continue
-                    for types in aff["types"]:
-                        if types["type"] == "department":
-                            data["departments"].append(
-                                {"id": aff["id"], "name": aff["name"]}
-                            )
-                            aff_ids.append(aff["id"])
-                            break
-                        if types["type"] == "group":
-                            data["groups"].append(
-                                {"id": aff["id"], "name": aff["name"]}
-                            )
-                            aff_ids.append(aff["id"])
-                            break
-        elif typ == "department":
-            data = {"groups": [], "authors": []}
-            aff_ids = []
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"full_name": 1, "affiliations": 1}
-            ):
-                data["authors"].append(
-                    {"full_name": author["full_name"], "id": author["_id"]}
-                )
-                for aff in author["affiliations"]:
-                    if aff["id"] in aff_ids:
-                        continue
-                    for types in aff["types"]:
-                        if types["type"] == "group":
-                            data["groups"].append(
-                                {"id": aff["id"], "name": aff["name"]}
-                            )
-                            aff_ids.append(aff["id"])
-                            break
-        elif typ == "group":
-            data = {"authors": []}
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"full_name": 1}
-            ):
-                data["authors"].append(
-                    {"id": author["_id"], "full_name": author["full_name"]}
-                )
+    def get_affiliations(self, idx, typ=None, aff_type: str | None = None) -> dict[str, list[Any]]:
+        data = {}
+        if typ in ["group", "department", "faculty"]:
+            data["authors"] = affiliation_repository.get_authors_by_affiliation(idx, typ)
+        if typ in ["department", "faculty", "institution"]:
+            data["groups"] = affiliation_repository.get_affiliations_related_type(idx, "group", typ)
+        if typ in ["faculty", "institution"]:
+            data["departments"] = affiliation_repository.get_affiliations_related_type(idx, "department", typ)
+        if typ == "institution":
+            data["faculties"] = affiliation_repository.get_affiliations_related_type(idx, "faculty", typ)
 
-        return data
+        result = AffiliationRelatedInfo.model_validate(data, from_attributes=True)
+        
+        return result.model_dump(exclude_none=True)
 
     def process_work(self, work):
         paper = {

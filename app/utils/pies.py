@@ -16,7 +16,7 @@ class pies:
     ) -> dict[str, list[dict[str, str | int]] | int]:
         total = sum([i["value"] for i in data])
         for i in data:
-            i["percentage"] = round((i["value"] / total) * 100, 2)
+            i["percentage"] = round((i["value"] / total) * 100, 2) if total else 0
         result = {"plot": data, "sum": total}
         return result
 
@@ -176,16 +176,17 @@ class pies:
         ranges = {"14-26": (14, 26), "27-59": (27, 59), "60+": (60, 999)}
         results = {"14-26": 0, "27-59": 0, "60+": 0}
         for work in data:
-            birthdate = datetime.datetime.fromtimestamp(
-                work["author"][0]["birthdate"]
-            ).year
-            date_published = datetime.datetime.fromtimestamp(
-                work["date_published"]
-            ).year
-            age = date_published - birthdate
-            for name, (date_low, date_high) in ranges.items():
-                if age < date_high and age > date_low:
-                    results[name] += 1
+            if work["author"][0]["birthdate"]:
+                birthdate = datetime.datetime.fromtimestamp(
+                    work["author"][0]["birthdate"]
+                ).year
+                date_published = datetime.datetime.fromtimestamp(
+                    work["date_published"]
+                ).year
+                age = date_published - birthdate
+                for name, (date_low, date_high) in ranges.items():
+                    if age < date_high and age > date_low:
+                        results[name] += 1
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})

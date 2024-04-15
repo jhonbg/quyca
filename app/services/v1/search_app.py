@@ -3,6 +3,7 @@ from pymongo import ASCENDING, DESCENDING
 
 from infraestructure.mongo.utils.session import client
 from infraestructure.mongo.repositories.work import WorkRepository
+from infraestructure.mongo.repositories.affiliation import AffiliationRepository
 from core.config import settings
 
 
@@ -266,6 +267,7 @@ class SearchAppService:
                 del entry["relations"]
                 entry["relations"] = []
                 name = affiliation["names"][0]["name"]
+                entry["affiliations"] = AffiliationRepository.upside_relations(affiliation["relations"], aff_type)
                 for n in affiliation["names"]:
                     if n["lang"] == "es":
                         name = n["name"]

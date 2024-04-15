@@ -106,10 +106,10 @@ class AffiliationReduced(BaseModel):
     name: str | None = None
 
 class AffiliationRelatedInfo(BaseModel):
-    authors: list[PersonList] | None = None
-    groups: list[AffiliationReduced] | None = None
-    departments: list[AffiliationReduced] | None = None
     faculties: list[AffiliationReduced] | None = None
+    departments: list[AffiliationReduced] | None = None
+    groups: list[AffiliationReduced] | None = None
+    authors: list[PersonList] | None = None
 
 
 class AffiliationQueryParams(QueryBase):

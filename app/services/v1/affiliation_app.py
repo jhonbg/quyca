@@ -156,14 +156,15 @@ class AffiliationAppService:
 
     def get_affiliations(self, idx, typ=None, aff_type: str | None = None) -> dict[str, list[Any]]:
         data = {}
-        if typ in ["group", "department", "faculty"]:
-            data["authors"] = affiliation_repository.get_authors_by_affiliation(idx, typ)
-        if typ in ["department", "faculty", "institution"]:
-            data["groups"] = affiliation_repository.get_affiliations_related_type(idx, "group", typ)
-        if typ in ["faculty", "institution"]:
-            data["departments"] = affiliation_repository.get_affiliations_related_type(idx, "department", typ)
         if typ == "institution":
             data["faculties"] = affiliation_repository.get_affiliations_related_type(idx, "faculty", typ)
+        if typ in ["faculty", "institution"]:
+            data["departments"] = affiliation_repository.get_affiliations_related_type(idx, "department", typ)
+        if typ in ["department", "faculty", "institution"]:
+            data["groups"] = affiliation_repository.get_affiliations_related_type(idx, "group", typ)
+        if typ in ["group", "department", "faculty"]:
+            data["authors"] = affiliation_repository.get_authors_by_affiliation(idx, typ)
+        
 
         result = AffiliationRelatedInfo.model_validate(data, from_attributes=True)
         

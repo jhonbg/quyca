@@ -52,7 +52,7 @@ def api_affiliation(
     tab: str | None = None,
     typ: str | None = None,
 ):
-    result = affiliation(request, idx=id, typ=typ, section=section, tab=tab)
+    result = affiliation(request, idx=id, section=section, tab=tab)
     if result:
         response = Response(
             response=json.dumps(result, cls=JsonEncoder),

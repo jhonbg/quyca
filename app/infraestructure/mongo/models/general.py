@@ -15,6 +15,7 @@ class Updated(EmbeddedModel):
 class ExternalId(EmbeddedModel):
     id: ObjectId | None | str | int = None
     source: str | None = None
+    provenance: str | None = None
 
 
 class ExternalURL(EmbeddedModel):

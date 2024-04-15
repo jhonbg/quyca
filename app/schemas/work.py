@@ -100,8 +100,8 @@ class WorkProccessed(WorkSearch):
     @model_validator(mode="after")
     def get_title(self):
         self.title = next(
-            filter(lambda x: x.lang == "en", self.titles), self.titles[0].title
-        )
+            filter(lambda x: x.lang == "en", self.titles), self.titles[0]
+        ).title
         return self
 
     year_published: int | None = None
@@ -123,9 +123,11 @@ class WorkProccessed(WorkSearch):
     def get_openalex_source(cls, v: list[Subject]):
         open_alex_subjects = list(filter(lambda x: x.source == "openalex", v))
         maped_embedded_subjects = list(map(lambda x: x.subjects, open_alex_subjects))
-        return list(
-            map(lambda x: {"name": x.name, "id": x.id}, *maped_embedded_subjects)
-        ) if maped_embedded_subjects else []
+        return (
+            list(map(lambda x: {"name": x.name, "id": x.id}, *maped_embedded_subjects))
+            if maped_embedded_subjects
+            else []
+        )
 
     external_ids: list[ExternalId] | list[dict] | None = Field(default_factory=list)
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
@@ -145,6 +147,13 @@ class WorkProccessed(WorkSearch):
     @field_validator("external_ids")
     @classmethod
     def append_urls_external_ids(cls, v: list[ExternalId]):
+        scienti = list(filter(lambda x: x.provenance == "scienti", v))
+        v += (
+            [ExternalId(id=f"{scienti[0].id}-{scienti[1].id}", source="scienti")]
+            if len(scienti) == 2
+            else []
+        )
+
         return list(
             map(
                 lambda x: (
@@ -159,6 +168,11 @@ class WorkProccessed(WorkSearch):
                 filter(lambda x: x.source in settings.EXTERNAL_IDS_MAP, v),
             )
         )
+    
+    @field_validator("citations_count")
+    @classmethod
+    def get_citations_count(cls, v: list[CitationsCount]):
+        return v[0].count if v else 0
 
 
 class Work(BaseModel):

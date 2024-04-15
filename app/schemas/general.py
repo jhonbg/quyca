@@ -18,6 +18,7 @@ class Updated(BaseModel):
 class ExternalId(BaseModel):
     id: Any
     source: str | None
+    provenance: str | None = None
 
 class ExternalURL(BaseModel):
     url: str | int | None

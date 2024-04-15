@@ -48,6 +48,7 @@ class Settings(BaseSettings):
         "doi": "https://doi.org/{id}",
         "lens": "https://www.lens.org/lens/scholar/article/{id}",
         "minciencias": "",
+        "scienti": ""
     }
 
 

@@ -39,64 +39,6 @@ class AffiliationAppService:
                     "external_ids": 1,
                     "addresses": 1,
                     "relations": 1,
-                    "university": {
-                        "$arrayElemAt": [
-                            {
-                                "$filter": {
-                                    "input": "$relations",
-                                    "as": "rel",
-                                    "cond": {
-                                        "$and": [
-                                            {
-                                                "$in": [
-                                                    "education",
-                                                    {
-                                                        "$map": {
-                                                            "input": "$$rel.types",
-                                                            "as": "t",
-                                                            "in": {
-                                                                "$toLower": "$$t.type"
-                                                            },
-                                                        }
-                                                    },
-                                                ]
-                                            }
-                                        ]
-                                    },
-                                }
-                            },
-                            0,
-                        ]
-                    },
-                    "faculty": {
-                        "$arrayElemAt": [
-                            {
-                                "$filter": {
-                                    "input": "$relations",
-                                    "as": "rel",
-                                    "cond": {
-                                        "$and": [
-                                            {
-                                                "$in": [
-                                                    "faculty",
-                                                    {
-                                                        "$map": {
-                                                            "input": "$$rel.types",
-                                                            "as": "t",
-                                                            "in": {
-                                                                "$toLower": "$$t.type"
-                                                            },
-                                                        }
-                                                    },
-                                                ]
-                                            }
-                                        ]
-                                    },
-                                }
-                            },
-                            0,
-                        ]
-                    },
                 }
             },
         ]
@@ -136,19 +78,8 @@ class AffiliationAppService:
                 "addresses": affiliation["addresses"],
                 "logo": logo,
             }
-            university = affiliation.get("university", {})
-            faculty = affiliation.get("faculty", {})
-            if isinstance(university.get("name", None), dict):
-                university["name"] = university["name"]["name"]
-            if isinstance(faculty.get("name", None), dict):
-                faculty["name"] = faculty["name"]["name"]
-
-            affiliations = []
-            affiliations += (
-                [university] if typ in ("faculty", "department", "group") else []
-            )
-            affiliations += [faculty] if typ in ("department", "group") else []
-            entry.update({"affiliations": affiliations})
+            
+            entry.update({"affiliations": AffiliationRepository.upside_relations(affiliation["relations"], typ)})
 
             return {"data": entry}
         else:

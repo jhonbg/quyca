@@ -329,6 +329,87 @@ class PersonAppService:
             "total_results": total,
         }
 
+    def get_research_products_csv(
+        self,
+        idx,
+        typ=None,
+        start_year=None,
+        end_year=None,
+        page=None,
+        max_results=None,
+        sort=None,
+        direction="descending",
+    ):
+        papers = []
+        total = 0
+        open_access = []
+
+        if start_year:
+            try:
+                start_year = int(start_year)
+            except:
+                print("Could not convert start year to int")
+                return None
+        if end_year:
+            try:
+                end_year = int(end_year)
+            except:
+                print("Could not convert end year to int")
+                return None
+
+        search_dict = {}
+
+        if idx:
+            search_dict = {"authors.id": ObjectId(idx)}
+        if start_year or end_year:
+            search_dict["year_published"] = {}
+        if start_year:
+            search_dict["year_published"]["$gte"] = start_year
+        if end_year:
+            search_dict["year_published"]["$lte"] = end_year
+        if typ:
+            search_dict["types.type"] = typ
+
+        cursor = self.colav_db["works"].find(search_dict)
+        total = self.colav_db["works"].count_documents(search_dict)
+
+        if not page:
+            page = 1
+        else:
+            try:
+                page = int(page)
+            except:
+                print("Could not convert end page to int")
+                return None
+        if not max_results:
+            max_results = 100
+        else:
+            try:
+                max_results = int(max_results)
+            except:
+                print("Could not convert end max to int")
+                return None
+        if max_results > 250:
+            max_results = 250
+
+        if sort == "citations" and direction == "ascending":
+            cursor.sort([("citations_count.count", ASCENDING)])
+        if sort == "citations" and direction == "descending":
+            cursor.sort([("citations_count.count", DESCENDING)])
+        if sort == "year" and direction == "ascending":
+            cursor.sort([("year_published", ASCENDING)])
+        if sort == "year" and direction == "descending":
+            cursor.sort([("year_published", DESCENDING)])
+        elif not sort:
+            cursor.sort([("citations_count.count", DESCENDING)])
+
+        cursor = cursor.skip(max_results * (page - 1)).limit(max_results)
+        for paper in cursor:
+            papers += [paper]
+        return {
+            "data": papers,
+        }
+
     def get_products_by_year_by_type(self, idx):
         data = []
         for work in self.colav_db["works"].find(

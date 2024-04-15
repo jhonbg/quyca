@@ -6,6 +6,7 @@ import csv
 from flask import Blueprint, request, Response, Request
 
 from services.v1.affiliation_app import affiliation_app_service
+from infraestructure.mongo.repositories.work import WorkRepository
 from utils.encoder import JsonEncoder
 from utils.flatten_json import flatten_json_list
 
@@ -92,16 +93,37 @@ def get_affiliation_csv(
     section: str | None = "info",
     tab: str | None = None,
 ):
-    result = affiliation(request, idx=id, aff_type=typ, section=section, tab=tab)
+    result = WorkRepository.get_research_products_by_affiliation(id, typ)
     if result:
         config = {
-            "authors": ["full_name"],
-            "citations_count": ["count"],
-            "subjects": ["name"],
-            "source": ["name"],
-            "external_ids": ["source", "id"]
+            "authors": {"name": "author_names", "fields": ["full_name"]},
+            "citations_count": {"name": "cited_by_count", "fields": ["count"]},
+            # "subjects": {"name": "subjects", "fields": ["name"]},
+            # "source": {"name": "source", "fields": ["name"]},
+            "date_published": {
+                "name": "date",
+                "expresion": "datetime.date.fromtimestamp(value).strftime('%Y-%m-%d')",
+            },
+            "bibliographic_info": {
+                "name": "biblio",
+                "fields": [
+                    "volume",
+                    "issue",
+                    "start_page",
+                    "end_page",
+                    # "is_open_access",
+                    # "open_access_status",
+                ],
+            },
+            "types": {"name": "type", "fields": ["type"]},
+            "remove": ["abstract", "source", "references_count", "subtitle"],
+            "titles": {
+                "name": "title",
+                "fields": ["title"],
+                "expresion": "next(filter(lambda x: x['lang'] == 'es', list_data), list_data[0])['title']",
+            },
         }
-        flat_data_list = flatten_json_list(result["data"], config, 1)
+        flat_data_list = flatten_json_list(result, config, 1)
         all_keys = set()
         for item in flat_data_list:
             all_keys.update(item.keys())

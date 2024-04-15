@@ -68,6 +68,8 @@ class WorkRepository(RepositoryBase):
                     "works.authors": 1,
                     "works.subjects": 1,
                     "works.bibliographic_info": 1,
+                    "works.date_published": 1,
+                    "works.types": 1,
                 }
             },
             # {"$sort": {cls.sort_traduction[sort_field]: -1}},
@@ -171,38 +173,30 @@ class WorkRepository(RepositoryBase):
         ).get("counts", [])
         return citations_count
 
+    @classmethod
     def get_research_products_by_affiliation(
-        self,
+        cls,
         affiliation_id: str,
         affiliation_type: str,
         *,
-        start_year: int,
-        end_year: int,
+        start_year: int | None = None,
+        end_year: int | None = None,
         skip: int = 0,
-        limit: int = 10,
+        limit: int = 100,
         sort: str = "citations",
-    ):
-        if affiliation_type == "institution":
-            sort_expresion = (
-                desc(getattr(self.model, sort[:-1]))
-                if sort.endswith("-")
-                else asc(getattr(self.model, sort))
-            )
-            search_dict = (
-                {"year_published": {"$gte": start_year, "$lte": end_year}}
-                if start_year and end_year
-                else {}
-            )
-            search_dict.update(
-                {
-                    "authors.affiliations.id": ObjectId(affiliation_id),
-                    "types.type": {"$nin": ["department", "faculty", "group"]},
-                }
-            )
-            with engine.session() as session:
-                results = session.find(
-                    Work, *search_dict, skip=skip, limit=limit, sort=sort_expresion
-                )
+    ) -> list[dict[str, Any]]:
+        affiliation_type = (
+            "institution" if affiliation_type == "Education" else affiliation_type
+        )
+        works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
+        works_pipeline += [
+            {"$replaceRoot": {"newRoot": "$works"}},
+            {"$skip": skip},
+            {"$limit": limit},
+        ]
+        collection = Person if affiliation_type != "institution" else Work
+        results = list(engine.get_collection(collection).aggregate(works_pipeline))
+        return results
 
     def get_research_products(
         self,

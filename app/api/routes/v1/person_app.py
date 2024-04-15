@@ -75,13 +75,50 @@ def get_person(
 def get_person_csv(
     id: str | None = None, section: str | None = "info", tab: str | None = None
 ):
-    result = person(request, id=id, section=section, tab=tab)
+    if section == "research" and tab == "products":
+        typ = request.args.get("type")
+        start_year = request.args.get("start_year")
+        endt_year = request.args.get("end_year")
+        page = request.args.get("page")
+        max_results = request.args.get("max")
+        sort = request.args.get("sort")
+        result = person_app_service.get_research_products_csv(
+            idx=id,
+            typ=typ,
+            start_year=start_year,
+            end_year=endt_year,
+            page=page,
+            max_results=max_results,
+            sort=sort,
+        )
     if result:
         config = {
-            "authors": ["full_name"],
-            "citations_count": ["count"],
-            "subjects": ["name"],
-            "source": ["name"]
+            "authors": {"name": "author_names", "fields": ["full_name"]},
+            "citations_count": {"name": "cited_by_count", "fields": ["count"]},
+            # "subjects": {"name": "subjects", "fields": ["name"]},
+            # "source": {"name": "source", "fields": ["name"]},
+            "date_published": {
+                "name": "date",
+                "expresion": "datetime.date.fromtimestamp(value).strftime('%Y-%m-%d')",
+            },
+            "bibliographic_info": {
+                "name": "biblio",
+                "fields": [
+                    "volume",
+                    "issue",
+                    "start_page",
+                    "end_page",
+                    # "is_open_access",
+                    # "open_access_status",
+                ],
+            },
+            "types": {"name": "type", "fields": ["type"]},
+            "remove": ["abstract", "source", "references_count", "subtitle"],
+            "titles": {
+                "name": "title",
+                "fields": ["title"],
+                "expresion": "next(filter(lambda x: x['lang'] == 'es', list_data), list_data[0])['title']",
+            },
         }
         flat_data_list = flatten_json_list(result["data"], config, 1)
         all_keys = set()

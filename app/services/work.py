@@ -27,9 +27,7 @@ class WorkService(
             source = source_service.get_by_id(id=work.source.id)
             serials = {}
             for serial in source.external_ids:
-                serials[serial.source] = (
-                    serial.id if serial.source != "openalex" else work.openalex_url
-                )
+                serials[serial.source] = serial.id
             work.source.serials = serials
 
     def get_info(self, *, id: str) -> dict[str, Any]:

@@ -17,9 +17,12 @@ class Affiliation(EmbeddedModel):
 
 
 class Ranking(EmbeddedModel):
-    date: str | None
-    rank: str | None
+    date: str | int | None = None
+    rank: str | None = None
     source: str | None
+    id: str | Any | None = None
+    order: int | Any | None = None
+
 
 
 class BirthPlace(EmbeddedModel):
@@ -48,7 +51,7 @@ class Person(Model):
     external_ids: list[ExternalId]
     sex: str | None
     marital_status: str | None
-    ranking: list[Ranking | list[Ranking]]
+    ranking: list[Ranking]
     birthplace: BirthPlace
     birthdate: int
     degrees: list[Degree]

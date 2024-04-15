@@ -12,7 +12,7 @@ from infraestructure.mongo.models.general import (
 )
 
 class Publisher(BaseModel):
-    id: ObjectId | str | None
+    id: ObjectId | str | None = None
     name: str | Any | None = None
     country_code: str | Any | None = None
 
@@ -71,7 +71,7 @@ class Source(Model):
     addresses: list[Any] | None = Field(default_factory=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
-    review_process: list[str] | Any | None = Field(default_factory=list)
+    review_process: Any = None
     review_processes: list[Any] | None = Field(default_factory=list)
     waiver: Waiver | Any | None = None
     plagiarism_detection: bool = Field(default_factory=list)

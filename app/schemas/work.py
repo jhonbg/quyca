@@ -125,7 +125,7 @@ class WorkProccessed(WorkSearch):
         maped_embedded_subjects = list(map(lambda x: x.subjects, open_alex_subjects))
         return list(
             map(lambda x: {"name": x.name, "id": x.id}, *maped_embedded_subjects)
-        )
+        ) if maped_embedded_subjects else []
 
     external_ids: list[ExternalId] | list[dict] | None = Field(default_factory=list)
     external_urls: list[ExternalURL] | None = Field(default_factory=list)

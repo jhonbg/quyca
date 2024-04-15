@@ -131,7 +131,6 @@ class WorkProccessed(WorkSearch):
 
     external_ids: list[ExternalId] | list[dict] | None = Field(default_factory=list)
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
-    openalex_url: str | None = None
 
     # Machete
     @model_validator(mode="before")
@@ -141,7 +140,7 @@ class WorkProccessed(WorkSearch):
             filter(lambda x: x["source"] == "openalex", data["external_ids"]), None
         )
         if openalex:
-            data["openalex_url"] = openalex["id"]
+            data["external_urls"] += [ExternalURL(url=openalex["id"], source="openalex")]
         return data
 
     @field_validator("external_ids")

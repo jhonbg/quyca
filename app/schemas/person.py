@@ -66,7 +66,7 @@ class Person(PersonBase):
     marital_status: str | None
     ranking: list[Ranking | list[Ranking]]
     birthplace: BirthPlace
-    birthdate: int
+    birthdate: int | str
     degrees: list[Degree]
     subjects: list[Any]
 

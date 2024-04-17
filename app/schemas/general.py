@@ -16,7 +16,7 @@ class Updated(BaseModel):
 
 
 class ExternalId(BaseModel):
-    id: Any
+    id: Any | None = None
     source: str | None
     provenance: str | None = None
 

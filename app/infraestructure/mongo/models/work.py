@@ -47,7 +47,7 @@ class Author(EmbeddedModel):
 
 
 class Source(BaseModel):
-    id: ObjectId | str | None
+    id: ObjectId | str | None = None
     name: str | Any | None = None
 
 

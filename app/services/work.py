@@ -36,5 +36,16 @@ class WorkService(
         self.update_source(work)
         return {"data": work.model_dump(exclude_none=True, exclude={"titles"})}
 
+    def get_research_products_info_by(
+        self, *, affiliation_id: str, affiliation_type: str
+    ) -> list[dict[str, Any]]:
+        return WorkRepository.get_research_products_by_affiliation(
+            affiliation_id, affiliation_type
+        )
+    
+    def get_research_products_by_author(self, *, author_id: str) -> list[dict[str, Any]]:
+        return WorkRepository.get_research_products_by_author(author_id=author_id)
+        
+
 
 work_service = WorkService(work_repository, WorkSearch, WorkProccessed)

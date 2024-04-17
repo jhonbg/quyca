@@ -5,6 +5,7 @@ import csv
 from flask import Blueprint, request, Response, Request
 
 from services.v1.person_app import person_app_service
+from services.work import work_service
 from utils.encoder import JsonEncoder
 from utils.flatten_json import flatten_json_list
 
@@ -75,55 +76,43 @@ def get_person(
 def get_person_csv(
     id: str | None = None, section: str | None = "info", tab: str | None = None
 ):
-    if section == "research" and tab == "products":
-        typ = request.args.get("type")
-        start_year = request.args.get("start_year")
-        endt_year = request.args.get("end_year")
-        page = request.args.get("page")
-        max_results = request.args.get("max")
-        sort = request.args.get("sort")
-        result = person_app_service.get_research_products_csv(
-            idx=id,
-            typ=typ,
-            start_year=start_year,
-            end_year=endt_year,
-            page=page,
-            max_results=max_results,
-            sort=sort,
-        )
+    result = work_service.get_research_products_by_author(author_id=id)
     if result:
         config = {
-            "authors": {"name": "author_names", "fields": ["full_name"]},
-            "citations_count": {"name": "cited_by_count", "fields": ["count"]},
-            # "subjects": {"name": "subjects", "fields": ["name"]},
-            # "source": {"name": "source", "fields": ["name"]},
+            "title": {
+                "name": "titulo",
+            },
+            "authors": {
+                "name": "autores",
+                "fields": ["full_name"],
+                "config": {"full_name": {"name": "full_name"}},
+            },
+            "lenguage": {"name": "lengua"},
+            "citations_count": {
+                "name": "veces citado",
+                "fields": ["count"],
+                "config": {"count": {"name": "count"}},
+            },
             "date_published": {
-                "name": "date",
+                "name": "fecha publicación",
                 "expresion": "datetime.date.fromtimestamp(value).strftime('%Y-%m-%d')",
             },
-            "bibliographic_info": {
-                "name": "biblio",
-                "fields": [
-                    "volume",
-                    "issue",
-                    "start_page",
-                    "end_page",
-                    # "is_open_access",
-                    # "open_access_status",
-                ],
-            },
-            "types": {"name": "type", "fields": ["type"]},
-            "remove": ["abstract", "source", "references_count", "subtitle"],
-            "titles": {
-                "name": "title",
-                "fields": ["title"],
-                "expresion": "next(filter(lambda x: x['lang'] == 'es', list_data), list_data[0])['title']",
+            "volume": {"name": "volumen"},
+            "issue": {"name": "issue"},
+            "start_page": {"name": "página inicial"},
+            "end_page": {"name": "página final"},
+            "year_published": {"name": "año de publicación"},
+            "types": {"name": "tipo de producto", "fields": ["type"]},
+            "subjects": {
+                "name": "temas",
+                "fields": ["name"],
+                "config": {"name": {"name": "name"}},
             },
         }
-        flat_data_list = flatten_json_list(result["data"], config, 1)
-        all_keys = set()
+        flat_data_list = flatten_json_list(result, config, 1)
+        all_keys = []
         for item in flat_data_list:
-            all_keys.update(item.keys())
+            all_keys += [key for key in item.keys() if key not in all_keys]
 
         output = io.StringIO()
         csv_writer = csv.DictWriter(output, fieldnames=all_keys)

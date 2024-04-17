@@ -8,6 +8,7 @@ from infraestructure.mongo.repositories.base import RepositoryBase
 from infraestructure.mongo.models.work import Work
 from infraestructure.mongo.models.person import Person
 from infraestructure.mongo.utils.session import engine
+from schemas.work import WorkCsv
 
 
 class WorkRepository(RepositoryBase):
@@ -58,20 +59,22 @@ class WorkRepository(RepositoryBase):
             {"$unwind": "$works"},
             {"$match": match_works},
             {"$group": {"_id": "$works._id", "works": {"$first": "$works"}}},
-            {
-                "$project": {
-                    "works._id": 1,
-                    "works.citations_count": 1,
-                    "works.year_published": 1,
-                    "works.titles": 1,
-                    "works.source": 1,
-                    "works.authors": 1,
-                    "works.subjects": 1,
-                    "works.bibliographic_info": 1,
-                    "works.date_published": 1,
-                    "works.types": 1,
-                }
-            },
+            # {
+            #     "$project": {
+            #         "works._id": 1,
+            #         "works.citations_count": 1,
+            #         "works.year_published": 1,
+            #         "works.titles": 1,
+            #         "works.source": 1,
+            #         "works.authors": 1,
+            #         "works.subjects": 1,
+            #         "works.bibliographic_info": 1,
+            #         "works.date_published": 1,
+            #         "works.types": 1,
+            #         "works.external_ids": 1,
+            #         "works.external_urls": 1,
+            #     }
+            # },
             # {"$sort": {cls.sort_traduction[sort_field]: -1}},
         ]
         return pipeline
@@ -181,22 +184,36 @@ class WorkRepository(RepositoryBase):
         *,
         start_year: int | None = None,
         end_year: int | None = None,
-        skip: int = 0,
-        limit: int = 100,
         sort: str = "citations",
     ) -> list[dict[str, Any]]:
         affiliation_type = (
             "institution" if affiliation_type == "Education" else affiliation_type
         )
         works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
-        works_pipeline += [
-            {"$replaceRoot": {"newRoot": "$works"}},
-            {"$skip": skip},
-            {"$limit": limit},
-        ]
         collection = Person if affiliation_type != "institution" else Work
-        results = list(engine.get_collection(collection).aggregate(works_pipeline))
-        return results
+        works_pipeline += [
+            {"$replaceRoot": {"newRoot": "$works"}}
+        ] if collection != Work else []
+        results = engine.get_collection(collection).aggregate(works_pipeline)
+        return [
+            WorkCsv.model_validate_json(
+                Work(**result).model_dump_json()
+            ).model_dump(exclude={"titles"})
+            for result in results
+        ]
+    
+    @classmethod
+    def get_research_products_by_author(self, *, author_id: str) -> list[dict[str, Any]]:
+        works_pipeline = [
+            {"$match": {"authors.id": ObjectId(author_id)}},
+        ]
+        results = engine.get_collection(Work).aggregate(works_pipeline)
+        return [
+            WorkCsv.model_validate_json(
+                Work(**result).model_dump_json()
+            ).model_dump(exclude={"titles"})
+            for result in results
+        ]
 
     def get_research_products(
         self,

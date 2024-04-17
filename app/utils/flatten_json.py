@@ -13,12 +13,13 @@ def flatten_json(
     flat_data = {}
     # remove from json_data
 
-    for key, value in json_data.items():
-        if key in config.get("remove", []):
-            continue
+    for key in config.keys():
+        value = json_data.get(key, "")
         new_key = parent_key + separator + key if parent_key else key
 
         if level > 0 and isinstance(value, dict) and new_key in config.keys():
+            new_key = config.get(new_key, {"name": new_key})["name"]
+            config = config[key].get("config", config)
             flat_data.update(flatten_json(value, config, level - 1, separator, new_key))
         elif (
             level > 0
@@ -27,31 +28,32 @@ def flatten_json(
         ):
             list_data = []
             for item in value:
-                list_data.append(flatten_json(item, config, level - 1, separator))
+                _config = config[key].get("config", config)
+                list_data.append(flatten_json(item, _config, level - 1, separator))
             if new_key in config:
-                flat_data[config[new_key]["name"]] = (
-                    eval(config[new_key]["expresion"])
-                    if "expresion" in config[new_key]
+                flat_data[config[key]["name"]] = (
+                    eval(config[key]["expresion"])
+                    if "expresion" in config[key]
                     else " | ".join(
                         map(
                             lambda x: " / ".join(
-                                str(x[_key]) for _key in config[new_key]["fields"]
+                                str(x[_key]) for _key in config[key]["fields"]
                             ),
                             list_data,
                         )
                     )
                 )
         elif new_key in config and isinstance(value, dict):
-            attributes = config[new_key]["fields"]
+            attributes = config[key]["fields"]
             combined_values = [f"{attr}:{value.get(attr, '')}" for attr in attributes]
-            flat_data[config[new_key]["name"]] = " | ".join(combined_values)
+            flat_data[config[key]["name"]] = " | ".join(combined_values)
         else:
             if not isinstance(value, dict) or not isinstance(value, list):
-                key = config.get(new_key)["name"] if new_key in config else new_key
-                if new_key in config and "expresion" in config[new_key]:
-                    flat_data[key] = eval(config[new_key]["expresion"]) if value else ""
+                _key = config[key]["name"] if key in config else new_key
+                if key in config and "expresion" in config[key]:
+                    flat_data[_key] = eval(config[key]["expresion"]) if value else ""
                 else:
-                    flat_data[key] = str(value)
+                    flat_data[_key] = str(value)
 
     return flat_data
 

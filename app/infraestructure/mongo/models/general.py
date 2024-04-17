@@ -13,7 +13,7 @@ class Updated(EmbeddedModel):
 
 
 class ExternalId(EmbeddedModel):
-    id: ObjectId | None | str | int = None
+    id: ObjectId | None | str | int | list[str] = None
     source: str | None = None
     provenance: str | None = None
 

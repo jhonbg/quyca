@@ -53,7 +53,7 @@ class Person(Model):
     marital_status: str | None
     ranking: list[Ranking]
     birthplace: BirthPlace
-    birthdate: int
+    birthdate: int | str
     degrees: list[Degree]
     subjects: list[Any]
 

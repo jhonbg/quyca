@@ -7,9 +7,9 @@ from core.config import settings
 
 
 class Title(BaseModel):
-    title: str
-    lang: str
-    source: str
+    title: str | None = None
+    lang: str | None = None
+    source: str | None = None
 
 
 class BiblioGraphicInfo(BaseModel):
@@ -45,11 +45,13 @@ class Author(BaseModel):
     full_name: str
     affiliations: list[Affiliation] | None = Field(default_affiliation=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
+    sex: str | None = None
+
 
 
 class Source(BaseModel):
-    id: str
-    name: str | Any
+    id: str | None = None
+    name: str | Any | None = None
     serials: Any | None = None
 
 
@@ -172,6 +174,22 @@ class WorkProccessed(WorkSearch):
     @classmethod
     def get_citations_count(cls, v: list[CitationsCount]):
         return v[0].count if v else 0
+
+class WorkCsv(WorkProccessed):
+    date_published: int | float | str | None = None
+    start_page: str | None = None
+    end_page: str | None = None
+
+
+    @model_validator(mode="after")
+    def get_biblio_graphic_info(self):
+        self.open_access_status = self.bibliographic_info.open_access_status
+        self.volume = self.bibliographic_info.volume
+        self.issue = self.bibliographic_info.issue
+        self.start_page = self.bibliographic_info.start_page
+        self.end_page = self.bibliographic_info.end_page
+        self.bibliographic_info = None
+        return self
 
 
 class Work(BaseModel):

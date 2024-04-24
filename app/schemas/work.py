@@ -12,6 +12,11 @@ class Title(BaseModel):
     source: str | None = None
 
 
+class ProductType(BaseModel):
+    name: str | None = None
+    source: str | None = None
+
+
 class BiblioGraphicInfo(BaseModel):
     bibtex: str | Any | None
     end_page: str | Any | None
@@ -79,7 +84,7 @@ class WorkBase(BaseModel):
     id: str | None
     title: str | None = None
     authors: list[Author] = Field(default_factory=list)
-    
+
     @field_validator("authors")
     @classmethod
     def unic_authors_by_id(cls, v: list[Author]):
@@ -97,6 +102,16 @@ class WorkBase(BaseModel):
 
 
 class WorkSearch(WorkBase):
+    product_type: list[ProductType] | None = Field(default_factory=list)
+    types: list[Type] = Field(default_factory=list, exclude=True)
+
+    @model_validator(mode="after")
+    def get_types(self):
+        self.product_type = list(
+            map(lambda x: ProductType(name=x.type, source=x.source), self.types)
+        )
+        return self
+
     @field_validator("citations_count")
     @classmethod
     def sort_citations_count(cls, v: list[CitationsCount]):

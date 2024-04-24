@@ -79,6 +79,18 @@ class WorkBase(BaseModel):
     id: str | None
     title: str | None = None
     authors: list[Author] = Field(default_factory=list)
+    
+    @field_validator("authors")
+    @classmethod
+    def unic_authors_by_id(cls, v: list[Author]):
+        seen = set()
+        unique_authors = []
+        for author in v:
+            if author.id not in seen:
+                seen.add(author.id)
+                unique_authors.append(author)
+        return unique_authors
+
     source: Source | None = Field(default_factory=dict)
     citations_count: list[CitationsCount] | int = Field(default_factory=list)
     subjects: list[Subject] | list[dict[str, str]]

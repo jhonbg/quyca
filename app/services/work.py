@@ -36,16 +36,56 @@ class WorkService(
         self.update_source(work)
         return {"data": work.model_dump(exclude_none=True, exclude={"titles"})}
 
-    def get_research_products_info_by(
-        self, *, affiliation_id: str, affiliation_type: str
+    def get_research_products_by_affiliation(
+        self,
+        *,
+        affiliation_id: str,
+        affiliation_type: str,
+        start_year: int | None = None,
+        end_year: int | None = None,
+        skip: int | None = None,
+        limit: int | None = None,
     ) -> list[dict[str, Any]]:
-        return WorkRepository.get_research_products_by_affiliation(
+        works = WorkRepository.get_research_products_by_affiliation(
+            affiliation_id,
+            affiliation_type,
+            start_year=start_year,
+            end_year=end_year,
+            skip=skip,
+            limit=limit,
+        )
+        total_works = WorkRepository.count_papers(
+            affiliation_id=affiliation_id, affiliation_type=affiliation_type
+        )
+        return {"data": works, "total_results": total_works, "count": len(works)}
+
+    def get_research_products_info_by_affiliation_csv(
+        self,
+        *,
+        affiliation_id: str,
+        affiliation_type: str,
+        start_year: int | None = None,
+        end_year: int | None = None,
+        skip: int | None = None,
+        limit: int | None = None,
+    ) -> list[dict[str, Any]]:
+        return WorkRepository.get_research_products_by_affiliation_csv(
             affiliation_id, affiliation_type
         )
-    
-    def get_research_products_by_author(self, *, author_id: str) -> list[dict[str, Any]]:
-        return WorkRepository.get_research_products_by_author(author_id=author_id)
-        
+
+    def get_research_products_by_author(
+        self, *, author_id: str, skip: int | None = None, limit: int | None = None
+    ) -> list[dict[str, Any]]:
+        works = WorkRepository.get_research_products_by_author(
+            author_id=author_id, skip=skip, limit=limit
+        )
+        total_works = WorkRepository.count_papers_by_author(author_id=author_id)
+        return {"data": works, "total_results": total_works, "count": len(works)}
+
+    def get_research_products_by_author_csv(
+        self, *, author_id: str
+    ) -> list[dict[str, Any]]:
+        return WorkRepository.get_research_products_by_author_csv(author_id=author_id)
 
 
 work_service = WorkService(work_repository, WorkSearch, WorkProccessed)

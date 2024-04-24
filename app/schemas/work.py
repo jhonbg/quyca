@@ -35,8 +35,8 @@ class Name(BaseModel):
 
 
 class Affiliation(BaseModel):
-    id: str
-    name: str
+    id: str | None = None
+    name: str | None = None
     types: list[Type] | None = Field(default_factory=list)
 
 
@@ -46,7 +46,6 @@ class Author(BaseModel):
     affiliations: list[Affiliation] | None = Field(default_affiliation=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
     sex: str | None = None
-
 
 
 class Source(BaseModel):
@@ -81,7 +80,7 @@ class WorkBase(BaseModel):
     title: str | None = None
     authors: list[Author] = Field(default_factory=list)
     source: Source | None = Field(default_factory=dict)
-    citations_count: list[CitationsCount]
+    citations_count: list[CitationsCount] | int = Field(default_factory=list)
     subjects: list[Subject] | list[dict[str, str]]
 
 
@@ -92,12 +91,12 @@ class WorkSearch(WorkBase):
         return list(sorted(v, key=lambda x: x.count, reverse=True))
 
 
-class WorkProccessed(WorkSearch):
-    abstract: str | None = ""
+class WorkListApp(WorkSearch):
+    titles: list[Title] = Field(default_factory=list, exclude=True)
     year_published: int | None = None
-    language: str | None = ""
+    open_access_status: str | None = ""
 
-    titles: list[Title] = Field(default_factory=list)
+    bibliographic_info: BiblioGraphicInfo = Field(exclude=True)
 
     @model_validator(mode="after")
     def get_title(self):
@@ -106,9 +105,19 @@ class WorkProccessed(WorkSearch):
         ).title
         return self
 
-    year_published: int | None = None
-    open_access_status: str | None = None
-    bibliographic_info: BiblioGraphicInfo
+    @model_validator(mode="after")
+    def get_biblio_graphic_info(self):
+        self.open_access_status = self.bibliographic_info.open_access_status or ""
+        self.bibliographic_info = None
+        return self
+
+    external_ids: list[ExternalId] | list[dict] | None = Field(default_factory=list)
+
+
+class WorkProccessed(WorkListApp):
+    abstract: str | None = ""
+
+    language: str | None = ""
     volume: str | int | None = None
     issue: str | None = None
 
@@ -131,7 +140,6 @@ class WorkProccessed(WorkSearch):
             else []
         )
 
-    external_ids: list[ExternalId] | list[dict] | None = Field(default_factory=list)
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
 
     # Machete
@@ -142,7 +150,9 @@ class WorkProccessed(WorkSearch):
             filter(lambda x: x["source"] == "openalex", data["external_ids"]), None
         )
         if openalex:
-            data["external_urls"] += [ExternalURL(url=openalex["id"], source="openalex")]
+            data["external_urls"] += [
+                ExternalURL(url=openalex["id"], source="openalex")
+            ]
         return data
 
     @field_validator("external_ids")
@@ -169,17 +179,17 @@ class WorkProccessed(WorkSearch):
                 filter(lambda x: x.source in settings.EXTERNAL_IDS_MAP, v),
             )
         )
-    
+
     @field_validator("citations_count")
     @classmethod
     def get_citations_count(cls, v: list[CitationsCount]):
         return v[0].count if v else 0
 
+
 class WorkCsv(WorkProccessed):
     date_published: int | float | str | None = None
     start_page: str | None = None
     end_page: str | None = None
-
 
     @model_validator(mode="after")
     def get_biblio_graphic_info(self):
@@ -214,6 +224,3 @@ class Work(BaseModel):
 class WorkQueryParams(QueryBase):
     start_year: int | None = None
     end_year: int | None = None
-    institutions: str | None = None
-    groups: str | None = None
-    type: str | None = None

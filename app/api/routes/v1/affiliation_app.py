@@ -7,6 +7,7 @@ from flask import Blueprint, request, Response, Request
 
 from services.v1.affiliation_app import affiliation_app_service
 from services.work import work_service
+from schemas.work import WorkQueryParams
 from utils.encoder import JsonEncoder
 from utils.flatten_json import flatten_json_list
 
@@ -39,19 +40,14 @@ def affiliation(
                 )
                 result = affiliation_app_service.plot_mappings[plot](*args)
             else:
-                start_year = request.args.get("start_year")
-                end_year = request.args.get("end_year")
-                page = request.args.get("page")
-                max_results = request.args.get("max")
-                sort = request.args.get("sort")
-                result = affiliation_app_service.get_research_products(
-                    idx=idx,
-                    typ=aff_type,
-                    start_year=start_year,
-                    end_year=end_year,
-                    page=page,
-                    max_results=max_results,
-                    sort=sort,
+                params = WorkQueryParams(**request.args)
+                result = work_service.get_research_products_by_affiliation(
+                    affiliation_id=idx,
+                    affiliation_type=aff_type,
+                    start_year=params.start_year,
+                    end_year=params.end_year,
+                    skip=params.skip,
+                    limit=params.max,
                 )
     else:
         result = None
@@ -93,7 +89,7 @@ def get_affiliation_csv(
     section: str | None = "info",
     tab: str | None = None,
 ):
-    result = work_service.get_research_products_info_by(
+    result = work_service.get_research_products_info_by_affiliation_csv(
         affiliation_id=id, affiliation_type=typ
     )
     if result:

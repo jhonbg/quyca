@@ -6,6 +6,7 @@ from flask import Blueprint, request, Response, Request
 
 from services.v1.person_app import person_app_service
 from services.work import work_service
+from schemas.work import WorkQueryParams
 from utils.encoder import JsonEncoder
 from utils.flatten_json import flatten_json_list
 
@@ -30,20 +31,9 @@ def person(
                 args = (id, level) if plot == "products_subject" else (id,)
                 result = person_app_service.plot_mapping[plot](*args)
             else:
-                typ = request.args.get("type")
-                start_year = request.args.get("start_year")
-                endt_year = request.args.get("end_year")
-                page = request.args.get("page")
-                max_results = request.args.get("max")
-                sort = request.args.get("sort")
-                result = person_app_service.get_research_products(
-                    idx=id,
-                    typ=typ,
-                    start_year=start_year,
-                    end_year=endt_year,
-                    page=page,
-                    max_results=max_results,
-                    sort=sort,
+                params = WorkQueryParams(**request.args)
+                result = work_service.get_research_products_by_author(
+                    author_id=id, skip=params.skip, limit=params.max
                 )
     else:
         result = None
@@ -76,7 +66,7 @@ def get_person(
 def get_person_csv(
     id: str | None = None, section: str | None = "info", tab: str | None = None
 ):
-    result = work_service.get_research_products_by_author(author_id=id)
+    result = work_service.get_research_products_by_author_csv(author_id=id)
     if result:
         config = {
             "title": {

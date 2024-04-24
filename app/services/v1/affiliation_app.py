@@ -332,6 +332,9 @@ class AffiliationAppService:
                             "works.bibliographic_info": 1,
                             "works.external_ids": 1
                         }
+                    },
+                    {
+                        "$sort": "works.titles.title"
                     }
                 ]
 

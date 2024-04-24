@@ -90,17 +90,17 @@ class Work(Model):
     types: list[Type] | None = Field(default_factory=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
-    date_published: int | None
-    year_published: int | None
+    date_published: int | None = None
+    year_published: int | str | None = None
     bibliographic_info: BiblioGraphicInfo | None
-    references_count: int | None
+    references_count: int | None = None
     references: list[Any] | None = Field(default_factory=list)
     citations: list[CitationsCount] | None = Field(default_factory=list)
-    author_count: int
+    author_count: int | None = None
     source: Source | None = None
     citations_by_year: list[CitationByYear] | None | Any = Field(default_factory=list)
     authors: list[Author]
-    citations_count: list[CitationsCount]
+    citations_count: list[CitationsCount] | int = Field(default_factory=list)
     subjects: list[Subject] | None = Field(default_factory=list)
 
     model_config = {"collection": "works"}

@@ -1,5 +1,5 @@
 from json import loads
-from typing import Any
+from typing import Any, Iterable
 
 from odmantic.query import desc, asc
 from bson import ObjectId
@@ -8,7 +8,7 @@ from infraestructure.mongo.repositories.base import RepositoryBase
 from infraestructure.mongo.models.work import Work
 from infraestructure.mongo.models.person import Person
 from infraestructure.mongo.utils.session import engine
-from schemas.work import WorkCsv
+from schemas.work import WorkCsv, WorkListApp, WorkProccessed
 
 
 class WorkRepository(RepositoryBase):
@@ -59,23 +59,6 @@ class WorkRepository(RepositoryBase):
             {"$unwind": "$works"},
             {"$match": match_works},
             {"$group": {"_id": "$works._id", "works": {"$first": "$works"}}},
-            # {
-            #     "$project": {
-            #         "works._id": 1,
-            #         "works.citations_count": 1,
-            #         "works.year_published": 1,
-            #         "works.titles": 1,
-            #         "works.source": 1,
-            #         "works.authors": 1,
-            #         "works.subjects": 1,
-            #         "works.bibliographic_info": 1,
-            #         "works.date_published": 1,
-            #         "works.types": 1,
-            #         "works.external_ids": 1,
-            #         "works.external_urls": 1,
-            #     }
-            # },
-            # {"$sort": {cls.sort_traduction[sort_field]: -1}},
         ]
         return pipeline
 
@@ -177,6 +160,32 @@ class WorkRepository(RepositoryBase):
         return citations_count
 
     @classmethod
+    def __products_by_affiliation(
+        cls,
+        affiliation_id: str,
+        affiliation_type: str,
+        *,
+        start_year: int | None = None,
+        end_year: int | None = None,
+        sort: str = "citations",
+        skip: int | None = None,
+        limit: int | None = None,
+    ) -> Iterable[dict[str, Any]]:
+        affiliation_type = (
+            "institution" if affiliation_type == "Education" else affiliation_type
+        )
+        works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
+        collection = Person if affiliation_type != "institution" else Work
+        works_pipeline += (
+            [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
+        )
+        works_pipeline += [{"$sort": {"titles.0.title": 1}}]
+        works_pipeline += [{"$skip": skip}] if skip else []
+        works_pipeline += [{"$limit": limit}] if limit else []
+        results = engine.get_collection(collection).aggregate(works_pipeline)
+        return results
+
+    @classmethod
     def get_research_products_by_affiliation(
         cls,
         affiliation_id: str,
@@ -185,62 +194,82 @@ class WorkRepository(RepositoryBase):
         start_year: int | None = None,
         end_year: int | None = None,
         sort: str = "citations",
+        skip: int | None = None,
+        limit: int | None = None,
     ) -> list[dict[str, Any]]:
-        affiliation_type = (
-            "institution" if affiliation_type == "Education" else affiliation_type
-        )
-        works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
-        collection = Person if affiliation_type != "institution" else Work
-        works_pipeline += [
-            {"$replaceRoot": {"newRoot": "$works"}}
-        ] if collection != Work else []
-        results = engine.get_collection(collection).aggregate(works_pipeline)
         return [
-            WorkCsv.model_validate_json(
+            WorkListApp.model_validate_json(
                 Work(**result).model_dump_json()
-            ).model_dump(exclude={"titles"})
-            for result in results
+            ).model_dump()
+            for result in cls.__products_by_affiliation(
+                affiliation_id,
+                affiliation_type,
+                start_year=start_year,
+                end_year=end_year,
+                sort=sort,
+                skip=skip,
+                limit=limit,
+            )
         ]
-    
+
     @classmethod
-    def get_research_products_by_author(self, *, author_id: str) -> list[dict[str, Any]]:
+    def get_research_products_by_affiliation_csv(
+        cls,
+        affiliation_id: str,
+        affiliation_type: str,
+        *,
+        start_year: int | None = None,
+        end_year: int | None = None,
+        sort: str = "citations",
+    ) -> list[dict[str, Any]]:
+        return [
+            WorkCsv.model_validate_json(Work(**result).model_dump_json()).model_dump(
+                exclude={"titles"}
+            )
+            for result in cls.__products_by_affiliation(
+                affiliation_id,
+                affiliation_type,
+                start_year=start_year,
+                end_year=end_year,
+                sort=sort,
+            )
+        ]
+
+    @staticmethod
+    def __products_by_author(
+        *, author_id: str, skip: int | None = None, limit: int | None = None
+    ) -> Iterable[dict[str, Any]]:
         works_pipeline = [
             {"$match": {"authors.id": ObjectId(author_id)}},
         ]
-        results = engine.get_collection(Work).aggregate(works_pipeline)
+        works_pipeline += [{"$sort": {"titles.0.title": 1}}]
+        works_pipeline += [{"$skip": skip}] if skip else []
+        works_pipeline += [{"$limit": limit}] if limit else []
+        return engine.get_collection(Work).aggregate(works_pipeline)
+
+    @classmethod
+    def get_research_products_by_author(
+        cls, *, author_id: str, skip: int | None = None, limit: int | None = None
+    ) -> list[dict[str, Any]]:
         return [
-            WorkCsv.model_validate_json(
+            WorkListApp.model_validate_json(
                 Work(**result).model_dump_json()
-            ).model_dump(exclude={"titles"})
-            for result in results
+            ).model_dump()
+            for result in cls.__products_by_author(
+                author_id=author_id, skip=skip, limit=limit
+            )
         ]
 
-    def get_research_products(
-        self,
-        *,
-        id: str,
-        start_year: int,
-        end_year: int,
-        skip: int = 0,
-        limit: int = 10,
-        sort: str = "citations",
+    @classmethod
+    def get_research_products_by_author_csv(
+        cls, *, author_id: str
     ) -> list[dict[str, Any]]:
-        sort_expresion = None
-        if sort:
-            sort_expresion = (
-                desc(getattr(self.model, sort[:-1]))
-                if sort.endswith("-")
-                else asc(getattr(self.model, sort))
+        return [
+            WorkCsv.model_validate_json(Work(**result).model_dump_json()).model_dump(
+                exclude={"titles"}
             )
-        filter_criteria = (
-            id in map(lambda x: x.id, Work.authors),
-            start_year <= Work.year_published <= end_year,
-        )
-        with engine.session() as session:
-            results = session.find(
-                Work, *filter_criteria, skip=skip, limit=limit, sort=sort_expresion
-            )
-        return [loads(result.json()) for result in results]
+            for result in cls.__products_by_author(author_id=author_id)
+        ]
 
 
 work_repository = WorkRepository(Work)

@@ -4,6 +4,7 @@ from typing import Any
 from flask import Blueprint, request, Response, Request
 
 from services.v1.affiliation_api import affiliation_api_service
+from services.work import work_service
 from utils.encoder import JsonEncoder
 
 router = Blueprint("affiliation_api_v1", __name__)
@@ -15,6 +16,7 @@ def affiliation(
     idx: str | None = None,
     section: str | None = "info",
     tab: str | None = None,
+    typ: str | None = None
 ) -> dict[str, Any] | None:
     result = None
     if section == "info":
@@ -30,17 +32,12 @@ def affiliation(
                 page = request.args.get("page")
                 max_results = request.args.get("max")
                 sort = request.args.get("sort")
-                result = affiliation_api_service.get_production(
-                    idx=idx,
-                    start_year=start_year,
-                    end_year=end_year,
-                    page=page,
-                    max_results=max_results,
-                    sort=sort,
+                result = work_service.get_research_products_info_by_affiliation_csv(
+                    affiliation_id=idx, affiliation_type=typ
                 )
     else:
         result = None
-    return result
+    return {"data": result, "count": len(result)}
 
 
 @router.route("/<typ>/<id>", methods=["GET"])
@@ -52,7 +49,7 @@ def api_affiliation(
     tab: str | None = None,
     typ: str | None = None,
 ):
-    result = affiliation(request, idx=id, section=section, tab=tab)
+    result = affiliation(request, idx=id, section=section, tab=tab, typ=typ)
     if result:
         response = Response(
             response=json.dumps(result, cls=JsonEncoder),

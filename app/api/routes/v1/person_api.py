@@ -3,32 +3,25 @@ import json
 from flask import Blueprint, request, Response
 
 from services.v1.person_api import person_api_service
+from services.work import work_service
 from utils.encoder import JsonEncoder
 
 router = Blueprint("person_api_v1", __name__)
 
 
-@router.route("/<id>", methods=["GET"])
-def get_person(id: str | None):
-    data = request.args.get("data")
+@router.route("/<id>/<section>/<tab>", methods=["GET"])
+def get_person(id: str | None, section: str | None, tab: str | None):
 
-    if data == "info":
+    if section == "info":
         result = person_api_service.get_info(id)
-    elif data == "production":
+    elif section == "research" and tab == "products":
         max_results = request.args.get("max")
         page = request.args.get("page")
         start_year = request.args.get("start_year")
         end_year = request.args.get("end_year")
         sort = request.args.get("sort")
-        result = person_api_service.get_production(
-            idx=id,
-            max_results=max_results,
-            page=page,
-            start_year=start_year,
-            end_year=end_year,
-            sort=sort,
-            direction="ascending",
-        )
+        works = work_service.get_research_products_by_author_csv(author_id=id)
+        result = {"data": works, "count": len(works)}
     else:
         result = None
 

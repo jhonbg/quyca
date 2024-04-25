@@ -198,9 +198,12 @@ class WorkRepository(RepositoryBase):
         limit: int | None = None,
     ) -> list[dict[str, Any]]:
         return [
-            WorkListApp.model_validate_json(
-                Work(**result).model_dump_json()
-            ).model_dump()
+            {
+                **WorkListApp.model_validate_json(
+                    Work(**result).model_dump_json()
+                ).model_dump(exclude={"id"}),
+                "id": str(result["_id"]),
+            }
             for result in cls.__products_by_affiliation(
                 affiliation_id,
                 affiliation_type,
@@ -223,9 +226,12 @@ class WorkRepository(RepositoryBase):
         sort: str = "citations",
     ) -> list[dict[str, Any]]:
         return [
-            WorkCsv.model_validate_json(Work(**result).model_dump_json()).model_dump(
-                exclude={"titles"}
-            )
+            {
+                **WorkCsv.model_validate_json(
+                    Work(**result).model_dump_json()
+                ).model_dump(exclude={"titles", "id"}),
+                "id": str(result["_id"]),
+            }
             for result in cls.__products_by_affiliation(
                 affiliation_id,
                 affiliation_type,
@@ -252,9 +258,12 @@ class WorkRepository(RepositoryBase):
         cls, *, author_id: str, skip: int | None = None, limit: int | None = None
     ) -> list[dict[str, Any]]:
         return [
-            WorkListApp.model_validate_json(
-                Work(**result).model_dump_json()
-            ).model_dump()
+            {
+                **WorkListApp.model_validate_json(
+                    Work(**result).model_dump_json()
+                ).model_dump(exclude={"id"}),
+                "id": str(result["_id"]),
+            }
             for result in cls.__products_by_author(
                 author_id=author_id, skip=skip, limit=limit
             )
@@ -265,9 +274,12 @@ class WorkRepository(RepositoryBase):
         cls, *, author_id: str
     ) -> list[dict[str, Any]]:
         return [
-            WorkCsv.model_validate_json(Work(**result).model_dump_json()).model_dump(
-                exclude={"titles"}
-            )
+            {
+                **WorkCsv.model_validate_json(
+                    Work(**result).model_dump_json()
+                ).model_dump(exclude={"titles", "id"}),
+                "id": str(result["_id"]),
+            }
             for result in cls.__products_by_author(author_id=author_id)
         ]
 

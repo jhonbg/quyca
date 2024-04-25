@@ -47,13 +47,13 @@ class RepositoryBase(Generic[ModelType]):
             filter_criteria["$text"] = {"$search": keywords}
             projection = {"score": {"$meta": "textScore"}}
             sort_expresion = [("score", {"$meta": "textScore"})]
-        if sort:
-            projection = None
-            sort_expresion = (
-                desc(getattr(self.model, sort[:-1]))
-                if sort.endswith("-")
-                else asc(getattr(self.model, sort))
-            )
+        # if sort:
+        #     projection = None
+        #     sort_expresion = (
+        #         desc(getattr(self.model, sort[:-1]))
+        #         if sort.endswith("-")
+        #         else asc(getattr(self.model, sort))
+        #     )
         session = engine.get_collection(self.model)
         results = (
             session.find(filter_criteria, projection)

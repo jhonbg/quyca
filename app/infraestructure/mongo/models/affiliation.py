@@ -50,7 +50,7 @@ class Ranking(BaseBSONModel):
 class Relation(EmbeddedModel):
     id: ObjectId | None | str = None
     name: str | None | Name
-    type: Type | None = None
+    types: list[Type] | None = None
     
 
 class Affiliation(Model):

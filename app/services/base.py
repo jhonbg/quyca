@@ -16,14 +16,16 @@ InfoType = TypeVar("InfoType", bound=BaseModel)
 
 
 class ServiceBase(Generic[ModelType, RepositoryType, ParamsType, SearchType, InfoType]):
-    def __init__(self, repository: RepositoryType, search_class: SearchType, info_class: InfoType):
+    def __init__(
+        self, repository: RepositoryType, search_class: SearchType, info_class: InfoType
+    ):
         self.repository = repository
         self.search_class = search_class
         self.info_class = info_class
 
     def get_all(self, *, params: ParamsType) -> dict[str, Any]:
         db_objs = self.repository.get_all(
-            query={}, skip=params.skip, limit=params.limit, sort=params.sort
+            query={}, skip=params.skip, limit=params.max, sort=params.sort
         )
         total_results = self.repository.count()
         results = GeneralMultiResponse(total_results=total_results)
@@ -38,10 +40,12 @@ class ServiceBase(Generic[ModelType, RepositoryType, ParamsType, SearchType, Inf
         db_objs, count = self.repository.search(
             keywords=params.keywords,
             skip=params.skip,
-            limit=params.limit,
+            limit=params.max,
             sort=params.sort,
-            search=params.get_search
+            search=params.get_search,
         )
-        results = GeneralMultiResponse[Type[SearchType]](total_results=count)
+        results = GeneralMultiResponse[Type[SearchType]](
+            total_results=count, count=len(db_objs), page=params.page
+        )
         results.data = [self.search_class(**obj) for obj in db_objs]
         return loads(results.model_dump_json(exclude_none=True))

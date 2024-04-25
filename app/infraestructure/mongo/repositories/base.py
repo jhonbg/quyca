@@ -63,7 +63,8 @@ class RepositoryBase(Generic[ModelType]):
         )
         count = session.count_documents(filter_criteria)
         return [
-            loads(self.model(**result).model_dump_json()) for result in results
+            {**loads(self.model(**result).model_dump_json()), "id": str(result["_id"])}
+            for result in results
         ], count
 
     def count(self) -> int:

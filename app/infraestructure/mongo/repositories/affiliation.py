@@ -90,19 +90,25 @@ class AffiliationRepository(RepositoryBase):
         )
         affiliations_result = []
         for affiliation in affiliations:
+            id = (
+                affiliation["id"]
+                if isinstance(affiliation["id"], ObjectId)
+                else ObjectId(affiliation["id"])
+            )
             affiliation = engine.get_collection(Affiliation).find_one(
-                {"_id": affiliation["id"]}, {"names": 1, "types": 1}
+                {"_id": id}, {"names": 1, "types": 1}
             )
-            affiliations_result.append(
-                {
-                    "id": str(affiliation["_id"]),
-                    "name": next(
-                        filter(lambda x: x["lang"] == "es", affiliation["names"]),
-                        affiliation["names"][0],
-                    )["name"],
-                    "types": affiliation["types"],
-                }
-            )
+            if affiliation:
+                affiliations_result.append(
+                    {
+                        "id": str(affiliation["_id"]),
+                        "name": next(
+                            filter(lambda x: x["lang"] == "es", affiliation["names"]),
+                            affiliation["names"][0],
+                        )["name"],
+                        "types": affiliation["types"],
+                    }
+                )
         return affiliations_result
 
     def get_products(

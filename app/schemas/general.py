@@ -1,6 +1,6 @@
 from typing import TypeVar, Any, Generic
 
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, validator, Field, model_validator
 from odmantic.bson import BSON_TYPES_ENCODERS
 
 DBSchemaType = TypeVar("DBSchemaType", bound=BaseModel)
@@ -57,6 +57,9 @@ class QueryBase(BaseModel):
 
 
 class GeneralMultiResponse(BaseModel, Generic[DBSchemaType]):
-    total_results: int | None
+    total_results: int | None = None
     data: list[DBSchemaType] | None = Field(default_factory=list)
+    count: int | None = None
+    page: int | None = None
+    
     model_config = {"json_encoders": BSON_TYPES_ENCODERS}

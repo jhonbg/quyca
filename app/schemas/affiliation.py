@@ -51,7 +51,7 @@ class Ranking(BaseModel):
 class Relation(BaseModel):
     id: str | None = None
     name: str | None | Name
-    type: Type | None = None
+    types: list[Type] | None = None
 
 
 class AffiliationBase(BaseModel):
@@ -87,6 +87,7 @@ class AffiliationRelated(AffiliationBase):
     
 
 class AffiliationSearch(AffiliationBase):
+    id: str | None = Field(serialization_alias="_id")
     name: str | None = None
     logo: str | None = None
 
@@ -100,6 +101,10 @@ class AffiliationSearch(AffiliationBase):
                 self.logo = ext.url
                 self.external_urls.remove(ext)
         return self
+    
+    products_count: int | None = None
+    citations_count: int | None = None
+    affiliations: list[dict[str, Any]] | None = None
 
 class AffiliationReduced(BaseModel):
     id: str
@@ -113,7 +118,7 @@ class AffiliationRelatedInfo(BaseModel):
 
 
 class AffiliationQueryParams(QueryBase):
-    # type: str | None = None
+    type: str | None = None
 
     @property
     def get_search(self) -> dict[str, Any]:

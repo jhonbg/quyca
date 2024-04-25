@@ -1,7 +1,7 @@
 from typing import Any
 
 from services.base import ServiceBase
-from schemas.work import WorkQueryParams, WorkSearch, WorkProccessed
+from schemas.work import WorkQueryParams, WorkProccessed, WorkListApp
 from infraestructure.mongo.models.work import Work
 from infraestructure.mongo.repositories.work import (
     WorkRepository,
@@ -12,7 +12,7 @@ from services.source import source_service
 
 
 class WorkService(
-    ServiceBase[Work, WorkRepository, WorkQueryParams, WorkSearch, WorkProccessed]
+    ServiceBase[Work, WorkRepository, WorkQueryParams, WorkListApp, WorkProccessed]
 ):
     @staticmethod
     def update_authors_external_ids(work: WorkProccessed):
@@ -88,4 +88,4 @@ class WorkService(
         return WorkRepository.get_research_products_by_author_csv(author_id=author_id)
 
 
-work_service = WorkService(work_repository, WorkSearch, WorkProccessed)
+work_service = WorkService(work_repository, WorkListApp, WorkProccessed)

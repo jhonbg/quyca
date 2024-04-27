@@ -14,8 +14,8 @@ class Affiliation(BaseModel):
     id: Any
     name: str | None
     types: list[Type] = Field(default_factory=list)
-    start_date: int
-    end_date: int
+    start_date: int | str | None = None
+    end_date: int | str | None = None
 
 
 class ExternalId(BaseModel):

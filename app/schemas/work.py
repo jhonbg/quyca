@@ -156,16 +156,16 @@ class WorkProccessed(WorkListApp):
         self.bibliographic_info = None
         return self
 
-    @field_validator("subjects")
-    @classmethod
-    def get_openalex_source(cls, v: list[Subject]):
-        open_alex_subjects = list(filter(lambda x: x.source == "openalex", v))
-        maped_embedded_subjects = list(map(lambda x: x.subjects, open_alex_subjects))
-        return (
-            list(map(lambda x: {"name": x.name, "id": x.id}, *maped_embedded_subjects))
-            if maped_embedded_subjects
-            else []
-        )
+    # @field_validator("subjects")
+    # @classmethod
+    # def get_openalex_source(cls, v: list[Subject]):
+    #     open_alex_subjects = list(filter(lambda x: x.source == "openalex", v))
+    #     maped_embedded_subjects = list(map(lambda x: x.subjects, open_alex_subjects))
+    #     return (
+    #         list(map(lambda x: {"name": x.name, "id": x.id}, *maped_embedded_subjects))
+    #         if maped_embedded_subjects
+    #         else []
+    #     )
 
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
 

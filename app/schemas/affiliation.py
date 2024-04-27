@@ -87,9 +87,9 @@ class AffiliationRelated(AffiliationBase):
     
 
 class AffiliationSearch(AffiliationBase):
-    id: str | None = Field(serialization_alias="_id")
+    id: str | None = None
     name: str | None = None
-    logo: str | None = None
+    logo: str | None = ""
 
     @model_validator(mode="after")
     def get_name_and_logo(self) -> Self:

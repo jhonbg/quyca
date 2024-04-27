@@ -32,6 +32,8 @@ class Settings(BaseSettings):
 
     MONGO_URI: Optional[MongoDsn] = None
 
+    APP_PORT: str | int = 8010
+
     @validator("MONGO_URI", pre=True)
     def validate_mongo_uri(cls, v: Optional[str], values: Dict[str, Any]) -> str:
         return MongoDsn.build(

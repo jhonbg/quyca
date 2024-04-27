@@ -251,3 +251,4 @@ class Work(BaseModel):
 class WorkQueryParams(QueryBase):
     start_year: int | None = None
     end_year: int | None = None
+    sort: str | None = "title"

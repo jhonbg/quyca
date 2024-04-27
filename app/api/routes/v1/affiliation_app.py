@@ -48,6 +48,7 @@ def affiliation(
                     end_year=params.end_year,
                     skip=params.skip,
                     limit=params.max,
+                    sort=params.sort,
                 )
     else:
         result = None

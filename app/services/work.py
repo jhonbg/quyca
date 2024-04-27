@@ -45,6 +45,7 @@ class WorkService(
         end_year: int | None = None,
         skip: int | None = None,
         limit: int | None = None,
+        sort: str | None = "title",
     ) -> list[dict[str, Any]]:
         works = WorkRepository.get_research_products_by_affiliation(
             affiliation_id,
@@ -53,6 +54,7 @@ class WorkService(
             end_year=end_year,
             skip=skip,
             limit=limit,
+            sort=sort,
         )
         total_works = WorkRepository.count_papers(
             affiliation_id=affiliation_id, affiliation_type=affiliation_type
@@ -68,24 +70,32 @@ class WorkService(
         end_year: int | None = None,
         skip: int | None = None,
         limit: int | None = None,
+        sort: str | None = "title",
     ) -> list[dict[str, Any]]:
         return WorkRepository.get_research_products_by_affiliation_csv(
-            affiliation_id, affiliation_type
+            affiliation_id, affiliation_type, sort=sort
         )
 
     def get_research_products_by_author(
-        self, *, author_id: str, skip: int | None = None, limit: int | None = None
+        self,
+        *,
+        author_id: str,
+        skip: int | None = None,
+        limit: int | None = None,
+        sort: str | None = "title",
     ) -> list[dict[str, Any]]:
         works = WorkRepository.get_research_products_by_author(
-            author_id=author_id, skip=skip, limit=limit
+            author_id=author_id, skip=skip, limit=limit, sort=sort
         )
         total_works = WorkRepository.count_papers_by_author(author_id=author_id)
         return {"data": works, "total_results": total_works, "count": len(works)}
 
     def get_research_products_by_author_csv(
-        self, *, author_id: str
+        self, *, author_id: str, sort: str | None = "title"
     ) -> list[dict[str, Any]]:
-        return WorkRepository.get_research_products_by_author_csv(author_id=author_id)
+        return WorkRepository.get_research_products_by_author_csv(
+            author_id=author_id, sort=sort
+        )
 
 
 work_service = WorkService(work_repository, WorkListApp, WorkProccessed)

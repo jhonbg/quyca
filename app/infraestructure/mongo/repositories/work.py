@@ -8,11 +8,10 @@ from infraestructure.mongo.repositories.base import RepositoryBase
 from infraestructure.mongo.models.work import Work
 from infraestructure.mongo.models.person import Person
 from infraestructure.mongo.utils.session import engine
-from schemas.work import WorkCsv, WorkListApp, WorkProccessed
+from schemas.work import WorkCsv, WorkListApp
 
 
 class WorkRepository(RepositoryBase):
-    sort_traduction: dict[str, str] = {"citations": "works.citations_count.count"}
 
     @classmethod
     def wrap_pipeline(
@@ -29,7 +28,6 @@ class WorkRepository(RepositoryBase):
             if start_year and end_year
             else {}
         )
-        sort_field, direction = cls.get_sort_direction(sort)
         if affiliation_type == "institution":
             pipeline = [
                 {
@@ -159,6 +157,17 @@ class WorkRepository(RepositoryBase):
         ).get("counts", [])
         return citations_count
 
+    @staticmethod
+    def get_sort_direction(sort: str = "title") -> dict[str, int]:
+        sort_field, direction = (sort[:-1], -1) if sort.endswith("-") else (sort, 1)
+        sort_traduction: dict[str, str] = {
+            "citations": "citations_count.count",
+            "year": "year_published",
+            "title": "titles.0.title",
+            "alphabetical": "titles.0.title",
+        }
+        return {sort_traduction.get(sort_field, "titles.0.title"): direction}
+
     @classmethod
     def __products_by_affiliation(
         cls,
@@ -167,7 +176,7 @@ class WorkRepository(RepositoryBase):
         *,
         start_year: int | None = None,
         end_year: int | None = None,
-        sort: str = "citations",
+        sort: str = "title",
         skip: int | None = None,
         limit: int | None = None,
     ) -> Iterable[dict[str, Any]]:
@@ -179,7 +188,9 @@ class WorkRepository(RepositoryBase):
         works_pipeline += (
             [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
         )
-        works_pipeline += [{"$sort": {"titles.0.title": 1}}]
+        if sort == "year":
+            works_pipeline += [{"$match": {"year_published": {"$ne": None}}}]
+        works_pipeline += [{"$sort": cls.get_sort_direction(sort)}]
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
         results = engine.get_collection(collection).aggregate(works_pipeline)
@@ -193,7 +204,7 @@ class WorkRepository(RepositoryBase):
         *,
         start_year: int | None = None,
         end_year: int | None = None,
-        sort: str = "citations",
+        sort: str = "title",
         skip: int | None = None,
         limit: int | None = None,
     ) -> list[dict[str, Any]]:
@@ -223,7 +234,7 @@ class WorkRepository(RepositoryBase):
         *,
         start_year: int | None = None,
         end_year: int | None = None,
-        sort: str = "citations",
+        sort: str = "title",
     ) -> list[dict[str, Any]]:
         return [
             {
@@ -241,21 +252,33 @@ class WorkRepository(RepositoryBase):
             )
         ]
 
-    @staticmethod
+    @classmethod
     def __products_by_author(
-        *, author_id: str, skip: int | None = None, limit: int | None = None
+        cls,
+        *,
+        author_id: str,
+        skip: int | None = None,
+        limit: int | None = None,
+        sort: str | None = "title",
     ) -> Iterable[dict[str, Any]]:
         works_pipeline = [
             {"$match": {"authors.id": ObjectId(author_id)}},
         ]
-        works_pipeline += [{"$sort": {"titles.0.title": 1}}]
+        if sort == "year":
+            works_pipeline += [{"$match": {"year_published": {"$ne": None}}}]
+        works_pipeline += [{"$sort": cls.get_sort_direction()}]
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
         return engine.get_collection(Work).aggregate(works_pipeline)
 
     @classmethod
     def get_research_products_by_author(
-        cls, *, author_id: str, skip: int | None = None, limit: int | None = None
+        cls,
+        *,
+        author_id: str,
+        skip: int | None = None,
+        limit: int | None = None,
+        sort="title",
     ) -> list[dict[str, Any]]:
         return [
             {
@@ -265,13 +288,13 @@ class WorkRepository(RepositoryBase):
                 "id": str(result["_id"]),
             }
             for result in cls.__products_by_author(
-                author_id=author_id, skip=skip, limit=limit
+                author_id=author_id, skip=skip, limit=limit, sort=sort
             )
         ]
 
     @classmethod
     def get_research_products_by_author_csv(
-        cls, *, author_id: str
+        cls, *, author_id: str, sort: str = "title"
     ) -> list[dict[str, Any]]:
         return [
             {
@@ -280,7 +303,7 @@ class WorkRepository(RepositoryBase):
                 ).model_dump(exclude={"titles", "id"}),
                 "id": str(result["_id"]),
             }
-            for result in cls.__products_by_author(author_id=author_id)
+            for result in cls.__products_by_author(author_id=author_id, sort=sort)
         ]
 
 

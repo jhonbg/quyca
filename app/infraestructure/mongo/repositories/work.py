@@ -158,7 +158,7 @@ class WorkRepository(RepositoryBase):
         return citations_count
 
     @staticmethod
-    def get_sort_direction(sort: str = "title") -> dict[str, int]:
+    def get_sort_direction(sort: str = "title") -> list[dict]:
         sort_field, direction = (sort[:-1], -1) if sort.endswith("-") else (sort, 1)
         sort_traduction: dict[str, str] = {
             "citations": "citations_count.count",
@@ -166,7 +166,15 @@ class WorkRepository(RepositoryBase):
             "title": "titles.0.title",
             "alphabetical": "titles.0.title",
         }
-        return {sort_traduction.get(sort_field, "titles.0.title"): direction}
+        pipeline = []
+        if sort_field == "year":
+            pipeline += [{"$match": {"year_published": {"$ne": None}}}]
+        if sort_field == "citations":
+            pipeline += [{"$match": {"citations_count": {"$ne": []}}}]
+        pipeline += [
+            {"$sort": {sort_traduction.get(sort_field, "titles.0.title"): direction}}
+        ]
+        return pipeline
 
     @classmethod
     def __products_by_affiliation(
@@ -188,9 +196,7 @@ class WorkRepository(RepositoryBase):
         works_pipeline += (
             [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
         )
-        if sort == "year":
-            works_pipeline += [{"$match": {"year_published": {"$ne": None}}}]
-        works_pipeline += [{"$sort": cls.get_sort_direction(sort)}]
+        works_pipeline += cls.get_sort_direction(sort)
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
         results = engine.get_collection(collection).aggregate(works_pipeline)
@@ -259,26 +265,19 @@ class WorkRepository(RepositoryBase):
         author_id: str,
         skip: int | None = None,
         limit: int | None = None,
-        sort: str | None = "title",
+        sort: str = "alphabetical",
     ) -> Iterable[dict[str, Any]]:
         works_pipeline = [
             {"$match": {"authors.id": ObjectId(author_id)}},
         ]
-        if sort == "year":
-            works_pipeline += [{"$match": {"year_published": {"$ne": None}}}]
-        works_pipeline += [{"$sort": cls.get_sort_direction()}]
+        works_pipeline += cls.get_sort_direction(sort)
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
         return engine.get_collection(Work).aggregate(works_pipeline)
 
     @classmethod
     def get_research_products_by_author(
-        cls,
-        *,
-        author_id: str,
-        skip: int | None = None,
-        limit: int | None = None,
-        sort="title",
+        cls, *, author_id: str, skip: int | None = None, limit: int | None = None, sort: str = "alphabetical"
     ) -> list[dict[str, Any]]:
         return [
             {

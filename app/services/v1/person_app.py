@@ -652,7 +652,7 @@ class PersonAppService:
                 ):
                     data[name].append(work)
 
-        return {"plot": self.pies.citations_by_affiliation(data)}
+        return self.pies.citations_by_affiliation(data)
 
     def get_products_by_affiliations(self, idx, typ):
         affiliations = []
@@ -696,7 +696,7 @@ class PersonAppService:
 
                 data[name] += self.colav_db["works"].count_documents(query_dict)
 
-        return {"plot": self.pies.products_by_affiliation(data)}
+        return self.pies.products_by_affiliation(data)
 
     def get_apc_by_affiliations(self, idx, typ):
         affiliations = []
@@ -752,7 +752,7 @@ class PersonAppService:
                             source_db["apc"]["year_published"] = work["year_published"]
                             data[name].append(source_db["apc"])
 
-        return {"plot": self.pies.apc_by_affiliation(data, 2022)}
+        return self.pies.apc_by_affiliation(data, 2022)
 
     def get_h_by_affiliations(self, idx, typ):
         affiliations = []
@@ -810,7 +810,7 @@ class PersonAppService:
                         continue
                     data[name].append(citations)
 
-        return {"plot": self.pies.hindex_by_affiliation(data)}
+        return self.pies.hindex_by_affiliation(data)
 
     def get_products_by_publisher(self, idx):
         data = []
@@ -828,8 +828,7 @@ class PersonAppService:
                 if source_db["publisher"]:
                     data.append({"publisher": source_db["publisher"]})
 
-        result = self.pies.products_by_publisher(data)
-        return {"plot": result}
+        return self.pies.products_by_publisher(data)
 
     def get_products_by_subject(self, idx, level=0):
         if not level:
@@ -850,7 +849,7 @@ class PersonAppService:
                     data.append({"subject": {"name": name}})
 
         result = self.pies.products_by_subject(data)
-        return {"plot": result}
+        return result
 
     def get_products_by_database(self, idx):
         data = []
@@ -860,7 +859,7 @@ class PersonAppService:
             data.append(work["updated"])
 
         result = self.pies.products_by_database(data)
-        return {"plot": result}
+        return result
 
     def get_products_by_open_access_status(self, idx):
         data = []
@@ -876,10 +875,11 @@ class PersonAppService:
         result = self.pies.products_by_open_access_status(data)
         if result:
             return {
-                "plot": result,
+                "plot": result["plot"],
                 "openSum": sum(
-                    [oa["value"] for oa in result if oa["name"] != "closed"]
+                    [oa["value"] for oa in result["plot"] if oa["name"] != "closed"]
                 ),
+                "sum": result["sum"]
             }
         else:
             return {"plot": None, "openSum": 0}
@@ -912,7 +912,7 @@ class PersonAppService:
             data.append(work)
         print(data)
         result = self.pies.products_by_age(data)
-        return {"plot": result}
+        return result
 
     def get_products_by_scienti_rank(self, idx):
         data = []
@@ -920,8 +920,7 @@ class PersonAppService:
             {"authors.id": ObjectId(idx), "ranking": {"$ne": []}}, {"ranking": 1}
         ):
             data.append(work)
-        result = self.pies.products_by_scienti_rank(data)
-        return {"plot": result}
+        return self.pies.products_by_scienti_rank(data)
 
     def get_products_by_scimago_rank(self, idx):
         data = []
@@ -941,8 +940,7 @@ class PersonAppService:
         ]
         for work in self.colav_db["works"].aggregate(pipeline):
             data.append(work)
-        result = self.pies.products_by_scimago_rank(data)
-        return {"plot": result}
+        return self.pies.products_by_scimago_rank(data)
 
     def get_publisher_same_institution(self, idx):
         data = []
@@ -984,8 +982,7 @@ class PersonAppService:
         ]
         for work in self.colav_db["works"].aggregate(pipeline):
             data.append(work)
-        result = self.pies.products_editorial_same_institution(data, institution)
-        return {"plot": result}
+        return self.pies.products_editorial_same_institution(data, institution)
 
     def get_coauthorships_worldmap(self, idx):
         data = []

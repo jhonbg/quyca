@@ -920,8 +920,7 @@ class PersonAppService:
             {"authors.id": ObjectId(idx), "ranking": {"$ne": []}}, {"ranking": 1}
         ):
             data.append(work)
-        result = self.pies.products_by_scienti_rank(data)
-        return {"plot": result}
+        return self.pies.products_by_scienti_rank(data)
 
     def get_products_by_scimago_rank(self, idx):
         data = []

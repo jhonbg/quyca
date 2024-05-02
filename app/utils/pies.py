@@ -199,7 +199,7 @@ class pies:
         for work in data:
             rank = None
             for ranking in work["ranking"]:
-                if ranking["source"] == "scienti":
+                if ranking["source"] == "scienti" and ranking["rank"] is not None:
                     rank = ranking["rank"].split("_")[-1]
                     break
             if rank in ["A", "A1", "B", "C", "D"]:

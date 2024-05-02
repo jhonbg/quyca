@@ -159,6 +159,25 @@ class WorkRepository(RepositoryBase):
         ).get("counts", [])
         return citations_count
 
+    @staticmethod
+    def get_sort_direction(sort: str = "title") -> list[dict]:
+        sort_field, direction = (sort[:-1], -1) if sort.endswith("-") else (sort, 1)
+        sort_traduction: dict[str, str] = {
+            "citations": "citations_count.count",
+            "year": "year_published",
+            "title": "titles.0.title",
+            "alphabetical": "titles.0.title",
+        }
+        pipeline = []
+        if sort_field == "year":
+            pipeline += [{"$match": {"year_published": {"$ne": None}}}]
+        if sort_field == "citations":
+            pipeline += [{"$match": {"citations_count": {"$ne": []}}}]
+        pipeline += [
+            {"$sort": {sort_traduction.get(sort_field, "titles.0.title"): direction}}
+        ]
+        return pipeline
+
     @classmethod
     def __products_by_affiliation(
         cls,
@@ -179,7 +198,7 @@ class WorkRepository(RepositoryBase):
         works_pipeline += (
             [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
         )
-        works_pipeline += [{"$sort": {"titles.0.title": 1}}]
+        works_pipeline += cls.get_sort_direction(sort)
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
         results = engine.get_collection(collection).aggregate(works_pipeline)
@@ -248,7 +267,7 @@ class WorkRepository(RepositoryBase):
         works_pipeline = [
             {"$match": {"authors.id": ObjectId(author_id)}},
         ]
-        works_pipeline += [{"$sort": {"titles.0.title": 1}}]
+        works_pipeline += cls.get_sort_direction(sort)
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
         return engine.get_collection(Work).aggregate(works_pipeline)

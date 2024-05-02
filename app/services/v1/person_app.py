@@ -875,10 +875,11 @@ class PersonAppService:
         result = self.pies.products_by_open_access_status(data)
         if result:
             return {
-                "plot": result,
+                "plot": result["plot"],
                 "openSum": sum(
-                    [oa["value"] for oa in result if oa["name"] != "closed"]
+                    [oa["value"] for oa in result["plot"] if oa["name"] != "closed"]
                 ),
+                "sum": result["sum"]
             }
         else:
             return {"plot": None, "openSum": 0}

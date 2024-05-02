@@ -260,9 +260,14 @@ class WorkRepository(RepositoryBase):
             )
         ]
 
-    @staticmethod
+    @classmethod
     def __products_by_author(
-        *, author_id: str, skip: int | None = None, limit: int | None = None
+        cls,
+        *,
+        author_id: str,
+        skip: int | None = None,
+        limit: int | None = None,
+        sort: str = "alphabetical",
     ) -> Iterable[dict[str, Any]]:
         works_pipeline = [
             {"$match": {"authors.id": ObjectId(author_id)}},
@@ -274,7 +279,7 @@ class WorkRepository(RepositoryBase):
 
     @classmethod
     def get_research_products_by_author(
-        cls, *, author_id: str, skip: int | None = None, limit: int | None = None
+        cls, *, author_id: str, skip: int | None = None, limit: int | None = None, sort: str = "alphabetical"
     ) -> list[dict[str, Any]]:
         return [
             {
@@ -284,7 +289,7 @@ class WorkRepository(RepositoryBase):
                 "id": str(result["_id"]),
             }
             for result in cls.__products_by_author(
-                author_id=author_id, skip=skip, limit=limit
+                author_id=author_id, skip=skip, limit=limit, sort=sort
             )
         ]
 

@@ -250,3 +250,6 @@ class pies:
             result_list.append({"name": idx, "value": value})
         result_list = self.get_percentage(result_list)
         return result_list
+    
+    def title_words(self, data: list[dict[str, str | int]]) -> dict[str, list[dict[str, int | str ]] | int]:
+        return self.get_percentage(data)

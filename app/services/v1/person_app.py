@@ -602,7 +602,7 @@ class PersonAppService:
             if not "top_words" in data.keys():
                 return {"plot": None}
             data = data["top_words"]
-            return {"plot": data}
+            return {"plot": data} if len(data) > 5 else self.pies.title_words(data)
         else:
             return {"plot": None}
 

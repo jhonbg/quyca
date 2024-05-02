@@ -90,6 +90,8 @@ class PersonSearch(PersonBase):
                 v,
             )
         )
+    products_count: int | None = None
+    citations_count: int | None = None
 
 
 class PersonQueryParams(QueryBase):

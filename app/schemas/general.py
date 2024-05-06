@@ -36,10 +36,10 @@ class Status(BaseModel):
 
 
 class QueryBase(BaseModel):
-    max: int = Field(100, gt=0)
+    max: int = Field(10, gt=0)
     page: int = 1
     keywords: str | None = ""
-    sort: str | None = None
+    sort: str = ""
 
     skip: int | None = None
 

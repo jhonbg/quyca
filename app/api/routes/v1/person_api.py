@@ -5,6 +5,7 @@ from flask import Blueprint, request, Response
 from services.v1.person_api import person_api_service
 from services.work import work_service
 from utils.encoder import JsonEncoder
+from schemas.general import QueryBase
 
 router = Blueprint("person_api_v1", __name__)
 
@@ -15,12 +16,10 @@ def get_person(id: str | None, section: str | None, tab: str | None):
     if section == "info":
         result = person_api_service.get_info(id)
     elif section == "research" and tab == "products":
-        max_results = request.args.get("max")
-        page = request.args.get("page")
-        start_year = request.args.get("start_year")
-        end_year = request.args.get("end_year")
-        sort = request.args.get("sort")
-        works = work_service.get_research_products_by_author_csv(author_id=id)
+        params = QueryBase(**request.args)
+        works = work_service.get_research_products_by_author_csv(
+            author_id=id, sort=params.sort, skip=params.skip, limit=params.max
+        )
         result = {"data": works, "count": len(works)}
     else:
         result = None

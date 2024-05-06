@@ -241,6 +241,8 @@ class WorkRepository(RepositoryBase):
         start_year: int | None = None,
         end_year: int | None = None,
         sort: str = "title",
+        skip: int | None = None,
+        limit: int | None = None,
     ) -> list[dict[str, Any]]:
         return [
             {
@@ -255,6 +257,8 @@ class WorkRepository(RepositoryBase):
                 start_year=start_year,
                 end_year=end_year,
                 sort=sort,
+                skip=skip,
+                limit=limit,
             )
         ]
 
@@ -277,7 +281,12 @@ class WorkRepository(RepositoryBase):
 
     @classmethod
     def get_research_products_by_author(
-        cls, *, author_id: str, skip: int | None = None, limit: int | None = None, sort: str = "alphabetical"
+        cls,
+        *,
+        author_id: str,
+        skip: int | None = None,
+        limit: int | None = None,
+        sort: str = "alphabetical",
     ) -> list[dict[str, Any]]:
         return [
             {
@@ -293,7 +302,12 @@ class WorkRepository(RepositoryBase):
 
     @classmethod
     def get_research_products_by_author_csv(
-        cls, *, author_id: str, sort: str = "title"
+        cls,
+        *,
+        author_id: str,
+        sort: str = "title",
+        skip: int | None = None,
+        limit: int | None = None,
     ) -> list[dict[str, Any]]:
         return [
             {
@@ -302,7 +316,9 @@ class WorkRepository(RepositoryBase):
                 ).model_dump(exclude={"titles", "id"}),
                 "id": str(result["_id"]),
             }
-            for result in cls.__products_by_author(author_id=author_id, sort=sort)
+            for result in cls.__products_by_author(
+                author_id=author_id, sort=sort, skip=skip, limit=limit
+            )
         ]
 
 

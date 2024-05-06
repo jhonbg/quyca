@@ -73,7 +73,7 @@ class WorkService(
         sort: str | None = "title",
     ) -> list[dict[str, Any]]:
         return WorkRepository.get_research_products_by_affiliation_csv(
-            affiliation_id, affiliation_type, sort=sort
+            affiliation_id, affiliation_type, sort=sort, skip=skip, limit=limit
         )
 
     def get_research_products_by_author(
@@ -91,10 +91,15 @@ class WorkService(
         return {"data": works, "total_results": total_works, "count": len(works)}
 
     def get_research_products_by_author_csv(
-        self, *, author_id: str, sort: str | None = "title"
+        self,
+        *,
+        author_id: str,
+        sort: str | None = "title",
+        skip: int | None = None,
+        limit: int | None = None,
     ) -> list[dict[str, Any]]:
         return WorkRepository.get_research_products_by_author_csv(
-            author_id=author_id, sort=sort
+            author_id=author_id, sort=sort, skip=skip, limit=limit
         )
 
 

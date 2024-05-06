@@ -6,6 +6,7 @@ from flask import Blueprint, request, Response, Request
 from services.v1.affiliation_api import affiliation_api_service
 from services.work import work_service
 from utils.encoder import JsonEncoder
+from schemas.general import QueryBase
 
 router = Blueprint("affiliation_api_v1", __name__)
 
@@ -27,13 +28,13 @@ def affiliation(
             if plot:
                 result = None
             else:
-                start_year = request.args.get("start_year")
-                end_year = request.args.get("end_year")
-                page = request.args.get("page")
-                max_results = request.args.get("max")
-                sort = request.args.get("sort")
+                params = QueryBase(**request.args)
                 result = work_service.get_research_products_info_by_affiliation_csv(
-                    affiliation_id=idx, affiliation_type=typ
+                    affiliation_id=idx,
+                    affiliation_type=typ,
+                    skip=params.skip,
+                    limit=params.max,
+                    sort=params.sort,
                 )
     else:
         result = None

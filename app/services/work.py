@@ -30,6 +30,21 @@ class WorkService(
                 serials[serial.source] = serial.id
             work.source.serials = serials
 
+    def count_papers(
+        self,
+        *,
+        affiliation_id: str | None = None,
+        affiliation_type: str | None = None,
+        author_id: str | None = None,
+    ) -> int:
+        if affiliation_id and affiliation_type:
+            return WorkRepository.count_papers(
+                affiliation_id=affiliation_id, affiliation_type=affiliation_type
+            )
+        if author_id:
+            return WorkRepository.count_papers_by_author(author_id=author_id)
+        return 0
+
     def get_info(self, *, id: str) -> dict[str, Any]:
         work = super().get_by_id(id=id)
         self.update_authors_external_ids(work)

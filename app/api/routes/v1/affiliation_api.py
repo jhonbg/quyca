@@ -7,6 +7,7 @@ from services.v1.affiliation_api import affiliation_api_service
 from services.work import work_service
 from utils.encoder import JsonEncoder
 from schemas.general import QueryBase
+from core.config import settings
 
 router = Blueprint("affiliation_api_v1", __name__)
 
@@ -17,7 +18,7 @@ def affiliation(
     idx: str | None = None,
     section: str | None = "info",
     tab: str | None = None,
-    typ: str | None = None
+    typ: str | None = None,
 ) -> dict[str, Any] | None:
     result = None
     if section == "info":
@@ -36,9 +37,21 @@ def affiliation(
                     limit=params.max,
                     sort=params.sort,
                 )
+                total = work_service.count_papers(
+                    affiliation_id=idx, affiliation_type=typ
+                )
     else:
         result = None
-    return {"data": result, "count": len(result)}
+    return {
+        "data": result,
+        "info": {
+            "total_products": total,
+            "count": len(result),
+            "cursor": params.get_cursor(
+                path=f"{settings.API_V1_STR}/affiliation/{idx}/research/products"
+            ),
+        },
+    }
 
 
 @router.route("/<typ>/<id>", methods=["GET"])

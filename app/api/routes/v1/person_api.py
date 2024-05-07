@@ -6,6 +6,7 @@ from services.v1.person_api import person_api_service
 from services.work import work_service
 from utils.encoder import JsonEncoder
 from schemas.general import QueryBase
+from core.config import settings
 
 router = Blueprint("person_api_v1", __name__)
 
@@ -20,7 +21,17 @@ def get_person(id: str | None, section: str | None, tab: str | None):
         works = work_service.get_research_products_by_author_csv(
             author_id=id, sort=params.sort, skip=params.skip, limit=params.max
         )
-        result = {"data": works, "count": len(works)}
+        total = work_service.count_papers(author_id=id)
+        result = {
+            "data": works,
+            "info": {
+                "total_products": total,
+                "count": len(works),
+                "cursor": params.get_cursor(
+                    path=f"{settings.API_V1_STR}/person/{id}/research/products"
+                ),
+            },
+        }
     else:
         result = None
 

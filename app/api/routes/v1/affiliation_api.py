@@ -40,18 +40,19 @@ def affiliation(
                 total = work_service.count_papers(
                     affiliation_id=idx, affiliation_type=typ
                 )
+                return {
+                    "data": result,
+                    "info": {
+                        "total_products": total,
+                        "count": len(result),
+                        "cursor": params.get_cursor(
+                            path=f"{settings.API_V1_STR}/affiliation/{typ}/{idx}/research/products"
+                        ),
+                    },
+                }
     else:
         result = None
-    return {
-        "data": result,
-        "info": {
-            "total_products": total,
-            "count": len(result),
-            "cursor": params.get_cursor(
-                path=f"{settings.API_V1_STR}/affiliation/{idx}/research/products"
-            ),
-        },
-    }
+    return {"date": result}
 
 
 @router.route("/<typ>/<id>", methods=["GET"])

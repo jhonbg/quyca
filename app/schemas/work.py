@@ -102,14 +102,17 @@ class WorkBase(BaseModel):
 
 
 class WorkSearch(WorkBase):
-    product_type: list[ProductType] | None = Field(default_factory=list)
+    product_type: list[ProductType] | ProductType | None = Field(default_factory=list)
     types: list[Type] = Field(default_factory=list, exclude=True)
 
     @model_validator(mode="after")
     def get_types(self):
-        self.product_type = list(
+        types = list(
             map(lambda x: ProductType(name=x.type, source=x.source), self.types)
         )
+        gerarchy = ["openalex", "scienti", "minciencias", "scholar"]
+        v = sorted(types, key=lambda x: gerarchy.index(x.source))
+        self.product_type = v[0] if v else None
         return self
 
     @field_validator("citations_count")

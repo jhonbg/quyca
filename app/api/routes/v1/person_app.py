@@ -33,7 +33,11 @@ def person(
             else:
                 params = WorkQueryParams(**request.args)
                 result = work_service.get_research_products_by_author(
-                    author_id=id, skip=params.skip, limit=params.max, sort=params.sort
+                    author_id=id,
+                    skip=params.skip,
+                    limit=params.max,
+                    sort=params.sort,
+                    filters=params.get_filter(),
                 )
     else:
         result = None

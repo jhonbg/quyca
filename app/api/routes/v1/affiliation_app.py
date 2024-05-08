@@ -44,11 +44,10 @@ def affiliation(
                 result = work_service.get_research_products_by_affiliation(
                     affiliation_id=idx,
                     affiliation_type=aff_type,
-                    start_year=params.start_year,
-                    end_year=params.end_year,
                     skip=params.skip,
                     limit=params.max,
                     sort=params.sort,
+                    filters=params.get_filter(),
                 )
     else:
         result = None

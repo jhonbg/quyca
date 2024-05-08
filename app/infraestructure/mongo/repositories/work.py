@@ -1,7 +1,5 @@
-from json import loads
 from typing import Any, Iterable
 
-from odmantic.query import desc, asc
 from bson import ObjectId
 
 from infraestructure.mongo.repositories.base import RepositoryBase
@@ -9,25 +7,14 @@ from infraestructure.mongo.models.work import Work
 from infraestructure.mongo.models.person import Person
 from infraestructure.mongo.utils.session import engine
 from schemas.work import WorkCsv, WorkListApp
+from core.config import settings
 
 
 class WorkRepository(RepositoryBase):
-
     @classmethod
     def wrap_pipeline(
-        cls,
-        affiliation_id: str,
-        affiliation_type: str,
-        *,
-        start_year: int = None,
-        end_year: int = None,
-        sort: str = "citations",
+        cls, affiliation_id: str, affiliation_type: str
     ) -> list[dict[str, Any]]:
-        match_works = (
-            {"works.year_published": {"$gte": start_year, "$lte": end_year}}
-            if start_year and end_year
-            else {}
-        )
         if affiliation_type == "institution":
             pipeline = [
                 {
@@ -35,14 +22,8 @@ class WorkRepository(RepositoryBase):
                         "authors.affiliations.id": ObjectId(affiliation_id),
                     },
                 },
-                # {"$sort": {cls.sort_traduction[sort_field]: -1}},
             ]
-            year_published_match = (
-                [{"$match": {"year_published": {"$gte": start_year, "$lte": end_year}}}]
-                if start_year and end_year
-                else []
-            )
-            return pipeline + year_published_match
+            return pipeline
         pipeline = [
             {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
             {"$project": {"affiliations": 1, "full_name": 1, "_id": 1}},
@@ -55,7 +36,6 @@ class WorkRepository(RepositoryBase):
                 }
             },
             {"$unwind": "$works"},
-            {"$match": match_works},
             {"$group": {"_id": "$works._id", "works": {"$first": "$works"}}},
         ]
         return pipeline
@@ -95,11 +75,12 @@ class WorkRepository(RepositoryBase):
         return citations_count
 
     @classmethod
-    def count_papers_by_author(cls, *, author_id: str) -> int:
+    def count_papers_by_author(cls, *, author_id: str, filters: dict[str, Any] = {}) -> int:
         count_papers_pipeline = [
             {"$match": {"authors.id": ObjectId(author_id)}},
             {"$count": "total"},
         ]
+        count_papers_pipeline += cls.get_filters(filters)
         papers_count = next(
             engine.get_collection(Work).aggregate(count_papers_pipeline),
             {"total": 0},
@@ -107,13 +88,24 @@ class WorkRepository(RepositoryBase):
         return papers_count
 
     @classmethod
-    def count_papers(cls, *, affiliation_id: str, affiliation_type: str) -> int:
+    def count_papers(
+        cls,
+        *,
+        affiliation_id: str,
+        affiliation_type: str,
+        filters: dict[str, Any] = {},
+    ) -> int:
         affiliation_type = (
             "institution" if affiliation_type == "Education" else affiliation_type
         )
         count_papers_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
-        count_papers_pipeline.append({"$count": "total"})
         collection = Person if affiliation_type != "institution" else Work
+        count_papers_pipeline += (
+            [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
+        )
+        count_papers_pipeline += cls.get_filters(filters)
+        count_papers_pipeline.append({"$count": "total"})
+
         papers_count = next(
             engine.get_collection(collection).aggregate(count_papers_pipeline),
             {"total": 0},
@@ -177,17 +169,31 @@ class WorkRepository(RepositoryBase):
         return pipeline
 
     @classmethod
+    def filter_translation(cls, v: Any) -> dict[str, Any]:
+        return {
+            "type": {"$match": {"types.type": v}},
+            "start_year": {"$match": {"year_published": {"$gte": v}}},
+            "end_year": {"$match": {"year_published": {"$lte": v}}},
+        }
+
+    @classmethod
+    def get_filters(cls, filters: dict[str, Any]) -> list[dict[str, Any]]:
+        f_list = []
+        for k, v in filters.items():
+            f_list += [cls.filter_translation(v)[k]] if v else []
+        return f_list
+
+    @classmethod
     def __products_by_affiliation(
         cls,
         affiliation_id: str,
         affiliation_type: str,
         *,
-        start_year: int | None = None,
-        end_year: int | None = None,
         sort: str = "title",
         skip: int | None = None,
         limit: int | None = None,
-    ) -> Iterable[dict[str, Any]]:
+        filters: dict[str, str] = {},
+    ) -> tuple[Iterable[dict[str, Any]], dict[str, Any]]:
         affiliation_type = (
             "institution" if affiliation_type == "Education" else affiliation_type
         )
@@ -196,11 +202,18 @@ class WorkRepository(RepositoryBase):
         works_pipeline += (
             [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
         )
+        # filtering
+        works_pipeline += cls.get_filters(filters)
+        available_filters = cls.get_available_filters(
+            pipeline=works_pipeline, collection=collection
+        )
+        # sort
         works_pipeline += cls.get_sort_direction(sort)
+        # navigation
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
         results = engine.get_collection(collection).aggregate(works_pipeline)
-        return results
+        return results, available_filters
 
     @classmethod
     def get_research_products_by_affiliation(
@@ -208,12 +221,19 @@ class WorkRepository(RepositoryBase):
         affiliation_id: str,
         affiliation_type: str,
         *,
-        start_year: int | None = None,
-        end_year: int | None = None,
         sort: str = "title",
         skip: int | None = None,
         limit: int | None = None,
-    ) -> list[dict[str, Any]]:
+        filters: dict | None = {},
+    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        results, available_filters = cls.__products_by_affiliation(
+            affiliation_id,
+            affiliation_type,
+            sort=sort,
+            skip=skip,
+            limit=limit,
+            filters=filters,
+        )
         return [
             {
                 **WorkListApp.model_validate_json(
@@ -221,16 +241,8 @@ class WorkRepository(RepositoryBase):
                 ).model_dump(exclude={"id"}),
                 "id": str(result["_id"]),
             }
-            for result in cls.__products_by_affiliation(
-                affiliation_id,
-                affiliation_type,
-                start_year=start_year,
-                end_year=end_year,
-                sort=sort,
-                skip=skip,
-                limit=limit,
-            )
-        ]
+            for result in results
+        ], available_filters
 
     @classmethod
     def get_research_products_by_affiliation_csv(
@@ -238,8 +250,6 @@ class WorkRepository(RepositoryBase):
         affiliation_id: str,
         affiliation_type: str,
         *,
-        start_year: int | None = None,
-        end_year: int | None = None,
         sort: str = "title",
         skip: int | None = None,
         limit: int | None = None,
@@ -254,8 +264,6 @@ class WorkRepository(RepositoryBase):
             for result in cls.__products_by_affiliation(
                 affiliation_id,
                 affiliation_type,
-                start_year=start_year,
-                end_year=end_year,
                 sort=sort,
                 skip=skip,
                 limit=limit,
@@ -270,14 +278,19 @@ class WorkRepository(RepositoryBase):
         skip: int | None = None,
         limit: int | None = None,
         sort: str = "alphabetical",
-    ) -> Iterable[dict[str, Any]]:
+        filters: dict | None = {},
+    ) -> tuple[Iterable[dict[str, Any]], dict[str, str]]:
         works_pipeline = [
             {"$match": {"authors.id": ObjectId(author_id)}},
         ]
+        works_pipeline += cls.get_filters(filters)
+        available_filters = cls.get_available_filters(
+            pipeline=works_pipeline, collection=Work
+        )
         works_pipeline += cls.get_sort_direction(sort)
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
-        return engine.get_collection(Work).aggregate(works_pipeline)
+        return engine.get_collection(Work).aggregate(works_pipeline), available_filters
 
     @classmethod
     def get_research_products_by_author(
@@ -287,7 +300,11 @@ class WorkRepository(RepositoryBase):
         skip: int | None = None,
         limit: int | None = None,
         sort: str = "alphabetical",
-    ) -> list[dict[str, Any]]:
+        filters: dict | None = {},
+    ) -> tuple[list[dict[str, Any]], dict[str, str]]:
+        results, available_filters = cls.__products_by_author(
+            author_id=author_id, skip=skip, limit=limit, sort=sort, filters=filters
+        )
         return [
             {
                 **WorkListApp.model_validate_json(
@@ -295,10 +312,8 @@ class WorkRepository(RepositoryBase):
                 ).model_dump(exclude={"id"}),
                 "id": str(result["_id"]),
             }
-            for result in cls.__products_by_author(
-                author_id=author_id, skip=skip, limit=limit, sort=sort
-            )
-        ]
+            for result in results
+        ], available_filters
 
     @classmethod
     def get_research_products_by_author_csv(
@@ -320,6 +335,26 @@ class WorkRepository(RepositoryBase):
                 author_id=author_id, sort=sort, skip=skip, limit=limit
             )
         ]
+
+    @classmethod
+    def get_available_filters(
+        cls, *, pipeline: list[dict[str, Any]], collection: Any
+    ) -> dict[str, Any]:
+        filters = {}
+        # type filter
+        pipeline = pipeline.copy()
+        pipeline += [{"$unwind": "$types"}, {"$group": {"_id": "$types.type"}}]
+        types = list(
+            map(
+                lambda x: {
+                    "label": settings.TYPES.get(x["_id"], x["_id"]),
+                    "value": x["_id"],
+                },
+                engine.get_collection(collection).aggregate(pipeline),
+            )
+        )
+        filters["type"] = types
+        return filters
 
 
 work_repository = WorkRepository(Work)

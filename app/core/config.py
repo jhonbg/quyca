@@ -55,6 +55,33 @@ class Settings(BaseSettings):
         "scienti": ""
     }
 
+    TYPES: dict[str, str] = {
+        "peer-review": "Revisión por partes",
+        "techreport": "Informe técnico",
+        "masterthesis": "Tesis de maestría",
+        "dataset": "Conjunto de datos",
+        "editorial": "Editorial",
+        "Publicado en revista especializada": "Publicado en revista especializada",
+        "report": "Informe",
+        "Artículos": "Artículos",
+        "letter": "Carta",
+        "Corto (resumen)": "Resumen",
+        "reference-entry": "Entrada de referencia",
+        "dissertation": "Disertación",
+        "standard": "Estándar",
+        "Artículos de investigación": "Artículos de investigación",
+        "Artículo": "Artículo",
+        "incollection": "En colección",
+        "book": "Libro",
+        "article": "Artículo",
+        "Caso clínico": "Caso clínico",
+        "paratext": "Paratexto",
+        "misc": "Misceláneo",
+        "erratum": "Errata",
+        "Revisión (Survey)": "Revisión",
+        "inproceedings": "En actas"
+    }
+
 
 @lru_cache()
 def get_settings() -> BaseSettings:

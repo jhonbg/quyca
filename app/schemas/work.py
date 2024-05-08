@@ -255,3 +255,11 @@ class WorkQueryParams(QueryBase):
     start_year: int | None = None
     end_year: int | None = None
     sort: str | None = "title"
+    type: str | None = None
+
+    def get_filter(self) -> dict[str, Any]:
+        return {
+            "start_year": self.start_year,
+            "end_year": self.end_year,
+            "type": self.type,
+        }

@@ -161,8 +161,8 @@ class WorkRepository(RepositoryBase):
         pipeline = []
         if sort_field == "year":
             pipeline += [{"$match": {"year_published": {"$ne": None}}}]
-        if sort_field == "citations":
-            pipeline += [{"$match": {"citations_count": {"$ne": []}}}]
+        # if sort_field == "citations":
+        #     pipeline += [{"$match": {"citations_count": {"$ne": []}}}]
         pipeline += [
             {"$sort": {sort_traduction.get(sort_field, "titles.0.title"): direction}}
         ]

@@ -420,25 +420,7 @@ class AffiliationAppService:
             return None
 
     def get_products_by_year_by_type(self, idx, typ=None, aff_type: str | None = None):
-        data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                for work in self.colav_db["works"].find(
-                    {"authors.id": author["_id"], "year_published": {"$exists": 1}},
-                    {"year_published": 1, "types": 1},
-                ):
-                    data.append(work)
-        else:
-            for work in self.colav_db["works"].find(
-                {
-                    "authors.affiliations.id": ObjectId(idx),
-                    "year_published": {"$exists": 1},
-                },
-                {"year_published": 1, "types": 1},
-            ):
-                data.append(work)
+        data, f = WorkRepository.get_research_products_by_affiliation(idx, aff_type)
         result = self.bars.products_by_year_by_type(data)
         if result:
             return {"plot": result}

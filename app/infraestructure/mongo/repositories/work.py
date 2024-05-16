@@ -75,7 +75,9 @@ class WorkRepository(RepositoryBase):
         return citations_count
 
     @classmethod
-    def count_papers_by_author(cls, *, author_id: str, filters: dict[str, Any] = {}) -> int:
+    def count_papers_by_author(
+        cls, *, author_id: str, filters: dict[str, Any] = {}
+    ) -> int:
         count_papers_pipeline = [
             {"$match": {"authors.id": ObjectId(author_id)}},
             {"$count": "total"},
@@ -254,6 +256,13 @@ class WorkRepository(RepositoryBase):
         skip: int | None = None,
         limit: int | None = None,
     ) -> list[dict[str, Any]]:
+        works, f = cls.__products_by_affiliation(
+            affiliation_id,
+            affiliation_type,
+            sort=sort,
+            skip=skip,
+            limit=limit,
+        )
         return [
             {
                 **WorkCsv.model_validate_json(
@@ -261,13 +270,7 @@ class WorkRepository(RepositoryBase):
                 ).model_dump(exclude={"titles", "id"}),
                 "id": str(result["_id"]),
             }
-            for result in cls.__products_by_affiliation(
-                affiliation_id,
-                affiliation_type,
-                sort=sort,
-                skip=skip,
-                limit=limit,
-            )
+            for result in works
         ]
 
     @classmethod
@@ -324,6 +327,9 @@ class WorkRepository(RepositoryBase):
         skip: int | None = None,
         limit: int | None = None,
     ) -> list[dict[str, Any]]:
+        works, f = cls.__products_by_author(
+                author_id=author_id, sort=sort, skip=skip, limit=limit
+            )
         return [
             {
                 **WorkCsv.model_validate_json(
@@ -331,9 +337,7 @@ class WorkRepository(RepositoryBase):
                 ).model_dump(exclude={"titles", "id"}),
                 "id": str(result["_id"]),
             }
-            for result in cls.__products_by_author(
-                author_id=author_id, sort=sort, skip=skip, limit=limit
-            )
+            for result in works
         ]
 
     @classmethod

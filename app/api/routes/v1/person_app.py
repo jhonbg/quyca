@@ -3,6 +3,7 @@ import io
 import csv
 
 from flask import Blueprint, request, Response, Request
+# from flask_apidoc import ApiDoc
 
 from services.v1.person_app import person_app_service
 from services.work import work_service
@@ -11,7 +12,6 @@ from utils.encoder import JsonEncoder
 from utils.flatten_json import flatten_json_list
 
 router = Blueprint("person_app_v1", __name__)
-
 
 def person(
     request: Request, id: str | None, section: str | None = None, tab: str | None = None
@@ -49,6 +49,18 @@ def person(
 def get_person(
     id: str | None = None, section: str | None = "info", tab: str | None = None
 ):
+    """
+    @api {get} /person get info of a person
+    @apiVersion 1.0.0
+    @apiName get_person
+    @apiGroup Person
+
+    @apiParam {String}    id              The person id.
+    @apiParam {String}    [section=info]  The section to get info.
+    @apiParam {String}    [tab]           The tab to get info.
+
+    @apiSuccess {Number}    id              The new user id.
+    """
     result = person(request, id=id, section=section, tab=tab)
     if result:
         response = Response(

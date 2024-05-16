@@ -51,6 +51,9 @@ RUN apt-get update \
     
 ENV PATH="/home/venv/bin:$PATH"
 RUN pip install --no-cache-dir -r requirements.txt
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g apidoc
 
 FROM python:3.10 AS runtime-image
 ENV PYTHONUNBUFFERED TRUE
@@ -60,3 +63,4 @@ WORKDIR /usr/src/app
 COPY .dockerignore .dockerignore
 EXPOSE 80
 COPY app/ app/
+RUN apidoc -i /usr/src/app/api/routes/v1 -o /usr/src/app/apidoc/

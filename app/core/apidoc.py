@@ -1,15 +1,17 @@
 import subprocess
 
 from core.logging import get_logger
+from core.config import settings
 
 log = get_logger(__name__)
 
 
 def generate_apidoc():
-    log.debug("Generating API documentation")
+    log.info("Generating API documentation")
+
     command = (
         "apidoc -i /usr/src/app/app/api/routes/v1 "
-        "-c /usr/src/app/app/apidoc.json "
+        f"-c /usr/src/app/app/core/docs/apidoc.{settings.ENVIRONMENT}.json "
         "-o /usr/src/app/app/api/apidoc "
         
     )

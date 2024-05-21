@@ -11,3 +11,8 @@ def send_apidoc(path):
 @router.route('/apidoc')
 def redirect_to_index():
     return redirect(url_for('router.apidoc.send_apidoc', path='index.html'))
+
+
+@router.route('/docs')
+def redirect_to_index_docs():
+    return redirect(url_for('router.apidoc.send_apidoc', path='index.html'))

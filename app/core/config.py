@@ -36,6 +36,8 @@ class Settings(BaseSettings):
 
     APP_DOMAIN: str = "localhost:8010"
 
+    ENVIRONMENT: str = "dev"
+
     @validator("MONGO_URI", pre=True)
     def validate_mongo_uri(cls, v: Optional[str], values: Dict[str, Any]) -> str:
         return MongoDsn.build(

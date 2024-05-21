@@ -5,7 +5,7 @@ services:
         build:
             context: ..
             dockerfile: docker/Dockerfile.dev
-        command: python app/main.py apidoc
+        command: python app/main.py
         volumes:
             - ../:/usr/src/app/
         ports:

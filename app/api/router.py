@@ -10,6 +10,7 @@ from api.routes.v1.affiliation_api import router as affiliation_api_router_v1
 from api.routes.v1.person_app import router as person_app_router_v1
 from api.routes.v1.person_api import router as person_api_router_v1
 from api.routes.v1.work_app import router as work_app_router_v1
+from api.apidoc import router as apidoc_router
 
 api_router = Blueprint("router", __name__)
 
@@ -36,3 +37,4 @@ api_router.register_blueprint(
 api_router.register_blueprint(
     work_app_router_v1, url_prefix=f"{settings.APP_V1_STR}/work"
 )
+api_router.register_blueprint(apidoc_router, url_prefix="")

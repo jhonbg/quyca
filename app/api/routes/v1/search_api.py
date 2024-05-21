@@ -10,6 +10,7 @@ from schemas import (
     SubjectQueryParams,
 )
 from services.v1.search_api import search_api_service
+from services import work_service
 from utils.encoder import JsonEncoder
 
 router = Blueprint("search_api_v1", __name__)
@@ -17,6 +18,18 @@ router = Blueprint("search_api_v1", __name__)
 
 @router.route("/person", methods=["GET"])
 def read_person():
+    """
+    @api {get} /search/person search by person name
+    @apiVersion 1.0.0
+    @apiName get_search_person
+    @apiGroup Search
+
+    @apiQuery {String}    [keywords]        The keywords to search.
+    @apiQuery {Number}    [page=1]          Number of page.
+    @apiQuery {Number}    [max=10]          Number of results per page.
+    @apiQuery {String}    [sort=alphabetical]          Sort by field.
+    
+    """
     try:
         query_params = PersonQueryParams(**request.args)
     except ValidationError as e:
@@ -41,6 +54,18 @@ def read_person():
 
 @router.route("/works", methods=["GET"])
 def read_works():
+    """
+    @api {get} /search/works search by work title
+    @apiVersion 1.0.0
+    @apiName get_search_works
+    @apiGroup Search
+
+    @apiQuery {String}    [keywords]        The keywords to search.
+    @apiQuery {Number}    [page=1]          Number of page.
+    @apiQuery {Number}    [max=10]          Number of results per page.
+    @apiQuery {String}    [sort=alphabetical]          Sort by field.
+    
+    """
     try:
         query_params = WorkQueryParams(**request.args)
     except ValidationError as e:
@@ -69,6 +94,18 @@ def read_works():
 
 @router.route("/affiliations", methods=["GET"])
 def read_affiliations():
+    """
+    @api {get} /search/affiliations search by affiliation name
+    @apiVersion 1.0.0
+    @apiName get_search_affiliations
+    @apiGroup Search
+
+    @apiQuery {String}    [keywords]        The keywords to search.
+    @apiQuery {Number}    [page=1]          Number of page.
+    @apiQuery {Number}    [max=10]          Number of results per page.
+    @apiQuery {String}    [sort=alphabetical]          Sort by field.
+    
+    """
     try:
         query_params = AffiliationQueryParams(**request.args)
     except ValidationError as e:
@@ -92,6 +129,19 @@ def read_affiliations():
 
 @router.route("/subjects", methods=["GET"])
 def read_subjects():
+    """
+    @api {get} /search/subjects search by subject
+    @apiVersion 1.0.0
+    @apiName get_search_subjects
+    @apiGroup Search
+
+    @apiQuery {String}    [keywords]        The keywords to search.
+    @apiQuery {Number}    [page=1]          Number of page.
+    @apiQuery {Number}    [max=10]          Number of results per page.
+    @apiQuery {String}    [sort=alphabetical]          Sort by field.
+    
+
+    """
     try:
         query_params = SubjectQueryParams(**request.args)
     except ValidationError as e:

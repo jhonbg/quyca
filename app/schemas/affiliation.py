@@ -67,7 +67,7 @@ class AffiliationBase(BaseModel):
 class Affiliation(AffiliationBase):
     abbreviations: list[str] | None = Field(default_factory=list)
     aliases: list[str] | None = Field(default_factory=list)
-    birthdate: int | Any
+    birthdate: str | int | None = None
     ranking: Ranking | list[Ranking] | None
     status: Any
     subjects: list[Any] | None = Field(default_factory=list)

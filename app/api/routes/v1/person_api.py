@@ -25,8 +25,8 @@ def get_person(id: str | None, section: str | None, tab: str | None):
     # use section=research and tab=products to get research products
     @apiParam {String}    [tab]             The tab to get info.
     @apiQuery {Number}    [page=1]        Number of page.
-    @apiQuery {Number}    [max=10]        Number of records to return.
-    @apiQuery {String}    [sort=alphabetical]          Sort by field.
+    @apiQuery {Number{1-250}}    [max=10]        Number of records to return.
+    @apiQuery {String="alphabetical","citations","year"}    [sort=alphabetical]          Sort by field.
 
     @apiSuccessExample {json} Success-Response:
         HTTP/1.1 200 OK

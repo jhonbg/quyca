@@ -10,6 +10,8 @@ from infraestructure.mongo.repositories.affiliation import (
     AffiliationRepository,
     affiliation_repository,
 )
+from services.source import source_service
+from services.affiliation import affiliation_service
 from core.config import settings
 from utils.bars import bars
 from utils.maps import maps
@@ -78,27 +80,42 @@ class AffiliationAppService:
                 "addresses": affiliation["addresses"],
                 "logo": logo,
             }
-            
-            entry.update({"affiliations": AffiliationRepository.upside_relations(affiliation["relations"], typ)})
+
+            entry.update(
+                {
+                    "affiliations": AffiliationRepository.upside_relations(
+                        affiliation["relations"], typ
+                    )
+                }
+            )
 
             return {"data": entry}
         else:
             return None
 
-    def get_affiliations(self, idx, typ=None, aff_type: str | None = None) -> dict[str, list[Any]]:
+    def get_affiliations(
+        self, idx, typ=None, aff_type: str | None = None
+    ) -> dict[str, list[Any]]:
         data = {}
         if typ == "institution":
-            data["faculties"] = affiliation_repository.get_affiliations_related_type(idx, "faculty", typ)
+            data["faculties"] = affiliation_repository.get_affiliations_related_type(
+                idx, "faculty", typ
+            )
         if typ in ["faculty", "institution"]:
-            data["departments"] = affiliation_repository.get_affiliations_related_type(idx, "department", typ)
+            data["departments"] = affiliation_repository.get_affiliations_related_type(
+                idx, "department", typ
+            )
         if typ in ["department", "faculty", "institution"]:
-            data["groups"] = affiliation_repository.get_affiliations_related_type(idx, "group", typ)
+            data["groups"] = affiliation_repository.get_affiliations_related_type(
+                idx, "group", typ
+            )
         if typ in ["group", "department", "faculty"]:
-            data["authors"] = affiliation_repository.get_authors_by_affiliation(idx, typ)
-        
+            data["authors"] = affiliation_repository.get_authors_by_affiliation(
+                idx, typ
+            )
 
         result = AffiliationRelatedInfo.model_validate(data, from_attributes=True)
-        
+
         return result.model_dump(exclude_none=True)
 
     def process_work(self, work):
@@ -117,7 +134,7 @@ class AffiliationAppService:
                 else ""
             ),
             "subjects": [],
-            "external_ids": work["external_ids"]
+            "external_ids": work["external_ids"],
         }
 
         paper["title"] = work["titles"][0]["title"] if "titles" in work.keys() else ""
@@ -330,12 +347,10 @@ class AffiliationAppService:
                             "works.authors": 1,
                             "works.subjects": 1,
                             "works.bibliographic_info": 1,
-                            "works.external_ids": 1
+                            "works.external_ids": 1,
                         }
                     },
-                    {
-                        "$sort": "works.titles.title"
-                    }
+                    {"$sort": "works.titles.title"},
                 ]
 
                 if sort == "citations" and direction == "ascending":
@@ -420,7 +435,9 @@ class AffiliationAppService:
             return None
 
     def get_products_by_year_by_type(self, idx, typ=None, aff_type: str | None = None):
-        data, f = WorkRepository.get_research_products_by_affiliation(idx, aff_type)
+        data, f = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx, aff_type
+        )
         result = self.bars.products_by_year_by_type(data)
         if result:
             return {"plot": result}
@@ -468,30 +485,10 @@ class AffiliationAppService:
         return {"plot": self.bars.products_by_affiliation_by_type(data)}
 
     def get_citations_by_year(self, idx, typ=None, aff_type: str | None = None):
-        data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                for work in self.colav_db["works"].find(
-                    {
-                        "authors.id": author["_id"],
-                        "citations_by_year": {"$ne": []},
-                        "year_published": {"$exists": 1},
-                    },
-                    {"year_published": 1, "citations_by_year": 1},
-                ):
-                    data.append(work)
-        else:
-            for work in self.colav_db["works"].find(
-                {
-                    "authors.affiliations.id": ObjectId(idx),
-                    "citations_by_year": {"$ne": []},
-                    "year_published": {"$exists": 1},
-                },
-                {"year_published": 1, "citations_by_year": 1},
-            ):
-                data.append(work)
+        _match = {"citations_by_year": {"$ne": []}, "year_published": {"$exists": 1}}
+        data, f = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx, aff_type, match=_match
+        )
         result = self.bars.citations_by_year(data)
         if result:
             return {"plot": result}
@@ -499,90 +496,36 @@ class AffiliationAppService:
             return {"plot": None}
 
     def get_apc_by_year(self, idx, typ=None, aff_type: str | None = None):
-        data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                for work in self.colav_db["works"].find(
-                    {
-                        "authors.id": author["_id"],
-                        "year_published": {"$exists": 1},
-                        "source.id": {"$exists": 1},
-                    },
-                    {"year_published": 1, "source": 1},
-                ):
-                    if not "source" in work.keys():
-                        continue
-                    if not "id" in work["source"].keys():
-                        continue
-                    source_db = self.colav_db["sources"].find_one(
-                        {"_id": work["source"]["id"]}
+        _match = {
+            "year_published": {"$exists": 1},
+            "source.id": {"$exists": 1, "$ne": ""},
+        }
+        data, f = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx, aff_type, match=_match
+        )
+        _data = []
+        for work in data:
+            source = source_service.get_by_id(id=str(work.source.id))
+            if source:
+                if source.apc:
+                    _data.append(
+                        {"year_published": work.year_published, "apc": source.apc}
                     )
-                    if source_db:
-                        if source_db["apc"]:
-                            data.append(
-                                {
-                                    "year_published": work["year_published"] or 2020,
-                                    "apc": source_db["apc"],
-                                }
-                            )
-        else:
-            for work in self.colav_db["works"].find(
-                {
-                    "authors.affiliations.id": ObjectId(idx),
-                    "year_published": {"$exists": 1},
-                    "source.id": {"$exists": 1},
-                },
-                {"year_published": 1, "source": 1},
-            ):
-                if not "source" in work.keys():
-                    continue
-                if not "id" in work["source"].keys():
-                    continue
-                source_db = self.colav_db["sources"].find_one(
-                    {"_id": work["source"]["id"]}
-                )
-                if source_db:
-                    if source_db["apc"]:
-                        data.append(
-                            {
-                                "year_published": work["year_published"] or 2020,
-                                "apc": source_db["apc"],
-                            }
-                        )
-        result = self.bars.apc_by_year(data, 2022)
+        result = self.bars.apc_by_year(_data, 2022)
         if result:
             return {"plot": result}
         else:
             return {"plot": None}
 
     def get_oa_by_year(self, idx, typ=None, aff_type: str | None = None):
-        data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                for work in self.colav_db["works"].find(
-                    {
-                        "authors.id": author["_id"],
-                        "bibliographic_info.is_open_access": {"$ne": None},
-                        "year_published": {"$ne": None},
-                    },
-                    {"year_published": 1, "bibliographic_info.is_open_access": 1},
-                ):
-                    data.append(work)
-        else:
-            for work in self.colav_db["works"].find(
-                {
-                    "authors.affiliations.id": ObjectId(idx),
-                    "bibliographic_info.is_open_access": {"$ne": None},
-                    "year_published": {"$ne": None},
-                },
-                {"year_published": 1, "bibliographic_info.is_open_access": 1},
-            ):
-                data.append(work)
 
+        _match = {
+            "bibliographic_info.is_open_access": {"$ne": None},
+            "year_published": {"$ne": None},
+        }
+        data, f = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx, aff_type, match=_match
+        )
         result = self.bars.oa_by_year(data)
         if result:
             return {"plot": result}
@@ -592,85 +535,34 @@ class AffiliationAppService:
     def get_products_by_year_by_publisher(
         self, idx, typ=None, aff_type: str | None = None
     ):
-        data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                for work in self.colav_db["works"].find(
-                    {
-                        "authors.id": author["_id"],
-                        "year_published": {"$exists": 1},
-                        "source.id": {"$exists": 1},
-                    },
-                    {"year_published": 1, "source.id": 1},
-                ):
-                    if not "source" in work.keys():
-                        continue
-                    if not "id" in work["source"].keys():
-                        continue
-                    source_db = self.colav_db["sources"].find_one(
-                        {"_id": work["source"]["id"]}
+        _match = {
+            "year_published": {"$exists": 1},
+            "source.id": {"$exists": 1, "$ne": ""}
+        }
+        data, f = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx, aff_type, match=_match
+        )
+        _data = []
+        for work in data:
+            source = source_service.get_by_id(id=str(work.source.id))
+            if source:
+                if source.publisher:
+                    _data.append(
+                        {
+                            "year_published": work.year_published,
+                            "publisher": source.publisher,
+                        }
                     )
-                    if source_db:
-                        if source_db["publisher"]:
-                            data.append(
-                                {
-                                    "year_published": work["year_published"],
-                                    "publisher": source_db["publisher"],
-                                }
-                            )
-        else:
-            for work in self.colav_db["works"].find(
-                {
-                    "authors.affiliations.id": ObjectId(idx),
-                    "year_published": {"$exists": 1},
-                    "source.id": {"$exists": 1},
-                },
-                {"year_published": 1, "source.id": 1},
-            ):
-                if not "source" in work.keys():
-                    continue
-                if not "id" in work["source"].keys():
-                    continue
-                source_db = self.colav_db["sources"].find_one(
-                    {"_id": work["source"]["id"]}
-                )
-                if source_db:
-                    if source_db["publisher"]:
-                        data.append(
-                            {
-                                "year_published": work["year_published"],
-                                "publisher": source_db["publisher"],
-                            }
-                        )
 
-        result = self.bars.products_by_year_by_publisher(data)
+        result = self.bars.products_by_year_by_publisher(_data)
         if result:
             return {"plot": result}
         else:
             return {"plot": None}
 
     def get_h_by_year(self, idx, typ=None, aff_type: str | None = None):
-        data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                for work in self.colav_db["works"].find(
-                    {"authors.id": author["_id"], "citations_by_year": {"$ne": []}},
-                    {"citations_by_year": 1},
-                ):
-                    data.append(work)
-        else:
-            for work in self.colav_db["works"].find(
-                {
-                    "authors.affiliations.id": ObjectId(idx),
-                    "citations_by_year": {"$ne": []},
-                },
-                {"citations_by_year": 1},
-            ):
-                data.append(work)
+        _match = {"year_published": {"$exists": 1}}
+        data, f = WorkRepository.get_research_products_by_affiliation_iterator(idx, aff_type, match=_match)
         result = self.bars.h_index_by_year(data)
         if result:
             return {"plot": result}
@@ -846,14 +738,18 @@ class AffiliationAppService:
     def get_citations_by_affiliations(self, idx, typ, aff_type: str | None = None):
         if not typ in ["group", "department", "faculty"]:
             return None
-        affiliations = affiliation_repository.get_affiliations_related_type(idx, typ, aff_type)
+        affiliations = affiliation_repository.get_affiliations_related_type(
+            idx, typ, aff_type
+        )
 
         data = {}
         for aff in affiliations:
             aff_id = aff.id
             name = aff.name
             data[name] = []
-            for author in self.colav_db["person"].find({"affiliations.id": ObjectId(aff_id)}):
+            for author in self.colav_db["person"].find(
+                {"affiliations.id": ObjectId(aff_id)}
+            ):
                 aff_start_date = None
                 aff_end_date = None
                 for aff in author["affiliations"]:
@@ -882,14 +778,18 @@ class AffiliationAppService:
         return self.pies.citations_by_affiliation(data)
 
     def get_products_by_affiliations(self, idx, typ, aff_type: str | None = None):
-        affiliations = affiliation_repository.get_affiliations_related_type(idx, typ, aff_type)
+        affiliations = affiliation_repository.get_affiliations_related_type(
+            idx, typ, aff_type
+        )
 
         data = {}
         for aff in affiliations:
             aff_id = aff.id
             name = aff.name
             data[name] = 0
-            for author in self.colav_db["person"].find({"affiliations.id": ObjectId(aff_id)}):
+            for author in self.colav_db["person"].find(
+                {"affiliations.id": ObjectId(aff_id)}
+            ):
                 aff_start_date = None
                 aff_end_date = None
                 for aff in author["affiliations"]:
@@ -914,14 +814,18 @@ class AffiliationAppService:
         return self.pies.products_by_affiliation(data)
 
     def get_apc_by_affiliations(self, idx, typ, aff_type: str | None = None):
-        affiliations = affiliation_repository.get_affiliations_related_type(idx, typ, aff_type)
+        affiliations = affiliation_repository.get_affiliations_related_type(
+            idx, typ, aff_type
+        )
 
         data = {}
         for aff in affiliations:
             aff_id = aff.id
             name = aff.name
             data[name] = []
-            for author in self.colav_db["person"].find({"affiliations.id": ObjectId(aff_id)}):
+            for author in self.colav_db["person"].find(
+                {"affiliations.id": ObjectId(aff_id)}
+            ):
                 aff_start_date = None
                 aff_end_date = None
                 for aff in author["affiliations"]:
@@ -958,14 +862,18 @@ class AffiliationAppService:
         return self.pies.apc_by_affiliation(data, 2022)
 
     def get_h_by_affiliations(self, idx, typ, aff_type: str | None = None):
-        affiliations = affiliation_repository.get_affiliations_related_type(idx, typ, aff_type)
+        affiliations = affiliation_repository.get_affiliations_related_type(
+            idx, typ, aff_type
+        )
 
         data = {}
         for aff in affiliations:
             aff_id = aff.id
             name = aff.name
             data[name] = []
-            for author in self.colav_db["person"].find({"affiliations.id": ObjectId(aff_id)}):
+            for author in self.colav_db["person"].find(
+                {"affiliations.id": ObjectId(aff_id)}
+            ):
                 aff_start_date = None
                 aff_end_date = None
                 for aff in author["affiliations"]:
@@ -1281,13 +1189,21 @@ class AffiliationAppService:
                 {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
             ):
                 for work in self.colav_db["works"].find(
-                    {"authors.id": author["_id"], "ranking": {"$ne": []}, "ranking.rank": {"$ne": None}},
+                    {
+                        "authors.id": author["_id"],
+                        "ranking": {"$ne": []},
+                        "ranking.rank": {"$ne": None},
+                    },
                     {"ranking": 1},
                 ):
                     data.append(work)
         else:
             for work in self.colav_db["works"].find(
-                {"authors.affiliations.id": ObjectId(idx), "ranking": {"$ne": []}, "ranking.rank": {"$ne": None}},
+                {
+                    "authors.affiliations.id": ObjectId(idx),
+                    "ranking": {"$ne": []},
+                    "ranking.rank": {"$ne": None},
+                },
                 {"ranking": 1},
             ):
                 data.append(work)
@@ -1361,28 +1277,18 @@ class AffiliationAppService:
             {"_id": ObjectId(idx)}, {"names": 1}
         )
         pipeline = [
+            {"$match": {"affiliations.id": ObjectId(idx)}},
+            {"$project": {"_id": 1}},
             {
-                '$match': {
-                    'affiliations.id': ObjectId(idx)
-                }
-            }, {
-                '$project': {
-                    '_id': 1
-                }
-            }, {
-                '$lookup': {
-                    'from': 'works', 
-                    'localField': '_id', 
-                    'foreignField': 'authors.id', 
-                    'as': 'work'
-                }
-            }, {
-                '$unwind': '$work'
-            }, {
-                '$replaceRoot': {
-                    'newRoot': '$work'
+                "$lookup": {
+                    "from": "works",
+                    "localField": "_id",
+                    "foreignField": "authors.id",
+                    "as": "work",
                 }
             },
+            {"$unwind": "$work"},
+            {"$replaceRoot": {"newRoot": "$work"}},
             {"$project": {"source": 1}},
             {
                 "$lookup": {

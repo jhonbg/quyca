@@ -2,7 +2,11 @@ from json import loads
 
 from schemas.general import GeneralMultiResponse
 from services.base import ServiceBase
-from schemas.affiliation import AffiliationQueryParams, AffiliationSearch
+from schemas.affiliation import (
+    AffiliationQueryParams,
+    AffiliationSearch,
+    Affiliation as AffiliationSchema,
+)
 from infraestructure.mongo.models.affiliation import Affiliation
 from infraestructure.mongo.repositories.affiliation import (
     AffiliationRepository,
@@ -17,7 +21,7 @@ class AffiliationService(
         AffiliationRepository,
         AffiliationQueryParams,
         AffiliationSearch,
-        AffiliationSearch,
+        AffiliationSchema,
     ]
 ):
     def update_affiliation_search(self, obj: AffiliationSearch) -> AffiliationSearch:
@@ -53,5 +57,5 @@ class AffiliationService(
 
 
 affiliation_service = AffiliationService(
-    affiliation_repository, AffiliationSearch, AffiliationSearch
+    affiliation_repository, AffiliationSearch, AffiliationSchema
 )

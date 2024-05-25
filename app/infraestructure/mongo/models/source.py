@@ -77,7 +77,7 @@ class Source(Model):
     plagiarism_detection: bool = Field(default_factory=list)
     open_access_start_year: int | Any | None = None
     publication_time_weeks: int | Any | None = None
-    apc: APC | Any | None
+    apc: APC | None = None
     copyright: Copyright | Any | None = None
     licenses: list[Licence] | None = Field(default_factory=list)
     subjects: list[Subject] | None = Field(default_factory=list)

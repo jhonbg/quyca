@@ -6,6 +6,7 @@ from infraestructure.mongo.repositories.base import RepositoryBase
 from infraestructure.mongo.models.work import Work
 from infraestructure.mongo.models.person import Person
 from infraestructure.mongo.utils.session import engine
+from infraestructure.mongo.utils.iterators import work_iterator
 from schemas.work import WorkCsv, WorkListApp
 from core.config import settings
 
@@ -160,14 +161,34 @@ class WorkRepository(RepositoryBase):
             "title": "titles.0.title",
             "alphabetical": "titles.0.title",
         }
+        title_hierarchy = {
+            "OpenAlex": 1,
+            "Scholar": 2,
+            "Scienti": 3,
+            "Minciencias": 4,
+            "Ranking": 5,
+        }
         pipeline = []
         if sort_field == "year":
             pipeline += [{"$match": {"year_published": {"$ne": None}}}]
-        # if sort_field == "citations":
-        #     pipeline += [{"$match": {"citations_count": {"$ne": []}}}]
-        pipeline += [
-            {"$sort": {sort_traduction.get(sort_field, "titles.0.title"): direction}}
-        ]
+        if sort_field in ["title", "alphabetical"]:
+            pipeline += [
+                {
+                    "$addFields": {
+                        "title_hierarchy": {
+                            "$indexOfArray": [
+                                list(title_hierarchy.keys()),
+                                "$titles.0.source",
+                            ]
+                        }
+                    }
+                },
+                {"$sort": {"title_hierarchy": direction}},
+            ]
+        else:
+            pipeline += [
+                {"$sort": {sort_traduction.get(sort_field, "titles.0.title"): direction}}
+            ]
         return pipeline
 
     @classmethod
@@ -194,6 +215,7 @@ class WorkRepository(RepositoryBase):
         sort: str = "title",
         skip: int | None = None,
         limit: int | None = None,
+        match: dict[str, Any] = {},
         filters: dict[str, str] = {},
     ) -> tuple[Iterable[dict[str, Any]], dict[str, Any]]:
         affiliation_type = (
@@ -212,6 +234,8 @@ class WorkRepository(RepositoryBase):
         # sort
         works_pipeline += cls.get_sort_direction(sort)
         # navigation
+        if match:
+            works_pipeline += [{"$match": match}]
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
         results = engine.get_collection(collection).aggregate(works_pipeline)
@@ -245,6 +269,29 @@ class WorkRepository(RepositoryBase):
             }
             for result in results
         ], available_filters
+
+    @classmethod
+    def get_research_products_by_affiliation_iterator(
+        cls,
+        affiliation_id: str,
+        affiliation_type: str,
+        *,
+        sort: str = "title",
+        skip: int | None = None,
+        limit: int | None = None,
+        match: dict | None = {},
+        filters: dict | None = {},
+    ) -> tuple[Iterable[Work], dict[str, Any]]:
+        results, available_filters = cls.__products_by_affiliation(
+            affiliation_id,
+            affiliation_type,
+            sort=sort,
+            skip=skip,
+            limit=limit,
+            match=match,
+            filters=filters,
+        )
+        return work_iterator.set_cursor(results), available_filters
 
     @classmethod
     def get_research_products_by_affiliation_csv(
@@ -328,8 +375,8 @@ class WorkRepository(RepositoryBase):
         limit: int | None = None,
     ) -> list[dict[str, Any]]:
         works, f = cls.__products_by_author(
-                author_id=author_id, sort=sort, skip=skip, limit=limit
-            )
+            author_id=author_id, sort=sort, skip=skip, limit=limit
+        )
         return [
             {
                 **WorkCsv.model_validate_json(

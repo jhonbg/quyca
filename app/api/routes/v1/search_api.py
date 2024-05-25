@@ -26,8 +26,8 @@ def read_person():
 
     @apiQuery {String}    [keywords]        The keywords to search.
     @apiQuery {Number}    [page=1]          Number of page.
-    @apiQuery {Number}    [max=10]          Number of results per page.
-    @apiQuery {String}    [sort=alphabetical]          Sort by field.
+    @apiQuery {Number{1-250}}    [max=10]          Number of results per page.
+    # @apiQuery {String}    [sort=alphabetical]          Sort by field.
     
     """
     try:
@@ -62,34 +62,15 @@ def read_works():
 
     @apiQuery {String}    [keywords]        The keywords to search.
     @apiQuery {Number}    [page=1]          Number of page.
-    @apiQuery {Number}    [max=10]          Number of results per page.
-    @apiQuery {String}    [sort=alphabetical]          Sort by field.
+    @apiQuery {Number{1-250}}    [max=10]          Number of results per page.
+    # @apiQuery {String="alphabetical","citations"}    [sort=alphabetical]          Sort by field.
     
     """
     try:
         query_params = WorkQueryParams(**request.args)
     except ValidationError as e:
         return jsonify({"error": str(e)}, 400)
-    results = search_api_service.search_work(
-        keywords=query_params.keywords,
-        max_results=query_params.max,
-        page=query_params.page,
-        start_year=query_params.start_year,
-        end_year=query_params.end_year,
-        sort=query_params.sort,
-        directions="descending",
-        tipo=query_params.type,
-        institutions=query_params.institutions,
-        groups=query_params.groups,
-    )
-    return Response(
-        response=json.dumps(
-            results,
-            cls=JsonEncoder,
-        ),
-        status=200,
-        mimetype="apilication/json",
-    )
+    return work_service.search_api(params=query_params)
 
 
 @router.route("/affiliations", methods=["GET"])
@@ -102,8 +83,8 @@ def read_affiliations():
 
     @apiQuery {String}    [keywords]        The keywords to search.
     @apiQuery {Number}    [page=1]          Number of page.
-    @apiQuery {Number}    [max=10]          Number of results per page.
-    @apiQuery {String}    [sort=alphabetical]          Sort by field.
+    @apiQuery {Number{1-250}}    [max=10]          Number of results per page.
+    # @apiQuery {String}    [sort=alphabetical]          Sort by field.
     
     """
     try:
@@ -137,8 +118,8 @@ def read_subjects():
 
     @apiQuery {String}    [keywords]        The keywords to search.
     @apiQuery {Number}    [page=1]          Number of page.
-    @apiQuery {Number}    [max=10]          Number of results per page.
-    @apiQuery {String}    [sort=alphabetical]          Sort by field.
+    @apiQuery {Number{1-250}}    [max=10]          Number of results per page.
+    # @apiQuery {String}    [sort=alphabetical]          Sort by field.
     
 
     """

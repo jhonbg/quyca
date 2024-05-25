@@ -49,18 +49,6 @@ def person(
 def get_person(
     id: str | None = None, section: str | None = "info", tab: str | None = None
 ):
-    """
-    @api {get} /person get info of a person
-    @apiVersion 1.0.0
-    @apiName get_person
-    @apiGroup Person
-
-    @apiParam {String}    id              The person id.
-    @apiParam {String}    [section=info]  The section to get info.
-    @apiParam {String}    [tab]           The tab to get info.
-
-    @apiSuccess {Number}    id              The new user id.
-    """
     result = person(request, id=id, section=section, tab=tab)
     if result:
         response = Response(

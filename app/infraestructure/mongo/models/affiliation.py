@@ -56,6 +56,7 @@ class Relation(EmbeddedModel):
 class Affiliation(Model):
     abbreviations: list[str] | None = Field(default_factory=list)
     aliases: list[str] | None = Field(default_factory=list)
+    birthdate: str | int | None = None
     ranking: list[Ranking] | None = None
     status: Any#Status | list[Status] | None | str = None
     subjects: list[Any] | None = Field(default_factory=list)

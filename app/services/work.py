@@ -1,7 +1,8 @@
 from typing import Any
+from json import loads
 
 from services.base import ServiceBase
-from schemas.work import WorkQueryParams, WorkProccessed, WorkListApp
+from schemas.work import WorkQueryParams, WorkProccessed, WorkListApp, WorkCsv
 from infraestructure.mongo.models.work import Work
 from infraestructure.mongo.repositories.work import (
     WorkRepository,
@@ -9,6 +10,7 @@ from infraestructure.mongo.repositories.work import (
 )
 from services.person import person_service
 from services.source import source_service
+from schemas.general import GeneralMultiResponse
 
 
 class WorkService(
@@ -129,6 +131,18 @@ class WorkService(
         return WorkRepository.get_research_products_by_author_csv(
             author_id=author_id, sort=sort, skip=skip, limit=limit
         )
+
+    def search_api(self, *, params: WorkQueryParams) -> dict[str, Any]:
+        works, count = self.repository.search(
+            keywords=params.keywords,
+            skip=params.skip,
+            limit=params.max,
+            sort=params.sort,
+            search=params.get_search,
+        )
+        results = GeneralMultiResponse[WorkCsv](total_results=count, count=len(works), page=params.page)
+        results.data = [WorkCsv(**work) for work in works]
+        return loads(results.model_dump_json(exclude_none=True))
 
 
 work_service = WorkService(work_repository, WorkListApp, WorkProccessed)

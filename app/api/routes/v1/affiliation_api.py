@@ -64,44 +64,42 @@ def api_affiliation(
     tab: str | None = None,
     typ: str | None = None,
 ):
-    f"""
-    @api {{get}} /affiliation/:typ/:id/:section/:tab get info of an affiliation
+    """
+    @api {get} /affiliation/:typ/:id/:section/:tab get info of an affiliation
     @apiVersion 1.0.0
     @apiName get_affiliation
     @apiGroup Affiliation
 
-    @apiParam {{String}}    id              The affiliation id.
-    @apiParam {{String}}    typ             The affiliation type.
-    @apiParam {{String}}    [section=info]  The section to get.
+    @apiParam {String}    id              The affiliation id.
+    @apiParam {String}    typ             The affiliation type.
+    @apiParam {String}    [section=info]  The section to get.
                                           use section=info to get general info
                                           use section=research and tab=products to get research products
-    @apiParam {{String}}    [tab]           The tab to get.
-    @apiQuery {{Number}}    [page=1]        Number of page.
-    @apiQuery {{Number}}    [max=10]        Number of records to return.
-    @apiQuery {{String}}    [sort=alphabetical]          Sort by field.
+    @apiParam {String}    [tab]           The tab to get.
+    @apiQuery {Number}    [page=1]        Number of page.
+    @apiQuery {Number{1-250}}    [max=10]        Number of records to return.
+    @apiQuery {String="alphabetical","citations","year"}    [sort=alphabetical]          Sort by field.
 
-    @apiExample {{curl}} Example usage:
-        curl -i {settings.APP_DOMAIN}{settings.API_V1_STR}/affiliation/660b0457fe99b8857e87f3e0/research/products
-
-    @apiSuccessExample {{json}} Success-Response:
+    
+    @apiSuccessExample {json} Success-Response:
         HTTP/1.1 200 OK
-        {{
-            "data": [{{
+        {
+            "data": [{
                 "title": "\"DEPOSITION OF HYPERPHOSPHORYLATED TAU IN CEREBELLUM OF PS1 E280A ALZHEIMER´S DISEASE\"",
                 "authors": [],
-                "source": {{
+                "source": {
                     "id": "664b7c85017e10d85a7657b4",
                     "name": "Brain Pathology",
                     "serials": null
-                }},
+                },
                 "citations_count": 83,
                 "subjects": [
 
                 ],
-                "product_type": {{
+                "product_type": {
                     "name": "Publicado en revista especializada",
                     "source": "scienti"
-                }},
+                },
                 "year_published": 2011,
                 "open_access_status": null,
                 "external_ids": [
@@ -116,15 +114,15 @@ def api_affiliation(
                 "start_page": "452",
                 "end_page": "463",
                 "id": "664bf2274847080c5a79959b"
-                }}],
-            "info": {{
+                }],
+            "info": {
                 "total_products": 1,
                 "count": 1,
-                "cursor": {{
+                "cursor": {
                     "next": "string",
                     "previous": "string"
-            }}
-        }}
+            }
+        }
     """
     result = affiliation(request, idx=id, section=section, tab=tab, typ=typ)
     if result:

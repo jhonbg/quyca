@@ -53,6 +53,9 @@ ENV PATH="/home/venv/bin:$PATH"
 RUN pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.10 AS runtime-image
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g apidoc
 ENV PYTHONUNBUFFERED TRUE
 COPY --from=compile-image /home/venv /home/venv
 ENV PATH="/home/venv/bin:$PATH"
@@ -60,9 +63,6 @@ WORKDIR /usr/src/app
 COPY .dockerignore .dockerignore
 EXPOSE 80
 COPY app/ app/
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g apidoc
-RUN apidoc -i /usr/src/app/app/api/routes/v1 \
-    -o /usr/src/app/app/api/apidoc/ \
-    -c /usr/src/app/app/apidoc.json
+# RUN apidoc -i /usr/src/app/app/api/routes/v1 \
+#     -o /usr/src/app/app/api/apidoc/ \
+#     -c /usr/src/app/app/apidoc.json

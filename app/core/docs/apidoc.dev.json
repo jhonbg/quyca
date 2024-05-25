@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Colav API Documentation",
   "title": "Colav APIDoc",
-  "url": "http://localhost:8002/apidoc",
-  "sampleUrl": "http://localhost:8002/api/v1",
+  "url": "https://api.dev.impactu.colav.co/apidoc",
+  "sampleUrl": "https://api.dev.impactu.colav.co",
   "header": {
     "filename": "app/core/docs/apidoc-header.md"
   }

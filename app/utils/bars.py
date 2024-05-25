@@ -1,9 +1,11 @@
 import datetime
+from typing import Iterable
 
 from utils.cpi import inflate
 from currency_converter import CurrencyConverter
 
 from utils.hindex import hindex
+from infraestructure.mongo.models.work import Work  # Cambiar por protocolo
 
 
 class bars:
@@ -11,7 +13,7 @@ class bars:
         pass
 
     # production of affiliations by minciencias product type (within the hierarchy of the viewed entity)
-    def products_by_year_by_type(self, data):
+    def products_by_year_by_type(self, data: Iterable[Work]):
         """
         Returns a list of dicts of the form {x:year, y:count, type:type} sorted by year in ascending order,
         where year is the year of publication, count is the number of publications of a given type in that year,
@@ -25,24 +27,22 @@ class bars:
         --------
         list of dicts with the format {x:year, y:count, type:typ}
         """
-        if not isinstance(data, list):
-            print(type(data))
-            return None
-        if len(data) == 0:
-            return None
         result = {}
         for work in data:
-            if "year_published" in work.keys():
-                year = work["year_published"]
+            if work.year_published:
+                year = work.year_published
                 if year not in result.keys():
                     result[year] = {}
-                for typ in work["types"]:
-                    if typ["source"] == "scienti" and typ["type"] == "Publicado en revista especializada":
+                for typ in work.types:
+                    if (
+                        typ.source == "scienti"
+                        and typ.type == "Publicado en revista especializada"
+                    ):
                         # if typ["level"] == 2:
-                        if typ["type"] not in result[year].keys():
-                            result[year][typ["type"]] = 1
+                        if typ.type not in result[year].keys():
+                            result[year][typ.type] = 1
                         else:
-                            result[year][typ["type"]] += 1
+                            result[year][typ.type] += 1
         # turn the dict into a list of dicts with the format {x:year, y:count, type:typ} sorted by year in ascending order
         result_list = []
         for year in result.keys():
@@ -98,7 +98,7 @@ class bars:
         return result_list
 
     # anual citations
-    def citations_by_year(self, data):
+    def citations_by_year(self, data: Iterable[Work]):
         """
         Returns a list of dicts of the form {x:year, y:count} sorted by year in ascending order,
         where year is the year of publication and count is the number of citations of the work in that year.
@@ -114,11 +114,11 @@ class bars:
 
         result = {}
         for work in data:
-            for yearly in work["citations_by_year"]:
-                if yearly["year"] in result.keys():
-                    result[yearly["year"]] += yearly["cited_by_count"]
+            for yearly in work.citations_by_year:
+                if yearly.year in result.keys():
+                    result[yearly.year] += yearly.cited_by_count
                 else:
-                    result[yearly["year"]] = yearly["cited_by_count"]
+                    result[yearly.year] = yearly.cited_by_count
         result_list = sorted(result.items(), key=lambda x: x[0])
         result_list = [{"x": x[0], "y": x[1]} for x in result_list]
 
@@ -143,8 +143,8 @@ class bars:
         now = datetime.date.today()
         result = {}
         for reg in data:
-            if reg["apc"]["currency"] == "USD":
-                raw_value = reg["apc"]["charges"]
+            if reg["apc"].currency == "USD":
+                raw_value = reg["apc"].charges
                 value = inflate(
                     raw_value,
                     reg["year_published"],
@@ -153,7 +153,7 @@ class bars:
             else:
                 try:
                     raw_value = c.convert(
-                        reg["apc"]["xcharges"], reg["apc"]["currency"], "USD"
+                        reg["apc"].charges, reg["apc"].currency, "USD"
                     )
                     value = inflate(
                         raw_value,
@@ -173,7 +173,7 @@ class bars:
         return result_list
 
     # number of papers in openaccess or closed access
-    def oa_by_year(self, data):
+    def oa_by_year(self, data: Iterable[Work]):
         """
         Returns a list of dicts of the form {x:year, y:count} sorted by year in ascending order,
         where year is the year of publication and count is the number of works in open access in that year.
@@ -188,14 +188,14 @@ class bars:
         """
         result = {}
         for work in data:
-            year = work["year_published"]
+            year = work.year_published
             if year in result.keys():
-                if work["bibliographic_info"]["is_open_access"]:
+                if work.bibliographic_info.is_open_access:
                     result[year]["open"] += 1
                 else:
                     result[year]["closed"] += 1
             else:
-                if work["bibliographic_info"]["is_open_access"]:
+                if work.bibliographic_info.is_open_access:
                     result[year] = {"open": 1, "closed": 0}
                 else:
                     result[year] = {"open": 0, "closed": 1}
@@ -226,16 +226,16 @@ class bars:
         for work in data:
             year = int(work.get("year_published", 0) or 0)
             if year in result.keys():
-                if work["publisher"]["name"] not in result[year].keys():
-                    result[year][work["publisher"]["name"]] = 1
+                if work["publisher"].name not in result[year].keys():
+                    result[year][work["publisher"].name] = 1
                 else:
-                    result[year][work["publisher"]["name"]] += 1
+                    result[year][work["publisher"].name] += 1
             else:
-                result[year] = {work["publisher"]["name"]: 1}
-            if work["publisher"]["name"] not in top5.keys():
-                top5[work["publisher"]["name"]] = 1
+                result[year] = {work["publisher"].name: 1}
+            if work["publisher"].name not in top5.keys():
+                top5[work["publisher"].name] = 1
             else:
-                top5[work["publisher"]["name"]] += 1
+                top5[work["publisher"].name] += 1
 
         top5 = [
             top[0] for top in sorted(top5.items(), key=lambda x: x[1], reverse=True)
@@ -255,7 +255,7 @@ class bars:
         return result_list
 
     # Anual H index from (temporarily) openalex citations
-    def h_index_by_year(self, data):
+    def h_index_by_year(self, data: Iterable[Work]):
         """
         Returns a list of dicts of the form {x:year, y:h_index} sorted by year in ascending order,
         where year is the year of publication and h_index is the h-index of the works cited up to a selected year.
@@ -268,29 +268,27 @@ class bars:
         --------
         list of dicts with the format {x:year, y:h_index}
         """
-        if len(data) <= 0:
-            return None
         h_by_year = {}
         works_total_citations_by_year = []
         for work in data:
             acc_citations_by_year = []
             years = []
             sorted_citations = sorted(
-                work["citations_by_year"], key=lambda x: x["year"]
+                work.citations_by_year, key=lambda x: x.year
             )
             for citation in sorted_citations:
                 if len(acc_citations_by_year) == 0:
                     acc_citations_by_year.append(
                         {
-                            "year": citation["year"],
-                            "citations": citation["cited_by_count"],
+                            "year": citation.year,
+                            "citations": citation.cited_by_count,
                         }
                     )
                 else:
                     acc_citations_by_year.append(
                         {
-                            "year": citation["year"],
-                            "citations": citation["cited_by_count"]
+                            "year": citation.year,
+                            "citations": citation.cited_by_count
                             + acc_citations_by_year[-1]["citations"],
                         }
                     )

@@ -161,12 +161,12 @@ class WorkRepository(RepositoryBase):
             "title": "titles.0.title",
             "alphabetical": "titles.0.title",
         }
-        title_hierarchy = {
-            "OpenAlex": 1,
-            "Scholar": 2,
-            "Scienti": 3,
-            "Minciencias": 4,
-            "Ranking": 5,
+        source_priority = {
+            "openalex": 1,
+            "scholar": 2,
+            "scienti": 3,
+            "minciencias": 4,
+            "ranking": 5,
         }
         pipeline = []
         if sort_field == "year":
@@ -175,19 +175,54 @@ class WorkRepository(RepositoryBase):
             pipeline += [
                 {
                     "$addFields": {
-                        "title_hierarchy": {
-                            "$indexOfArray": [
-                                list(title_hierarchy.keys()),
-                                "$titles.0.source",
-                            ]
+                        "source_priority": {
+                            "$switch": {
+                                "branches": [
+                                    {
+                                        "case": {
+                                            "$eq": ["$titles.0.source", "openalex"]
+                                        },
+                                        "then": source_priority["openalex"],
+                                    },
+                                    {
+                                        "case": {
+                                            "$eq": ["$titles.0.source", "scholar"]
+                                        },
+                                        "then": source_priority["scholar"],
+                                    },
+                                    {
+                                        "case": {
+                                            "$eq": ["$titles.0.source", "scienti"]
+                                        },
+                                        "then": source_priority["scienti"],
+                                    },
+                                    {
+                                        "case": {
+                                            "$eq": ["$titles.0.source", "minciencias"]
+                                        },
+                                        "then": source_priority["minciencias"],
+                                    },
+                                    {
+                                        "case": {
+                                            "$eq": ["$titles.0.source", "ranking"]
+                                        },
+                                        "then": source_priority["ranking"],
+                                    },
+                                ],
+                                "default": 6,
+                            }
                         }
                     }
                 },
-                {"$sort": {"title_hierarchy": direction}},
+                {"$sort": {"source_priority": 1, "titles.0.title": direction}},
             ]
         else:
             pipeline += [
-                {"$sort": {sort_traduction.get(sort_field, "titles.0.title"): direction}}
+                {
+                    "$sort": {
+                        sort_traduction.get(sort_field, "titles.0.title"): direction
+                    }
+                }
             ]
         return pipeline
 

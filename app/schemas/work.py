@@ -130,9 +130,11 @@ class WorkListApp(WorkSearch):
 
     @model_validator(mode="after")
     def get_title(self):
-        self.title = next(
-            filter(lambda x: x.lang == "en", self.titles), self.titles[0]
-        ).title
+        def gerarchy_index(x: Title):
+            return gerarchy.index(x.source) if x.source in gerarchy else 100
+
+        gerarchy = ["openalex", "scholar", "scienti", "minciencias", "ranking"]
+        self.title = sorted(self.titles, key=gerarchy_index)[0].title
         return self
 
     @model_validator(mode="after")

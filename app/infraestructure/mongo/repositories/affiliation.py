@@ -79,12 +79,12 @@ class AffiliationRepository(RepositoryBase):
     def upside_relations(
         cls, relations: list[dict, str], typ: str
     ) -> list[dict[str, Any]]:
-        gerarchy = ["group", "department", "faculty", "Education", "institution"]
-        upside = gerarchy.index(typ)
+        hierarchy = ["group", "department", "faculty", "Education", "institution"]
+        upside = hierarchy.index(typ)
         affiliations = list(
             filter(
-                lambda x: x["types"][0]["type"] in gerarchy
-                and gerarchy.index(x["types"][0]["type"]) > upside,
+                lambda x: x["types"][0]["type"] in hierarchy
+                and hierarchy.index(x["types"][0]["type"]) > upside,
                 relations,
             )
         )

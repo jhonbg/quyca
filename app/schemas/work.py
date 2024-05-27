@@ -110,8 +110,8 @@ class WorkSearch(WorkBase):
         types = list(
             map(lambda x: ProductType(name=x.type, source=x.source), self.types)
         )
-        gerarchy = ["openalex", "scienti", "minciencias", "scholar"]
-        v = sorted(types, key=lambda x: gerarchy.index(x.source))
+        hierarchy = ["openalex", "scienti", "minciencias", "scholar"]
+        v = sorted(types, key=lambda x: hierarchy.index(x.source))
         self.product_type = v[0] if v else None
         return self
 
@@ -130,11 +130,11 @@ class WorkListApp(WorkSearch):
 
     @model_validator(mode="after")
     def get_title(self):
-        def gerarchy_index(x: Title):
-            return gerarchy.index(x.source) if x.source in gerarchy else 100
+        def hierarchy_index(x: Title):
+            return hierarchy.index(x.source) if x.source in hierarchy else 100
 
-        gerarchy = ["openalex", "scholar", "scienti", "minciencias", "ranking"]
-        self.title = sorted(self.titles, key=gerarchy_index)[0].title
+        hierarchy = ["openalex", "scholar", "scienti", "minciencias", "ranking"]
+        self.title = sorted(self.titles, key=hierarchy_index)[0].title
         return self
 
     @model_validator(mode="after")

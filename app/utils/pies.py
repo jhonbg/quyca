@@ -1,37 +1,49 @@
 import datetime
+from typing import Iterable, Callable, Any
+from collections import Counter
+import functools
 
 from utils.cpi import inflate
 from currency_converter import CurrencyConverter
 
 from utils.hindex import hindex
+from protocols.mongo.models.work import Work, SubjectEmbedded, Updated, Ranking
+from protocols.mongo.models.source import Publisher, Source
+from schemas.source import APC
 
 
 class pies:
     def __init__(self):
         pass
 
-    @classmethod
-    def get_percentage(
-        cls, data: list[dict[str, str | int]]
-    ) -> dict[str, list[dict[str, str | int]] | int]:
-        total = sum([i["value"] for i in data])
-        for i in data:
-            i["percentage"] = round((i["value"] / total) * 100, 2) if total else 0
-        result = {"plot": data, "sum": total}
-        return result
+    def get_percentage(func: Callable[[Any], list[dict[str, str | int]]]):
+        @functools.wraps(func)
+        def wrapper(
+            self, *args, **kwargs
+        ) -> dict[str, list[dict[str, str | int]] | int]:
+            data = func(self, *args, **kwargs)
+            total = sum([i["value"] for i in data])
+            for i in data:
+                i["percentage"] = round((i["value"] / total) * 100, 2) if total else 0
+            return {"plot": data, "sum": total}
+
+        return wrapper
 
     # Accumulated citations for each faculty department or group
-    def citations_by_affiliation(self, data):
+    @get_percentage
+    def citations_by_affiliation(
+        self, data: dict[str, Iterable[Work]]
+    ) -> list[dict[str, str | int]]:
         results = {}
         for name, works in data.items():
             for work in works:
                 citations = 0
-                for count in work["citations_count"]:
-                    if count["source"] == "scholar":
-                        citations = count["count"]
+                for count in work.citations_count:
+                    if count.source == "scholar":
+                        citations = count.count
                         break
-                    elif count["source"] == "openalex":
-                        citations = count["count"]
+                    elif count.source == "openalex":
+                        citations = count.count
                         break
                 if citations == 0:
                     continue
@@ -43,39 +55,41 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
-        result_list = self.get_percentage(result_list)
         return result_list
 
     # Accumulated papers for each faculty department or group
-    def products_by_affiliation(self, data):
+    @get_percentage
+    def products_by_affiliation(self, data) -> list[dict[str, str | int]]:
         result_list = []
         for idx, value in data.items():
             result_list.append({"name": idx, "value": value})
-        result_list = self.get_percentage(result_list)
         return result_list
 
     # APC cost for each faculty department or group
-    def apc_by_affiliation(self, data, base_year):
+    @get_percentage
+    def apc_by_affiliation(
+        self, data: dict[str, list[APC]], base_year
+    ) -> list[dict[str, str | int]]:
         c = CurrencyConverter()
         now = datetime.date.today()
         result = {}
         for name, costs in data.items():
             for apc in costs:
                 value = 0
-                if apc["currency"] == "USD":
-                    raw_value = apc["charges"]
+                if apc.currency == "USD":
+                    raw_value = apc.charges
                     value = inflate(
                         raw_value,
-                        apc["year_published"],
-                        to=max(base_year, apc["year_published"]),
+                        apc.year_published,
+                        to=max(base_year, apc.year_published),
                     )
                 else:
                     try:
-                        raw_value = c.convert(apc["xcharges"], apc["currency"], "USD")
+                        raw_value = c.convert(apc.charges, apc.currency, "USD")
                         value = inflate(
                             raw_value,
-                            apc["year_published"],
-                            to=max(base_year, apc["year_published"]),
+                            apc.year_published,
+                            to=max(base_year, apc.year_published),
                         )
                     except Exception as e:
                         # print("Could not convert currency with error: ",e)
@@ -88,77 +102,71 @@ class pies:
         result_list = []
         for idx, value in result.items():
             result_list.append({"name": idx, "value": int(value)})
-        result_list = self.get_percentage(result_list)
         return result_list
 
     # H index for each faculty department or group
-    def hindex_by_affiliation(self, data):
+    @get_percentage
+    def hindex_by_affiliation(
+        self, data: dict[str, Iterable[int]]
+    ) -> list[dict[str, str | int]]:
         result_list = []
         for idx, value in data.items():
             result_list.append({"name": idx, "value": hindex(value)})
-        result_list = self.get_percentage(result_list)
         return result_list
 
     # Ammount of papers per publisher
-    def products_by_publisher(self, data):
+    @get_percentage
+    def products_by_publisher(
+        self, data: Iterable[Publisher]
+    ) -> list[dict[str, str | int]]:
         results = {}
-        for work in data:
-            if work["publisher"]["name"]:
-                if work["publisher"]["name"] in results.keys():
-                    results[work["publisher"]["name"]] += 1
+        for pub in data:
+            if pub.name:
+                if pub.name in results.keys():
+                    results[pub.name] += 1
                 else:
-                    results[work["publisher"]["name"]] = 1
+                    results[pub.name] = 1
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
-        result_list = self.get_percentage(result_list)
         return result_list
 
     # ammount of papers per openalex subject
-    def products_by_subject(self, data):
-        results = {}
-        for subject in data:
-            if subject["subject"]["name"] in results.keys():
-                results[subject["subject"]["name"]] += 1
-            else:
-                results[subject["subject"]["name"]] = 1
+    @get_percentage
+    def products_by_subject(
+        self, data: Iterable[SubjectEmbedded]
+    ) -> list[dict[str, str | int]]:
+        results = Counter(sub.name for sub in data)
         result_list = []
-        for idx, value in results.items():
-            result_list.append({"name": idx, "value": value})
-        result_list = self.get_percentage(result_list)
+        for name, count in results.items():
+            result_list.append({"name": name, "value": count})
         return result_list
 
     # Ammount of papers per database
-    def products_by_database(self, data):
-        results = {}
-        for work in data:
-            for source in work:
-                if source["source"] in results.keys():
-                    results[source["source"]] += 1
-                else:
-                    results[source["source"]] = 1
+    @get_percentage
+    def products_by_database(
+        self, data: Iterable[Updated]
+    ) -> list[dict[str, str | int]]:
+        results = Counter(up.source for up in data)
         result_list = []
-        for idx, value in results.items():
-            result_list.append({"name": idx, "value": value})
-        result_list = self.get_percentage(result_list)
+        for name, count in results.items():
+            result_list.append({"name": name, "value": count})
         return result_list
 
     # Ammount of papers per open access status
-    def products_by_open_access_status(self, data):
-        results = {}
-        for status in data:
-            if status in results:
-                results[status] += 1
-            else:
-                results[status] = 1
+    @get_percentage
+    def products_by_open_access_status(
+        self, data: Iterable[str]
+    ) -> list[dict[str, str | int]]:
+        results = Counter(data)
         result_list = []
-        for idx, value in results.items():
-            result_list.append({"name": idx, "value": value})
-        result_list = self.get_percentage(result_list)
+        for name, count in results.items():
+            result_list.append({"name": name, "value": count})
         return result_list
 
     # Ammount of papers per author sex
-    def products_by_sex(self, data):
+    @get_percentage
+    def products_by_sex(self, data) -> list[dict[str, str | int]]:
         results = {}
         for work in data:
             if work["author"][0]["sex"] in results.keys():
@@ -168,11 +176,11 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
-        result_list = self.get_percentage(result_list)
         return result_list
 
     # Ammount of papers per author age intervals 14-26 años, 27-59 años 60 años en adelante
-    def products_by_age(self, data):
+    @get_percentage
+    def products_by_age(self, data) -> list[dict[str, str | int]]:
         ranges = {"14-26": (14, 26), "27-59": (27, 59), "60+": (60, 999)}
         results = {"14-26": 0, "27-59": 0, "60+": 0}
         for work in data:
@@ -190,52 +198,51 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
-        result_list = self.get_percentage(result_list)
         return result_list
 
     # Ammount of papers per scienti rank
-    def products_by_scienti_rank(self, data):
-        results = {}
-        for work in data:
-            rank = None
-            for ranking in work["ranking"]:
-                if ranking["source"] == "scienti" and ranking["rank"] is not None:
-                    rank = ranking["rank"].split("_")[-1]
-                    break
-            if rank in ["A", "A1", "B", "C", "D"]:
-                if rank in results.keys():
-                    results[rank] += 1
-                else:
-                    results[rank] = 1
+    @get_percentage
+    def products_by_scienti_rank(
+        self, data: Iterable[Ranking]
+    ) -> list[dict[str, str | int]]:
+        scienti_rank = filter(
+            lambda x: x.source == "scienti"
+            and x.rank
+            and x.rank.split("_")[-1] in ["A", "A1", "B", "C", "D"],
+            data,
+        )
+        results = Counter(map(lambda x: x.rank.split("_")[-1], scienti_rank))
         result_list = []
-        for idx, value in results.items():
-            result_list.append({"name": idx, "value": value})
-        result_list = self.get_percentage(result_list)
+        for name, count in results.items():
+            result_list.append({"name": name, "value": count})
         return result_list
 
     # Ammount of papers per journal on scimago
-    def products_by_scimago_rank(self, data):
+    @get_percentage
+    def products_by_scimago_rank(self, data: Iterable[Source]) -> list[dict[str, str | int]]:
         results = {}
-        for work in data:
-            for ranking in work["source"]["ranking"]:
-                if ranking["source"] == "scimago Best Quartile":
+        for source in data:
+            for ranking in source.ranking:
+                if ranking.source == "scimago Best Quartile":
                     if (
-                        ranking["from_date"] < work["date_published"]
-                        and ranking["to_date"] > work["date_published"]
+                        ranking.from_date < source.date_published
+                        and ranking.to_date > source.date_published
                     ):
-                        if ranking["rank"] in results.keys():
-                            results[ranking["rank"]] += 1
+                        if ranking.rank in results.keys():
+                            results[ranking.rank] += 1
                         else:
-                            results[ranking["rank"]] = 1
+                            results[ranking.rank] = 1
                         break
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
-        result_list = self.get_percentage(result_list)
         return result_list
 
     # Ammmount of papers published on a journal of the same institution
-    def products_editorial_same_institution(self, data, institution):
+    @get_percentage
+    def products_editorial_same_institution(
+        self, data, institution
+    ) -> list[dict[str, str | int]]:
         results = {"same": 0, "different": 0}
         names = list(set([n["name"].lower() for n in institution["names"]]))
 
@@ -248,8 +255,10 @@ class pies:
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
-        result_list = self.get_percentage(result_list)
         return result_list
-    
-    def title_words(self, data: list[dict[str, str | int]]) -> dict[str, list[dict[str, int | str ]] | int]:
-        return self.get_percentage(data)
+
+    @get_percentage
+    def title_words(
+        self, data: list[dict[str, str | int]]
+    ) -> list[dict[str, str | int]]:
+        return data

@@ -1,12 +1,12 @@
-from typing import Any
+from typing import Any, Iterable
 
 from bson import ObjectId
 
 from infraestructure.mongo.repositories.base import RepositoryBase
-from infraestructure.mongo.repositories.work import WorkRepository
 from infraestructure.mongo.models.affiliation import Affiliation
 from infraestructure.mongo.models.person import Person
 from infraestructure.mongo.utils.session import engine
+from infraestructure.mongo.utils.iterators import AffiliationIterator
 from schemas.affiliation import AffiliationRelated
 from schemas.person import PersonList
 
@@ -16,6 +16,29 @@ class AffiliationRepository(RepositoryBase):
         self, idx: str, relation_type: str, affiliation_type: str
     ) -> list[AffiliationRelated]:
         if affiliation_type in ["department", "faculty"] and relation_type == "group":
+            groups = self.get_groups_by_affiliation(idx, affiliation_type)
+            return [AffiliationRelated(**group.model_dump()) for group in groups]
+        results = engine.get_collection(Affiliation).find(
+            {"relations.id": ObjectId(idx), "types.type": relation_type}
+        )
+        return [
+            AffiliationRelated.model_validate_json(
+                Affiliation(**result).model_dump_json(exclude={"id"})[:-1]
+                + ', "id":"'
+                + str(result.get("_id", "None"))
+                + '"}'
+            )
+            for result in results
+        ]
+
+    def get_groups_by_affiliation(self, idx: str, typ: str) -> Iterable[Affiliation]:
+        if typ == "group":
+            with engine.session() as session:
+                affiliation = session.find_one(
+                    Affiliation, Affiliation.id == ObjectId(idx)
+                )
+                return [affiliation]
+        if typ in ["department", "faculty"]:
             group_pipeline = [
                 {"$match": {"affiliations.id": ObjectId(idx)}},
                 {"$project": {"affiliations": 1}},
@@ -42,27 +65,11 @@ class AffiliationRepository(RepositoryBase):
                 {"$replaceRoot": {"newRoot": "$affiliation"}},
             ]
             groups = engine.get_collection(Person).aggregate(group_pipeline)
-            return [
-                AffiliationRelated.model_validate_json(
-                    Affiliation(**group).model_dump_json(exclude={"id"})[:-1]
-                    + ', "id":"'
-                    + str(group.get("_id", "None"))
-                    + '"}'
-                )
-                for group in groups
-            ]
-        results = engine.get_collection(Affiliation).find(
-            {"relations.id": ObjectId(idx), "types.type": relation_type}
+            return AffiliationIterator(groups)
+        groups = engine.get_collection(Affiliation).find(
+            {"relations.id": ObjectId(idx), "types.type": typ}
         )
-        return [
-            AffiliationRelated.model_validate_json(
-                Affiliation(**result).model_dump_json(exclude={"id"})[:-1]
-                + ', "id":"'
-                + str(result.get("_id", "None"))
-                + '"}'
-            )
-            for result in results
-        ]
+        return AffiliationIterator(groups)
 
     def get_authors_by_affiliation(self, idx: str, typ: str) -> list[Person]:
         pipeline = [

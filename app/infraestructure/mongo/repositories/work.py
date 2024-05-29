@@ -6,7 +6,7 @@ from infraestructure.mongo.repositories.base import RepositoryBase
 from infraestructure.mongo.models.work import Work
 from infraestructure.mongo.models.person import Person
 from infraestructure.mongo.utils.session import engine
-from infraestructure.mongo.utils.iterators import work_iterator
+from infraestructure.mongo.utils.iterators import WorkIterator
 from schemas.work import WorkCsv, WorkListApp
 from core.config import settings
 
@@ -36,7 +36,51 @@ class WorkRepository(RepositoryBase):
                     "as": "works",
                 }
             },
+            # affiliation start and end data"}
             {"$unwind": "$works"},
+            # {
+            #     "$addFields": {
+            #         "current_affiliation": {
+            #             "$arrayElemAt": [
+            #                 {
+            #                     "$filter": {
+            #                         "input": "$affiliations",
+            #                         "as": "aff",
+            #                         "cond": {
+            #                             "$eq": [
+            #                                 "$$aff.id",
+            #                                 ObjectId(affiliation_id),
+            #                             ]
+            #                         },
+            #                     }
+            #                 },
+            #                 0,
+            #             ]
+            #         }
+            #     }
+            # },
+            # {
+            #     "$addFields": {
+            #         "start_date": "$current_affiliation.start_date",
+            #         "end_date": {
+            #             "$cond": {
+            #                 "if": {"$eq": ["$current_affiliation.end_date", -1]},
+            #                 "then": "$$NOW",
+            #                 "else": "$current_affiliation.end_date",
+            #             }
+            #         },
+            #     }
+            # },
+            # {
+            #     "$match": {
+            #         "$expr": {
+            #             "$and": [
+            #                 {"$gte": ["$works.date_published", "$start_date"]},
+            #                 {"$lte": ["$works.date_published", "$end_date"]},
+            #             ]
+            #         }
+            #     }
+            # },
             {"$group": {"_id": "$works._id", "works": {"$first": "$works"}}},
         ]
         return pipeline
@@ -153,7 +197,9 @@ class WorkRepository(RepositoryBase):
         return citations_count
 
     @staticmethod
-    def get_sort_direction(sort: str = "title") -> list[dict]:
+    def get_sort_direction(sort: str | None = None) -> list[dict]:
+        if not sort:
+            return []
         sort_field, direction = (sort[:-1], -1) if sort.endswith("-") else (sort, 1)
         sort_traduction: dict[str, str] = {
             "citations": "citations_count.count",
@@ -247,7 +293,7 @@ class WorkRepository(RepositoryBase):
         affiliation_id: str,
         affiliation_type: str,
         *,
-        sort: str = "title",
+        sort: str | None = None,
         skip: int | None = None,
         limit: int | None = None,
         match: dict[str, Any] = {},
@@ -282,7 +328,7 @@ class WorkRepository(RepositoryBase):
         affiliation_id: str,
         affiliation_type: str,
         *,
-        sort: str = "title",
+        sort: str | None = None,
         skip: int | None = None,
         limit: int | None = None,
         filters: dict | None = {},
@@ -311,7 +357,7 @@ class WorkRepository(RepositoryBase):
         affiliation_id: str,
         affiliation_type: str,
         *,
-        sort: str = "title",
+        sort: str | None = None,
         skip: int | None = None,
         limit: int | None = None,
         match: dict | None = {},
@@ -326,7 +372,7 @@ class WorkRepository(RepositoryBase):
             match=match,
             filters=filters,
         )
-        return work_iterator.set_cursor(results), available_filters
+        return WorkIterator(results), available_filters
 
     @classmethod
     def get_research_products_by_affiliation_csv(

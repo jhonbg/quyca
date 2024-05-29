@@ -63,23 +63,29 @@ class WorkService(
         sort: str | None = "title",
         filters: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        works, available_filters = WorkRepository.get_research_products_by_affiliation(
-            affiliation_id,
-            affiliation_type,
-            skip=skip,
-            limit=limit,
-            sort=sort,
-            filters=filters,
+        works, available_filters = (
+            WorkRepository.get_research_products_by_affiliation_iterator(
+                affiliation_id,
+                affiliation_type,
+                skip=skip,
+                limit=limit,
+                sort=sort,
+                filters=filters,
+            )
         )
         total_works = WorkRepository.count_papers(
             affiliation_id=affiliation_id,
             affiliation_type=affiliation_type,
             filters=filters,
         )
+        data = [
+            WorkListApp.model_validate_json(work.model_dump_json()).model_dump()
+            for work in works
+        ]
         return {
-            "data": works,
+            "data": data,
             "total_results": total_works,
-            "count": len(works),
+            "count": len(data),
             "filters": available_filters,
         }
 
@@ -140,7 +146,9 @@ class WorkService(
             sort=params.sort,
             search=params.get_search,
         )
-        results = GeneralMultiResponse[WorkCsv](total_results=count, count=len(works), page=params.page)
+        results = GeneralMultiResponse[WorkCsv](
+            total_results=count, count=len(works), page=params.page
+        )
         results.data = [WorkCsv(**work) for work in works]
         return loads(results.model_dump_json(exclude_none=True))
 

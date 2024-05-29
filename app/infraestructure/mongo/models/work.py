@@ -81,7 +81,14 @@ class Subject(EmbeddedModel):
     source: str | None
     subjects: list[SubjectEmbedded]
 
-class Work(Model):
+
+class Ranking(EmbeddedModel):
+    date: str | int
+    provenance: str
+    rank: str | None
+    source: str
+
+class Work(Model, extra="allow"):
     titles: list[Title] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
     subtitle: str
@@ -100,7 +107,8 @@ class Work(Model):
     source: Source | None = None
     citations_by_year: list[CitationByYear] | None | Any = Field(default_factory=list)
     authors: list[Author]
-    citations_count: list[CitationsCount] | int = Field(default_factory=list)
+    ranking: list[Ranking] = Field(default_factory=list)
+    citations_count: list[CitationsCount] = Field(default_factory=list)
     subjects: list[Subject] | None = Field(default_factory=list)
 
     model_config = {"collection": "works"}

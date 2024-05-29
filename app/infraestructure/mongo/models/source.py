@@ -52,11 +52,12 @@ class Subject(BaseModel):
 
 
 class Ranking(BaseModel):
-    from_date: float | int | None = None
+    from_date: float | int
     issn: Any | None = None
     order: int | None = None
     rank: str | int | float | None = None
     source: str | None = None
+    to_date: float | int
 
 
 class Source(Model):

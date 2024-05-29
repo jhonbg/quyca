@@ -21,7 +21,7 @@ class Waiver(BaseModel):
 class APC(BaseModel):
     charges: int | Any | None = None
     currency: str | Any | None = None
-
+    year_published: int | str | None = None
 
 class Copyright(BaseModel):
     author_retains: bool | Any | None = None
@@ -48,11 +48,12 @@ class Subject(BaseModel):
 
 
 class Ranking(BaseModel):
-    from_date: float | int | None = None
+    from_date: float | int
     issn: Any | None = None
     order: int | None = None
     rank: str | int | float | None = None
     source: str | None = None
+    to_date: float | int
 
 
 class Source(BaseModel):
@@ -78,6 +79,7 @@ class Source(BaseModel):
     licenses: list[Licence] | None = Field(default_factory=list)
     subjects: list[Subject] | None = Field(default_factory=list)
     ranking: list[Ranking] | None = Field(default_factory=list)
+    date_published: str | int | None = Field(None, exclude=True)
 
 
 

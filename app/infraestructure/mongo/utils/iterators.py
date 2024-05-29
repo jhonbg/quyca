@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Iterable, Any
+from typing import Generic, TypeVar, Iterable, ClassVar
 
 from odmantic import Model
 
@@ -8,12 +8,10 @@ ModelType = TypeVar("ModelType", bound=Model)
 
 
 class CollectionIterator(Generic[ModelType]):
-    def __init__(self, collection: ModelType):
-        self.collection = collection
+    collection: ClassVar[type[ModelType]]
 
-    def set_cursor(self, cursor: Iterable[dict[str, Any]]):
+    def __init__(self, cursor: Iterable[ModelType]):
         self.cursor = cursor
-        return self
 
     def __iter__(self):
         return self
@@ -24,11 +22,19 @@ class CollectionIterator(Generic[ModelType]):
         except StopIteration:
             raise
         else:
+            doc["id"] = doc["_id"]
             obj = self.collection.model_validate(doc)
             return obj
 
 
-affiliation_iterator = CollectionIterator(Affiliation)
-person_iterator = CollectionIterator(Person)
-source_iterator = CollectionIterator(Source)
-work_iterator = CollectionIterator(Work)
+class AffiliationIterator(CollectionIterator[Affiliation]):
+    collection = Affiliation
+
+class PersonIterator(CollectionIterator[Person]):
+    collection = Person
+
+class SourceIterator(CollectionIterator[Source]):
+    collection = Source
+
+class WorkIterator(CollectionIterator[Work]):
+    collection = Work

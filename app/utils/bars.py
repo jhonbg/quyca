@@ -5,7 +5,7 @@ from utils.cpi import inflate
 from currency_converter import CurrencyConverter
 
 from utils.hindex import hindex
-from infraestructure.mongo.models.work import Work  # Cambiar por protocolo
+from protocols.mongo.models.work import Work
 
 
 class bars:
@@ -168,8 +168,8 @@ class bars:
                     result[reg["year_published"]] = value
                 else:
                     result[reg["year_published"]] += value
-        sorted_result = sorted(result.items(), key=lambda x: x[0])
-        result_list = [{"x": x[0], "y": int(x[1])} for x in sorted_result]
+        orted_result = sorted(result.items(), key=lambda x: x[0])
+        result_list = [{"x": x[0], "y": int(x[1])} for x in orted_result]
         return result_list
 
     # number of papers in openaccess or closed access
@@ -273,9 +273,7 @@ class bars:
         for work in data:
             acc_citations_by_year = []
             years = []
-            sorted_citations = sorted(
-                work.citations_by_year, key=lambda x: x.year
-            )
+            sorted_citations = sorted(work.citations_by_year, key=lambda x: x.year)
             for citation in sorted_citations:
                 if len(acc_citations_by_year) == 0:
                     acc_citations_by_year.append(
@@ -343,7 +341,7 @@ class bars:
         return result_list
 
     # Anual products count by group category
-    def products_by_year_by_group_category(self, data):
+    def products_by_year_by_group_category(self, data: Iterable[Work]):
         """
         Returns a list of dicts of the form {x:year, y:count, type:group_category} sorted by year in ascending order,
         where year is the year of publication, count is the number of works published in that year by the group category,
@@ -359,23 +357,20 @@ class bars:
         """
         result = {}
         for work in data:
-            if "date_published" in work.keys() and "year_published" in work.keys():
-                year = work["year_published"]
+            if work.year_published and work.date_published:
+                year = work.year_published
                 year_timestamp = datetime.datetime.strptime(str(year), "%Y").timestamp()
-                date = work["date_published"]
+                date = work.date_published
                 rank_name = ""
-                # print(year,year_timestamp, date)
-                for rank in work["ranking"]:
-                    if rank["source"] == "scienti":
-                        # print(rank["rank"],rank["from_date"],rank["to_date"])
+                for rank in work.ranking:
+                    if rank.source == "scienti" and rank.from_date and rank.to_date:
                         if (
-                            rank["from_date"] < year_timestamp
-                            and rank["to_date"] > year_timestamp
+                            rank.from_date < year_timestamp
+                            and rank.to_date > year_timestamp
                         ):
-                            rank_name = rank["rank"]
+                            rank_name = rank.rank
                             break
                 if rank_name != "":
-                    # print(rank["rank"],rank["from_date"],rank["to_date"])
                     if year not in result.keys():
                         result[year] = {}
                     if rank_name not in result[year].keys():

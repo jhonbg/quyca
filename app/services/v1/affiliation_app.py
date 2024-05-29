@@ -1,5 +1,5 @@
-from math import nan
 from typing import Any, Callable
+from itertools import chain
 
 from bson import ObjectId
 from pymongo import ASCENDING, DESCENDING
@@ -10,6 +10,7 @@ from infraestructure.mongo.repositories.affiliation import (
     AffiliationRepository,
     affiliation_repository,
 )
+from infraestructure.mongo.models.work import Work
 from services.source import source_service
 from services.affiliation import affiliation_service
 from core.config import settings
@@ -17,6 +18,22 @@ from utils.bars import bars
 from utils.maps import maps
 from utils.pies import pies
 from schemas.affiliation import AffiliationRelatedInfo
+
+
+def get_openalex_scienti(x: Work):
+    for count in x.citations_count:
+        if count.source == "openalex":
+            return count.count
+        if count.source == "scienti":
+            return count.count
+    return 0
+
+
+def get_subjects(work: Work, level: int = 0):
+    for subject in work.subjects:
+        for sub in subject.subjects:
+            if subject.source == "openalex" and sub.level == level:
+                return sub
 
 
 class AffiliationAppService:
@@ -489,11 +506,7 @@ class AffiliationAppService:
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
             idx, aff_type, match=_match
         )
-        result = self.bars.citations_by_year(data)
-        if result:
-            return {"plot": result}
-        else:
-            return {"plot": None}
+        return self.bars.citations_by_year(data)
 
     def get_apc_by_year(self, idx, typ=None, aff_type: str | None = None):
         _match = {
@@ -537,7 +550,7 @@ class AffiliationAppService:
     ):
         _match = {
             "year_published": {"$exists": 1},
-            "source.id": {"$exists": 1, "$ne": ""}
+            "source.id": {"$exists": 1, "$ne": ""},
         }
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
             idx, aff_type, match=_match
@@ -562,7 +575,9 @@ class AffiliationAppService:
 
     def get_h_by_year(self, idx, typ=None, aff_type: str | None = None):
         _match = {"year_published": {"$exists": 1}}
-        data, f = WorkRepository.get_research_products_by_affiliation_iterator(idx, aff_type, match=_match)
+        data, f = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx, aff_type, match=_match
+        )
         result = self.bars.h_index_by_year(data)
         if result:
             return {"plot": result}
@@ -655,71 +670,14 @@ class AffiliationAppService:
         self, idx, typ=None, aff_type: str | None = None
     ):
         data = []
-        info_db = self.colav_db["affiliations"].find_one(
-            {"_id": ObjectId(idx)}, {"types": 1, "relations": 1, "ranking": 1}
-        )
-        db_type = ""
-        for typ in info_db["types"]:
-            if typ["type"] == "group":
-                db_type = typ["type"]
-                break
-            elif typ["type"] == "department":
-                db_type = typ["type"]
-                break
-            elif typ["type"] == "faculty":
-                db_type = typ["type"]
-                break
-            else:
-                db_type = "institution"
-                break
-
-        if db_type == "group":
-            for work in self.colav_db["works"].find(
-                {
-                    "authors.affiliations.id": ObjectId(idx),
-                    "year_published": {"$exists": 1},
-                },
-                {"year_published": 1},
-            ):
-                work["ranking"] = info_db["ranking"]
-                data.append(work)
-        else:
-            groups = self.colav_db["affiliations"].find(
-                {"relations.id": ObjectId(idx), "types.type": "group"},
-                {"_id": 1, "ranking": 1},
+        groups = affiliation_repository.get_groups_by_affiliation(idx, aff_type)
+        for group in groups:
+            works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
+                str(group.id), "group", match={"year_published": {"$ne": None}}
             )
-            for group in groups:
-                authors = self.colav_db["person"].find(
-                    {"affiliations.id": group["_id"]}, {"affiliations": 1}
-                )
-                for author in authors:
-                    aff_start_date = None
-                    aff_end_date = None
-                    for aff in author["affiliations"]:
-                        if aff["id"] == group["_id"]:
-                            aff_start_date = (
-                                aff["start_date"]
-                                if aff["start_date"] != -1
-                                else 9999999999
-                            )
-                            aff_end_date = (
-                                aff["end_date"] if aff["end_date"] != -1 else 9999999999
-                            )
-                            break
-                    query_dict = {
-                        "authors.id": author["_id"],
-                        "ranking": {"$ne": []},
-                        "$and": [
-                            {"date_published": {"$lte": aff_end_date}},
-                            {"date_published": {"$gte": aff_start_date}},
-                        ],
-                    }
-                    for work in self.colav_db["works"].find(
-                        query_dict, {"year_published": 1, "date_published": 1}
-                    ):
-                        work["ranking"] = group["ranking"]
-                        data.append(work)
-        # print(data)
+            for work in works:
+                work.ranking = group.ranking
+                data.append(work)
         result = self.bars.products_by_year_by_group_category(data)
         return {"plot": result}
 
@@ -741,123 +699,47 @@ class AffiliationAppService:
         affiliations = affiliation_repository.get_affiliations_related_type(
             idx, typ, aff_type
         )
-
-        data = {}
+        _data = {}
         for aff in affiliations:
-            aff_id = aff.id
-            name = aff.name
-            data[name] = []
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(aff_id)}
-            ):
-                aff_start_date = None
-                aff_end_date = None
-                for aff in author["affiliations"]:
-                    if aff["id"] == aff_id:
-                        aff_start_date = (
-                            aff["start_date"] if aff["start_date"] != -1 else 9999999999
-                        )
-                        aff_end_date = (
-                            aff["end_date"] if aff["end_date"] != -1 else 9999999999
-                        )
-                        break
-                query_dict = {
-                    "authors.id": author["_id"],
-                    "citations_count": {"$ne": []},
-                    "$and": [
-                        {"date_published": {"$lte": aff_end_date}},
-                        {"date_published": {"$gte": aff_start_date}},
-                    ],
-                }
-
-                for work in self.colav_db["works"].find(
-                    query_dict, {"citations_count": 1}
-                ):
-                    data[name].append(work)
-
-        return self.pies.citations_by_affiliation(data)
+            _data[aff.name], _ = (
+                WorkRepository.get_research_products_by_affiliation_iterator(
+                    aff.id, aff.types[0].type, match={"citations_count": {"$ne": []}}
+                )
+            )
+        return self.pies.citations_by_affiliation(_data)
 
     def get_products_by_affiliations(self, idx, typ, aff_type: str | None = None):
         affiliations = affiliation_repository.get_affiliations_related_type(
             idx, typ, aff_type
         )
-
         data = {}
         for aff in affiliations:
-            aff_id = aff.id
-            name = aff.name
-            data[name] = 0
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(aff_id)}
-            ):
-                aff_start_date = None
-                aff_end_date = None
-                for aff in author["affiliations"]:
-                    if aff["id"] == aff_id:
-                        aff_start_date = (
-                            aff["start_date"] if aff["start_date"] != -1 else 9999999999
-                        )
-                        aff_end_date = (
-                            aff["end_date"] if aff["end_date"] != -1 else 9999999999
-                        )
-                        break
-                query_dict = {
-                    "authors.id": author["_id"],
-                    "$and": [
-                        {"date_published": {"$lte": aff_end_date}},
-                        {"date_published": {"$gte": aff_start_date}},
-                    ],
-                }
-
-                data[name] += self.colav_db["works"].count_documents(query_dict)
-
+            data[aff.name] = WorkRepository.count_papers(
+                affiliation_id=aff.id, affiliation_type=aff.types[0].type
+            )
         return self.pies.products_by_affiliation(data)
 
     def get_apc_by_affiliations(self, idx, typ, aff_type: str | None = None):
         affiliations = affiliation_repository.get_affiliations_related_type(
             idx, typ, aff_type
         )
-
         data = {}
         for aff in affiliations:
-            aff_id = aff.id
-            name = aff.name
-            data[name] = []
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(aff_id)}
-            ):
-                aff_start_date = None
-                aff_end_date = None
-                for aff in author["affiliations"]:
-                    if aff["id"] == aff_id:
-                        aff_start_date = (
-                            aff["start_date"] if aff["start_date"] != -1 else 9999999999
-                        )
-                        aff_end_date = (
-                            aff["end_date"] if aff["end_date"] != -1 else 9999999999
-                        )
-                        break
-                query_dict = {
-                    "authors.id": author["_id"],
-                    "source": {"$ne": []},
-                    "$and": [
-                        {"date_published": {"$lte": aff_end_date}},
-                        {"date_published": {"$gte": aff_start_date}},
-                    ],
-                }
-
-                for work in self.colav_db["works"].find(
-                    query_dict, {"source": 1, "year_published": 1}
-                ):
-                    if not "id" in work["source"].keys():
-                        continue
-                    source_db = self.colav_db["sources"].find_one(
-                        {"_id": work["source"]["id"]}
-                    )
-                    if source_db:
-                        if source_db["apc"]:
-                            source_db["apc"]["year_published"] = work["year_published"]
-                            data[name].append(source_db["apc"])
+            works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
+                aff.id,
+                aff.types[0].type,
+                match={
+                    "$and": [{"source.id": {"$ne": None}}, {"source.id": {"$ne": ""}}]
+                },
+            )
+            for work in works:
+                source = source_service.get_by_id(id=str(work.source.id))
+                if source:
+                    if source.apc and source.apc.charges and source.apc.currency:
+                        if not aff.name in data.keys():
+                            data[aff.name] = []
+                        source.apc.year_published = work.year_published
+                        data[aff.name].append(source.apc)
 
         return self.pies.apc_by_affiliation(data, 2022)
 
@@ -865,195 +747,67 @@ class AffiliationAppService:
         affiliations = affiliation_repository.get_affiliations_related_type(
             idx, typ, aff_type
         )
-
-        data = {}
+        _data = {}
         for aff in affiliations:
-            aff_id = aff.id
-            name = aff.name
-            data[name] = []
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(aff_id)}
-            ):
-                aff_start_date = None
-                aff_end_date = None
-                for aff in author["affiliations"]:
-                    if aff["id"] == aff_id:
-                        aff_start_date = (
-                            aff["start_date"] if aff["start_date"] != -1 else 9999999999
-                        )
-                        aff_end_date = (
-                            aff["end_date"] if aff["end_date"] != -1 else 9999999999
-                        )
-                        break
-                query_dict = {
-                    "authors.id": author["_id"],
-                    "citation_count": {"$ne": []},
-                    "$and": [
-                        {"date_published": {"$lte": aff_end_date}},
-                        {"date_published": {"$gte": aff_start_date}},
-                    ],
-                }
-
-                for work in self.colav_db["works"].find(
-                    query_dict, {"citations_count": 1}
-                ):
-                    citations = 0
-                    for count in work["citations_count"]:
-                        if count["source"] == "scholar":
-                            citations = count["count"]
-                            break
-                        elif count["source"] == "openalex":
-                            citations = count["count"]
-                            break
-                    if citations == 0:
-                        continue
-                    data[name].append(citations)
-
-        return self.pies.hindex_by_affiliation(data)
+            works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
+                aff.id, aff.types[0].type, match={"citations_count": {"$ne": []}}
+            )
+            _data[aff.name] = map(
+                get_openalex_scienti,
+                works,
+            )
+        return self.pies.hindex_by_affiliation(_data)
 
     def get_products_by_publisher(self, idx, typ=None, aff_type: str | None = None):
         data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                for work in self.colav_db["works"].find(
-                    {"authors.id": author["_id"], "source.id": {"$exists": 1}},
-                    {"source.id": 1},
-                ):
-                    if not "source" in work.keys():
-                        continue
-                    if not "id" in work["source"].keys():
-                        continue
-                    source_db = self.colav_db["sources"].find_one(
-                        {"_id": work["source"]["id"], "publisher.name": {"$ne": nan}}
-                    )
-                    if source_db:
-                        if source_db["publisher"]:
-                            data.append({"publisher": source_db["publisher"]})
-        else:
-            for work in self.colav_db["works"].find(
-                {"authors.affiliations.id": ObjectId(idx), "source.id": {"$exists": 1}},
-                {"source.id": 1},
-            ):
-                if not "source" in work.keys():
-                    continue
-                if not "id" in work["source"].keys():
-                    continue
-                source_db = self.colav_db["sources"].find_one(
-                    {"_id": work["source"]["id"], "publisher.name": {"$ne": nan}}
-                )
-                if source_db:
-                    if source_db["publisher"]:
-                        data.append({"publisher": source_db["publisher"]})
-
-        result = self.pies.products_by_publisher(data)
-        if result:
-            return result
-        else:
-            return {"plot": None}
+        works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx,
+            aff_type,
+            match={"$and": [{"source.id": {"$ne": None}}, {"source.id": {"$ne": ""}}]},
+        )
+        for work in works:
+            if work.source.id:
+                source = source_service.get_by_id(id=str(work.source.id))
+                if source.publisher:
+                    data.append(source.publisher)
+        return self.pies.products_by_publisher(data)
 
     def get_products_by_subject(
         self, idx, level: int = 0, typ: str = None, aff_type: str | None = None
     ):
-        if not level:
-            level = 0
-        data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                for work in self.colav_db["works"].find(
-                    {"authors.id": author["_id"], "subjects": {"$exists": 1}},
-                    {"subjects": 1},
-                ):
-                    if not "subjects" in work.keys():
-                        continue
-                    for subjects in work["subjects"]:
-                        if subjects["source"] != "openalex":
-                            continue
-                        for subject in subjects["subjects"]:
-                            if subject["level"] != level:
-                                continue
-                            name = subject.get("name", "No name specified")
-                            data.append({"subject": {"name": name}})
-        else:
-            for work in self.colav_db["works"].find(
-                {"authors.affiliations.id": ObjectId(idx), "subjects": {"$exists": 1}},
-                {"subjects": 1},
-            ):
-                if not "subjects" in work.keys():
-                    continue
-                for subjects in work["subjects"]:
-                    if subjects["source"] != "openalex":
-                        continue
-                    for subject in subjects["subjects"]:
-                        if subject["level"] != level:
-                            continue
-                        name = subject.get("name", "No name specified")
-                        data.append({"subject": {"name": name}})
-
-        result = self.pies.products_by_subject(data)
-        if result:
-            return result
-        else:
-            return {"plot": None}
+        works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx, aff_type, match={"subjects": {"$ne": []}}
+        )
+        data = chain.from_iterable(
+            map(
+                lambda x: [
+                    sub
+                    for subject in x.subjects
+                    for sub in subject.subjects
+                    if subject.source == "openalex" and sub.level == level
+                ],
+                works,
+            )
+        )
+        return self.pies.products_by_subject(data)
 
     def get_products_by_database(self, idx, typ=None, aff_type: str | None = None):
-        data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                for work in self.colav_db["works"].find(
-                    {"authors.id": author["_id"]}, {"updated": 1}
-                ):
-                    data.append(work["updated"])
-        else:
-            for work in self.colav_db["works"].find(
-                {"authors.affiliations.id": ObjectId(idx)}, {"updated": 1}
-            ):
-                data.append(work["updated"])
-
-        result = self.pies.products_by_database(data)
-        if result:
-            return result
-        else:
-            return {"plot": None}
+        works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx, aff_type, match={"updated": {"$ne": []}}
+        )
+        data = chain.from_iterable(map(lambda x: x.updated, works))
+        return self.pies.products_by_database(data)
 
     def get_products_by_open_access_status(
         self, idx, typ=None, aff_type: str | None = None
     ):
-        data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                for work in self.colav_db["works"].find(
-                    {
-                        "authors.id": author["_id"],
-                        "bibliographic_info.open_access_status": {
-                            "$exists": 1,
-                            "$ne": None,
-                        },
-                    },
-                    {"bibliographic_info.open_access_status": 1},
-                ):
-                    data.append(work["bibliographic_info"]["open_access_status"])
-        else:
-            for work in self.colav_db["works"].find(
-                {
-                    "authors.affiliations.id": ObjectId(idx),
-                    "bibliographic_info.open_access_status": {
-                        "$exists": 1,
-                        "$ne": None,
-                    },
-                },
-                {"bibliographic_info.open_access_status": 1},
-            ):
-                data.append(work["bibliographic_info"]["open_access_status"])
-
-        result = self.pies.products_by_open_access_status(data)
+        works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx,
+            aff_type,
+            match={"bibliographic_info.open_access_status": {"$exists": 1}},
+        )
+        _data = map(lambda x: x.bibliographic_info.open_access_status, works)
+        result = self.pies.products_by_open_access_status(_data)
         return result
 
     def get_products_by_author_sex(self, idx, typ=None, aff_type: str | None = None):
@@ -1183,91 +937,31 @@ class AffiliationAppService:
             return {"plot": None}
 
     def get_products_by_scienti_rank(self, idx, typ=None, aff_type: str | None = None):
-        data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                for work in self.colav_db["works"].find(
-                    {
-                        "authors.id": author["_id"],
-                        "ranking": {"$ne": []},
-                        "ranking.rank": {"$ne": None},
-                    },
-                    {"ranking": 1},
-                ):
-                    data.append(work)
-        else:
-            for work in self.colav_db["works"].find(
-                {
-                    "authors.affiliations.id": ObjectId(idx),
-                    "ranking": {"$ne": []},
-                    "ranking.rank": {"$ne": None},
-                },
-                {"ranking": 1},
-            ):
-                data.append(work)
-        result = self.pies.products_by_scienti_rank(data)
-        if result:
-            return result
-        else:
-            return {"plot": None}
+        works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx, aff_type, match={"ranking": {"$ne": []}}
+        )
+        _data = chain.from_iterable(map(lambda x: x.ranking, works))
+        return self.pies.products_by_scienti_rank(_data)
 
     def get_products_by_scimago_rank(self, idx, typ=None, aff_type: str | None = None):
         data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                pipeline = [
-                    {
-                        "$match": {
-                            "authors.id": author["_id"],
-                            "date_published": {"$ne": None},
-                        }
-                    },
-                    {"$project": {"source": 1, "date_published": 1}},
-                    {
-                        "$lookup": {
-                            "from": "sources",
-                            "localField": "source.id",
-                            "foreignField": "_id",
-                            "as": "source",
-                        }
-                    },
-                    {"$unwind": "$source"},
-                    {"$project": {"source.ranking": 1, "date_published": 1}},
-                ]
-                for work in self.colav_db["works"].aggregate(pipeline):
-                    data.append(work)
-        else:
-            pipeline = [
-                {
-                    "$match": {
-                        "authors.affiliations.id": ObjectId(idx),
-                        "date_published": {"$ne": None},
-                    }
-                },
-                {"$project": {"source": 1, "date_published": 1}},
-                {
-                    "$lookup": {
-                        "from": "sources",
-                        "localField": "source.id",
-                        "foreignField": "_id",
-                        "as": "source",
-                    }
-                },
-                {"$unwind": "$source"},
-                {"$project": {"source.ranking": 1, "date_published": 1}},
-            ]
-            for work in self.colav_db["works"].aggregate(pipeline):
-                data.append(work)
-
-        result = self.pies.products_by_scimago_rank(data)
-        if result:
-            return result
-        else:
-            return {"plot": None}
+        works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx,
+            aff_type,
+            match={
+                "$and": [{"source.id": {"$ne": None}}, {"source.id": {"$ne": ""}}],
+                "date_published": {"$ne": None},
+            },
+        )
+        for work in works:
+            source = source_service.get_by_id(id=str(work.source.id))
+            if source:
+                if source.ranking:
+                    source.date_published = work.date_published
+                    data.append(
+                       source
+                    )
+        return self.pies.products_by_scimago_rank(data)
 
     def get_publisher_same_institution(
         self, idx, typ=None, aff_type: str | None = None

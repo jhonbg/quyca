@@ -190,7 +190,7 @@ class AffiliationAppService:
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
             idx, aff_type, match=_match, available_filters=False
         )
-        return self.bars.citations_by_year(data)
+        return {"plot": self.bars.citations_by_year(data)}
 
     def get_apc_by_year(self, idx, typ=None, aff_type: str | None = None):
         _match = {
@@ -208,7 +208,7 @@ class AffiliationAppService:
                     _data.append(
                         {"year_published": work.year_published, "apc": source.apc}
                     )
-        return self.bars.apc_by_year(_data, 2022)
+        return {"plot": self.bars.apc_by_year(_data, 2022)}
 
     def get_oa_by_year(self, idx, typ=None, aff_type: str | None = None):
 
@@ -219,8 +219,8 @@ class AffiliationAppService:
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
             idx, aff_type, match=_match, available_filters=False
         )
-        return self.bars.oa_by_year(data)
-
+        return {"plot": self.bars.oa_by_year(data)
+}
     def get_products_by_year_by_publisher(
         self, idx, typ=None, aff_type: str | None = None
     ):
@@ -243,14 +243,14 @@ class AffiliationAppService:
                         }
                     )
 
-        return self.bars.products_by_year_by_publisher(_data)
+        return {"plot": self.bars.products_by_year_by_publisher(_data)}
 
     def get_h_by_year(self, idx, typ=None, aff_type: str | None = None):
         _match = {"year_published": {"$exists": 1}}
         works, f = WorkRepository.get_research_products_by_affiliation_iterator(
             idx, aff_type, match=_match, available_filters=False
         )
-        return self.bars.h_index_by_year(works)
+        return {"plot": self.bars.h_index_by_year(works)}
 
     def get_products_by_year_by_researcher_category(
         self, idx, typ=None, aff_type: str | None = None
@@ -374,7 +374,10 @@ class AffiliationAppService:
         for aff in affiliations:
             _data[aff.name], _ = (
                 WorkRepository.get_research_products_by_affiliation_iterator(
-                    aff.id, aff.types[0].type, match={"citations_count": {"$ne": []}}, available_filters=False
+                    aff.id,
+                    aff.types[0].type,
+                    match={"citations_count": {"$ne": []}},
+                    available_filters=False,
                 )
             )
         return self.pies.citations_by_affiliation(_data)
@@ -402,7 +405,7 @@ class AffiliationAppService:
                 match={
                     "$and": [{"source.id": {"$ne": None}}, {"source.id": {"$ne": ""}}]
                 },
-                available_filters=False
+                available_filters=False,
             )
             for work in works:
                 source = source_service.get_by_id(id=str(work.source.id))
@@ -422,7 +425,10 @@ class AffiliationAppService:
         _data = {}
         for aff in affiliations:
             works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
-                aff.id, aff.types[0].type, match={"citations_count": {"$ne": []}}, available_filters=False
+                aff.id,
+                aff.types[0].type,
+                match={"citations_count": {"$ne": []}},
+                available_filters=False,
             )
             _data[aff.name] = map(
                 get_openalex_scienti,
@@ -436,7 +442,7 @@ class AffiliationAppService:
             idx,
             aff_type,
             match={"$and": [{"source.id": {"$ne": None}}, {"source.id": {"$ne": ""}}]},
-            available_filters=False
+            available_filters=False,
         )
         for work in works:
             if work.source.id:
@@ -478,7 +484,7 @@ class AffiliationAppService:
             idx,
             aff_type,
             match={"bibliographic_info.open_access_status": {"$exists": 1}},
-            available_filters=False
+            available_filters=False,
         )
         _data = map(lambda x: x.bibliographic_info.open_access_status, works)
         result = self.pies.products_by_open_access_status(_data)
@@ -626,7 +632,7 @@ class AffiliationAppService:
                 "$and": [{"source.id": {"$ne": None}}, {"source.id": {"$ne": ""}}],
                 "date_published": {"$ne": None},
             },
-            available_filters=False
+            available_filters=False,
         )
         for work in works:
             source = source_service.get_by_id(id=str(work.source.id))

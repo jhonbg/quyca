@@ -135,322 +135,6 @@ class AffiliationAppService:
 
         return result.model_dump(exclude_none=True)
 
-    def process_work(self, work):
-        paper = {
-            "id": work["_id"],
-            "title": "",
-            "authors": [],
-            "source": {},
-            "year_published": (
-                work["year_published"] if "year_published" in work.keys() else None
-            ),
-            "citations_count": work["citations_count"],
-            "open_access_status": (
-                work["bibliographic_info"]["open_access_status"]
-                if "open_access_status" in work["bibliographic_info"]
-                else ""
-            ),
-            "subjects": [],
-            "external_ids": work["external_ids"],
-        }
-
-        paper["title"] = work["titles"][0]["title"] if "titles" in work.keys() else ""
-        for w in work["titles"]:
-            if w["lang"] in ["es", "en"]:
-                paper["title"] = w["title"]
-                break
-
-        if "source" in work.keys():
-            if "id" in work["source"].keys():
-                if "name" in work["source"].keys() and isinstance(
-                    work["source"].get("name", ""), str
-                ):
-                    paper["source"] = {
-                        "name": work["source"].get("name", ""),
-                        "id": work["source"]["id"],
-                    }
-                elif "names" in paper["source"].keys():
-                    paper["source"] = {
-                        "name": work["source"]["names"][0].get("name", ""),
-                        "id": work["source"]["id"],
-                    }
-
-        for subs in work["subjects"]:
-            if subs["source"] == "openalex":
-                for sub in subs["subjects"]:
-                    name = sub.get("name", "no subject name founded in db")
-                    paper["subjects"].append({"name": name, "id": sub["id"]})
-                break
-
-        authors = []
-        for author in work["authors"]:
-            au_entry = author.copy()
-            if not "affiliations" in au_entry.keys():
-                au_entry["affiliations"] = []
-            author_db = None
-            if "id" in author.keys():
-                if author["id"] == "":
-                    continue
-                author_db = self.colav_db["person"].find_one({"_id": author["id"]})
-            else:
-                continue
-            if author_db:
-                au_entry = {
-                    "id": author_db["_id"],
-                    "full_name": author_db["full_name"],
-                    "external_ids": [
-                        ext
-                        for ext in author_db["external_ids"]
-                        if not ext["source"]
-                        in ["Cédula de Ciudadanía", "Cédula de Extranjería", "Passport"]
-                    ],
-                }
-            affiliations = []
-            aff_ids = []
-            aff_types = []
-            for aff in author["affiliations"]:
-                if "id" in aff.keys():
-                    if aff["id"]:
-                        aff_db = self.colav_db["affiliations"].find_one(
-                            {"_id": aff["id"]}
-                        )
-                        if aff_db:
-                            aff_ids.append(aff["id"])
-                            aff_entry = {"id": aff_db["_id"], "name": ""}
-                            if author_db:
-                                for aff_au in author_db["affiliations"]:
-                                    if aff_au["id"] == aff["id"]:
-                                        if "start_date" in aff_au.keys():
-                                            aff_entry["start_date"] = aff_au[
-                                                "start_date"
-                                            ]
-                                        if "end_date" in aff_au.keys():
-                                            aff_entry["end_date"] = aff_au["end_date"]
-                                        break
-                            name = aff_db["names"][0]["name"]
-                            lang = ""
-                            for n in aff_db["names"]:
-                                if "lang" in n.keys():
-                                    if n["lang"] == "es":
-                                        name = n["name"]
-                                        lang = n["lang"]
-                                        break
-                                    elif n["lang"] == "en":
-                                        name = n["name"]
-                                        lang = n["lang"]
-                            aff["name"] = name
-                            if "types" in aff.keys():
-                                for typ in aff["types"]:
-                                    if "type" in typ.keys():
-                                        if not typ["type"] in aff_types:
-                                            aff_types.append(typ["type"])
-                            affiliations.append(aff)
-            if author_db:
-                for aff in author_db["affiliations"]:
-                    if aff["id"] in aff_ids:
-                        continue
-                    if aff["id"]:
-                        aff_db = self.colav_db["affiliations"].find_one(
-                            {"_id": aff["id"]}
-                        )
-                        inst_already = False
-                        if aff_db:
-                            if "types" in aff_db.keys():
-                                for typ in aff_db["types"]:
-                                    if "type" in typ.keys():
-                                        if typ["type"] in aff_types:
-                                            inst_already = True
-                            if inst_already:
-                                continue
-                            aff_ids.append(aff["id"])
-                            aff_entry = {"id": aff_db["_id"], "name": ""}
-                            name = aff_db["names"][0]["name"]
-                            lang = ""
-                            for n in aff_db["names"]:
-                                if "lang" in n.keys():
-                                    if n["lang"] == "es":
-                                        name = n["name"]
-                                        lang = n["lang"]
-                                        break
-                                    elif n["lang"] == "en":
-                                        name = n["name"]
-                                        lang = n["lang"]
-                            aff["name"] = name
-                            affiliations.append(aff)
-            au_entry["affiliations"] = affiliations
-            authors.append(au_entry)
-        paper["authors"] = authors
-
-        return paper
-
-    def get_research_products(
-        self,
-        idx,
-        typ=None,
-        start_year=None,
-        end_year=None,
-        page=None,
-        max_results=None,
-        sort=None,
-        direction="descending",
-    ):
-        papers = []
-        total = 0
-        open_access = []
-
-        if start_year:
-            try:
-                start_year = int(start_year)
-            except:
-                print("Could not convert start year to int")
-                return None
-        if end_year:
-            try:
-                end_year = int(end_year)
-            except:
-                print("Could not convert end year to int")
-                return None
-
-        if not page:
-            page = 1
-        else:
-            try:
-                page = int(page)
-            except:
-                print("Could not convert end page to int")
-                return None
-        if not max_results:
-            max_results = 100
-        else:
-            try:
-                max_results = int(max_results)
-            except:
-                print("Could not convert option max to int")
-                return None
-        if max_results > 250:
-            max_results = 250
-
-        if typ:
-            if typ != "institution":
-                work_ids = []
-                match_works = {}
-                if start_year or end_year:
-                    match_works["works.year_published"] = {}
-                if start_year:
-                    match_works["works.year_published"]["$gte"] = start_year
-                if end_year:
-                    match_works["works.year_published"]["$lte"] = end_year
-                search_pipeline = [
-                    {"$match": {"affiliations.id": ObjectId(idx)}},
-                    {"$project": {"affiliations": 1, "full_name": 1, "_id": 1}},
-                    {
-                        "$lookup": {
-                            "from": "works",
-                            "localField": "_id",
-                            "foreignField": "authors.id",
-                            "as": "works",
-                        }
-                    },
-                    {"$unwind": "$works"},
-                    {"$match": match_works},
-                    {"$group": {"_id": "$works._id", "works": {"$first": "$works"}}},
-                    {
-                        "$project": {
-                            "works._id": 1,
-                            "works.citations_count": 1,
-                            "works.year_published": 1,
-                            "works.titles": 1,
-                            "works.source": 1,
-                            "works.authors": 1,
-                            "works.subjects": 1,
-                            "works.bibliographic_info": 1,
-                            "works.external_ids": 1,
-                        }
-                    },
-                    {"$sort": "works.titles.title"},
-                ]
-
-                if sort == "citations" and direction == "ascending":
-                    search_pipeline.append(
-                        {"$sort": {"works.citations_count.count": ASCENDING}}
-                    )
-                elif sort == "citations" and direction == "descending":
-                    search_pipeline.append(
-                        {"$sort": {"works.citations_count.count": DESCENDING}}
-                    )
-                elif sort == "year" and direction == "ascending":
-                    search_pipeline.append(
-                        {"$sort": {"works.year_published": ASCENDING}}
-                    )
-                elif sort == "year" and direction == "descending":
-                    search_pipeline.append(
-                        {"$sort": {"works.year_published": DESCENDING}}
-                    )
-                elif not sort:
-                    search_pipeline.append(
-                        {"$sort": {"works.citations_count.count": DESCENDING}}
-                    )
-
-                total_pipeline = search_pipeline.copy()
-                total_pipeline.append({"$count": "total"})
-                total = list(self.colav_db["person"].aggregate(total_pipeline))[0][
-                    "total"
-                ]
-
-                search_pipeline.append({"$skip": max_results * (page - 1)})
-                search_pipeline.append({"$limit": max_results})
-
-                for work in self.colav_db["person"].aggregate(search_pipeline):
-                    w = work["works"]
-                    for i, author in enumerate(w["authors"]):
-                        if author["id"] == work["_id"]:
-                            w["authors"][i] = author
-                            break
-                    if len(w["authors"]) >= 10:
-                        if i >= 10:
-                            w["authors"] = w["authors"][i - 9 : i + 1]
-                        else:
-                            w["authors"] = w["authors"][0:10]
-                    if w["_id"] not in work_ids:
-                        papers.append(self.process_work(w))
-                        work_ids.append(w["_id"])
-
-            elif typ == "institution":
-                search_dict = {}
-                if start_year or end_year:
-                    search_dict["year_published"] = {}
-                if start_year:
-                    search_dict["year_published"]["$gte"] = start_year
-                if end_year:
-                    search_dict["year_published"]["$lte"] = end_year
-                if idx:
-                    search_dict = {"authors.affiliations.id": ObjectId(idx)}
-                search_dict["types.type"] = {"$nin": ["department", "faculty", "group"]}
-                total = self.colav_db["works"].count_documents(search_dict)
-                cursor = self.colav_db["works"].find(search_dict)
-
-                if sort == "citations" and direction == "ascending":
-                    cursor.sort([("citations_count.count", ASCENDING)])
-                if sort == "citations" and direction == "descending":
-                    cursor.sort([("citations_count.count", DESCENDING)])
-                if sort == "year" and direction == "ascending":
-                    cursor.sort([("year_published", ASCENDING)])
-                if sort == "year" and direction == "descending":
-                    cursor.sort([("year_published", DESCENDING)])
-
-                cursor = cursor.skip(max_results * (page - 1)).limit(max_results)
-                for work in cursor:
-                    papers.append(self.process_work(work))
-
-            return {
-                "data": papers,
-                "count": len(papers),
-                "page": page,
-                "total_results": total,
-            }
-        else:
-            return None
-
     def get_products_by_year_by_type(self, idx, typ=None, aff_type: str | None = None):
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
             idx, aff_type
@@ -504,7 +188,7 @@ class AffiliationAppService:
     def get_citations_by_year(self, idx, typ=None, aff_type: str | None = None):
         _match = {"citations_by_year": {"$ne": []}, "year_published": {"$exists": 1}}
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match=_match
+            idx, aff_type, match=_match, available_filters=False
         )
         return self.bars.citations_by_year(data)
 
@@ -513,22 +197,18 @@ class AffiliationAppService:
             "year_published": {"$exists": 1},
             "source.id": {"$exists": 1, "$ne": ""},
         }
-        data, f = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match=_match
+        works, f = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx, aff_type, match=_match, available_filters=False
         )
         _data = []
-        for work in data:
+        for work in works:
             source = source_service.get_by_id(id=str(work.source.id))
             if source:
                 if source.apc:
                     _data.append(
                         {"year_published": work.year_published, "apc": source.apc}
                     )
-        result = self.bars.apc_by_year(_data, 2022)
-        if result:
-            return {"plot": result}
-        else:
-            return {"plot": None}
+        return self.bars.apc_by_year(_data, 2022)
 
     def get_oa_by_year(self, idx, typ=None, aff_type: str | None = None):
 
@@ -537,13 +217,9 @@ class AffiliationAppService:
             "year_published": {"$ne": None},
         }
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match=_match
+            idx, aff_type, match=_match, available_filters=False
         )
-        result = self.bars.oa_by_year(data)
-        if result:
-            return {"plot": result}
-        else:
-            return {"plot": None}
+        return self.bars.oa_by_year(data)
 
     def get_products_by_year_by_publisher(
         self, idx, typ=None, aff_type: str | None = None
@@ -552,11 +228,11 @@ class AffiliationAppService:
             "year_published": {"$exists": 1},
             "source.id": {"$exists": 1, "$ne": ""},
         }
-        data, f = WorkRepository.get_research_products_by_affiliation_iterator(
+        works, f = WorkRepository.get_research_products_by_affiliation_iterator(
             idx, aff_type, match=_match
         )
         _data = []
-        for work in data:
+        for work in works:
             source = source_service.get_by_id(id=str(work.source.id))
             if source:
                 if source.publisher:
@@ -567,22 +243,14 @@ class AffiliationAppService:
                         }
                     )
 
-        result = self.bars.products_by_year_by_publisher(_data)
-        if result:
-            return {"plot": result}
-        else:
-            return {"plot": None}
+        return self.bars.products_by_year_by_publisher(_data)
 
     def get_h_by_year(self, idx, typ=None, aff_type: str | None = None):
         _match = {"year_published": {"$exists": 1}}
-        data, f = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match=_match
+        works, f = WorkRepository.get_research_products_by_affiliation_iterator(
+            idx, aff_type, match=_match, available_filters=False
         )
-        result = self.bars.h_index_by_year(data)
-        if result:
-            return {"plot": result}
-        else:
-            return {"plot": None}
+        return self.bars.h_index_by_year(works)
 
     def get_products_by_year_by_researcher_category(
         self, idx, typ=None, aff_type: str | None = None
@@ -673,7 +341,10 @@ class AffiliationAppService:
         groups = affiliation_repository.get_groups_by_affiliation(idx, aff_type)
         for group in groups:
             works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
-                str(group.id), "group", match={"year_published": {"$ne": None}}
+                str(group.id),
+                "group",
+                match={"year_published": {"$ne": None}},
+                available_filters=False,
             )
             for work in works:
                 work.ranking = group.ranking
@@ -703,7 +374,7 @@ class AffiliationAppService:
         for aff in affiliations:
             _data[aff.name], _ = (
                 WorkRepository.get_research_products_by_affiliation_iterator(
-                    aff.id, aff.types[0].type, match={"citations_count": {"$ne": []}}
+                    aff.id, aff.types[0].type, match={"citations_count": {"$ne": []}}, available_filters=False
                 )
             )
         return self.pies.citations_by_affiliation(_data)
@@ -731,6 +402,7 @@ class AffiliationAppService:
                 match={
                     "$and": [{"source.id": {"$ne": None}}, {"source.id": {"$ne": ""}}]
                 },
+                available_filters=False
             )
             for work in works:
                 source = source_service.get_by_id(id=str(work.source.id))
@@ -750,7 +422,7 @@ class AffiliationAppService:
         _data = {}
         for aff in affiliations:
             works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
-                aff.id, aff.types[0].type, match={"citations_count": {"$ne": []}}
+                aff.id, aff.types[0].type, match={"citations_count": {"$ne": []}}, available_filters=False
             )
             _data[aff.name] = map(
                 get_openalex_scienti,
@@ -764,6 +436,7 @@ class AffiliationAppService:
             idx,
             aff_type,
             match={"$and": [{"source.id": {"$ne": None}}, {"source.id": {"$ne": ""}}]},
+            available_filters=False
         )
         for work in works:
             if work.source.id:
@@ -776,7 +449,7 @@ class AffiliationAppService:
         self, idx, level: int = 0, typ: str = None, aff_type: str | None = None
     ):
         works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match={"subjects": {"$ne": []}}
+            idx, aff_type, match={"subjects": {"$ne": []}}, available_filters=False
         )
         data = chain.from_iterable(
             map(
@@ -793,7 +466,7 @@ class AffiliationAppService:
 
     def get_products_by_database(self, idx, typ=None, aff_type: str | None = None):
         works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match={"updated": {"$ne": []}}
+            idx, aff_type, match={"updated": {"$ne": []}}, available_filters=False
         )
         data = chain.from_iterable(map(lambda x: x.updated, works))
         return self.pies.products_by_database(data)
@@ -805,6 +478,7 @@ class AffiliationAppService:
             idx,
             aff_type,
             match={"bibliographic_info.open_access_status": {"$exists": 1}},
+            available_filters=False
         )
         _data = map(lambda x: x.bibliographic_info.open_access_status, works)
         result = self.pies.products_by_open_access_status(_data)
@@ -938,7 +612,7 @@ class AffiliationAppService:
 
     def get_products_by_scienti_rank(self, idx, typ=None, aff_type: str | None = None):
         works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match={"ranking": {"$ne": []}}
+            idx, aff_type, match={"ranking": {"$ne": []}}, available_filters=False
         )
         _data = chain.from_iterable(map(lambda x: x.ranking, works))
         return self.pies.products_by_scienti_rank(_data)
@@ -952,15 +626,14 @@ class AffiliationAppService:
                 "$and": [{"source.id": {"$ne": None}}, {"source.id": {"$ne": ""}}],
                 "date_published": {"$ne": None},
             },
+            available_filters=False
         )
         for work in works:
             source = source_service.get_by_id(id=str(work.source.id))
             if source:
                 if source.ranking:
                     source.date_published = work.date_published
-                    data.append(
-                       source
-                    )
+                    data.append(source)
         return self.pies.products_by_scimago_rank(data)
 
     def get_publisher_same_institution(

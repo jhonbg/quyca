@@ -298,6 +298,7 @@ class WorkRepository(RepositoryBase):
         limit: int | None = None,
         match: dict[str, Any] = {},
         filters: dict[str, str] = {},
+        available_filters: bool = True
     ) -> tuple[Iterable[dict[str, Any]], dict[str, Any]]:
         affiliation_type = (
             "institution" if affiliation_type == "Education" else affiliation_type
@@ -311,7 +312,7 @@ class WorkRepository(RepositoryBase):
         works_pipeline += cls.get_filters(filters)
         available_filters = cls.get_available_filters(
             pipeline=works_pipeline, collection=collection
-        )
+        ) if available_filters else {}
         # sort
         works_pipeline += cls.get_sort_direction(sort)
         # navigation
@@ -362,6 +363,7 @@ class WorkRepository(RepositoryBase):
         limit: int | None = None,
         match: dict | None = {},
         filters: dict | None = {},
+        available_filters: bool = True,
     ) -> tuple[Iterable[Work], dict[str, Any]]:
         results, available_filters = cls.__products_by_affiliation(
             affiliation_id,
@@ -371,6 +373,7 @@ class WorkRepository(RepositoryBase):
             limit=limit,
             match=match,
             filters=filters,
+            available_filters=available_filters,
         )
         return WorkIterator(results), available_filters
 

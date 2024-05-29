@@ -25,6 +25,7 @@ class Waiver(Protocol):
 class APC(Protocol):
     charges: int | Any | None
     currency: str | Any | None
+    year_published: str | int | None 
 
 
 class Copyright(Protocol):

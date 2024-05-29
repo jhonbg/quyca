@@ -137,13 +137,9 @@ class AffiliationAppService:
 
     def get_products_by_year_by_type(self, idx, typ=None, aff_type: str | None = None):
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type
+            idx, aff_type, project=["year_published", "types"]
         )
-        result = self.bars.products_by_year_by_type(data)
-        if result:
-            return {"plot": result}
-        else:
-            return {"plot": None}
+        return {"plot": self.bars.products_by_year_by_type(data)}
 
     def get_products_by_affiliation_by_type(
         self, idx, typ, aff_type: str | None = None
@@ -188,26 +184,27 @@ class AffiliationAppService:
     def get_citations_by_year(self, idx, typ=None, aff_type: str | None = None):
         _match = {"citations_by_year": {"$ne": []}, "year_published": {"$exists": 1}}
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match=_match, available_filters=False
+            idx,
+            aff_type,
+            match=_match,
+            available_filters=False,
+            project=["citations_by_year", "year_published"],
         )
         return {"plot": self.bars.citations_by_year(data)}
 
     def get_apc_by_year(self, idx, typ=None, aff_type: str | None = None):
-        _match = {
-            "year_published": {"$exists": 1},
-            "source.id": {"$exists": 1, "$ne": ""},
-        }
-        works, f = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match=_match, available_filters=False
+        sources = WorkRepository.get_sources_by_affiliation(
+            idx,
+            aff_type,
+            match={
+                "$and": [
+                    {"apc.charges": {"$exists": 1}},
+                    {"apc.currency": {"$exists": 1}},
+                ]
+            },
+            project=["apc"],
         )
-        _data = []
-        for work in works:
-            source = source_service.get_by_id(id=str(work.source.id))
-            if source:
-                if source.apc:
-                    _data.append(
-                        {"year_published": work.year_published, "apc": source.apc}
-                    )
+        _data = map(lambda x: x.apc, sources)
         return {"plot": self.bars.apc_by_year(_data, 2022)}
 
     def get_oa_by_year(self, idx, typ=None, aff_type: str | None = None):
@@ -219,36 +216,27 @@ class AffiliationAppService:
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
             idx, aff_type, match=_match, available_filters=False
         )
-        return {"plot": self.bars.oa_by_year(data)
-}
+        return {"plot": self.bars.oa_by_year(data)}
+
     def get_products_by_year_by_publisher(
         self, idx, typ=None, aff_type: str | None = None
     ):
-        _match = {
-            "year_published": {"$exists": 1},
-            "source.id": {"$exists": 1, "$ne": ""},
-        }
-        works, f = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match=_match
+        sources = WorkRepository.get_sources_by_affiliation(
+            idx,
+            aff_type,
+            match={"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
+            project=["publisher", "apc"],
         )
-        _data = []
-        for work in works:
-            source = source_service.get_by_id(id=str(work.source.id))
-            if source:
-                if source.publisher:
-                    _data.append(
-                        {
-                            "year_published": work.year_published,
-                            "publisher": source.publisher,
-                        }
-                    )
-
-        return {"plot": self.bars.products_by_year_by_publisher(_data)}
+        return {"plot": self.bars.products_by_year_by_publisher(sources)}
 
     def get_h_by_year(self, idx, typ=None, aff_type: str | None = None):
-        _match = {"year_published": {"$exists": 1}}
+        _match = {"citations_by_year": {"$exists": 1}}
         works, f = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match=_match, available_filters=False
+            idx,
+            aff_type,
+            match=_match,
+            available_filters=False,
+            project={"citations_by_year"},
         )
         return {"plot": self.bars.h_index_by_year(works)}
 
@@ -345,9 +333,10 @@ class AffiliationAppService:
                 "group",
                 match={"year_published": {"$ne": None}},
                 available_filters=False,
+                project=["year_published", "date_published"],
             )
             for work in works:
-                work.ranking = group.ranking
+                work.ranking_ = group.ranking
                 data.append(work)
         result = self.bars.products_by_year_by_group_category(data)
         return {"plot": result}
@@ -399,23 +388,18 @@ class AffiliationAppService:
         )
         data = {}
         for aff in affiliations:
-            works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
+            sources = WorkRepository.get_sources_by_affiliation(
                 aff.id,
                 aff.types[0].type,
                 match={
-                    "$and": [{"source.id": {"$ne": None}}, {"source.id": {"$ne": ""}}]
+                    "$and": [
+                        {"apc.charges": {"$exists": 1}},
+                        {"apc.currency": {"$exists": 1}},
+                    ]
                 },
-                available_filters=False,
+                project=["apc"],
             )
-            for work in works:
-                source = source_service.get_by_id(id=str(work.source.id))
-                if source:
-                    if source.apc and source.apc.charges and source.apc.currency:
-                        if not aff.name in data.keys():
-                            data[aff.name] = []
-                        source.apc.year_published = work.year_published
-                        data[aff.name].append(source.apc)
-
+            data[aff.name] = map(lambda x: x.apc, sources)
         return self.pies.apc_by_affiliation(data, 2022)
 
     def get_h_by_affiliations(self, idx, typ, aff_type: str | None = None):
@@ -429,6 +413,7 @@ class AffiliationAppService:
                 aff.types[0].type,
                 match={"citations_count": {"$ne": []}},
                 available_filters=False,
+                project=["citations_count"],
             )
             _data[aff.name] = map(
                 get_openalex_scienti,
@@ -437,25 +422,24 @@ class AffiliationAppService:
         return self.pies.hindex_by_affiliation(_data)
 
     def get_products_by_publisher(self, idx, typ=None, aff_type: str | None = None):
-        data = []
-        works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
+        sources = WorkRepository.get_sources_by_affiliation(
             idx,
             aff_type,
-            match={"$and": [{"source.id": {"$ne": None}}, {"source.id": {"$ne": ""}}]},
-            available_filters=False,
+            match={"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
+            project=["publisher"],
         )
-        for work in works:
-            if work.source.id:
-                source = source_service.get_by_id(id=str(work.source.id))
-                if source.publisher:
-                    data.append(source.publisher)
+        data = map(lambda x: x.publisher, sources)
         return self.pies.products_by_publisher(data)
 
     def get_products_by_subject(
         self, idx, level: int = 0, typ: str = None, aff_type: str | None = None
     ):
         works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match={"subjects": {"$ne": []}}, available_filters=False
+            idx,
+            aff_type,
+            match={"subjects": {"$ne": []}},
+            available_filters=False,
+            project=["subjects"],
         )
         data = chain.from_iterable(
             map(
@@ -472,7 +456,11 @@ class AffiliationAppService:
 
     def get_products_by_database(self, idx, typ=None, aff_type: str | None = None):
         works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match={"updated": {"$ne": []}}, available_filters=False
+            idx,
+            aff_type,
+            match={"updated": {"$ne": []}},
+            available_filters=False,
+            project=["updated"],
         )
         data = chain.from_iterable(map(lambda x: x.updated, works))
         return self.pies.products_by_database(data)
@@ -485,6 +473,7 @@ class AffiliationAppService:
             aff_type,
             match={"bibliographic_info.open_access_status": {"$exists": 1}},
             available_filters=False,
+            project=["bibliographic_info"],
         )
         _data = map(lambda x: x.bibliographic_info.open_access_status, works)
         result = self.pies.products_by_open_access_status(_data)
@@ -618,29 +607,22 @@ class AffiliationAppService:
 
     def get_products_by_scienti_rank(self, idx, typ=None, aff_type: str | None = None):
         works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match={"ranking": {"$ne": []}}, available_filters=False
+            idx,
+            aff_type,
+            match={"ranking": {"$ne": []}},
+            available_filters=False,
+            project=["ranking"],
         )
         _data = chain.from_iterable(map(lambda x: x.ranking, works))
         return self.pies.products_by_scienti_rank(_data)
 
     def get_products_by_scimago_rank(self, idx, typ=None, aff_type: str | None = None):
-        data = []
-        works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
+        sources = WorkRepository.get_sources_by_affiliation(
             idx,
             aff_type,
-            match={
-                "$and": [{"source.id": {"$ne": None}}, {"source.id": {"$ne": ""}}],
-                "date_published": {"$ne": None},
-            },
-            available_filters=False,
+            project=["source", "date_published"],
         )
-        for work in works:
-            source = source_service.get_by_id(id=str(work.source.id))
-            if source:
-                if source.ranking:
-                    source.date_published = work.date_published
-                    data.append(source)
-        return self.pies.products_by_scimago_rank(data)
+        return self.pies.products_by_scimago_rank(sources)
 
     def get_publisher_same_institution(
         self, idx, typ=None, aff_type: str | None = None

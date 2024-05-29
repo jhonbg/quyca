@@ -25,6 +25,7 @@ class Waiver(BaseModel):
 class APC(BaseModel):
     charges: int | Any | None = None
     currency: str | Any | None = None
+    year_published: str | int | None = None
 
 
 class Copyright(BaseModel):
@@ -62,7 +63,7 @@ class Ranking(BaseModel):
 
 class Source(Model):
     updated: list[Updated] | None = Field(default_factory=list)
-    names: list[Name]
+    names: list[Name] | None = Field(default_factory=list)
     abbreviations: list[str] | None = Field(default_factory=list)
     types: list[Type] | None = Field(default_factory=list)
     keywords: list[str] | None = Field(default_factory=list)
@@ -75,7 +76,7 @@ class Source(Model):
     review_process: Any = None
     review_processes: list[Any] | None = Field(default_factory=list)
     waiver: Waiver | Any | None = None
-    plagiarism_detection: bool = Field(default_factory=list)
+    plagiarism_detection: bool | None = None
     open_access_start_year: int | Any | None = None
     publication_time_weeks: int | Any | None = None
     apc: APC | None = None

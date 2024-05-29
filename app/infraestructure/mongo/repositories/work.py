@@ -6,7 +6,7 @@ from infraestructure.mongo.repositories.base import RepositoryBase
 from infraestructure.mongo.models.work import Work
 from infraestructure.mongo.models.person import Person
 from infraestructure.mongo.utils.session import engine
-from infraestructure.mongo.utils.iterators import WorkIterator
+from infraestructure.mongo.utils.iterators import WorkIterator, SourceIterator
 from schemas.work import WorkCsv, WorkListApp
 from core.config import settings
 
@@ -298,7 +298,8 @@ class WorkRepository(RepositoryBase):
         limit: int | None = None,
         match: dict[str, Any] = {},
         filters: dict[str, str] = {},
-        available_filters: bool = True
+        available_filters: bool = True,
+        project: list[str] = [],
     ) -> tuple[Iterable[dict[str, Any]], dict[str, Any]]:
         affiliation_type = (
             "institution" if affiliation_type == "Education" else affiliation_type
@@ -310,14 +311,19 @@ class WorkRepository(RepositoryBase):
         )
         # filtering
         works_pipeline += cls.get_filters(filters)
-        available_filters = cls.get_available_filters(
-            pipeline=works_pipeline, collection=collection
-        ) if available_filters else {}
+        available_filters = (
+            cls.get_available_filters(pipeline=works_pipeline, collection=collection)
+            if available_filters
+            else {}
+        )
         # sort
         works_pipeline += cls.get_sort_direction(sort)
         # navigation
         if match:
             works_pipeline += [{"$match": match}]
+        works_pipeline += (
+            [{"$project": {"_id": 1, **{p: 1 for p in project}}}] if project else []
+        )
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
         results = engine.get_collection(collection).aggregate(works_pipeline)
@@ -353,6 +359,53 @@ class WorkRepository(RepositoryBase):
         ], available_filters
 
     @classmethod
+    def get_sources_by_affiliation(
+        cls,
+        affiliation_id: str,
+        affiliation_type: str,
+        *,
+        match: dict[str, Any] = {},
+        project: list[str] = [],
+    ) -> SourceIterator:
+        affiliation_type = (
+            "institution" if affiliation_type == "Education" else affiliation_type
+        )
+        works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
+        collection = Person if affiliation_type != "institution" else Work
+        works_pipeline += [
+            {
+                "$lookup": {
+                    "from": "sources",
+                    "localField": (
+                        "works.source.id" if collection == Person else "source.id"
+                    ),
+                    "foreignField": "_id",
+                    "as": "source",
+                }
+            },
+            {"$unwind": "$source"},
+            {
+                "$addFields": {
+                    "source.apc.year_published": (
+                        "$works.year_published"
+                        if collection == Person
+                        else "year_published"
+                    ),
+                    "source.date_published": (
+                        "$works.date_published"
+                        if collection == Person
+                        else "date_published"
+                    ),
+                }
+            },
+            {"$replaceRoot": {"newRoot": "$source"}},
+            {"$match": match},
+            {"$project": {"_id": 1, **{p: 1 for p in project}}},
+        ]
+        results = engine.get_collection(collection).aggregate(works_pipeline)
+        return SourceIterator(results)
+
+    @classmethod
     def get_research_products_by_affiliation_iterator(
         cls,
         affiliation_id: str,
@@ -364,6 +417,7 @@ class WorkRepository(RepositoryBase):
         match: dict | None = {},
         filters: dict | None = {},
         available_filters: bool = True,
+        project: list[str] = [],
     ) -> tuple[Iterable[Work], dict[str, Any]]:
         results, available_filters = cls.__products_by_affiliation(
             affiliation_id,
@@ -374,6 +428,7 @@ class WorkRepository(RepositoryBase):
             match=match,
             filters=filters,
             available_filters=available_filters,
+            project=project,
         )
         return WorkIterator(results), available_filters
 

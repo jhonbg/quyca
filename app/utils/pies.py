@@ -68,7 +68,7 @@ class pies:
     # APC cost for each faculty department or group
     @get_percentage
     def apc_by_affiliation(
-        self, data: dict[str, list[APC]], base_year
+        self, data: dict[str, Iterable[APC]], base_year
     ) -> list[dict[str, str | int]]:
         c = CurrencyConverter()
         now = datetime.date.today()

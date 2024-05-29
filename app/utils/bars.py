@@ -6,6 +6,7 @@ from currency_converter import CurrencyConverter
 
 from utils.hindex import hindex
 from protocols.mongo.models.work import Work
+from protocols.mongo.models.source import APC, Source
 
 
 class bars:
@@ -125,7 +126,7 @@ class bars:
         return result_list
 
     # anual APC costs
-    def apc_by_year(self, data, base_year):
+    def apc_by_year(self, data: Iterable[APC], base_year):
         """
         Returns a list of dicts of the form {x:year, y:cost} sorted by year in ascending order,
         where year is the year of publication and cost is the cost of the APC in that year.
@@ -142,32 +143,32 @@ class bars:
         c = CurrencyConverter()
         now = datetime.date.today()
         result = {}
-        for reg in data:
-            if reg["apc"].currency == "USD":
-                raw_value = reg["apc"].charges
+        for apc in data:
+            if apc.currency == "USD":
+                raw_value = apc.charges
                 value = inflate(
                     raw_value,
-                    reg["year_published"],
-                    to=max(base_year, reg["year_published"]),
+                    apc.year_published,
+                    to=max(base_year, apc.year_published),
                 )
             else:
                 try:
                     raw_value = c.convert(
-                        reg["apc"].charges, reg["apc"].currency, "USD"
+                        apc.charges, apc.currency, "USD"
                     )
                     value = inflate(
                         raw_value,
-                        reg["year_published"],
-                        to=max(base_year, reg["year_published"]),
+                        apc.year_published,
+                        to=max(base_year, apc.year_published),
                     )
                 except Exception as e:
                     # print("Could not convert currency with error: ",e)
                     value = 0
             if value:
-                if reg["year_published"] not in result.keys():
-                    result[reg["year_published"]] = value
+                if apc.year_published not in result.keys():
+                    result[apc.year_published] = value
                 else:
-                    result[reg["year_published"]] += value
+                    result[apc.year_published] += value
         orted_result = sorted(result.items(), key=lambda x: x[0])
         result_list = [{"x": x[0], "y": int(x[1])} for x in orted_result]
         return result_list
@@ -207,7 +208,7 @@ class bars:
         return result_list
 
     # number of papers by publisher (top 5) in total
-    def products_by_year_by_publisher(self, data):
+    def products_by_year_by_publisher(self, data: Iterable[Source]):
         """
         Returns a list of dicts of the form {x:year, y:count, type:publisher} sorted by year in ascending order,
         where year is the year of publication, count is the number of works published in that year by the publisher,
@@ -223,19 +224,19 @@ class bars:
         """
         result = {}
         top5 = {}  # total
-        for work in data:
-            year = int(work.get("year_published", 0) or 0)
+        for source in data:
+            year = int(source.apc.year_published or 0)
             if year in result.keys():
-                if work["publisher"].name not in result[year].keys():
-                    result[year][work["publisher"].name] = 1
+                if source.publisher.name not in result[year].keys():
+                    result[year][source.publisher.name] = 1
                 else:
-                    result[year][work["publisher"].name] += 1
+                    result[year][source.publisher.name] += 1
             else:
-                result[year] = {work["publisher"].name: 1}
-            if work["publisher"].name not in top5.keys():
-                top5[work["publisher"].name] = 1
+                result[year] = {source.publisher.name: 1}
+            if source.publisher.name not in top5.keys():
+                top5[source.publisher.name] = 1
             else:
-                top5[work["publisher"].name] += 1
+                top5[source.publisher.name] += 1
 
         top5 = [
             top[0] for top in sorted(top5.items(), key=lambda x: x[1], reverse=True)
@@ -362,7 +363,7 @@ class bars:
                 year_timestamp = datetime.datetime.strptime(str(year), "%Y").timestamp()
                 date = work.date_published
                 rank_name = ""
-                for rank in work.ranking:
+                for rank in work.ranking_:
                     if rank.source == "scienti" and rank.from_date and rank.to_date:
                         if (
                             rank.from_date < year_timestamp

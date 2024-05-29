@@ -91,24 +91,24 @@ class Ranking(EmbeddedModel):
 class Work(Model, extra="allow"):
     titles: list[Title] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
-    subtitle: str
-    abstract: str
+    subtitle: str | None = None
+    abstract: str | None = None
     keywords: list[str] | None = Field(default_factory=list)
     types: list[Type] | None = Field(default_factory=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
     date_published: int | None = None
     year_published: int | str | None = None
-    bibliographic_info: BiblioGraphicInfo | None
+    bibliographic_info: BiblioGraphicInfo | None = None
     references_count: int | None = None
     references: list[Any] | None = Field(default_factory=list)
     citations: list[CitationsCount] | None = Field(default_factory=list)
     author_count: int | None = None
     source: Source | None = None
     citations_by_year: list[CitationByYear] | None | Any = Field(default_factory=list)
-    authors: list[Author]
-    ranking: list[Ranking] = Field(default_factory=list)
-    citations_count: list[CitationsCount] = Field(default_factory=list)
+    authors: list[Author] | None = Field(default_factory=list)
+    ranking: list[Ranking] | None = Field(default_factory=list)
+    citations_count: list[CitationsCount] | None = Field(default_factory=list)
     subjects: list[Subject] | None = Field(default_factory=list)
 
     model_config = {"collection": "works"}

@@ -25,6 +25,15 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
                 },
             ]
             return pipeline
+        if affiliation_type == "group":
+            pipeline = [
+                {
+                    "$match": {
+                        "groups.id": ObjectId(affiliation_id),
+                    },
+                },
+            ]
+            return pipeline
         pipeline = [
             {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
             {"$project": {"affiliations": 1, "full_name": 1, "_id": 1}},
@@ -146,7 +155,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             "institution" if affiliation_type == "Education" else affiliation_type
         )
         count_papers_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
-        collection = Person if affiliation_type != "institution" else Work
+        collection = Person if affiliation_type not in ["institution", "group"] else Work
         count_papers_pipeline += (
             [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
         )
@@ -170,7 +179,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         count_citations_pipeline += [
             {
                 "$project": {
-                    "citations_count": f"${'works.' if affiliation_type!='institution' else ''}citations_count"
+                    "citations_count": f"${'works.' if affiliation_type not in ['institution', 'group'] else ''}citations_count"
                 }
             },
             {"$unwind": "$citations_count"},
@@ -305,7 +314,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             "institution" if affiliation_type == "Education" else affiliation_type
         )
         works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
-        collection = Person if affiliation_type != "institution" else Work
+        collection = (
+            Person if affiliation_type not in ["institution", "group"] else Work
+        )
         works_pipeline += (
             [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
         )
@@ -371,7 +382,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             "institution" if affiliation_type == "Education" else affiliation_type
         )
         works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
-        collection = Person if affiliation_type != "institution" else Work
+        collection = Person if affiliation_type not in ["institution", "group"] else Work
         works_pipeline += [
             {
                 "$lookup": {

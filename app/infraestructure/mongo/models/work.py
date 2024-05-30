@@ -35,14 +35,14 @@ class CitationsCount(EmbeddedModel):
 
 
 class Affiliation(EmbeddedModel):
-    id: ObjectId | str | None
-    name: str | None
+    id: ObjectId | str | None = None
+    name: str | None = None
     types: list[Type] | None = Field(default_factory=list)
 
 
 class Author(EmbeddedModel):
-    id: ObjectId | str | None
-    full_name: str
+    id: ObjectId | str | None = ""
+    full_name: str | None = ""
     affiliations: list[Affiliation] | None = Field(default_factory=list)
 
 

@@ -46,7 +46,7 @@ class Author(EmbeddedModel):
     affiliations: list[Affiliation] | None = Field(default_factory=list)
 
 
-class Source(EmbeddedModel):
+class Source(BaseModel):
     id: ObjectId | str | None = None
     name: str | Any | None = None
 

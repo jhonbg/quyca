@@ -1,5 +1,6 @@
 from odmantic import EmbeddedModel, ObjectId
 from odmantic.bson import BaseBSONModel
+from pydantic import BaseModel
 
 
 class Type(EmbeddedModel):
@@ -11,11 +12,11 @@ class Updated(EmbeddedModel):
     time: int | None = None
     source: str | None = None
 
-class Identifier(EmbeddedModel):
+class Identifier(BaseModel):
     COD_RH: str
 
 class ExternalId(EmbeddedModel):
-    id: str | int | list[str] | Identifier = None
+    id: str | int | list[str] | Identifier | None = None
     source: str | None = None
     provenance: str | None = None
 

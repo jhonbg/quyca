@@ -42,11 +42,14 @@ class PersonService(
             search=params.get_search,
         )
         results = GeneralMultiResponse[type[PersonSearch]](
-            total_results=count, count=len(db_objs), page=params.page
+            total_results=count, page=params.page
         )
-        results.data = [
-            self.update_author_search(PersonSearch(**obj)) for obj in db_objs
+        data = [
+            self.search_class.model_validate_json(obj.model_dump_json())
+            for obj in db_objs
         ]
+        results.data = data
+        results.count = len(data)
         return loads(results.model_dump_json(exclude_none=True, by_alias=True))
 
 

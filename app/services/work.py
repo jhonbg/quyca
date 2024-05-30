@@ -147,9 +147,11 @@ class WorkService(
             search=params.get_search,
         )
         results = GeneralMultiResponse[WorkCsv](
-            total_results=count, count=len(works), page=params.page
+            total_results=count, page=params.page
         )
-        results.data = [WorkCsv(**work) for work in works]
+        data = [WorkCsv.model_validate_json(work.model_dump_json()) for work in works]
+        results.data = data
+        results.count = len(data)
         return loads(results.model_dump_json(exclude_none=True))
 
 

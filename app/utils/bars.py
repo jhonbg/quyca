@@ -149,7 +149,7 @@ class bars:
                 value = inflate(
                     raw_value,
                     apc.year_published,
-                    to=max(base_year, apc.year_published),
+                    to=max(base_year, int(apc.year_published)),
                 )
             else:
                 try:

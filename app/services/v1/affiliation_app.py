@@ -214,7 +214,7 @@ class AffiliationAppService:
             "year_published": {"$ne": None},
         }
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match=_match, available_filters=False
+            idx, aff_type, match=_match, available_filters=False, project=["year_published", "bibliographic_info"]
         )
         return {"plot": self.bars.oa_by_year(data)}
 

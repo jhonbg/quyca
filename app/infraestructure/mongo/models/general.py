@@ -11,9 +11,11 @@ class Updated(EmbeddedModel):
     time: int | None = None
     source: str | None = None
 
+class Identifier(EmbeddedModel):
+    COD_RH: str
 
 class ExternalId(EmbeddedModel):
-    id: ObjectId | None | str | int | list[str] = None
+    id: str | int | list[str] | Identifier = None
     source: str | None = None
     provenance: str | None = None
 

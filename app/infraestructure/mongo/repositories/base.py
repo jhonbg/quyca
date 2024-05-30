@@ -1,17 +1,20 @@
-from typing import Generic, TypeVar, Any, Literal
+from typing import Generic, TypeVar, Any, Literal, Iterable
 from json import loads
 
 from odmantic import Model, ObjectId
 from odmantic.query import desc, asc
 
 from infraestructure.mongo.utils.session import engine
+from infraestructure.mongo.utils.iterators import CollectionIterator
 
 ModelType = TypeVar("ModelType", bound=Model)
+IteratorType = TypeVar("IteratorType", bound=CollectionIterator)
 
 
-class RepositoryBase(Generic[ModelType]):
-    def __init__(self, model: type[ModelType]):
+class RepositoryBase(Generic[ModelType, IteratorType]):
+    def __init__(self, model: type[ModelType], iterator: type[IteratorType] = None):
         self.model = model
+        self.iterator = iterator
 
     def get_all(
         self, *, query: dict[str, Any], skip: int = 0, limit: int = 10, sort: str = None
@@ -39,7 +42,7 @@ class RepositoryBase(Generic[ModelType]):
         limit: int = 10,
         sort: str = "",
         search: dict[str, Any] = {}
-    ) -> tuple[list[ModelType], int]:
+    ) -> tuple[Iterable[ModelType], int]:
         filter_criteria = search
         projection = None
         sort_expresion = [("$natural", 1)]
@@ -62,10 +65,7 @@ class RepositoryBase(Generic[ModelType]):
             .limit(limit)
         )
         count = session.count_documents(filter_criteria)
-        return [
-            {**loads(self.model(**result).model_dump_json()), "id": str(result["_id"])}
-            for result in results
-        ], count
+        return self.iterator(results), count
 
     def count(self) -> int:
         with engine.session() as session:

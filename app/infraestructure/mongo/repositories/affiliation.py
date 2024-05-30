@@ -11,7 +11,7 @@ from schemas.affiliation import AffiliationRelated
 from schemas.person import PersonList
 
 
-class AffiliationRepository(RepositoryBase):
+class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
     def get_affiliations_related_type(
         self, idx: str, relation_type: str, affiliation_type: str
     ) -> list[AffiliationRelated]:
@@ -128,4 +128,4 @@ class AffiliationRepository(RepositoryBase):
     ): ...
 
 
-affiliation_repository = AffiliationRepository(Affiliation)
+affiliation_repository = AffiliationRepository(Affiliation, AffiliationIterator)

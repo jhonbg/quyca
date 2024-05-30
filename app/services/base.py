@@ -45,7 +45,12 @@ class ServiceBase(Generic[ModelType, RepositoryType, ParamsType, SearchType, Inf
             search=params.get_search,
         )
         results = GeneralMultiResponse[Type[SearchType]](
-            total_results=count, count=len(db_objs), page=params.page
+            total_results=count, page=params.page
         )
-        results.data = [self.search_class(**obj) for obj in db_objs]
+        data = [
+            self.search_class.model_validate_json(obj.model_dump_json())
+            for obj in db_objs
+        ]
+        results.data = data
+        results.count = len(data)
         return loads(results.model_dump_json(exclude_none=True))

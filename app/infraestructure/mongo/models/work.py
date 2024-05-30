@@ -46,7 +46,7 @@ class Author(EmbeddedModel):
     affiliations: list[Affiliation] | None = Field(default_factory=list)
 
 
-class Source(BaseModel):
+class Source(EmbeddedModel):
     id: ObjectId | str | None = None
     name: str | Any | None = None
 
@@ -65,6 +65,7 @@ class Subject(EmbeddedModel):
 class CitationByYear(EmbeddedModel):
     cited_by_count: int | None
     year: int | None
+
 
 class CitationsCount(EmbeddedModel):
     source: str | None
@@ -88,7 +89,13 @@ class Ranking(EmbeddedModel):
     rank: str | None
     source: str
 
-class Work(Model, extra="allow"):
+
+class Group(EmbeddedModel):
+    id: ObjectId | str | None
+    name: str | None
+
+
+class Work(Model):
     titles: list[Title] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
     subtitle: str | None = None
@@ -108,7 +115,9 @@ class Work(Model, extra="allow"):
     citations_by_year: list[CitationByYear] | None | Any = Field(default_factory=list)
     authors: list[Author] | None = Field(default_factory=list)
     ranking: list[Ranking] | None = Field(default_factory=list)
+    ranking_: Any = None
     citations_count: list[CitationsCount] | None = Field(default_factory=list)
     subjects: list[Subject] | None = Field(default_factory=list)
+    groups: list[Group] | None = Field(default_factory=list)
 
     model_config = {"collection": "works"}

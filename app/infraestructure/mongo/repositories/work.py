@@ -11,7 +11,7 @@ from schemas.work import WorkCsv, WorkListApp
 from core.config import settings
 
 
-class WorkRepository(RepositoryBase):
+class WorkRepository(RepositoryBase[Work, WorkIterator]):
     @classmethod
     def wrap_pipeline(
         cls, affiliation_id: str, affiliation_type: str
@@ -547,4 +547,4 @@ class WorkRepository(RepositoryBase):
         return filters
 
 
-work_repository = WorkRepository(Work)
+work_repository = WorkRepository(Work, WorkIterator)

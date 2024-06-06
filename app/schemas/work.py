@@ -222,6 +222,41 @@ class WorkCsv(WorkProccessed):
     date_published: int | float | str | None = None
     start_page: str | None = None
     end_page: str | None = None
+    doi: str | None = None
+
+    @model_validator(mode="after")
+    def get_doi(self):
+        doi = next(
+            filter(lambda x: x["source"] == "doi", self.external_ids),
+            {"id": ""},
+        )
+        self.doi = doi["id"]
+        return self
+
+    @field_validator("external_ids")
+    @classmethod
+    def append_urls_external_ids(cls, v: list[ExternalId]):
+        scienti = list(filter(lambda x: x.provenance == "scienti", v))
+        v += (
+            [ExternalId(id=f"{scienti[0].id}-{scienti[1].id}", source="scienti")]
+            if len(scienti) == 2
+            else []
+        )
+
+        return list(
+            map(
+                lambda x: (
+                    {
+                        "id": x.id,
+                        "source": x.source,
+                        "url": settings.EXTERNAL_IDS_MAP.get(x.source, "").format(
+                            id=x.id
+                        ),
+                    }
+                ),
+                filter(lambda x: x.source in settings.EXTERNAL_IDS_MAP, v),
+            )
+        )
 
     @model_validator(mode="after")
     def get_biblio_graphic_info(self):

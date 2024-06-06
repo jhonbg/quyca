@@ -449,26 +449,19 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         affiliation_id: str,
         affiliation_type: str,
         *,
-        sort: str = "title",
+        sort: str = None,
         skip: int | None = None,
         limit: int | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> Iterable[Work]:
         works, f = cls.__products_by_affiliation(
             affiliation_id,
             affiliation_type,
             sort=sort,
             skip=skip,
             limit=limit,
+            available_filters=False
         )
-        return [
-            {
-                **WorkCsv.model_validate_json(
-                    Work(**result).model_dump_json()
-                ).model_dump(exclude={"titles", "id"}),
-                "id": str(result["_id"]),
-            }
-            for result in works
-        ]
+        return WorkIterator(works)
 
     @classmethod
     def __products_by_author(

@@ -17,10 +17,18 @@ class Updated(BaseModel):
     source: str | None
 
 
+class Identifier(BaseModel):
+    COD_RH: str
+
+
 class ExternalId(BaseModel):
-    id: Any | None = None
+    id: str | int | list[str] | Identifier | None = None
     source: str | None
     provenance: str | None = None
+
+    @validator("id", pre=True)
+    def id_validator(cls, v: str | int | list[str] | Identifier | None):
+        return v.get("COD_RH", None) if isinstance(v, dict) else v
 
 
 class ExternalURL(BaseModel):
@@ -76,7 +84,11 @@ class QueryBase(BaseModel):
         """
         return {
             "next": f"{settings.APP_DOMAIN}{path}?{self.next_query()}",
-            "previous": f"{settings.APP_DOMAIN}{path}?{self.previous_query()}" if self.page > 1 else None,
+            "previous": (
+                f"{settings.APP_DOMAIN}{path}?{self.previous_query()}"
+                if self.page > 1
+                else None
+            ),
         }
 
 

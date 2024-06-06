@@ -98,11 +98,15 @@ class WorkService(
         end_year: int | None = None,
         skip: int | None = None,
         limit: int | None = None,
-        sort: str | None = "title",
+        sort: str | None = None,
     ) -> list[dict[str, Any]]:
-        return WorkRepository.get_research_products_by_affiliation_csv(
+        works = WorkRepository.get_research_products_by_affiliation_csv(
             affiliation_id, affiliation_type, sort=sort, skip=skip, limit=limit
         )
+        return [
+            WorkCsv.model_validate_json(work.model_dump_json()).model_dump()
+            for work in works
+        ]
 
     def get_research_products_by_author(
         self,
@@ -146,9 +150,7 @@ class WorkService(
             sort=params.sort,
             search=params.get_search,
         )
-        results = GeneralMultiResponse[WorkCsv](
-            total_results=count, page=params.page
-        )
+        results = GeneralMultiResponse[WorkCsv](total_results=count, page=params.page)
         data = [WorkCsv.model_validate_json(work.model_dump_json()) for work in works]
         results.data = data
         results.count = len(data)

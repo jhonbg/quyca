@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
-from schemas.general import QueryBase
+from schemas.general import QueryBase, ExternalId
 
 
 class Type(BaseModel):
@@ -16,11 +16,6 @@ class Affiliation(BaseModel):
     types: list[Type] = Field(default_factory=list)
     start_date: int | str | None = None
     end_date: int | str | None = None
-
-
-class ExternalId(BaseModel):
-    id: Any
-    source: str | None
 
 
 class Updated(BaseModel):

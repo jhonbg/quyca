@@ -123,6 +123,9 @@ def get_affiliation_csv(
                 "fields": ["name"],
                 "config": {"name": {"name": "name"}},
             },
+            "doi": {
+                "name": "doi"
+            }
         }
         flat_data_list = flatten_json_list(result, config, 1)
         all_keys = []

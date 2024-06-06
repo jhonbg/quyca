@@ -222,15 +222,17 @@ class WorkCsv(WorkProccessed):
     date_published: int | float | str | None = None
     start_page: str | None = None
     end_page: str | None = None
-    doi: str | None = None
+    doi: str | None = ""
+    source_name: str | None = ""
 
     @model_validator(mode="after")
-    def get_doi(self):
+    def get_doi_source_name(self):
         doi = next(
             filter(lambda x: x["source"] == "doi", self.external_ids),
             {"id": ""},
         )
         self.doi = doi["id"]
+        self.source_name = self.source.name or ""
         return self
 
     @field_validator("external_ids")

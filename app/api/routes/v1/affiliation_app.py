@@ -125,6 +125,9 @@ def get_affiliation_csv(
             },
             "doi": {
                 "name": "doi"
+            },
+            "source_name": {
+                "name": "revista"
             }
         }
         flat_data_list = flatten_json_list(result, config, 1)

@@ -3,6 +3,7 @@ import io
 import csv
 
 from flask import Blueprint, request, Response, Request
+
 # from flask_apidoc import ApiDoc
 
 from services.v1.person_app import person_app_service
@@ -12,6 +13,7 @@ from utils.encoder import JsonEncoder
 from utils.flatten_json import flatten_json_list
 
 router = Blueprint("person_app_v1", __name__)
+
 
 def person(
     request: Request, id: str | None, section: str | None = None, tab: str | None = None
@@ -102,6 +104,8 @@ def get_person_csv(
                 "fields": ["name"],
                 "config": {"name": {"name": "name"}},
             },
+            "doi": {"name": "doi"},
+            "source_name": {"name": "revista"},
         }
         flat_data_list = flatten_json_list(result, config, 1)
         all_keys = []

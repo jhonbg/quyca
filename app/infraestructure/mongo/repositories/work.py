@@ -155,7 +155,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             "institution" if affiliation_type == "Education" else affiliation_type
         )
         count_papers_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
-        collection = Person if affiliation_type not in ["institution", "group"] else Work
+        collection = (
+            Person if affiliation_type not in ["institution", "group"] else Work
+        )
         count_papers_pipeline += (
             [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
         )
@@ -370,6 +372,38 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         ], available_filters
 
     @classmethod
+    def get_sources_by_author(
+        cls,
+        author_id: str,
+        *,
+        match: dict[str, Any] = {},
+        project: list[str] = [],
+    ) -> SourceIterator:
+        works_pipeline = [
+            {"$match": {"authors.id": ObjectId(author_id)}},
+            {
+                "$lookup": {
+                    "from": "sources",
+                    "localField": "source.id",
+                    "foreignField": "_id",
+                    "as": "source",
+                }
+            },
+            {"$unwind": "$source"},
+            {
+                "$addFields": {
+                    "source.apc.year_published": "$year_published",
+                    "source.date_published": "$date_published",
+                }
+            },
+            {"$replaceRoot": {"newRoot": "$source"}},
+            {"$match": match},
+            {"$project": {"_id": 1, **{p: 1 for p in project}}},
+        ]
+        results = engine.get_collection(Work).aggregate(works_pipeline)
+        return SourceIterator(results)
+
+    @classmethod
     def get_sources_by_affiliation(
         cls,
         affiliation_id: str,
@@ -382,7 +416,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             "institution" if affiliation_type == "Education" else affiliation_type
         )
         works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
-        collection = Person if affiliation_type not in ["institution", "group"] else Work
+        collection = (
+            Person if affiliation_type not in ["institution", "group"] else Work
+        )
         works_pipeline += [
             {
                 "$lookup": {
@@ -400,12 +436,12 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
                     "source.apc.year_published": (
                         "$works.year_published"
                         if collection == Person
-                        else "year_published"
+                        else "$year_published"
                     ),
                     "source.date_published": (
                         "$works.date_published"
                         if collection == Person
-                        else "date_published"
+                        else "$date_published"
                     ),
                 }
             },
@@ -459,7 +495,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             sort=sort,
             skip=skip,
             limit=limit,
-            available_filters=False
+            available_filters=False,
         )
         return WorkIterator(works)
 
@@ -472,15 +508,24 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         limit: int | None = None,
         sort: str = "alphabetical",
         filters: dict | None = {},
+        available_filters: bool = True,
+        match: dict | None = {},
+        project: list[str] = [],
     ) -> tuple[Iterable[dict[str, Any]], dict[str, str]]:
         works_pipeline = [
             {"$match": {"authors.id": ObjectId(author_id)}},
         ]
         works_pipeline += cls.get_filters(filters)
-        available_filters = cls.get_available_filters(
-            pipeline=works_pipeline, collection=Work
+        available_filters = (
+            cls.get_available_filters(pipeline=works_pipeline, collection=Work)
+            if available_filters
+            else {}
         )
         works_pipeline += cls.get_sort_direction(sort)
+        works_pipeline += [{"$match": match}] if match else []
+        works_pipeline += (
+            [{"$project": {"_id": 1, **{p: 1 for p in project}}}] if project else []
+        )
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
         return engine.get_collection(Work).aggregate(works_pipeline), available_filters
@@ -507,6 +552,30 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             }
             for result in results
         ], available_filters
+
+    @classmethod
+    def get_research_products_by_author_iterator(
+        cls,
+        *,
+        author_id: str,
+        skip: int | None = None,
+        limit: int | None = None,
+        sort: str = "alphabetical",
+        filters: dict | None = {},
+        available_filters: bool = False,
+        project: list[str] = [],
+        match: dict | None = {},
+    ) -> tuple[Iterable[Work], dict[str, str]]:
+        results, available_filters = cls.__products_by_author(
+            author_id=author_id,
+            skip=skip,
+            limit=limit,
+            sort=sort,
+            filters=filters,
+            project=project,
+            match=match
+        )
+        return WorkIterator(results), available_filters
 
     @classmethod
     def get_research_products_by_author_csv(

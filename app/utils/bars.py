@@ -144,26 +144,26 @@ class bars:
         now = datetime.date.today()
         result = {}
         for apc in data:
-            if apc.currency == "USD":
-                raw_value = apc.charges
-                value = inflate(
-                    raw_value,
-                    apc.year_published,
-                    to=max(base_year, int(apc.year_published)),
-                )
-            else:
-                try:
+            try:
+                if apc.currency == "USD":
+                    raw_value = apc.charges
+                    value = inflate(
+                        raw_value,
+                        apc.year_published,
+                        to=max(base_year, int(apc.year_published)),
+                    )
+                else:
                     raw_value = c.convert(
                         apc.charges, apc.currency, "USD"
                     )
                     value = inflate(
                         raw_value,
                         apc.year_published,
-                        to=max(base_year, apc.year_published),
+                        to=max(base_year, int(apc.year_published)),
                     )
-                except Exception as e:
-                    # print("Could not convert currency with error: ",e)
-                    value = 0
+            except ValueError as e:
+                # print("Could not convert currency with error: ",e)
+                value = 0
             if value:
                 if apc.year_published not in result.keys():
                     result[apc.year_published] = value

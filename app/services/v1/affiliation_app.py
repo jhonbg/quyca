@@ -137,7 +137,7 @@ class AffiliationAppService:
 
     def get_products_by_year_by_type(self, idx, typ=None, aff_type: str | None = None):
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, project=["year_published", "types"]
+            idx, aff_type, project=["year_published", "types"], available_filters=False
         )
         return {"plot": self.bars.products_by_year_by_type(data)}
 

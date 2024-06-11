@@ -15,20 +15,24 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
     def get_affiliations_related_type(
         self, idx: str, relation_type: str, affiliation_type: str
     ) -> list[AffiliationRelated]:
-        if (
-            affiliation_type not in ["department", "faculty"]
-            and relation_type == "group"
-        ):
+        if relation_type == "group":
+            if (
+                affiliation_type not in ["department", "faculty"]
+            ):
+                results = engine.get_collection(Affiliation).find(
+                    {"relations.id": ObjectId(idx), "types.type": relation_type}
+                )
+                results = AffiliationIterator(results)
+            else:
+                results = self.get_groups_by_affiliation(idx, affiliation_type)
+        else:
             results = engine.get_collection(Affiliation).find(
                 {"relations.id": ObjectId(idx), "types.type": relation_type}
             )
-            groups = AffiliationIterator(results)
-        else:
-            groups = self.get_groups_by_affiliation(idx, affiliation_type)
-
+            results = AffiliationIterator(results)
         return [
-            AffiliationRelated.model_validate_json(group.model_dump_json())
-            for group in groups
+            AffiliationRelated.model_validate_json(result.model_dump_json())
+            for result in results
         ]
 
     def get_groups_by_affiliation(self, idx: str, typ: str) -> Iterable[Affiliation]:

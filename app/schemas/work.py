@@ -143,7 +143,7 @@ class WorkListApp(WorkSearch):
         self.bibliographic_info = None
         return self
 
-    external_ids: list[ExternalId] | list[dict] | None = Field(default_factory=list)
+    external_ids: list[ExternalId] = Field(default_factory=list)
 
 
 class WorkProccessed(WorkListApp):

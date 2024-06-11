@@ -28,7 +28,11 @@ class ExternalId(BaseModel):
 
     @validator("id", pre=True)
     def id_validator(cls, v: str | int | list[str] | Identifier | None):
-        return v.get("COD_RH", None) if isinstance(v, dict) else v
+        return (
+            v.get("COD_RH", "") + "-" + v.get("COD_PRODUCTO", "")
+            if isinstance(v, dict)
+            else v
+        )
 
 
 class ExternalURL(BaseModel):

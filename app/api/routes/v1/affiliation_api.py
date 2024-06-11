@@ -46,7 +46,8 @@ def affiliation(
                         "total_products": total,
                         "count": len(result),
                         "cursor": params.get_cursor(
-                            path=f"{settings.API_V1_STR}/affiliation/{typ}/{idx}/research/products"
+                            path=f"{settings.API_V1_STR}/affiliation/{typ}/{idx}/research/products",
+                            total=total,
                         ),
                     },
                 }
@@ -80,7 +81,7 @@ def api_affiliation(
     @apiQuery {Number{1-250}}    [max=10]        Number of records to return.
     @apiQuery {String="alphabetical","citations","year"}    [sort=alphabetical]          Sort by field.
 
-    
+
     @apiSuccessExample {json} Success-Response:
         HTTP/1.1 200 OK
         {

@@ -82,12 +82,16 @@ class QueryBase(BaseModel):
             f"sort={self.sort}&keywords={self.keywords}"
         )
 
-    def get_cursor(self, path: str) -> dict[str, str]:
+    def get_cursor(self, path: str, total: int = 0) -> dict[str, str]:
         """
         Compute the cursor for the given path and query.
         """
         return {
-            "next": f"{settings.APP_DOMAIN}{path}?{self.next_query()}",
+            "next": (
+                f"{settings.APP_DOMAIN}{path}?{self.next_query()}"
+                if self.skip + self.max < total
+                else None
+            ),
             "previous": (
                 f"{settings.APP_DOMAIN}{path}?{self.previous_query()}"
                 if self.page > 1

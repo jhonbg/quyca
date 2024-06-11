@@ -85,7 +85,7 @@ def get_person(id: str | None, section: str | None, tab: str | None):
                 "total_products": total,
                 "count": len(works),
                 "cursor": params.get_cursor(
-                    path=f"{settings.API_V1_STR}/person/{id}/research/products"
+                    path=f"{settings.API_V1_STR}/person/{id}/research/products", total=total
                 ),
             },
         }

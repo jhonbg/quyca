@@ -1,7 +1,6 @@
 from typing import Any
 
 from odmantic import Model, EmbeddedModel, Field
-from pydantic import validator
 from bson import ObjectId
 
 from infraestructure.mongo.models.general import Type, Updated, ExternalId

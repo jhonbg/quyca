@@ -7,6 +7,7 @@ from flask import Blueprint, request, Response, Request
 # from flask_apidoc import ApiDoc
 
 from services.v1.person_app import person_app_service
+from services.person import person_service
 from services.work import work_service
 from schemas.work import WorkQueryParams
 from utils.encoder import JsonEncoder
@@ -24,7 +25,7 @@ def person(
     result = None
 
     if section == "info":
-        result = person_app_service.get_info(id)
+        result = person_service.get_by_id(id=id)
     elif section == "research":
         if tab == "products":
             plot = request.args.get("plot")

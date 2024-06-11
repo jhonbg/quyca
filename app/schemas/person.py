@@ -1,8 +1,8 @@
 from typing import Any
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-from schemas.general import QueryBase, ExternalId
+from schemas.general import QueryBase, ExternalId, ExternalURL
 
 
 class Type(BaseModel):
@@ -70,6 +70,7 @@ class PersonList(BaseModel):
     id: str
     full_name: str
 
+
 class PersonSearch(PersonBase):
     @field_validator("external_ids")
     @classmethod
@@ -85,8 +86,15 @@ class PersonSearch(PersonBase):
                 v,
             )
         )
+
     products_count: int | None = None
     citations_count: list | None = None
+
+
+class PersonInfo(PersonSearch):
+    full_name: str = Field(serialization_alias="name")
+    logo: str | None = None
+    
 
 
 class PersonQueryParams(QueryBase):

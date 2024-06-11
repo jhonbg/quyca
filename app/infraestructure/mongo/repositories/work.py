@@ -271,13 +271,20 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
                         }
                     }
                 },
-                {"$sort": {"source_priority": 1, "titles.0.title": direction}},
+                {
+                    "$sort": {
+                        "source_priority": 1,
+                        "titles.0.title": direction,
+                        "_id": -1,
+                    }
+                },
             ]
         else:
             pipeline += [
                 {
                     "$sort": {
-                        sort_traduction.get(sort_field, "titles.0.title"): direction
+                        sort_traduction.get(sort_field, "titles.0.title"): direction,
+                        "_id": -1,
                     }
                 }
             ]
@@ -573,7 +580,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             sort=sort,
             filters=filters,
             project=project,
-            match=match
+            match=match,
         )
         return WorkIterator(results), available_filters
 

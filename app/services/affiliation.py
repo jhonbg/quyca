@@ -21,7 +21,7 @@ class AffiliationService(
         AffiliationRepository,
         AffiliationQueryParams,
         AffiliationSearch,
-        AffiliationSchema,
+        AffiliationSearch,
     ]
 ):
     def update_affiliation_search(self, obj: AffiliationSearch) -> AffiliationSearch:
@@ -62,5 +62,5 @@ class AffiliationService(
 
 
 affiliation_service = AffiliationService(
-    affiliation_repository, AffiliationSearch, AffiliationSchema
+    affiliation_repository, AffiliationSearch, AffiliationSearch
 )

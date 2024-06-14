@@ -1,4 +1,5 @@
 from typing import Any
+from itertools import chain
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -217,6 +218,7 @@ class WorkCsv(WorkProccessed):
     end_page: str | None = None
     doi: str | None = ""
     source_name: str | None = ""
+    subject_names: str = ""
 
     @model_validator(mode="after")
     def get_doi_source_name(self):
@@ -261,6 +263,16 @@ class WorkCsv(WorkProccessed):
         self.start_page = self.bibliographic_info.start_page
         self.end_page = self.bibliographic_info.end_page
         self.bibliographic_info = None
+        self.subject_names = " | ".join(
+            chain.from_iterable(
+                map(
+                    lambda x: [
+                        sub.name for sub in x.subjects if x.source == "openalex"
+                    ],
+                    self.subjects,
+                )
+            )
+        )
         return self
 
 

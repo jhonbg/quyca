@@ -118,10 +118,8 @@ def get_affiliation_csv(
             "end_page": {"name": "página final"},
             "year_published": {"name": "año de publicación"},
             "types": {"name": "tipo de producto", "fields": ["type"]},
-            "subjects": {
-                "name": "temas",
-                "fields": ["name"],
-                "config": {"name": {"name": "name"}},
+            "subject_names": {
+                "name": "temas"
             },
             "doi": {
                 "name": "doi"

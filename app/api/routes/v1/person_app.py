@@ -25,7 +25,7 @@ def person(
     result = None
 
     if section == "info":
-        result = person_service.get_by_id(id=id)
+        result = person_service.get_info(id=id)
     elif section == "research":
         if tab == "products":
             plot = request.args.get("plot")

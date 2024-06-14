@@ -227,7 +227,7 @@ class SearchAppService:
         }
         if aff_type:
             if aff_type == "institution":
-                search_dict = {"types.type": "Education"}
+                search_dict = {"types.type": {"$in": settings.institutions}}
             else:
                 search_dict = {"types.type": aff_type}
         if keywords:

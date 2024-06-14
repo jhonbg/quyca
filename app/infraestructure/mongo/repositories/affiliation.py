@@ -9,6 +9,7 @@ from infraestructure.mongo.utils.session import engine
 from infraestructure.mongo.utils.iterators import AffiliationIterator
 from schemas.affiliation import AffiliationRelated
 from schemas.person import PersonList
+from core.config import settings
 
 
 class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
@@ -90,7 +91,7 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
     def upside_relations(
         cls, relations: list[dict, str], typ: str
     ) -> list[dict[str, Any]]:
-        hierarchy = ["group", "department", "faculty", "Education", "institution"]
+        hierarchy = ["group", "department", "faculty"] + settings.institutions
         upside = hierarchy.index(typ)
         affiliations = list(
             filter(

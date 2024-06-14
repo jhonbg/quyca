@@ -126,7 +126,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             engine.get_collection(Work).aggregate(count_citations_pipeline),
             {"counts": []},
         ).get("counts")
-        return citations_count
+        return sorted(citations_count, key=lambda x: x["count"], reverse=True)
 
     @classmethod
     def count_papers_by_author(
@@ -152,7 +152,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         filters: dict[str, Any] = {},
     ) -> int:
         affiliation_type = (
-            "institution" if affiliation_type == "Education" else affiliation_type
+            "institution" if affiliation_type in settings.institutions else affiliation_type
         )
         count_papers_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
         collection = (
@@ -175,7 +175,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         cls, *, affiliation_id: str, affiliation_type: str
     ) -> list[dict[str, str | int]]:
         affiliation_type = (
-            "institution" if affiliation_type == "Education" else affiliation_type
+            "institution" if affiliation_type in settings.institutions else affiliation_type
         )
         count_citations_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
         count_citations_pipeline += [
@@ -320,7 +320,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         project: list[str] = [],
     ) -> tuple[Iterable[dict[str, Any]], dict[str, Any]]:
         affiliation_type = (
-            "institution" if affiliation_type == "Education" else affiliation_type
+            "institution" if affiliation_type in settings.institutions else affiliation_type
         )
         works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
         collection = (
@@ -420,7 +420,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         project: list[str] = [],
     ) -> SourceIterator:
         affiliation_type = (
-            "institution" if affiliation_type == "Education" else affiliation_type
+            "institution" if affiliation_type in settings.institutions else affiliation_type
         )
         works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
         collection = (

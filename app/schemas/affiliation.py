@@ -13,6 +13,7 @@ from schemas.general import (
     Name,
 )
 from schemas.person import PersonList
+from core.config import settings
 
 
 class Address(BaseModel):
@@ -77,6 +78,7 @@ class Affiliation(AffiliationBase):
 
 class AffiliationRelated(AffiliationBase):
     name: str | None = None
+
     @model_validator(mode="after")
     def get_name(self) -> Self:
         es_name = next(filter(lambda x: x.lang == "es", self.names), None)
@@ -84,7 +86,7 @@ class AffiliationRelated(AffiliationBase):
         if not isinstance(self.id, str):
             self.id = str(self.id)
         return self
-    
+
 
 class AffiliationSearch(AffiliationBase):
     id: str | None = None
@@ -101,14 +103,16 @@ class AffiliationSearch(AffiliationBase):
                 self.logo = ext.url
                 self.external_urls.remove(ext)
         return self
-    
+
     products_count: int | None = None
     citations_count: int | None = None
     affiliations: list[dict[str, Any]] | None = None
 
+
 class AffiliationReduced(BaseModel):
     id: str
     name: str | None = None
+
 
 class AffiliationRelatedInfo(BaseModel):
     faculties: list[AffiliationReduced] | None = None
@@ -124,6 +128,8 @@ class AffiliationQueryParams(QueryBase):
     def get_search(self) -> dict[str, Any]:
         return {
             "types.type": (
-                "Education" if self.type.lower() == "institution" else self.type
+                {"$in": settings.institutions}
+                if self.type.lower() == "institution"
+                else self.type
             )
         }

@@ -32,9 +32,9 @@ class ServiceBase(Generic[ModelType, RepositoryType, ParamsType, SearchType, Inf
         results.data = db_objs
         return loads(results.model_dump_json())
 
-    def get_by_id(self, *, id: str) -> dict[str, Any]:
+    def get_by_id(self, *, id: str) -> Type[InfoType]:
         db_obj = self.repository.get_by_id(id=id)
-        return self.info_class.model_validate_json(db_obj).model_dump(by_alias=True)
+        return self.info_class.model_validate_json(db_obj)
 
     def search(self, *, params: ParamsType) -> GeneralMultiResponse[Type[SearchType]]:
         db_objs, count = self.repository.search(

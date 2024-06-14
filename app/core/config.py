@@ -54,7 +54,7 @@ class Settings(BaseSettings):
         "doi": "https://doi.org/{id}",
         "lens": "https://www.lens.org/lens/scholar/article/{id}",
         "minciencias": "",
-        "scienti": ""
+        "scienti": "",
     }
 
     TYPES: dict[str, str] = {
@@ -81,8 +81,27 @@ class Settings(BaseSettings):
         "misc": "Misceláneo",
         "erratum": "Errata",
         "Revisión (Survey)": "Revisión",
-        "inproceedings": "En actas"
+        "inproceedings": "En actas",
     }
+
+    institutions: list[str] = [
+        "Archive",
+        "Company",
+        "Education",
+        "Facility",
+        "Government",
+        "Healthcare",
+        "Nonprofit",
+        "Other",
+        "archive",
+        "company",
+        "education",
+        "facility",
+        "government",
+        "healthcare",
+        "nonprofit",
+        "other",
+    ]
 
 
 @lru_cache()

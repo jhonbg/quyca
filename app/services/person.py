@@ -11,21 +11,25 @@ from infraestructure.mongo.repositories.person import (
     person_repository,
 )
 from infraestructure.mongo.repositories.work import WorkRepository
+from core.config import settings
 
 
 class PersonService(
     ServiceBase[Person, PersonRepository, PersonQueryParams, PersonSearch, PersonInfo]
 ):
-    def get_by_id(self, *, id: str) -> dict[str, Any]:
+    def get_info(self, *, id: str) -> dict[str, Any]:
         basic_info = self.repository.get_by_id(id=id)
         person = self.info_class.model_validate_json(basic_info)
         self.update_author_search(person)
         # get high affiliation on hierarchy
         institution = next(
-            filter(lambda x: x.types[0].type == "Education", person.affiliations)
+            filter(
+                lambda x: x.types[0].type in settings.institutions, person.affiliations
+            ),
+            None,
         )
         if institution:
-            person.logo = affiliation_service.get_by_id(id=institution.id)["logo"]
+            person.logo = affiliation_service.get_by_id(id=institution.id).logo
         return {"data": person.model_dump(by_alias=True), "filters": {}}
 
     def update_author_search(self, author: PersonSearch) -> PersonSearch:

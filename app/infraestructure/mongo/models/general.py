@@ -13,7 +13,8 @@ class Updated(EmbeddedModel):
     source: str | None = None
 
 class Identifier(BaseModel):
-    COD_RH: str
+    COD_RH: str | None = None
+    COD_PRODUCTO: str | None = None
 
 class ExternalId(EmbeddedModel):
     id: str | int | list[str] | Identifier | None = None

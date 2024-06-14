@@ -190,13 +190,6 @@ class WorkProccessed(WorkListApp):
     @field_validator("external_ids")
     @classmethod
     def append_urls_external_ids(cls, v: list[ExternalId]):
-        scienti = list(filter(lambda x: x.provenance == "scienti", v))
-        v += (
-            [ExternalId(id=f"{scienti[0].id}-{scienti[1].id}", source="scienti")]
-            if len(scienti) == 2
-            else []
-        )
-
         return list(
             map(
                 lambda x: (

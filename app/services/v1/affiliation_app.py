@@ -182,11 +182,9 @@ class AffiliationAppService:
         return {"plot": self.bars.products_by_affiliation_by_type(data)}
 
     def get_citations_by_year(self, idx, typ=None, aff_type: str | None = None):
-        _match = {"citations_by_year": {"$ne": []}, "year_published": {"$exists": 1}}
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
             idx,
             aff_type,
-            match=_match,
             available_filters=False,
             project=["citations_by_year", "year_published"],
         )
@@ -214,7 +212,11 @@ class AffiliationAppService:
             "year_published": {"$ne": None},
         }
         data, f = WorkRepository.get_research_products_by_affiliation_iterator(
-            idx, aff_type, match=_match, available_filters=False, project=["year_published", "bibliographic_info"]
+            idx,
+            aff_type,
+            match=_match,
+            available_filters=False,
+            project=["year_published", "bibliographic_info"],
         )
         return {"plot": self.bars.oa_by_year(data)}
 
@@ -380,7 +382,8 @@ class AffiliationAppService:
             data[aff.name] = WorkRepository.count_papers(
                 affiliation_id=aff.id, affiliation_type=aff.types[0].type
             )
-        return self.pies.products_by_affiliation(data)
+        total_works = WorkRepository.count_papers(affiliation_id=idx, affiliation_type=aff_type)
+        return self.pies.products_by_affiliation(data, total_works)
 
     def get_apc_by_affiliations(self, idx, typ, aff_type: str | None = None):
         affiliations = affiliation_repository.get_affiliations_related_type(
@@ -425,10 +428,9 @@ class AffiliationAppService:
         sources = WorkRepository.get_sources_by_affiliation(
             idx,
             aff_type,
-            match={"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
             project=["publisher"],
         )
-        data = map(lambda x: x.publisher, sources)
+        data = map(lambda x: x.publisher.name if x.publisher else "Sin información", sources)
         return self.pies.products_by_publisher(data)
 
     def get_products_by_subject(
@@ -471,11 +473,17 @@ class AffiliationAppService:
         works, _ = WorkRepository.get_research_products_by_affiliation_iterator(
             idx,
             aff_type,
-            match={"bibliographic_info.open_access_status": {"$exists": 1}},
             available_filters=False,
             project=["bibliographic_info"],
         )
-        _data = map(lambda x: x.bibliographic_info.open_access_status, works)
+        _data = map(
+            lambda x: (
+                x.bibliographic_info.open_access_status
+                if x.bibliographic_info.open_access_status
+                else "Sin información"
+            ),
+            works,
+        )
         result = self.pies.products_by_open_access_status(_data)
         return result
 
@@ -498,7 +506,7 @@ class AffiliationAppService:
                         }
                     },
                     {"$project": {"author.sex": 1}},
-                    {"$match": {"author.sex": {"$ne": "", "$exists": 1}}},
+                    # {"$match": {"author.sex": {"$ne": "", "$exists": 1}}},
                 ]
                 for work in self.colav_db["works"].aggregate(pipeline):
                     data.append(work)
@@ -516,7 +524,7 @@ class AffiliationAppService:
                     }
                 },
                 {"$project": {"author.sex": 1}},
-                {"$match": {"author.sex": {"$ne": "", "$exists": 1}}},
+                # {"$match": {"author.sex": {"$ne": "", "$exists": 1}}},
             ]
             for work in self.colav_db["works"].aggregate(pipeline):
                 data.append(work)
@@ -537,18 +545,10 @@ class AffiliationAppService:
                     {
                         "$match": {
                             "authors.id": author["_id"],
-                            "date_published": {"$ne": None},
+                            # "date_published": {"$ne": None},
                         },
                     },
-                    {
-                        "$project": {
-                            "authors": 1,
-                            "date_published": 1,
-                            "year_published": 1,
-                        }
-                    },
                     {"$unwind": "$authors"},
-                    # {"$match":{"authors.affiliations.id":ObjectId(idx)}},
                     {
                         "$lookup": {
                             "from": "person",
@@ -564,7 +564,7 @@ class AffiliationAppService:
                             "year_published": 1,
                         }
                     },
-                    {"$match": {"author.birthdate": {"$nin": [-1, ""], "$exists": 1}}},
+                    # {"$match": {"author.birthdate": {"$nin": [-1, ""], "$exists": 1}}},
                 ]
                 for work in self.colav_db["works"].aggregate(pipeline):
                     data.append(work)
@@ -573,12 +573,10 @@ class AffiliationAppService:
                 {
                     "$match": {
                         "authors.affiliations.id": ObjectId(idx),
-                        "date_published": {"$ne": None},
+                        # "date_published": {"$ne": None},
                     }
                 },
-                {"$project": {"authors": 1, "date_published": 1, "year_published": 1}},
                 {"$unwind": "$authors"},
-                {"$match": {"authors.affiliations.id": ObjectId(idx)}},
                 {
                     "$lookup": {
                         "from": "person",
@@ -594,7 +592,7 @@ class AffiliationAppService:
                         "year_published": 1,
                     }
                 },
-                {"$match": {"author.birthdate": {"$nin": [-1, ""], "$exists": 1}}},
+                # {"$match": {"author.birthdate": {"$nin": [-1, ""], "$exists": 1}}},
             ]
             for work in self.colav_db["works"].aggregate(pipeline):
                 data.append(work)
@@ -613,8 +611,9 @@ class AffiliationAppService:
             available_filters=False,
             project=["ranking"],
         )
+        total_works = WorkRepository.count_papers(affiliation_id=idx, affiliation_type=aff_type)
         _data = chain.from_iterable(map(lambda x: x.ranking, works))
-        return self.pies.products_by_scienti_rank(_data)
+        return self.pies.products_by_scienti_rank(_data, total_works)
 
     def get_products_by_scimago_rank(self, idx, typ=None, aff_type: str | None = None):
         sources = WorkRepository.get_sources_by_affiliation(
@@ -622,53 +621,19 @@ class AffiliationAppService:
             aff_type,
             project=["source", "date_published"],
         )
-        return self.pies.products_by_scimago_rank(sources)
+        _data = chain.from_iterable(map(lambda x: x.ranking, sources))
+        total_works = WorkRepository.count_papers(affiliation_id=idx, affiliation_type=aff_type)
+        return self.pies.products_by_scimago_rank(_data, total_works)
 
     def get_publisher_same_institution(
         self, idx, typ=None, aff_type: str | None = None
     ):
-        data = []
         institution = self.colav_db["affiliations"].find_one(
             {"_id": ObjectId(idx)}, {"names": 1}
         )
-        pipeline = [
-            {"$match": {"affiliations.id": ObjectId(idx)}},
-            {"$project": {"_id": 1}},
-            {
-                "$lookup": {
-                    "from": "works",
-                    "localField": "_id",
-                    "foreignField": "authors.id",
-                    "as": "work",
-                }
-            },
-            {"$unwind": "$work"},
-            {"$replaceRoot": {"newRoot": "$work"}},
-            {"$project": {"source": 1}},
-            {
-                "$lookup": {
-                    "from": "sources",
-                    "localField": "source.id",
-                    "foreignField": "_id",
-                    "as": "source",
-                }
-            },
-            {"$unwind": "$source"},
-            {"$project": {"source.publisher": 1}},
-            {
-                "$match": {
-                    "source.publisher": {"$exists": 1, "$not": {"$type": "string"}},
-                    "source.publisher.name": {"$type": "string"},
-                }
-            },
-        ]
-        for work in self.colav_db["person"].aggregate(pipeline):
-            data.append(work)
-        result = self.pies.products_editorial_same_institution(data, institution)
-        if result:
-            return result
-        else:
-            return {"plot": None}
+        sources = WorkRepository.get_sources_by_affiliation(idx, aff_type, project=["publisher"])
+        return self.pies.products_editorial_same_institution(sources, institution)
+
 
     def get_coauthorships_worldmap(self, idx, typ=None, aff_type: str | None = None):
         data = []

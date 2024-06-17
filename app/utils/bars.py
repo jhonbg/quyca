@@ -114,7 +114,10 @@ class bars:
         """
 
         result = {}
+        no_info = 0
         for work in data:
+            if not work.citations_by_year:
+                no_info += 1
             for yearly in work.citations_by_year:
                 if yearly.year in result.keys():
                     result[yearly.year] += yearly.cited_by_count
@@ -122,7 +125,7 @@ class bars:
                     result[yearly.year] = yearly.cited_by_count
         result_list = sorted(result.items(), key=lambda x: x[0])
         result_list = [{"x": x[0], "y": x[1]} for x in result_list]
-
+        result_list += [{"x": "Sin información", "y": no_info}]
         return result_list
 
     # anual APC costs
@@ -153,9 +156,7 @@ class bars:
                         to=max(base_year, int(apc.year_published)),
                     )
                 else:
-                    raw_value = c.convert(
-                        apc.charges, apc.currency, "USD"
-                    )
+                    raw_value = c.convert(apc.charges, apc.currency, "USD")
                     value = inflate(
                         raw_value,
                         apc.year_published,

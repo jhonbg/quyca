@@ -59,10 +59,15 @@ class pies:
 
     # Accumulated papers for each faculty department or group
     @get_percentage
-    def products_by_affiliation(self, data) -> list[dict[str, str | int]]:
+    def products_by_affiliation(
+        self, data: dict[str, int], total_works=0
+    ) -> list[dict[str, str | int]]:
         result_list = []
         for idx, value in data.items():
             result_list.append({"name": idx, "value": value})
+        result_list.append(
+            {"name": "Sin información", "value": total_works - sum(data.values())}
+        )
         return result_list
 
     # APC cost for each faculty department or group
@@ -116,16 +121,8 @@ class pies:
 
     # Ammount of papers per publisher
     @get_percentage
-    def products_by_publisher(
-        self, data: Iterable[Publisher]
-    ) -> list[dict[str, str | int]]:
-        results = {}
-        for pub in data:
-            if pub.name:
-                if pub.name in results.keys():
-                    results[pub.name] += 1
-                else:
-                    results[pub.name] = 1
+    def products_by_publisher(self, data: Iterable[str]) -> list[dict[str, str | int]]:
+        results = Counter(data)
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
@@ -167,9 +164,12 @@ class pies:
     # Ammount of papers per author sex
     @get_percentage
     def products_by_sex(self, data) -> list[dict[str, str | int]]:
-        results = {}
+        results = {"Sin información": 0}
         for work in data:
-            if work["author"][0]["sex"] in results.keys():
+            if not work["author"] or not work["author"][0]["sex"]:
+                results["Sin información"] += 1
+                continue
+            elif work["author"][0]["sex"] in results.keys():
                 results[work["author"][0]["sex"]] += 1
             else:
                 results[work["author"][0]["sex"]] = 1
@@ -182,8 +182,16 @@ class pies:
     @get_percentage
     def products_by_age(self, data) -> list[dict[str, str | int]]:
         ranges = {"14-26": (14, 26), "27-59": (27, 59), "60+": (60, 999)}
-        results = {"14-26": 0, "27-59": 0, "60+": 0}
+        results = {"14-26": 0, "27-59": 0, "60+": 0, "Sin información": 0}
         for work in data:
+            if (
+                not work["author"]
+                or not work["author"][0]["birthdate"]
+                or work["author"][0]["birthdate"] == -1
+                or not work["date_published"]
+            ):
+                results["Sin información"] += 1
+                continue
             if work["author"][0]["birthdate"]:
                 birthdate = datetime.datetime.fromtimestamp(
                     work["author"][0]["birthdate"]
@@ -193,8 +201,9 @@ class pies:
                 ).year
                 age = date_published - birthdate
                 for name, (date_low, date_high) in ranges.items():
-                    if age < date_high and age > date_low:
+                    if date_low <= age <= date_high:
                         results[name] += 1
+                        break
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
@@ -203,7 +212,7 @@ class pies:
     # Ammount of papers per scienti rank
     @get_percentage
     def products_by_scienti_rank(
-        self, data: Iterable[Ranking]
+        self, data: Iterable[Ranking], total_works=0
     ) -> list[dict[str, str | int]]:
         scienti_rank = filter(
             lambda x: x.source == "scienti"
@@ -215,25 +224,34 @@ class pies:
         result_list = []
         for name, count in results.items():
             result_list.append({"name": name, "value": count})
+        result_list.append(
+            {"name": "Sin información", "value": total_works - sum(results.values())}
+        )
         return result_list
 
     # Ammount of papers per journal on scimago
     @get_percentage
-    def products_by_scimago_rank(self, data: Iterable[Source]) -> list[dict[str, str | int]]:
+    def products_by_scimago_rank(
+        self, data: Iterable[Ranking], total_works=0
+    ) -> list[dict[str, str | int]]:
         results = {}
-        for source in data:
-            for ranking in source.ranking:
-                if ranking.source == "scimago Best Quartile":
-                    if (
-                        ranking.from_date < source.date_published
-                        and ranking.to_date > source.date_published
-                    ):
-                        if ranking.rank in results.keys():
-                            results[ranking.rank] += 1
-                        else:
-                            results[ranking.rank] = 1
-                        break
-        result_list = []
+        scimago_rank = filter(lambda x: x.source == "scimago Best Queartile", data)
+        results = Counter(map(lambda x: x.rank, scimago_rank))
+        # for source in data:
+        #     for ranking in source.ranking:
+        #         if ranking.source == "scimago Best Quartile":
+        #             if (
+        #                 ranking.from_date < source.date_published
+        #                 and ranking.to_date > source.date_published
+        #             ):
+        #                 if ranking.rank in results.keys():
+        #                     results[ranking.rank] += 1
+        #                 else:
+        #                     results[ranking.rank] = 1
+        #                 break
+        result_list = [
+            {"name": "Sin información", "value": total_works - sum(results.values())}
+        ]
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
         return result_list
@@ -241,17 +259,23 @@ class pies:
     # Ammmount of papers published on a journal of the same institution
     @get_percentage
     def products_editorial_same_institution(
-        self, data, institution
+        self, data: Iterable[Source], institution
     ) -> list[dict[str, str | int]]:
-        results = {"same": 0, "different": 0}
+        results = {"same": 0, "different": 0, "Sin información": 0}
         names = list(set([n["name"].lower() for n in institution["names"]]))
 
-        for work in data:
-            if work["source"]["publisher"]["name"]:
-                if work["source"]["publisher"]["name"].lower() in names:
-                    results["same"] += 1
-                else:
-                    results["different"] += 1
+        for source in data:
+            if (
+                not source.publisher
+                or not source.publisher.name
+                or not isinstance(source.publisher.name, str)
+            ):
+                results["Sin información"] += 1
+                continue
+            if source.publisher.name.lower() in names:
+                results["same"] += 1
+            else:
+                results["different"] += 1
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})

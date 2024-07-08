@@ -339,7 +339,7 @@ class bars:
         for year in result.keys():
             for rank in result[year].keys():
                 result_list.append({"x": year, "y": result[year][rank], "type": rank})
-        result_list = sorted(result_list, key=lambda x: x["x"])
+        result_list = sorted(result_list, key=lambda x: x["x"] if x["x"] else -1)
         return result_list
 
     # Anual products count by group category

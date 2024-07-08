@@ -1,7 +1,9 @@
 from functools import lru_cache
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
-from pydantic import validator, MongoDsn
+from typing_extensions import Self
+
+from pydantic import model_validator, MongoDsn
 
 from pydantic_settings import BaseSettings
 
@@ -38,15 +40,16 @@ class Settings(BaseSettings):
 
     ENVIRONMENT: str = "dev"
 
-    @validator("MONGO_URI", pre=True)
-    def validate_mongo_uri(cls, v: Optional[str], values: Dict[str, Any]) -> str:
-        return MongoDsn.build(
+    @model_validator(mode="after")
+    def validate_mongo_uri(self) -> Self:
+        self.MONGO_URI = MongoDsn.build(
             scheme="mongodb",
-            host=values.get("MONGO_SERVER"),
-            username=values.get("MONGO_INITDB_ROOT_USERNAME"),
-            password=values.get("MONGO_INITDB_ROOT_PASSWORD"),
-            port=values.get("MONGO_INITDB_PORT"),
+            host=self.MONGO_SERVER,
+            username=self.MONGO_INITDB_ROOT_USERNAME,
+            password=self.MONGO_INITDB_ROOT_PASSWORD,
+            port=self.MONGO_INITDB_PORT
         )
+        return self
 
     EXTERNAL_IDS_MAP: dict[str, str] = {
         "scholar": "https://scholar.google.com/scholar?hl="
@@ -101,6 +104,7 @@ class Settings(BaseSettings):
         "healthcare",
         "nonprofit",
         "other",
+        "institution"
     ]
 
 

@@ -49,7 +49,7 @@ class Affiliation(BaseModel):
 class Author(BaseModel):
     id: str
     full_name: str
-    affiliations: list[Affiliation] | None = Field(default_affiliation=list)
+    affiliations: list[Affiliation] | None = Field(default_factory=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
     sex: str | None = None
 

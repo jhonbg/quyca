@@ -8,6 +8,7 @@ from pymongo import ASCENDING, DESCENDING
 from infraestructure.mongo.utils.session import client
 from infraestructure.mongo.repositories.work import WorkRepository
 from infraestructure.mongo.repositories.affiliation import affiliation_repository
+from infraestructure.mongo.models.source import Source
 from core.config import settings
 from utils.bars import bars
 from utils.maps import maps
@@ -238,7 +239,7 @@ class PersonAppService:
             match={"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
             project=["publisher"],
         )
-        data = map(lambda x: x.publisher, sources)
+        data = map(lambda x: x.publisher.name, sources)
         return self.pies.products_by_publisher(data)
 
     def get_products_by_subject(self, idx: str, level: int = 0):
@@ -327,7 +328,9 @@ class PersonAppService:
 
     def get_products_by_scimago_rank(self, idx):
         sources = WorkRepository.get_sources_by_author(idx, project=["source", "date_published"])
-        return self.pies.products_by_scimago_rank(sources)
+        _data = chain.from_iterable(map(lambda x: x.ranking, sources))
+        total_works = WorkRepository.count_papers_by_author(author_id=idx)
+        return self.pies.products_by_scimago_rank(_data, total_works)
 
     def get_publisher_same_institution(self, idx):
         data = []
@@ -367,8 +370,7 @@ class PersonAppService:
                 }
             },
         ]
-        for work in self.colav_db["works"].aggregate(pipeline):
-            data.append(work)
+        data = map(lambda x: Source(**x["source"]), self.colav_db["works"].aggregate(pipeline))
         return self.pies.products_editorial_same_institution(data, institution)
 
     def get_coauthorships_worldmap(self, idx):

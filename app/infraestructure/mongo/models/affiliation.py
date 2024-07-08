@@ -42,7 +42,7 @@ class Description(BaseBSONModel):
 class Ranking(BaseBSONModel):
     date: int | Any = None
     from_date: int | Any = None
-    order: int | Any = None
+    order: int| str | Any = None
     rank: str | None = None
     source: str | None = None
     to_date: str | Any = None

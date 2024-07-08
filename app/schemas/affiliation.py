@@ -105,7 +105,7 @@ class AffiliationSearch(AffiliationBase):
         return self
 
     products_count: int | None = None
-    citations_count: int | None = None
+    citations_count: list[dict[str, Any]] | None = None
     affiliations: list[dict[str, Any]] | None = None
 
 

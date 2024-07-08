@@ -1,6 +1,8 @@
 from typing import TypeVar, Any, Generic
 
-from pydantic import BaseModel, validator, Field, model_validator
+from typing_extensions import Self
+
+from pydantic import BaseModel, validator, Field, model_validator, field_validator
 from odmantic.bson import BSON_TYPES_ENCODERS
 from core.config import settings
 
@@ -27,7 +29,7 @@ class ExternalId(BaseModel):
     source: str | None
     provenance: str | None = None
 
-    @validator("id", pre=True)
+    @field_validator("id", mode="after")
     def id_validator(cls, v: str | int | list[str] | dict):
         if isinstance(v, dict):
             id = []
@@ -64,13 +66,14 @@ class QueryBase(BaseModel):
 
     skip: int | None = None
 
-    @validator("max", always=True)
-    def limit_validator(cls, v, values):
+    @field_validator("max")
+    def limit_validator(cls, v):
         return v if v < 250 else 250
 
-    @validator("skip", always=True)
-    def skip_validator(cls, v, values):
-        return v if v else (values["page"] - 1) * values["max"]
+    @model_validator(mode="after")
+    def skip_validator(self) -> Self:
+        self.skip = self.skip if self.skip else (self.page - 1) * self.max
+        return self
 
     @property
     def get_search(self) -> dict[str, Any]:

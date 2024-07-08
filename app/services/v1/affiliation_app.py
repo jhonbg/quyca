@@ -619,11 +619,10 @@ class AffiliationAppService:
         sources = WorkRepository.get_sources_by_affiliation(
             idx,
             aff_type,
-            project=["source", "date_published"],
+            project=["ranking"],
         )
         _data = chain.from_iterable(map(lambda x: x.ranking, sources))
-        total_works = WorkRepository.count_papers(affiliation_id=idx, affiliation_type=aff_type)
-        return self.pies.products_by_scimago_rank(_data, total_works)
+        return self.pies.products_by_scimago_rank(_data)
 
     def get_publisher_same_institution(
         self, idx, typ=None, aff_type: str | None = None

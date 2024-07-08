@@ -232,7 +232,7 @@ class pies:
     # Ammount of papers per journal on scimago
     @get_percentage
     def products_by_scimago_rank(
-        self, data: Iterable[Ranking], total_works=0
+        self, data: Iterable[Ranking]
     ) -> list[dict[str, str | int]]:
         results = {}
         scimago_rank = filter(lambda x: x.source == "scimago Best Quartile", data)
@@ -249,9 +249,7 @@ class pies:
         #                 else:
         #                     results[ranking.rank] = 1
         #                 break
-        result_list = [
-            {"name": "Sin información", "value": total_works - sum(results.values())}
-        ]
+        result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})
         return result_list

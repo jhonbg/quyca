@@ -57,6 +57,7 @@ class Author(BaseModel):
 class Source(BaseModel):
     id: str | None = None
     name: str | Any | None = None
+    scimago_quartile: str | None = None
     serials: Any | None = None
 
 

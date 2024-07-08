@@ -37,6 +37,7 @@ class WorkService(
             for serial in source.external_ids:
                 serials[serial.source] = serial.id
             work.source.serials = serials
+            work.source.scimago_quartile = source.scimago_quartile
 
     def count_papers(
         self,

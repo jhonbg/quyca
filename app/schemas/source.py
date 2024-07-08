@@ -1,11 +1,12 @@
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from schemas.general import Type, Updated, ExternalId, ExternalURL, QueryBase, Name
 
-class SourceQueryParams(QueryBase):
-    ...
+
+class SourceQueryParams(QueryBase): ...
+
 
 class Publisher(BaseModel):
     id: str | None
@@ -23,6 +24,7 @@ class APC(BaseModel):
     currency: str | Any | None = None
     year_published: int | str | None = None
 
+
 class Copyright(BaseModel):
     author_retains: bool | Any | None = None
     url: str | Any | None = None
@@ -35,6 +37,7 @@ class Licence(BaseModel):
     SA: bool | Any | None = None
     type: str | Any | None = None
     url: str | Any | None = None
+
 
 class SubjectEmbedded(BaseModel):
     id: str | None = None
@@ -80,7 +83,12 @@ class Source(BaseModel):
     subjects: list[Subject] | None = Field(default_factory=list)
     ranking: list[Ranking] | None = Field(default_factory=list)
     date_published: str | int | None = Field(None, exclude=True)
+    scimago_quartile: str | None = Field(None, exclude=True)
 
-
-
-
+    @model_validator(mode="after")
+    def get_scimag_quartile(self):
+        if self.ranking:
+            for rank in self.ranking:
+                if rank.source == "scimago Best Quartile" and rank.rank != "-":
+                    self.scimago_quartile = rank.rank
+        return self

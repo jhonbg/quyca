@@ -235,7 +235,7 @@ class pies:
         self, data: Iterable[Ranking], total_works=0
     ) -> list[dict[str, str | int]]:
         results = {}
-        scimago_rank = filter(lambda x: x.source == "scimago Best Queartile", data)
+        scimago_rank = filter(lambda x: x.source == "scimago Best Quartile", data)
         results = Counter(map(lambda x: x.rank, scimago_rank))
         # for source in data:
         #     for ranking in source.ranking:

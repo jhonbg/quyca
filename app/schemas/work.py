@@ -137,7 +137,7 @@ class WorkSearch(WorkBase):
 
 class WorkListApp(WorkSearch):
     titles: list[Title] = Field(default_factory=list, exclude=True)
-    year_published: int | None = None
+    year_published: int | str | None = None
     open_access_status: str | None = ""
 
     bibliographic_info: BiblioGraphicInfo = Field(exclude=True)
@@ -298,7 +298,7 @@ class Work(BaseModel):
     external_ids: list[ExternalId] | None = Field(default_factory=list)
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
     date_published: int | None = None
-    year_published: int | None = None
+    year_published: int | str | None = None
     bibligraphic_info: list[BiblioGraphicInfo] | None = Field(default_factory=list)
     references_count: int | None
     references: list[Any] | None = Field(default_factory=list)

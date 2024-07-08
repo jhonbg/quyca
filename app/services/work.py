@@ -38,6 +38,7 @@ class WorkService(
                 serials[serial.source] = serial.id
             work.source.serials = serials
             work.source.scimago_quartile = source.scimago_quartile
+        return work
 
     def count_papers(
         self,
@@ -111,7 +112,7 @@ class WorkService(
             affiliation_id, affiliation_type, sort=sort, skip=skip, limit=limit
         )
         return [
-            WorkSchema.model_validate_json(work.model_dump_json()).model_dump()
+            self.update_source(WorkSchema.model_validate_json(work.model_dump_json())).model_dump()
             for work in works
         ]
 

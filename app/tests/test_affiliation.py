@@ -28,7 +28,6 @@ def test_ping(client: FlaskClient):
 
 @pytest.mark.parametrize("name, _type", test_data.affiliations)
 def test_affiliations(client: FlaskClient, name: str, _type: str):
-    pytest.skip()
     # get ids from search
     search = f"{settings.APP_V1_STR}/search"
     aff = client.get(search + f"/affiliations/{_type}?keywords='{name}'")
@@ -67,7 +66,6 @@ def test_affiliations(client: FlaskClient, name: str, _type: str):
 )
 def test_affiliations_products(client: FlaskClient, name: str, _type: str, sort: str):
     # get ids from search
-    pytest.skip()
     search = f"{settings.APP_V1_STR}/search"
     aff = client.get(search + f"/affiliations/{_type}?keywords='{name}'")
     id = aff.json["data"][0]["id"]
@@ -119,7 +117,6 @@ def test_affiliations_products(client: FlaskClient, name: str, _type: str, sort:
 )
 def test_affiliation_plots(client: FlaskClient, name: str, _type: str):
     # get ids from search
-    pytest.skip()
     search = f"{settings.APP_V1_STR}/search"
     aff = client.get(search + f"/affiliations/{_type}?keywords='{name}'")
     id = aff.json["data"][0]["id"]

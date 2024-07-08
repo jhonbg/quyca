@@ -44,7 +44,6 @@ def test_person(client: FlaskClient, name: str):
     ],
 )
 def test_authors_products(client: FlaskClient, name: str, sort: str):
-    pytest.skip()
     search = f"{settings.APP_V1_STR}/search"
     person = client.get(search + f"/person?keywords='{name}'")
     id = person.json["data"][0]["id"]

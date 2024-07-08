@@ -30,7 +30,7 @@ def affiliation(
                 result = None
             else:
                 params = QueryBase(**request.args)
-                result = work_service.get_research_products_info_by_affiliation_csv(
+                result = work_service.get_research_products_info_by_affiliation_json(
                     affiliation_id=idx,
                     affiliation_type=typ,
                     skip=params.skip,

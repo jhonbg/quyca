@@ -75,7 +75,7 @@ def get_person(id: str | None, section: str | None, tab: str | None):
         result = person_api_service.get_info(id)
     elif section == "research" and tab == "products":
         params = QueryBase(**request.args)
-        works = work_service.get_research_products_by_author_csv(
+        works = work_service.get_research_products_by_author_json(
             author_id=id, sort=params.sort, skip=params.skip, limit=params.max
         )
         total = work_service.count_papers(author_id=id)

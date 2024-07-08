@@ -2,7 +2,13 @@ from typing import Any
 from json import loads
 
 from services.base import ServiceBase
-from schemas.work import WorkQueryParams, WorkProccessed, WorkListApp, WorkCsv
+from schemas.work import (
+    WorkQueryParams,
+    WorkProccessed,
+    WorkListApp,
+    WorkCsv,
+    Work as WorkSchema,
+)
 from infraestructure.mongo.models.work import Work
 from infraestructure.mongo.repositories.work import (
     WorkRepository,
@@ -89,6 +95,25 @@ class WorkService(
             "filters": available_filters,
         }
 
+    def get_research_products_info_by_affiliation_json(
+        self,
+        *,
+        affiliation_id: str,
+        affiliation_type: str,
+        start_year: int | None = None,
+        end_year: int | None = None,
+        skip: int | None = None,
+        limit: int | None = None,
+        sort: str | None = None,
+    ) -> list[dict[str, Any]]:
+        works = WorkRepository.get_research_products_by_affiliation_csv(
+            affiliation_id, affiliation_type, sort=sort, skip=skip, limit=limit
+        )
+        return [
+            WorkSchema.model_validate_json(work.model_dump_json()).model_dump()
+            for work in works
+        ]
+
     def get_research_products_info_by_affiliation_csv(
         self,
         *,
@@ -138,9 +163,29 @@ class WorkService(
         skip: int | None = None,
         limit: int | None = None,
     ) -> list[dict[str, Any]]:
-        return WorkRepository.get_research_products_by_author_csv(
+        works, _ = WorkRepository.get_research_products_by_author_iterator(
             author_id=author_id, sort=sort, skip=skip, limit=limit
         )
+        return [
+            WorkCsv.model_validate_json(work.model_dump_json()).model_dump()
+            for work in works
+        ]
+
+    def get_research_products_by_author_json(
+        self,
+        *,
+        author_id: str,
+        sort: str | None = "title",
+        skip: int | None = None,
+        limit: int | None = None,
+    ) -> list[dict[str, Any]]:
+        works, _ = WorkRepository.get_research_products_by_author_iterator(
+            author_id=author_id, sort=sort, skip=skip, limit=limit
+        )
+        return [
+            WorkSchema.model_validate_json(work.model_dump_json()).model_dump()
+            for work in works
+        ]
 
     def search_api(self, *, params: WorkQueryParams) -> dict[str, Any]:
         works, count = self.repository.search(
@@ -150,8 +195,12 @@ class WorkService(
             sort=params.sort,
             search=params.get_search,
         )
-        results = GeneralMultiResponse[WorkCsv](total_results=count, page=params.page)
-        data = [WorkCsv.model_validate_json(work.model_dump_json()) for work in works]
+        results = GeneralMultiResponse[WorkSchema](
+            total_results=count, page=params.page
+        )
+        data = [
+            WorkSchema.model_validate_json(work.model_dump_json()) for work in works
+        ]
         results.data = data
         results.count = len(data)
         return loads(results.model_dump_json(exclude_none=True))

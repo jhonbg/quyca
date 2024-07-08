@@ -81,6 +81,18 @@ class CitationsCount(BaseModel):
     count: int | None
 
 
+class Ranking(BaseModel):
+    date: str | int
+    provenance: str
+    rank: str | None
+    source: str
+
+
+class Group(BaseModel):
+    id: str | None = None
+    name: str | None = None
+
+
 class WorkBase(BaseModel):
     id: str | None
     title: str | None = None
@@ -284,15 +296,20 @@ class Work(BaseModel):
     types: list[Type] | None = Field(default_factory=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
-    date_published: int
-    year_published: int
+    date_published: int | None = None
+    year_published: int | None = None
     bibligraphic_info: list[BiblioGraphicInfo] | None = Field(default_factory=list)
     references_count: int | None
     references: list[Any] | None = Field(default_factory=list)
-    citations: list[CitationsCount] | None = Field(default_factory=list)
-    author_count: int
-
+    citations_count: list[CitationsCount] | None = Field(default_factory=list)
+    author_count: int | None = None
+    authors: list[Author] = Field(default_factory=list)
+    titles: list[Title] = Field(default_factory=list)
+    source: Source | None = Field(default_factory=dict)
+    ranking: list[Ranking] | None = Field(default_factory=list)
+    subjects: list[Subject] | None = Field(default_factory=list)
     citations_by_year: list[CitationByYear] | None = Field(default_factory=list)
+    groups: list[Group] | None = Field(default_factory=list)
 
 
 class WorkQueryParams(QueryBase):

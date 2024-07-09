@@ -232,6 +232,7 @@ class WorkCsv(WorkProccessed):
     doi: str | None = ""
     source_name: str | None = ""
     subject_names: str = ""
+    scimago_quartile: str | None = ""
 
     @model_validator(mode="after")
     def get_doi_source_name(self):
@@ -241,6 +242,7 @@ class WorkCsv(WorkProccessed):
         )
         self.doi = doi["id"]
         self.source_name = self.source.name or ""
+        self.scimago_quartile = self.source.scimago_quartile or ""
         return self
 
     @field_validator("external_ids")
@@ -290,6 +292,7 @@ class WorkCsv(WorkProccessed):
 
 
 class Work(BaseModel):
+    id: str
     updated: list[Updated] | None = Field(default_factory=list)
     subtitle: str
     abstract: str

@@ -126,7 +126,8 @@ def get_affiliation_csv(
             },
             "source_name": {
                 "name": "revista"
-            }
+            },
+            "scimago_quartile": {"name": "cuartil de scimago"}, 
         }
         flat_data_list = flatten_json_list(result, config, 1)
         all_keys = []

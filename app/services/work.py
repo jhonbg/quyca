@@ -131,7 +131,7 @@ class WorkService(
             affiliation_id, affiliation_type, sort=sort, skip=skip, limit=limit
         )
         return [
-            WorkCsv.model_validate_json(work.model_dump_json()).model_dump()
+            self.update_source(WorkCsv.model_validate_json(work.model_dump_json())).model_dump()
             for work in works
         ]
 

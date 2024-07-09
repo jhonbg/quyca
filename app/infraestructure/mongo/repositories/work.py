@@ -1,6 +1,7 @@
 from typing import Any, Iterable
 
 from bson import ObjectId
+from pymongo.collation import Collation
 
 from infraestructure.mongo.repositories.base import RepositoryBase
 from infraestructure.mongo.models.work import Work
@@ -152,7 +153,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         filters: dict[str, Any] = {},
     ) -> int:
         affiliation_type = (
-            "institution" if affiliation_type in settings.institutions else affiliation_type
+            "institution"
+            if affiliation_type in settings.institutions
+            else affiliation_type
         )
         count_papers_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
         collection = (
@@ -175,7 +178,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         cls, *, affiliation_id: str, affiliation_type: str
     ) -> list[dict[str, str | int]]:
         affiliation_type = (
-            "institution" if affiliation_type in settings.institutions else affiliation_type
+            "institution"
+            if affiliation_type in settings.institutions
+            else affiliation_type
         )
         count_citations_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
         count_citations_pipeline += [
@@ -212,7 +217,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         if not sort:
             return []
         sort_field, direction = (sort[:-1], -1) if sort.endswith("-") else (sort, 1)
-        sort_traduction: dict[str, str] = {
+        sort_traslation: dict[str, str] = {
             "citations": "citations_count.count",
             "year": "year_published",
             "title": "titles.0.title",
@@ -268,13 +273,23 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
                                 ],
                                 "default": 6,
                             }
-                        }
+                        },
+                        "normalized_titles": {
+                            "$map": {
+                                "input": "$titles",
+                                "as": "title",
+                                "in": {
+                                    "title": {"$toLower": "$$title.title"},
+                                    "source": "$$title.source",
+                                },
+                            }
+                        },
                     }
                 },
                 {
                     "$sort": {
                         "source_priority": 1,
-                        "titles.0.title": direction,
+                        "normalized_titles.0.title": direction,
                         "_id": -1,
                     }
                 },
@@ -283,7 +298,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             pipeline += [
                 {
                     "$sort": {
-                        sort_traduction.get(sort_field, "titles.0.title"): direction,
+                        sort_traslation.get(sort_field, "titles.0.title"): direction,
                         "_id": -1,
                     }
                 }
@@ -320,7 +335,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         project: list[str] = [],
     ) -> tuple[Iterable[dict[str, Any]], dict[str, Any]]:
         affiliation_type = (
-            "institution" if affiliation_type in settings.institutions else affiliation_type
+            "institution"
+            if affiliation_type in settings.institutions
+            else affiliation_type
         )
         works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
         collection = (
@@ -346,7 +363,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         )
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
-        results = engine.get_collection(collection).aggregate(works_pipeline)
+        results = engine.get_collection(collection).aggregate(
+            works_pipeline, collation=Collation(locale="es")
+        )
         return results, available_filters
 
     @classmethod
@@ -420,7 +439,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         project: list[str] = [],
     ) -> SourceIterator:
         affiliation_type = (
-            "institution" if affiliation_type in settings.institutions else affiliation_type
+            "institution"
+            if affiliation_type in settings.institutions
+            else affiliation_type
         )
         works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
         collection = (
@@ -535,7 +556,12 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         )
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
-        return engine.get_collection(Work).aggregate(works_pipeline), available_filters
+        return (
+            engine.get_collection(Work).aggregate(
+                works_pipeline, collation=Collation(locale="es")
+            ),
+            available_filters,
+        )
 
     @classmethod
     def get_research_products_by_author(

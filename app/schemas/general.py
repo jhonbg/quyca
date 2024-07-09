@@ -30,7 +30,7 @@ class ExternalId(BaseModel):
     provenance: str | None = None
 
     @field_validator("id", mode="after")
-    def id_validator(cls, v: str | int | list[str] | dict):
+    def id_validator(cls, v: str | int | list[str] | dict | Identifier):
         if isinstance(v, dict):
             id = []
             id += [v.get("COD_RH")] if isinstance(v.get("COD_RH", None), str) else []
@@ -39,6 +39,11 @@ class ExternalId(BaseModel):
                 if isinstance(v.get("COD_PRODUCTO", None), str)
                 else []
             )
+            return "-".join(id)
+        if isinstance(v, Identifier):
+            id = []
+            id += [v.COD_RH] if isinstance(v.COD_RH, str) else []
+            id += [v.COD_PRODUCTO] if isinstance(v.COD_PRODUCTO, str) else []
             return "-".join(id)
         return v
 

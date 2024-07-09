@@ -97,12 +97,14 @@ class AffiliationAppService:
                 "addresses": affiliation["addresses"],
                 "logo": logo,
             }
+            affiliations, upside_logo = AffiliationRepository.upside_relations(
+                        affiliation["relations"], typ
+                    )
 
             entry.update(
                 {
-                    "affiliations": AffiliationRepository.upside_relations(
-                        affiliation["relations"], typ
-                    )
+                    "affiliations": affiliations,
+                    "logo": upside_logo if upside_logo else logo,
                 }
             )
 

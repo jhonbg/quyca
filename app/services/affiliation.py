@@ -25,7 +25,7 @@ class AffiliationService(
     ]
 ):
     def update_affiliation_search(self, obj: AffiliationSearch) -> AffiliationSearch:
-        obj.affiliations = self.repository.upside_relations(
+        obj.affiliations, obj.logo = self.repository.upside_relations(
             [rel.model_dump() for rel in obj.relations], obj.types[0].type
         )
         obj.products_count = WorkRepository.count_papers(

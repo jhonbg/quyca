@@ -90,7 +90,7 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
     @classmethod
     def upside_relations(
         cls, relations: list[dict, str], typ: str
-    ) -> list[dict[str, Any]]:
+    ) -> tuple[list[dict[str, Any]], str]:
         hierarchy = ["group", "department", "faculty"] + settings.institutions
         upside = hierarchy.index(typ)
         affiliations = list(
@@ -100,6 +100,7 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
                 relations,
             )
         )
+        logo = ""
         affiliations_result = []
         for affiliation in affiliations:
             id = (
@@ -108,9 +109,13 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
                 else ObjectId(affiliation["id"])
             )
             affiliation = engine.get_collection(Affiliation).find_one(
-                {"_id": id}, {"names": 1, "types": 1}
+                {"_id": id}, {"names": 1, "types": 1, "external_urls": 1}
             )
             if affiliation:
+                if affiliation["types"][0]["type"] in settings.institutions:
+                    for ext in affiliation["external_urls"]:
+                        if ext["source"] == "logo":
+                            logo = ext["url"]
                 affiliations_result.append(
                     {
                         "id": str(affiliation["_id"]),
@@ -121,7 +126,7 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
                         "types": affiliation["types"],
                     }
                 )
-        return affiliations_result
+        return affiliations_result, logo
 
     def get_products(
         self,

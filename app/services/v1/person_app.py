@@ -327,10 +327,9 @@ class PersonAppService:
         return self.pies.products_by_scienti_rank(_data)
 
     def get_products_by_scimago_rank(self, idx):
-        sources = WorkRepository.get_sources_by_author(idx, project=["source", "date_published"])
+        sources = WorkRepository.get_sources_by_author(idx, project=["ranking"])
         _data = chain.from_iterable(map(lambda x: x.ranking, sources))
-        total_works = WorkRepository.count_papers_by_author(author_id=idx)
-        return self.pies.products_by_scimago_rank(_data, total_works)
+        return self.pies.products_by_scimago_rank(_data)
 
     def get_publisher_same_institution(self, idx):
         data = []

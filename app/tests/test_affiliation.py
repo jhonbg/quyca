@@ -112,22 +112,7 @@ def test_affiliations_products(client: FlaskClient, name: str, _type: str, sort:
 
 
 @pytest.mark.parametrize(
-    "name, _type",
-    [choice(list(filter(lambda x: x[1] == "faculty", test_data.affiliations)))],
-)
-def test_affiliation_plots(client: FlaskClient, name: str, _type: str):
-    # get ids from search
-    search = f"{settings.APP_V1_STR}/search"
-    aff = client.get(search + f"/affiliations/{_type}?keywords='{name}'")
-    id = aff.json["data"][0]["id"]
-    log.debug(id)
-    plots = [
-        "title_words",
-        "collaboration_worldmap",
-        "collaboration_colombiamap",
-        "collaboration_network",
-    ]
-    bars_plots = [
+    "plot", [
         "year_type",
         # "type,faculty",
         "type,group",
@@ -139,8 +124,26 @@ def test_affiliation_plots(client: FlaskClient, name: str, _type: str):
         "year_h",
         "year_researcher",
         "year_group",
-    ]
-    pies_plots = [
+    ])
+def test_affiliation_bar_plots(client: FlaskClient, plot: str):
+    name, _type = choice(list(filter(lambda x: x[1] == "faculty", test_data.affiliations)))
+    search = f"{settings.APP_V1_STR}/search"
+    aff = client.get(search + f"/affiliations/{_type}?keywords='{name}'")
+    id = aff.json["data"][0]["id"]
+    log.debug(id)
+    response = client.get(
+            f"{settings.APP_V1_STR}/affiliation/{_type}/{id}/"
+            f"research/products?plot={plot}"
+        )
+    _plot = response.json["plot"]
+    log.debug(plot)
+    log.debug(_plot)
+    assert isinstance(_plot, list)
+    assert all(isinstance(x["y"], int) for x in _plot)
+
+
+@pytest.mark.parametrize(
+    "plot", [
         # "citations,faculty",
         "citations,department",
         "citations,group",
@@ -161,28 +164,85 @@ def test_affiliation_plots(client: FlaskClient, name: str, _type: str):
         "scienti_rank",
         "scimago_rank",
         "published_institution",
-    ]
-    for bar_plot in bars_plots:
-        response = client.get(
+    ])
+def test_affiliation_pie_plots(client: FlaskClient, plot: str):
+    name, _type = choice(list(filter(lambda x: x[1] == "faculty", test_data.affiliations)))
+    search = f"{settings.APP_V1_STR}/search"
+    aff = client.get(search + f"/affiliations/{_type}?keywords='{name}'")
+    id = aff.json["data"][0]["id"]
+    log.debug(id)
+    response = client.get(
             f"{settings.APP_V1_STR}/affiliation/{_type}/{id}/"
-            f"research/products?plot={bar_plot}"
+            f"research/products?plot={plot}"
         )
-        plot = response.json["plot"]
-        log.debug(bar_plot)
-        log.debug(plot)
-        assert isinstance(plot, list)
-        assert all(isinstance(x["y"], int) for x in plot)
+    _plot = response.json["plot"]
+    log.debug(plot)
+    log.debug(_plot)
+    assert isinstance(_plot, list)
+    assert "sum" in response.json
+    assert isinstance(response.json["sum"], int)
+    assert all(isinstance(x["value"], int) or isinstance(x["value"], str) for x in _plot)
 
-    for pie_plot in pies_plots:
-        response = client.get(
-            f"{settings.APP_V1_STR}/affiliation/{_type}/{id}/"
-            f"research/products?plot={pie_plot}"
-        )
-        plot = response.json["plot"]
-        log.debug(pie_plot)
-        assert isinstance(plot, list)
-        assert "sum" in response.json
-        assert isinstance(response.json["sum"], int)
-        assert all(
-            isinstance(x["value"], int) or isinstance(x["value"], str) for x in plot
-        )
+
+# @pytest.mark.parametrize(
+#     "name, _type",
+#     [choice(list(filter(lambda x: x[1] == "faculty", test_data.affiliations)))],
+# )
+# def test_affiliation_bars_plots(client: FlaskClient, name: str, _type: str):
+#     # get ids from search
+#     search = f"{settings.APP_V1_STR}/search"
+#     aff = client.get(search + f"/affiliations/{_type}?keywords='{name}'")
+#     id = aff.json["data"][0]["id"]
+#     log.debug(id)
+#     plots = [
+#         "title_words",
+#         "collaboration_worldmap",
+#         "collaboration_colombiamap",
+#         "collaboration_network",
+#     ]
+#     pies_plots = [
+#         # "citations,faculty",
+#         "citations,department",
+#         "citations,group",
+#         # "products,faculty",
+#         "products,department",
+#         "products,group",
+#         "apc,faculty",
+#         "apc,department",
+#         "apc,group",
+#         "h,faculty",
+#         "h,department",
+#         "h,group",
+#         "products_publisher",
+#         "products_subject",
+#         "products_oa",
+#         "products_sex",
+#         "products_age",
+#         "scienti_rank",
+#         "scimago_rank",
+#         "published_institution",
+#     ]
+#     for bar_plot in bars_plots:
+#         response = client.get(
+#             f"{settings.APP_V1_STR}/affiliation/{_type}/{id}/"
+#             f"research/products?plot={bar_plot}"
+#         )
+#         plot = response.json["plot"]
+#         log.debug(bar_plot)
+#         log.debug(plot)
+#         assert isinstance(plot, list)
+#         assert all(isinstance(x["y"], int) for x in plot)
+
+#     for pie_plot in pies_plots:
+#         response = client.get(
+#             f"{settings.APP_V1_STR}/affiliation/{_type}/{id}/"
+#             f"research/products?plot={pie_plot}"
+#         )
+#         plot = response.json["plot"]
+#         log.debug(pie_plot)
+#         assert isinstance(plot, list)
+#         assert "sum" in response.json
+#         assert isinstance(response.json["sum"], int)
+#         assert all(
+#             isinstance(x["value"], int) or isinstance(x["value"], str) for x in plot
+#         )

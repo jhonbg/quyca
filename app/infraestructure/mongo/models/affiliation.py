@@ -2,7 +2,6 @@ from typing import Any
 
 from bson import ObjectId
 from odmantic import Model, Field, EmbeddedModel
-from pydantic import Field as pydantic_field
 from odmantic.bson import BaseBSONModel
 
 from infraestructure.mongo.models.general import (
@@ -11,7 +10,7 @@ from infraestructure.mongo.models.general import (
     ExternalId,
     ExternalURL,
     Name,
-    Status
+    CitationsCount
 )
 
 
@@ -72,6 +71,38 @@ class Affiliation(Model):
     model_config = {
         "collection": "affiliations"
     }
+
+
+class Node(BaseBSONModel):
+    degree: int
+    id: str
+    label: str
+    size: float
+
+
+class Edge(BaseBSONModel):
+    coauthorships: int
+    size: int
+    source: str
+    sourceName: str
+    target: str
+    targetName: str
     
 
+class CoauthorshipNetwork(BaseBSONModel):
+    nodes: list[Node] | None = Field(default_factory=list)
+    edges: list[Edge] | None = Field(default_factory=list)
 
+
+class TopWord(BaseBSONModel):
+    name: str
+    value: int
+
+class AffiliationCalculations(Model):
+    coauthorship_network: CoauthorshipNetwork | None = None
+    citations_count: list[CitationsCount] | None = Field(default_factory=list)
+    top_words: list[TopWord]
+
+    model_config = {
+        "collection": "affiliations"
+    }

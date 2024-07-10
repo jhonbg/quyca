@@ -1,4 +1,5 @@
 from json import loads
+from typing import Any
 
 from schemas.general import GeneralMultiResponse
 from services.base import ServiceBase
@@ -6,6 +7,7 @@ from schemas.affiliation import (
     AffiliationQueryParams,
     AffiliationSearch,
     Affiliation as AffiliationSchema,
+    AffiliationInfo
 )
 from infraestructure.mongo.models.affiliation import Affiliation
 from infraestructure.mongo.repositories.affiliation import (
@@ -21,9 +23,15 @@ class AffiliationService(
         AffiliationRepository,
         AffiliationQueryParams,
         AffiliationSearch,
-        AffiliationSearch,
+        AffiliationInfo,
     ]
 ):
+    def get_info(self, *, id: str) -> dict[str, Any]:
+        basic_info = self.repository.get_by_id(id=id)
+        affiliation = self.info_class.model_validate_json(basic_info)
+        self.update_affiliation_search(affiliation)
+        return {"data": affiliation.model_dump(by_alias=True), "filters": {}}
+    
     def update_affiliation_search(self, obj: AffiliationSearch) -> AffiliationSearch:
         affiliations, logo = self.repository.upside_relations(
             [rel.model_dump() for rel in obj.relations], obj.types[0].type
@@ -64,5 +72,5 @@ class AffiliationService(
 
 
 affiliation_service = AffiliationService(
-    affiliation_repository, AffiliationSearch, AffiliationSearch
+    affiliation_repository, AffiliationSearch, AffiliationInfo
 )

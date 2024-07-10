@@ -6,6 +6,7 @@ import csv
 from flask import Blueprint, request, Response, Request
 
 from services.v1.affiliation_app import affiliation_app_service
+from services.affiliation import affiliation_service
 from services.work import work_service
 from schemas.work import WorkQueryParams
 from utils.encoder import JsonEncoder
@@ -24,7 +25,7 @@ def affiliation(
 ) -> dict[str, Any] | None:
     result = None
     if section == "info":
-        result = affiliation_app_service.get_info(idx, aff_type)
+        result = affiliation_service.get_info(id=idx)
     elif section == "affiliations":
         result = affiliation_app_service.get_affiliations(idx, typ=aff_type)
     elif section == "research":

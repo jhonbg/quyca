@@ -391,21 +391,19 @@ class AffiliationAppService:
         affiliations = affiliation_repository.get_affiliations_related_type(
             idx, typ, aff_type
         )
-        data = {}
-        for aff in affiliations:
-            sources = WorkRepository.get_sources_by_affiliation(
-                aff.id,
-                aff.types[0].type,
-                match={
-                    "$and": [
-                        {"apc.charges": {"$exists": 1}},
-                        {"apc.currency": {"$exists": 1}},
-                    ]
-                },
-                project=["apc"],
-            )
-            data[aff.name] = map(lambda x: x.apc, sources)
-        return self.pies.apc_by_affiliation(data, 2022)
+        sources = WorkRepository.get_sources_by_related_affiliations(
+            idx,
+            aff_type,
+            typ,
+            match={
+                "$and": [
+                    {"apc.charges": {"$exists": 1}},
+                    {"apc.currency": {"$exists": 1}},
+                ]
+            },
+            project=["apc", "affiliation_names"],
+        )
+        return self.pies.apc_by_affiliation(sources, 2022)
 
     def get_h_by_affiliations(self, idx, typ, aff_type: str | None = None):
         affiliations = affiliation_repository.get_affiliations_related_type(

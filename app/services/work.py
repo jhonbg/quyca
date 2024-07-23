@@ -25,9 +25,9 @@ class WorkService(
     @staticmethod
     def update_authors_external_ids(work: WorkProccessed):
         for author in work.authors:
-            author.external_ids = (
-                person_service.get_by_id(id=author.id).external_ids if author.id else []
-            )
+            ext_ids = person_service.get_by_id(id=author.id).external_ids if author.id else []
+            author.external_ids = [ext_id.model_dump() for ext_id in ext_ids]
+        return work
 
     @staticmethod
     def update_source(work: WorkProccessed):
@@ -87,7 +87,9 @@ class WorkService(
             filters=filters,
         )
         data = [
-            WorkListApp.model_validate_json(work.model_dump_json()).model_dump()
+            WorkListApp.model_validate_json(
+                self.update_authors_external_ids(work).model_dump_json()
+            ).model_dump()
             for work in works
         ]
         return {
@@ -112,7 +114,9 @@ class WorkService(
             affiliation_id, affiliation_type, sort=sort, skip=skip, limit=limit
         )
         return [
-            self.update_source(WorkSchema.model_validate_json(work.model_dump_json())).model_dump()
+            self.update_source(
+                WorkSchema.model_validate_json(work.model_dump_json())
+            ).model_dump()
             for work in works
         ]
 
@@ -131,7 +135,9 @@ class WorkService(
             affiliation_id, affiliation_type, sort=sort, skip=skip, limit=limit
         )
         return [
-            self.update_source(WorkCsv.model_validate_json(work.model_dump_json())).model_dump()
+            self.update_source(
+                WorkCsv.model_validate_json(work.model_dump_json())
+            ).model_dump()
             for work in works
         ]
 
@@ -144,16 +150,24 @@ class WorkService(
         sort: str = "alphabetical",
         filters: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
-        works, available_filters = WorkRepository.get_research_products_by_author(
-            author_id=author_id, skip=skip, limit=limit, sort=sort, filters=filters
+        works, available_filters = (
+            WorkRepository.get_research_products_by_author_iterator(
+                author_id=author_id, skip=skip, limit=limit, sort=sort, filters=filters
+            )
         )
         total_works = WorkRepository.count_papers_by_author(
             author_id=author_id, filters=filters
         )
+        data = [
+            self.update_authors_external_ids(
+                WorkListApp.model_validate_json(work.model_dump_json())
+            ).model_dump()
+            for work in works
+        ]
         return {
-            "data": works,
+            "data": data,
             "total_results": total_works,
-            "count": len(works),
+            "count": len(data),
             "filters": available_filters,
         }
 

@@ -4,8 +4,8 @@ from bson import ObjectId
 from pymongo.collation import Collation
 
 from infraestructure.mongo.repositories.base import RepositoryBase
-from infraestructure.mongo.models.work import Work
-from infraestructure.mongo.models.person import Person
+from infraestructure.mongo.repositories.affiliation import affiliation_repository
+from infraestructure.mongo.models import Work, Person, Affiliation
 from infraestructure.mongo.utils.session import engine
 from infraestructure.mongo.utils.iterators import WorkIterator, SourceIterator
 from schemas.work import WorkCsv, WorkListApp
@@ -17,7 +17,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
     def wrap_pipeline(
         cls, affiliation_id: str, affiliation_type: str
     ) -> list[dict[str, Any]]:
-        if affiliation_type == "institution":
+        if affiliation_type in settings.institutions:
             pipeline = [
                 {
                     "$match": {
@@ -36,62 +36,51 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             ]
             return pipeline
         pipeline = [
-            {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
-            {"$project": {"affiliations": 1, "full_name": 1, "_id": 1}},
+            {"$match": {"_id": ObjectId(affiliation_id)}},
+            {"$project": {"relations.types.type": 1, "relations.id": 1}},
+            {"$unwind": "$relations"},
+            {"$match": {"relations.types.type": "Education"}},
+            {
+                "$lookup": {
+                    "from": "person",
+                    "localField": "_id",
+                    "foreignField": "affiliations.id",
+                    "as": "person",
+                    "pipeline": [{"$project": {"id": 1, "full_name": 1}}],
+                }
+            },
+            {"$unwind": "$person"},
             {
                 "$lookup": {
                     "from": "works",
-                    "localField": "_id",
+                    "localField": "person._id",
                     "foreignField": "authors.id",
+                    "as": "work",
+                    "pipeline": [{"$project": {"authors": 1}}],
+                }
+            },
+            {"$unwind": "$work"},
+            {"$unwind": "$work.authors"},
+            {"$match": {"$expr": {"$eq": ["$person._id", "$work.authors.id"]}}},
+            {"$unwind": "$work.authors.affiliations"},
+            {
+                "$match": {
+                    "$expr": {
+                        "$eq": ["$relations.id", "$work.authors.affiliations.id"]
+                    }
+                }
+            },
+            {"$group": {"_id": "$work._id", "work": {"$first": "$work"}}},
+            {"$project": {"work._id": 1}},
+            {
+                "$lookup": {
+                    "from": "works",
+                    "localField": "work._id",
+                    "foreignField": "_id",
                     "as": "works",
                 }
             },
-            # affiliation start and end data"}
             {"$unwind": "$works"},
-            # {
-            #     "$addFields": {
-            #         "current_affiliation": {
-            #             "$arrayElemAt": [
-            #                 {
-            #                     "$filter": {
-            #                         "input": "$affiliations",
-            #                         "as": "aff",
-            #                         "cond": {
-            #                             "$eq": [
-            #                                 "$$aff.id",
-            #                                 ObjectId(affiliation_id),
-            #                             ]
-            #                         },
-            #                     }
-            #                 },
-            #                 0,
-            #             ]
-            #         }
-            #     }
-            # },
-            # {
-            #     "$addFields": {
-            #         "start_date": "$current_affiliation.start_date",
-            #         "end_date": {
-            #             "$cond": {
-            #                 "if": {"$eq": ["$current_affiliation.end_date", -1]},
-            #                 "then": "$$NOW",
-            #                 "else": "$current_affiliation.end_date",
-            #             }
-            #         },
-            #     }
-            # },
-            # {
-            #     "$match": {
-            #         "$expr": {
-            #             "$and": [
-            #                 {"$gte": ["$works.date_published", "$start_date"]},
-            #                 {"$lte": ["$works.date_published", "$end_date"]},
-            #             ]
-            #         }
-            #     }
-            # },
-            {"$group": {"_id": "$works._id", "works": {"$first": "$works"}}},
         ]
         return pipeline
 
@@ -159,7 +148,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         )
         count_papers_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
         collection = (
-            Person if affiliation_type not in ["institution", "group"] else Work
+            Affiliation if affiliation_type not in ["institution", "group"] else Work
         )
         count_papers_pipeline += (
             [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
@@ -205,7 +194,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             },
             {"$project": {"_id": 0, "counts": 1}},
         ]
-        collection = Person if affiliation_type != "institution" else Work
+        collection = Affiliation if affiliation_type != "institution" else Work
         citations_count = next(
             engine.get_collection(collection).aggregate(count_citations_pipeline),
             {"counts": []},
@@ -341,7 +330,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         )
         works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
         collection = (
-            Person if affiliation_type not in ["institution", "group"] else Work
+            Affiliation if affiliation_type not in ["institution", "group"] else Work
         )
         works_pipeline += (
             [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
@@ -430,6 +419,142 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         return SourceIterator(results)
 
     @classmethod
+    def get_sources_by_related_affiliations(
+        cls,
+        affiliation_id: str,
+        affiliation_type: str,
+        relation_type: str,
+        *,
+        match: dict[str, Any] = {},
+        project: list[str] = [],
+    ) -> SourceIterator:
+        pipeline = affiliation_repository.related_affiliations_by_type(
+            affiliation_id, relation_type, affiliation_type
+        )
+        pipeline += [{"$project": {"id": 1, "names": 1}}]
+        if relation_type == "group":
+            pipeline += [
+                {
+                    "$lookup": {
+                        "from": "works",
+                        "localField": "_id",
+                        "foreignField": "groups.id",
+                        "as": "works",
+                    }
+                }
+            ]
+        else:
+            pipeline += [
+                {
+                    "$lookup": {
+                        "from": "person",
+                        "localField": "_id",
+                        "foreignField": "affiliations.id",
+                        "as": "authors",
+                    },
+                },
+                {"$unwind": "$authors"},
+                {
+                    "$project": {
+                        "authors_id": "$authors._id",
+                        "id": 1,
+                        "names": 1,
+                    },
+                },
+                {
+                    "$lookup": {
+                        "from": "works",
+                        "localField": "authors_id",
+                        "foreignField": "authors.id",
+                        "as": "works",
+                    },
+                },
+            ]
+        pipeline += [
+            {"$unwind": "$works"},
+            {
+                "$lookup": {
+                    "from": "sources",
+                    "localField": "works.source.id",
+                    "foreignField": "_id",
+                    "as": "source",
+                }
+            },
+            {"$unwind": "$source"},
+            {
+                "$addFields": {
+                    "source.apc.year_published": "$works.year_published",
+                    "source.date_published": "$works.date_published",
+                    "source.affiliation_names": "$names",
+                }
+            },
+            {"$replaceRoot": {"newRoot": "$source"}},
+        ]
+        if "ranking" in project:
+            pipeline += [
+                {
+                    "$addFields": {
+                        "ranking": {
+                            "$filter": {
+                                "input": "$ranking",
+                                "as": "rank",
+                                "cond": {
+                                    "$and": [
+                                        {
+                                            "$lte": [
+                                                "$$rank.from_date",
+                                                "$date_published",
+                                            ]
+                                        },
+                                        {"$gte": ["$$rank.to_date", "$date_published"]},
+                                    ]
+                                },
+                            }
+                        }
+                    }
+                },
+            ]
+
+        pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}]
+
+        sources = engine.get_collection(Affiliation).aggregate(pipeline)
+        return SourceIterator(sources)
+
+    @classmethod
+    def __get_sources_by_affiliation(
+        cls, affiliation_id: str, affiliation_type: str
+    ) -> list[dict[str, Any]]:
+        affiliation_type = (
+            "institution"
+            if affiliation_type in settings.institutions
+            else affiliation_type
+        )
+        works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
+        person = True if affiliation_type not in ["institution", "group"] else False
+        works_pipeline += [
+            {
+                "$lookup": {
+                    "from": "sources",
+                    "localField": ("works.source.id" if person else "source.id"),
+                    "foreignField": "_id",
+                    "as": "source",
+                }
+            },
+            {"$unwind": "$source"},
+            {
+                "$addFields": {
+                    "source.apc.year_published": (
+                        "$works.year_published" if person else "$year_published"
+                    ),
+                    "source.date_published": (
+                        "$works.date_published" if person else "$date_published"
+                    ),
+                }
+            },
+            {"$replaceRoot": {"newRoot": "$source"}},
+        ]
+
+    @classmethod
     def get_sources_by_affiliation(
         cls,
         affiliation_id: str,
@@ -443,41 +568,44 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             if affiliation_type in settings.institutions
             else affiliation_type
         )
-        works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
         collection = (
             Person if affiliation_type not in ["institution", "group"] else Work
         )
-        works_pipeline += [
-            {
-                "$lookup": {
-                    "from": "sources",
-                    "localField": (
-                        "works.source.id" if collection == Person else "source.id"
-                    ),
-                    "foreignField": "_id",
-                    "as": "source",
-                }
-            },
-            {"$unwind": "$source"},
-            {
-                "$addFields": {
-                    "source.apc.year_published": (
-                        "$works.year_published"
-                        if collection == Person
-                        else "$year_published"
-                    ),
-                    "source.date_published": (
-                        "$works.date_published"
-                        if collection == Person
-                        else "$date_published"
-                    ),
-                }
-            },
-            {"$replaceRoot": {"newRoot": "$source"}},
-            {"$match": match},
-            {"$project": {"_id": 1, **{p: 1 for p in project}}},
-        ]
-        results = engine.get_collection(collection).aggregate(works_pipeline)
+        pipeline = cls.__get_sources_by_affiliation(affiliation_id, affiliation_type)
+
+        if match:
+            pipeline += [
+                {"$match": match},
+            ]
+
+        if "ranking" in project:
+            pipeline += [
+                {
+                    "$addFields": {
+                        "ranking": {
+                            "$filter": {
+                                "input": "$ranking",
+                                "as": "rank",
+                                "cond": {
+                                    "$and": [
+                                        {
+                                            "$lte": [
+                                                "$$rank.from_date",
+                                                "$date_published",
+                                            ]
+                                        },
+                                        {"$gte": ["$$rank.to_date", "$date_published"]},
+                                    ]
+                                },
+                            }
+                        }
+                    }
+                },
+            ]
+
+        pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}]
+
+        results = engine.get_collection(collection).aggregate(pipeline)
         return SourceIterator(results)
 
     @classmethod

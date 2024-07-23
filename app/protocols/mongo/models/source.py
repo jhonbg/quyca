@@ -86,3 +86,4 @@ class Source(Protocol):
     subjects: list[Subject] | None
     ranking: list[Ranking] | None
     date_published: str | int | None 
+    affiliation_names: list[Name] | None

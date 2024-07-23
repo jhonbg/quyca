@@ -84,5 +84,7 @@ class Source(Model):
     licenses: list[Licence] | None = Field(default_factory=list)
     subjects: list[Subject] | None = Field(default_factory=list)
     ranking: list[Ranking] | None = Field(default_factory=list)
+    date_published: int | None = None
+    affiliation_names: list[Name] | None = None
 
     model_config = {"collection": "sources"}

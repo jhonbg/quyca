@@ -7,8 +7,8 @@ from utils.cpi import inflate
 from currency_converter import CurrencyConverter
 
 from utils.hindex import hindex
-from protocols.mongo.models.work import Work, SubjectEmbedded, Updated, Ranking
-from protocols.mongo.models.source import Publisher, Source
+from protocols.mongo.models.work import Work, SubjectEmbedded, Updated
+from protocols.mongo.models.source import Publisher, Source, Ranking
 from schemas.source import APC
 
 
@@ -73,37 +73,38 @@ class pies:
     # APC cost for each faculty department or group
     @get_percentage
     def apc_by_affiliation(
-        self, data: dict[str, Iterable[APC]], base_year
+        self, data: Iterable[Source], base_year
     ) -> list[dict[str, str | int]]:
         c = CurrencyConverter()
         now = datetime.date.today()
         result = {}
-        for name, costs in data.items():
-            for apc in costs:
-                value = 0
-                if apc.currency == "USD":
-                    raw_value = apc.charges
+        for source in data:
+            apc = source.apc
+            value = 0
+            if apc.currency == "USD":
+                raw_value = apc.charges
+                value = inflate(
+                    raw_value,
+                    apc.year_published,
+                    to=max(base_year, apc.year_published),
+                )
+            else:
+                try:
+                    raw_value = c.convert(apc.charges, apc.currency, "USD")
                     value = inflate(
                         raw_value,
                         apc.year_published,
                         to=max(base_year, apc.year_published),
                     )
+                except Exception as e:
+                    # print("Could not convert currency with error: ",e)
+                    value = 0
+            if value:
+                name = source.affiliation_names[0].name
+                if name not in result.keys():
+                    result[name] = value
                 else:
-                    try:
-                        raw_value = c.convert(apc.charges, apc.currency, "USD")
-                        value = inflate(
-                            raw_value,
-                            apc.year_published,
-                            to=max(base_year, apc.year_published),
-                        )
-                    except Exception as e:
-                        # print("Could not convert currency with error: ",e)
-                        value = 0
-                if value:
-                    if name not in result.keys():
-                        result[name] = value
-                    else:
-                        result[name] += value
+                    result[name] += value
         result_list = []
         for idx, value in result.items():
             result_list.append({"name": idx, "value": int(value)})
@@ -125,7 +126,7 @@ class pies:
         results = Counter(data)
         result_list = []
         for idx, value in results.items():
-            result_list.append({"name": idx, "value": value})
+            result_list += [{"name": idx, "value": value}] if isinstance(idx, str) else []
         return result_list
 
     # ammount of papers per openalex subject
@@ -237,18 +238,6 @@ class pies:
         results = {}
         scimago_rank = filter(lambda x: x.source == "scimago Best Quartile", data)
         results = Counter(map(lambda x: x.rank, scimago_rank))
-        # for source in data:
-        #     for ranking in source.ranking:
-        #         if ranking.source == "scimago Best Quartile":
-        #             if (
-        #                 ranking.from_date < source.date_published
-        #                 and ranking.to_date > source.date_published
-        #             ):
-        #                 if ranking.rank in results.keys():
-        #                     results[ranking.rank] += 1
-        #                 else:
-        #                     results[ranking.rank] = 1
-        #                 break
         result_list = []
         for idx, value in results.items():
             result_list.append({"name": idx, "value": value})

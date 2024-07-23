@@ -17,7 +17,7 @@ class Affiliation(EmbeddedModel):
 
 class Ranking(EmbeddedModel):
     date: str | int | None = None
-    rank: str | None = None
+    rank: str | None | Any = None
     source: str | None
     id: str | Any | None = None
     order: int | Any | None = None
@@ -32,7 +32,7 @@ class BirthPlace(EmbeddedModel):
 
 class Degree(EmbeddedModel):
     date: str | int | None
-    degree: str | None
+    degree: str | None = ""
     id: str | None
     institutions: list[str] | None = Field(default_factory=list)
     source: str | None
@@ -47,12 +47,12 @@ class Person(Model):
     aliases: list[str]
     affiliations: list[Affiliation] = Field(default_factory=list)
     keywords: list[str]
-    external_ids: list[ExternalId]
+    external_ids: list[ExternalId] | None = Field(default_factory=list)
     sex: str | None
     marital_status: str | None
     ranking: list[Ranking]
     birthplace: BirthPlace
-    birthdate: int | str
+    birthdate: int | str | None = None
     degrees: list[Degree]
     subjects: list[Any]
 

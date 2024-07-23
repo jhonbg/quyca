@@ -25,7 +25,7 @@ class Updated(BaseModel):
 
 class Ranking(BaseModel):
     date: str | None
-    rank: str | None
+    rank: str | None |Any
     source: str | None
 
 
@@ -37,7 +37,7 @@ class BirthPlace(BaseModel):
 
 class Degree(BaseModel):
     date: str | int
-    degree: str | None
+    degree: str | None = ""
     id: str | None
     intitutions: list[str]
     source: str | None
@@ -61,7 +61,7 @@ class Person(PersonBase):
     marital_status: str | None
     ranking: list[Ranking | list[Ranking]]
     birthplace: BirthPlace
-    birthdate: int | str
+    birthdate: int | str | None
     degrees: list[Degree]
     subjects: list[Any]
 

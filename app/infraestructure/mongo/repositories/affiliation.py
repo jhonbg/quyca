@@ -1,6 +1,7 @@
 from typing import Any, Iterable
 
 from bson import ObjectId
+from odmantic import Model
 
 from infraestructure.mongo.repositories.base import RepositoryBase
 from infraestructure.mongo.models.affiliation import Affiliation
@@ -13,38 +14,13 @@ from core.config import settings
 
 
 class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
-    def get_affiliations_related_type(
-        self, idx: str, relation_type: str, affiliation_type: str
-    ) -> list[AffiliationRelated]:
-        if relation_type == "group":
-            if (
-                affiliation_type not in ["department", "faculty"]
-            ):
-                results = engine.get_collection(Affiliation).find(
-                    {"relations.id": ObjectId(idx), "types.type": relation_type}
-                )
-                results = AffiliationIterator(results)
-            else:
-                results = self.get_groups_by_affiliation(idx, affiliation_type)
-        else:
-            results = engine.get_collection(Affiliation).find(
-                {"relations.id": ObjectId(idx), "types.type": relation_type}
-            )
-            results = AffiliationIterator(results)
-        return [
-            AffiliationRelated.model_validate_json(result.model_dump_json())
-            for result in results
-        ]
-
-    def get_groups_by_affiliation(self, idx: str, typ: str) -> Iterable[Affiliation]:
+    def __groups_by_affiliation(
+        self, idx: str, typ: str
+    ) -> tuple[list[dict[str, Any]], Model]:
         if typ == "group":
-            with engine.session() as session:
-                affiliation = session.find_one(
-                    Affiliation, Affiliation.id == ObjectId(idx)
-                )
-                return [affiliation]
+            return [{"$match": {"_id": ObjectId(idx)}}], Affiliation
         if typ in ["department", "faculty"]:
-            group_pipeline = [
+            return [
                 {"$match": {"affiliations.id": ObjectId(idx)}},
                 {"$project": {"affiliations": 1}},
                 {"$unwind": "$affiliations"},
@@ -68,11 +44,49 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
                 {"$unwind": "$affiliation"},
                 {"$project": {"_id": 0, "affiliation": 1}},
                 {"$replaceRoot": {"newRoot": "$affiliation"}},
-            ]
+            ], Person
+        return [
+            {
+                "$match": {
+                    "relations.id": ObjectId(idx),
+                    "types.type": "group",
+                }
+            }
+        ], Affiliation
+
+    def related_affiliations_by_type(
+        self, idx: str, relation_type: str, affiliation_type: str
+    ) -> tuple[list[dict[str, Any]], Model]:
+        if relation_type == "group":
+            return self.__groups_by_affiliation(idx, affiliation_type)
+        return [
+            {
+                "$match": {
+                    "relations.id": ObjectId(idx),
+                    "types.type": relation_type,
+                }
+            }
+        ], Affiliation
+
+    def get_affiliations_related_type(
+        self, idx: str, relation_type: str, affiliation_type: str
+    ) -> Iterable[AffiliationRelated]:
+        pipeline, collection = self.related_affiliations_by_type(
+            idx, relation_type, affiliation_type
+        )
+        results = engine.get_collection(collection).aggregate(pipeline)
+        return map(
+            lambda x: AffiliationRelated.model_validate_json(x.model_dump_json()),
+            AffiliationIterator(results),
+        )
+
+    def get_groups_by_affiliation(self, idx: str, typ: str) -> Iterable[Affiliation]:
+        if typ in ["department", "faculty"]:
+            group_pipeline = self.__groups_by_affiliation(idx, typ)
             groups = engine.get_collection(Person).aggregate(group_pipeline)
             return AffiliationIterator(groups)
-        groups = engine.get_collection(Affiliation).find(
-            {"relations.id": ObjectId(idx), "types.type": typ}
+        groups = engine.get_collection(Affiliation).aggregate(
+            self.related_affiliations_by_type(idx, typ)
         )
         return AffiliationIterator(groups)
 

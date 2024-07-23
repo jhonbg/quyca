@@ -44,6 +44,7 @@ class Author(EmbeddedModel):
     id: ObjectId | str | None = ""
     full_name: str | None = ""
     affiliations: list[Affiliation] | None = Field(default_factory=list)
+    external_ids: list[ExternalId] | None = Field(default_factory=list)
 
 
 class Source(BaseModel):

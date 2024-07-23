@@ -2,7 +2,13 @@ from typing import Generic, TypeVar, Iterable, ClassVar
 
 from odmantic import Model
 
-from infraestructure.mongo.models import Affiliation, Person, Source, Work
+from infraestructure.mongo.models import (
+    Affiliation,
+    Person,
+    Source,
+    Work,
+    AffiliationCalculations,
+)
 
 ModelType = TypeVar("ModelType", bound=Model)
 
@@ -30,11 +36,18 @@ class CollectionIterator(Generic[ModelType]):
 class AffiliationIterator(CollectionIterator[Affiliation]):
     collection = Affiliation
 
+
 class PersonIterator(CollectionIterator[Person]):
     collection = Person
+
 
 class SourceIterator(CollectionIterator[Source]):
     collection = Source
 
+
 class WorkIterator(CollectionIterator[Work]):
     collection = Work
+
+
+class AffiliationCalculationsIterator(CollectionIterator[AffiliationCalculations]):
+    collection = AffiliationCalculations

@@ -109,6 +109,11 @@ class AffiliationSearch(AffiliationBase):
     affiliations: list[dict[str, Any]] | None = None
 
 
+class AffiliationInfo(AffiliationSearch):
+    names: list[Name] | None = Field(default_factory=list, exclude=True)
+    relations: list[Relation] | None = Field(default_factory=list, exclude=True)
+
+
 class AffiliationReduced(BaseModel):
     id: str
     name: str | None = None

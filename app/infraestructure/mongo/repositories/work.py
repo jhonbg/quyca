@@ -166,41 +166,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
     def count_citations(
         cls, *, affiliation_id: str, affiliation_type: str
     ) -> list[dict[str, str | int]]:
-        affiliation_type = (
-            "institution"
-            if affiliation_type in settings.institutions
-            else affiliation_type
-        )
-        count_citations_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
-        count_citations_pipeline += [
-            {
-                "$project": {
-                    "citations_count": f"${'works.' if affiliation_type not in ['institution', 'group'] else ''}citations_count"
-                }
-            },
-            {"$unwind": "$citations_count"},
-            {
-                "$group": {
-                    "_id": "$citations_count.source",
-                    "count": {"$sum": "$citations_count.count"},
-                }
-            },
-            {"$project": {"_id": 0, "source": "$_id", "count": 1}},
-            {
-                "$group": {
-                    "_id": None,
-                    "counts": {"$push": {"source": "$source", "count": "$count"}},
-                }
-            },
-            {"$project": {"_id": 0, "counts": 1}},
-        ]
-        collection = Affiliation if affiliation_type != "institution" else Work
-        citations_count = next(
-            engine.get_collection(collection).aggregate(count_citations_pipeline),
-            {"counts": []},
-        ).get("counts", [])
-        return citations_count
+        ...
 
+        
     @staticmethod
     def get_sort_direction(sort: str | None = None) -> list[dict]:
         if not sort:

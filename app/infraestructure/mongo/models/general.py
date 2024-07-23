@@ -3,6 +3,10 @@ from odmantic.bson import BaseBSONModel
 from pydantic import BaseModel
 
 
+class CitationsCount(EmbeddedModel):
+    source: str | None
+    count: int | None
+
 class Type(EmbeddedModel):
     source: str | None = None
     type: str | None = None

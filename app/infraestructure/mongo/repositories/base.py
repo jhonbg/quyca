@@ -2,6 +2,7 @@ from typing import Generic, TypeVar, Any, Literal, Iterable
 from json import loads
 
 from odmantic import Model, ObjectId
+from odmantic.engine import SyncEngine
 from odmantic.query import desc, asc
 
 from infraestructure.mongo.utils.session import engine
@@ -12,14 +13,20 @@ IteratorType = TypeVar("IteratorType", bound=CollectionIterator)
 
 
 class RepositoryBase(Generic[ModelType, IteratorType]):
-    def __init__(self, model: type[ModelType], iterator: type[IteratorType] = None):
+    def __init__(
+        self,
+        model: type[ModelType],
+        iterator: type[IteratorType] = None,
+        engine: SyncEngine = engine,
+    ):
         self.model = model
         self.iterator = iterator
+        self.engine = engine
 
     def get_all(
         self, *, query: dict[str, Any], skip: int = 0, limit: int = 10, sort: str = None
     ) -> list[ModelType]:
-        with engine.session() as session:
+        with self.engine.session() as session:
             results = session.find(
                 self.model,
                 **{getattr(self.model, k): v for k, v in query.items()},
@@ -29,10 +36,10 @@ class RepositoryBase(Generic[ModelType, IteratorType]):
             )
         return [loads(result.model_dump_json()) for result in results]
 
-    def get_by_id(self, *, id: str) -> str:
-        with engine.session() as session:
+    def get_by_id(self, *, id: str) -> str | None:
+        with self.engine.session() as session:
             results = session.find_one(self.model, self.model.id == ObjectId(id))
-        return results.model_dump_json()
+        return results.model_dump_json() if results else None
 
     def search(
         self,
@@ -57,7 +64,7 @@ class RepositoryBase(Generic[ModelType, IteratorType]):
         #         if sort.endswith("-")
         #         else asc(getattr(self.model, sort))
         #     )
-        session = engine.get_collection(self.model)
+        session = self.engine.get_collection(self.model)
         results = (
             session.find(filter_criteria, projection)
             .sort(sort_expresion)
@@ -68,7 +75,7 @@ class RepositoryBase(Generic[ModelType, IteratorType]):
         return self.iterator(results), count
 
     def count(self) -> int:
-        with engine.session() as session:
+        with self.engine.session() as session:
             return session.count(self.model)
 
     @staticmethod
@@ -80,10 +87,3 @@ class RepositoryBase(Generic[ModelType, IteratorType]):
             sort_field = sort
             direction_value = 1
         return sort_field, direction_value
-
-    @classmethod
-    def count_pipeline(cls, pipeline: list[dict[str, Any]], collection: ModelType):
-        collection = engine.get_collection(collection)
-        aggregation = collection.aggregate(pipeline + [{"$count": "total"}])
-        total = next(aggregation, {"total": 0}).get("total", 0)
-        return total

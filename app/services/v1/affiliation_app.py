@@ -2,7 +2,6 @@ from typing import Any, Callable
 from itertools import chain
 
 from bson import ObjectId
-from pymongo import ASCENDING, DESCENDING
 
 from infraestructure.mongo.utils.session import client
 from infraestructure.mongo.repositories.work import WorkRepository
@@ -10,9 +9,10 @@ from infraestructure.mongo.repositories.affiliation import (
     AffiliationRepository,
     affiliation_repository,
 )
+from infraestructure.mongo.repositories.affiliation_calculations import (
+    affiliation_calculations_repository,
+)
 from infraestructure.mongo.models.work import Work
-from services.source import source_service
-from services.affiliation import affiliation_service
 from core.config import settings
 from utils.bars import bars
 from utils.maps import maps
@@ -79,10 +79,9 @@ class AffiliationAppService:
             entry = {
                 "id": affiliation["_id"],
                 "name": name,
-                "citations_count": WorkRepository.count_citations(
-                    affiliation_id=affiliation["_id"],
-                    affiliation_type=affiliation["types"][0]["type"],
-                ),
+                "citations_count": affiliation_calculations_repository.get_by_id(
+                    id=idx
+                ).citations_count,
                 "products_count": WorkRepository.count_papers(
                     affiliation_id=affiliation["_id"],
                     affiliation_type=affiliation["types"][0]["type"],
@@ -98,8 +97,8 @@ class AffiliationAppService:
                 "logo": logo,
             }
             affiliations, upside_logo = AffiliationRepository.upside_relations(
-                        affiliation["relations"], typ
-                    )
+                affiliation["relations"], typ
+            )
 
             entry.update(
                 {
@@ -384,7 +383,9 @@ class AffiliationAppService:
             data[aff.name] = WorkRepository.count_papers(
                 affiliation_id=aff.id, affiliation_type=aff.types[0].type
             )
-        total_works = WorkRepository.count_papers(affiliation_id=idx, affiliation_type=aff_type)
+        total_works = WorkRepository.count_papers(
+            affiliation_id=idx, affiliation_type=aff_type
+        )
         return self.pies.products_by_affiliation(data, total_works)
 
     def get_apc_by_affiliations(self, idx, typ, aff_type: str | None = None):
@@ -430,7 +431,9 @@ class AffiliationAppService:
             aff_type,
             project=["publisher"],
         )
-        data = map(lambda x: x.publisher.name if x.publisher else "Sin información", sources)
+        data = map(
+            lambda x: x.publisher.name if x.publisher else "Sin información", sources
+        )
         return self.pies.products_by_publisher(data)
 
     def get_products_by_subject(
@@ -611,7 +614,9 @@ class AffiliationAppService:
             available_filters=False,
             project=["ranking"],
         )
-        total_works = WorkRepository.count_papers(affiliation_id=idx, affiliation_type=aff_type)
+        total_works = WorkRepository.count_papers(
+            affiliation_id=idx, affiliation_type=aff_type
+        )
         _data = chain.from_iterable(map(lambda x: x.ranking, works))
         return self.pies.products_by_scienti_rank(_data, total_works)
 
@@ -630,9 +635,10 @@ class AffiliationAppService:
         institution = self.colav_db["affiliations"].find_one(
             {"_id": ObjectId(idx)}, {"names": 1}
         )
-        sources = WorkRepository.get_sources_by_affiliation(idx, aff_type, project=["publisher"])
+        sources = WorkRepository.get_sources_by_affiliation(
+            idx, aff_type, project=["publisher"]
+        )
         return self.pies.products_editorial_same_institution(sources, institution)
-
 
     def get_coauthorships_worldmap(self, idx, typ=None, aff_type: str | None = None):
         data = []

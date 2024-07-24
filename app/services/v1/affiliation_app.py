@@ -12,28 +12,12 @@ from infraestructure.mongo.repositories.affiliation import (
 from infraestructure.mongo.repositories.affiliation_calculations import (
     affiliation_calculations_repository,
 )
-from infraestructure.mongo.models.work import Work
 from core.config import settings
 from utils.bars import bars
 from utils.maps import maps
 from utils.pies import pies
+from utils.mapping import get_openalex_scienti
 from schemas.affiliation import AffiliationRelatedInfo
-
-
-def get_openalex_scienti(x: Work):
-    for count in x.citations_count:
-        if count.source == "openalex":
-            return count.count
-        if count.source == "scienti":
-            return count.count
-    return 0
-
-
-def get_subjects(work: Work, level: int = 0):
-    for subject in work.subjects:
-        for sub in subject.subjects:
-            if subject.source == "openalex" and sub.level == level:
-                return sub
 
 
 class AffiliationAppService:
@@ -364,14 +348,7 @@ class AffiliationAppService:
         )
         _data = {}
         for aff in affiliations:
-            _data[aff.name], _ = (
-                WorkRepository.get_research_products_by_affiliation_iterator(
-                    aff.id,
-                    aff.types[0].type,
-                    match={"citations_count": {"$ne": []}},
-                    available_filters=False,
-                )
-            )
+            _data[aff.name] = WorkRepository.count_citations(affiliation_id=aff.id)
         return self.pies.citations_by_affiliation(_data)
 
     def get_products_by_affiliations(self, idx, typ, aff_type: str | None = None):
@@ -389,9 +366,6 @@ class AffiliationAppService:
         return self.pies.products_by_affiliation(data, total_works)
 
     def get_apc_by_affiliations(self, idx, typ, aff_type: str | None = None):
-        affiliations = affiliation_repository.get_affiliations_related_type(
-            idx, typ, aff_type
-        )
         sources = WorkRepository.get_sources_by_related_affiliations(
             idx,
             aff_type,
@@ -432,7 +406,12 @@ class AffiliationAppService:
             project=["publisher"],
         )
         data = map(
-            lambda x: x.publisher.name if x.publisher else "Sin información", sources
+            lambda x: (
+                x.publisher.name
+                if x.publisher and isinstance(x.publisher.name, str)
+                else "Sin información"
+            ),
+            sources,
         )
         return self.pies.products_by_publisher(data)
 
@@ -491,115 +470,58 @@ class AffiliationAppService:
         return result
 
     def get_products_by_author_sex(self, idx, typ=None, aff_type: str | None = None):
-        data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                pipeline = [
-                    {"$match": {"authors.id": author["_id"]}},
-                    {"$project": {"authors": 1}},
-                    {"$unwind": "$authors"},
-                    {
-                        "$lookup": {
-                            "from": "person",
-                            "localField": "authors.id",
-                            "foreignField": "_id",
-                            "as": "author",
+        pipeline = [
+            {"$project": {"affiliations": 1, "sex": 1}},
+            {"$match": {"affiliations.id": ObjectId(idx)}},
+            {
+                "$lookup": {
+                    "from": "works",
+                    "localField": "_id",
+                    "foreignField": "authors.id",
+                    "as": "work",
+                }
+            },
+            {"$unwind": "$work"},
+            {
+                "$addFields": {
+                    "sex": {
+                        "$cond": {
+                            "if": {"$eq": ["$sex", ""]},
+                            "then": "sin información",
+                            "else": "$sex",
                         }
-                    },
-                    {"$project": {"author.sex": 1}},
-                    # {"$match": {"author.sex": {"$ne": "", "$exists": 1}}},
-                ]
-                for work in self.colav_db["works"].aggregate(pipeline):
-                    data.append(work)
-        else:
-            pipeline = [
-                {"$match": {"authors.affiliations.id": ObjectId(idx)}},
-                {"$project": {"authors": 1}},
-                {"$unwind": "$authors"},
-                {
-                    "$lookup": {
-                        "from": "person",
-                        "localField": "authors.id",
-                        "foreignField": "_id",
-                        "as": "author",
                     }
-                },
-                {"$project": {"author.sex": 1}},
-                # {"$match": {"author.sex": {"$ne": "", "$exists": 1}}},
-            ]
-            for work in self.colav_db["works"].aggregate(pipeline):
-                data.append(work)
-
-        result = self.pies.products_by_sex(data)
-        if result:
-            return result
-        else:
-            return {"plot": None}
+                }
+            },
+            {"$project": {"sex": 1}},
+            {"$group": {"_id": "$sex", "count": {"$sum": 1}}},
+            {"$project": {"name": "$_id", "_id": 0, "value": "$count"}},
+        ]
+        data = list(self.colav_db["person"].aggregate(pipeline))
+        return self.pies.products_by_sex(data)
 
     def get_products_by_author_age(self, idx, typ=None, aff_type: str | None = None):
-        data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                pipeline = [
-                    {
-                        "$match": {
-                            "authors.id": author["_id"],
-                            # "date_published": {"$ne": None},
-                        },
-                    },
-                    {"$unwind": "$authors"},
-                    {
-                        "$lookup": {
-                            "from": "person",
-                            "localField": "authors.id",
-                            "foreignField": "_id",
-                            "as": "author",
-                        }
-                    },
-                    {
-                        "$project": {
-                            "author.birthdate": 1,
-                            "date_published": 1,
-                            "year_published": 1,
-                        }
-                    },
-                    # {"$match": {"author.birthdate": {"$nin": [-1, ""], "$exists": 1}}},
-                ]
-                for work in self.colav_db["works"].aggregate(pipeline):
-                    data.append(work)
-        else:
-            pipeline = [
-                {
-                    "$match": {
-                        "authors.affiliations.id": ObjectId(idx),
-                        # "date_published": {"$ne": None},
-                    }
-                },
-                {"$unwind": "$authors"},
-                {
-                    "$lookup": {
-                        "from": "person",
-                        "localField": "authors.id",
-                        "foreignField": "_id",
-                        "as": "author",
-                    }
-                },
-                {
-                    "$project": {
-                        "author.birthdate": 1,
-                        "date_published": 1,
-                        "year_published": 1,
-                    }
-                },
-                # {"$match": {"author.birthdate": {"$nin": [-1, ""], "$exists": 1}}},
-            ]
-            for work in self.colav_db["works"].aggregate(pipeline):
-                data.append(work)
-
+        pipeline = [
+            {"$project": {"affiliations": 1, "birthdate": 1}},
+            {"$match": {"affiliations.id": ObjectId(idx)}},
+            {
+                "$lookup": {
+                    "from": "works",
+                    "localField": "_id",
+                    "foreignField": "authors.id",
+                    "as": "work",
+                }
+            },
+            {"$unwind": "$work"},
+            {
+                "$project": {
+                    "birthdate": 1,
+                    "work.date_published": 1,
+                    "work.year_published": 1,
+                }
+            },
+        ]
+        data = self.colav_db["person"].aggregate(pipeline)
         result = self.pies.products_by_age(data)
         if result:
             return result

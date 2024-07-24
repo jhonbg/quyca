@@ -5,7 +5,10 @@ from pymongo.collation import Collation
 
 from infraestructure.mongo.repositories.base import RepositoryBase
 from infraestructure.mongo.repositories.affiliation import affiliation_repository
-from infraestructure.mongo.models import Work, Person, Affiliation
+from infraestructure.mongo.repositories.affiliation_calculations import (
+    affiliation_calculations_repository,
+)
+from infraestructure.mongo.models import Work, Person, Affiliation, general
 from infraestructure.mongo.utils.session import engine
 from infraestructure.mongo.utils.iterators import WorkIterator, SourceIterator
 from schemas.work import WorkCsv, WorkListApp
@@ -65,9 +68,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             {"$unwind": "$work.authors.affiliations"},
             {
                 "$match": {
-                    "$expr": {
-                        "$eq": ["$relations.id", "$work.authors.affiliations.id"]
-                    }
+                    "$expr": {"$eq": ["$relations.id", "$work.authors.affiliations.id"]}
                 }
             },
             {"$group": {"_id": "$work._id", "work": {"$first": "$work"}}},
@@ -164,11 +165,13 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
 
     @classmethod
     def count_citations(
-        cls, *, affiliation_id: str, affiliation_type: str
-    ) -> list[dict[str, str | int]]:
-        ...
+        cls, *, affiliation_id: str, affiliation_type: str = None
+    ) -> list[general.CitationsCount]:
+        affiliation_calculations = affiliation_calculations_repository.get_by_id(
+            id=affiliation_id
+        )
+        return affiliation_calculations.citations_count
 
-        
     @staticmethod
     def get_sort_direction(sort: str | None = None) -> list[dict]:
         if not sort:
@@ -396,7 +399,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         match: dict[str, Any] = {},
         project: list[str] = [],
     ) -> SourceIterator:
-        pipeline = affiliation_repository.related_affiliations_by_type(
+        pipeline, collection = affiliation_repository.related_affiliations_by_type(
             affiliation_id, relation_type, affiliation_type
         )
         pipeline += [{"$project": {"id": 1, "names": 1}}]
@@ -485,7 +488,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
 
         pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}]
 
-        sources = engine.get_collection(Affiliation).aggregate(pipeline)
+        sources = engine.get_collection(collection).aggregate(pipeline)
         return SourceIterator(sources)
 
     @classmethod
@@ -521,6 +524,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             },
             {"$replaceRoot": {"newRoot": "$source"}},
         ]
+        return works_pipeline
 
     @classmethod
     def get_sources_by_affiliation(
@@ -537,7 +541,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             else affiliation_type
         )
         collection = (
-            Person if affiliation_type not in ["institution", "group"] else Work
+            Affiliation if affiliation_type not in ["institution", "group"] else Work
         )
         pipeline = cls.__get_sources_by_affiliation(affiliation_id, affiliation_type)
 

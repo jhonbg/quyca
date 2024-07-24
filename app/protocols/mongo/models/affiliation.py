@@ -6,6 +6,7 @@ from protocols.mongo.models.general import (
     ExternalId,
     ExternalURL,
     Name,
+    CitationsCount
 )
 
 ObjectId = NewType['ObjectId', str]
@@ -66,3 +67,30 @@ class Affiliation(Protocol):
     types: list[Type] | None
 
 
+class Node(Protocol):
+    degree: int
+    id: str
+    label: str
+    size: float
+
+
+class Edge(Protocol):
+    coauthorships: int
+    size: int | float
+    source: str
+    target: str
+    
+
+class CoauthorshipNetwork(Protocol):
+    nodes: list[Node] | None
+    edges: list[Edge] | None
+
+
+class TopWord(Protocol):
+    name: str
+    value: int
+
+class AffiliationCalculations(Protocol):
+    coauthorship_network: CoauthorshipNetwork | None = None
+    citations_count: list[CitationsCount] | None
+    top_words: list[TopWord]

@@ -82,11 +82,9 @@ class Node(BaseBSONModel):
 
 class Edge(BaseBSONModel):
     coauthorships: int
-    size: int
+    size: int | float
     source: str
-    sourceName: str
     target: str
-    targetName: str
     
 
 class CoauthorshipNetwork(BaseBSONModel):

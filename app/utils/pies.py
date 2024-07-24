@@ -8,6 +8,7 @@ from currency_converter import CurrencyConverter
 
 from utils.hindex import hindex
 from protocols.mongo.models.work import Work, SubjectEmbedded, Updated
+from protocols.mongo.models.general import CitationsCount
 from protocols.mongo.models.source import Publisher, Source, Ranking
 from schemas.source import APC
 
@@ -32,25 +33,19 @@ class pies:
     # Accumulated citations for each faculty department or group
     @get_percentage
     def citations_by_affiliation(
-        self, data: dict[str, Iterable[Work]]
+        self, data: dict[str, list[CitationsCount]]
     ) -> list[dict[str, str | int]]:
         results = {}
-        for name, works in data.items():
-            for work in works:
-                citations = 0
-                for count in work.citations_count:
-                    if count.source == "scholar":
-                        citations = count.count
-                        break
-                    elif count.source == "openalex":
-                        citations = count.count
-                        break
-                if citations == 0:
-                    continue
-                if name in results.keys():
-                    results[name] += 1
-                else:
-                    results[name] = 1
+        for name, citations in data.items():
+            for count in citations:
+                c = 0
+                if count.source == "scholar":
+                    c = count.count
+                    break
+                elif count.source == "openalex":
+                    c = count.count
+                    break
+            results[name] = c
 
         result_list = []
         for idx, value in results.items():
@@ -126,7 +121,7 @@ class pies:
         results = Counter(data)
         result_list = []
         for idx, value in results.items():
-            result_list += [{"name": idx, "value": value}] if isinstance(idx, str) else []
+            result_list += [{"name": idx, "value": value}]
         return result_list
 
     # ammount of papers per openalex subject
@@ -165,19 +160,7 @@ class pies:
     # Ammount of papers per author sex
     @get_percentage
     def products_by_sex(self, data) -> list[dict[str, str | int]]:
-        results = {"Sin información": 0}
-        for work in data:
-            if not work["author"] or not work["author"][0]["sex"]:
-                results["Sin información"] += 1
-                continue
-            elif work["author"][0]["sex"] in results.keys():
-                results[work["author"][0]["sex"]] += 1
-            else:
-                results[work["author"][0]["sex"]] = 1
-        result_list = []
-        for idx, value in results.items():
-            result_list.append({"name": idx, "value": value})
-        return result_list
+        return data
 
     # Ammount of papers per author age intervals 14-26 años, 27-59 años 60 años en adelante
     @get_percentage
@@ -186,19 +169,18 @@ class pies:
         results = {"14-26": 0, "27-59": 0, "60+": 0, "Sin información": 0}
         for work in data:
             if (
-                not work["author"]
-                or not work["author"][0]["birthdate"]
-                or work["author"][0]["birthdate"] == -1
-                or not work["date_published"]
+                not work["birthdate"]
+                or work["birthdate"] == -1
+                or not work["work"]["date_published"]
             ):
                 results["Sin información"] += 1
                 continue
-            if work["author"][0]["birthdate"]:
+            if work["birthdate"]:
                 birthdate = datetime.datetime.fromtimestamp(
-                    work["author"][0]["birthdate"]
+                    work["birthdate"]
                 ).year
                 date_published = datetime.datetime.fromtimestamp(
-                    work["date_published"]
+                    work["work"]["date_published"]
                 ).year
                 age = date_published - birthdate
                 for name, (date_low, date_high) in ranges.items():

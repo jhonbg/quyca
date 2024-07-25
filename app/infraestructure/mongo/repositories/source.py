@@ -6,4 +6,4 @@ from infraestructure.mongo.utils.iterators import SourceIterator
 class SourceRepository(RepositoryBase[Source, SourceIterator]):
     ...
 
-source_repository = SourceRepository(Source, SourceIterator)
+source_repository = SourceRepository(Source, iterator=SourceIterator)

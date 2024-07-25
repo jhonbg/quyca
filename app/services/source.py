@@ -12,4 +12,4 @@ class SourceService(
 ): ...
 
 
-source_service = SourceService(source_repository, SourceSearch, SourceSearch)
+source_service = SourceService(SourceSearch, SourceSearch)

@@ -4,8 +4,8 @@ from pydantic import BaseModel
 
 
 class CitationsCount(EmbeddedModel):
-    source: str | None
-    count: int | None
+    source: str | None = None
+    count: int | None = None
 
 class Type(EmbeddedModel):
     source: str | None = None

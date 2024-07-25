@@ -1,6 +1,6 @@
 from typing import Any
 
-from odmantic import Model, EmbeddedModel, Field, ObjectId
+from odmantic import Model, Field, ObjectId
 from pydantic import BaseModel
 
 from infraestructure.mongo.models.general import (

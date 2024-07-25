@@ -1,14 +1,16 @@
 from typing import Generic, TypeVar, Any, Type
 from json import loads
 
-from odmantic import Model
 from pydantic import BaseModel
 
-from infraestructure.mongo.repositories.base import RepositoryBase
+from protocols.mongo.repositories.base import RepositoryBase
 from schemas.general import QueryBase, GeneralMultiResponse
+from core.logging import get_logger
+
+log = get_logger(__name__)
 
 
-ModelType = TypeVar("ModelType", bound=Model)
+ModelType = TypeVar("ModelType", bound=BaseModel)
 RepositoryType = TypeVar("RepositoryType", bound=RepositoryBase)
 ParamsType = TypeVar("ParamsType", bound=QueryBase)
 SearchType = TypeVar("SearchType", bound=BaseModel)
@@ -17,11 +19,18 @@ InfoType = TypeVar("InfoType", bound=BaseModel)
 
 class ServiceBase(Generic[ModelType, RepositoryType, ParamsType, SearchType, InfoType]):
     def __init__(
-        self, repository: RepositoryType, search_class: SearchType, info_class: InfoType
+        self,
+        search_class: SearchType,
+        info_class: InfoType,
+        repository: RepositoryType = None,
     ):
         self.repository = repository
         self.search_class = search_class
         self.info_class = info_class
+
+    def register_repository(self, repository: RepositoryType):
+        log.info(f"Registering {repository.__class__.__name__} repository")
+        self.repository = repository
 
     def get_all(self, *, params: ParamsType) -> dict[str, Any]:
         db_objs = self.repository.get_all(

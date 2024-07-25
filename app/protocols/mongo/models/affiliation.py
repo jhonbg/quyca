@@ -9,7 +9,7 @@ from protocols.mongo.models.general import (
     CitationsCount
 )
 
-ObjectId = NewType['ObjectId', str]
+ObjectId = NewType('ObjectId', str)
 
 
 class Address(Protocol):

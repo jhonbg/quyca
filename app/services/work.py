@@ -222,4 +222,4 @@ class WorkService(
         return loads(results.model_dump_json(exclude_none=True))
 
 
-work_service = WorkService(work_repository, WorkListApp, WorkProccessed)
+work_service = WorkService(WorkListApp, WorkProccessed)

@@ -5,7 +5,6 @@ import csv
 
 from flask import Blueprint, request, Response, Request
 
-from services.v1.affiliation_app import affiliation_app_service
 from services.affiliation import affiliation_service
 from services.work import work_service
 from schemas.work import WorkQueryParams
@@ -27,7 +26,7 @@ def affiliation(
     if section == "info":
         result = affiliation_service.get_info(id=idx)
     elif section == "affiliations":
-        result = affiliation_app_service.get_affiliations(idx, typ=aff_type)
+        result = affiliation_service.get_affiliations(id=idx, typ=aff_type)
     elif section == "research":
         if tab == "products":
             plot = request.args.get("plot")
@@ -39,7 +38,7 @@ def affiliation(
                     if plot == "products_subject"
                     else (idx, typ, aff_type)
                 )
-                result = affiliation_app_service.plot_mappings[plot](*args)
+                result = affiliation_service.plot_mappings[plot](*args)
             else:
                 params = WorkQueryParams(**request.args)
                 result = work_service.get_research_products_by_affiliation(

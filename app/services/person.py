@@ -1,4 +1,4 @@
-from typing import Type, Any
+from typing import Any
 from json import loads
 
 from schemas.general import GeneralMultiResponse
@@ -70,4 +70,4 @@ class PersonService(
         return loads(results.model_dump_json(exclude_none=True, by_alias=True))
 
 
-person_service = PersonService(person_repository, PersonSearch, PersonInfo)
+person_service = PersonService(PersonSearch, PersonInfo)

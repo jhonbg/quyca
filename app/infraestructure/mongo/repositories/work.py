@@ -20,6 +20,20 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
     def wrap_pipeline(
         cls, affiliation_id: str, affiliation_type: str
     ) -> list[dict[str, Any]]:
+        """
+        Constructs a MongoDB aggregation pipeline based on the given affiliation ID and type.
+
+        Args:
+            affiliation_id (str): The ID of the affiliation.
+            affiliation_type (str): The type of the affiliation.
+
+        Returns:
+            list[dict[str, Any]]: The constructed MongoDB aggregation pipeline.
+
+        Raises:
+            None
+
+        """
         if affiliation_type in settings.institutions:
             pipeline = [
                 {
@@ -87,6 +101,16 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
 
     @classmethod
     def count_citations_by_author(cls, *, author_id: str) -> int:
+        """
+        Count the citations for a given author.
+
+        Args:
+            author_id (str): The ID of the author.
+
+        Returns:
+            int: The count of citations for the author.
+
+        """
         count_citations_pipeline = [
             {
                 "$match": {
@@ -123,6 +147,16 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
     def count_papers_by_author(
         cls, *, author_id: str, filters: dict[str, Any] = {}
     ) -> int:
+        """
+        Count the number of papers written by a specific author.
+
+        Args:
+            author_id (str): The ID of the author.
+            filters (dict[str, Any], optional): Additional filters to apply. Defaults to {}.
+
+        Returns:
+            int: The total number of papers written by the author.
+        """
         count_papers_pipeline = [
             {"$match": {"authors.id": ObjectId(author_id)}},
             {"$count": "total"},
@@ -142,6 +176,18 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         affiliation_type: str,
         filters: dict[str, Any] = {},
     ) -> int:
+        """
+        Count the number of papers for a given affiliation.
+
+        Args:
+            affiliation_id (str): The ID of the affiliation.
+            affiliation_type (str): The type of the affiliation.
+            filters (dict[str, Any], optional): Additional filters to apply. Defaults to {}.
+
+        Returns:
+            int: The total number of papers for the given affiliation.
+
+        """
         affiliation_type = (
             "institution"
             if affiliation_type in settings.institutions
@@ -167,6 +213,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
     def count_citations(
         cls, *, affiliation_id: str, affiliation_type: str = None
     ) -> list[general.CitationsCount]:
+        """
+        
+        """
         affiliation_calculations = affiliation_calculations_repository.get_by_id(
             id=affiliation_id
         )
@@ -753,4 +802,4 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         return filters
 
 
-work_repository = WorkRepository(Work, WorkIterator)
+work_repository = WorkRepository(Work, iterator=WorkIterator)

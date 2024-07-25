@@ -46,6 +46,3 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
         skip: int = 0,
         limit: int = 100
     ): ...
-
-
-affiliation_repository = AffiliationRepository(Affiliation, AffiliationIterator)

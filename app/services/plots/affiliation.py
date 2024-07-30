@@ -5,9 +5,7 @@ from bson import ObjectId
 from pymongo import MongoClient
 
 from protocols.mongo.repositories.work import WorkRepository
-from protocols.mongo.repositories.affiliation import (
-    AffiliationRepository
-)
+from protocols.mongo.repositories.affiliation import AffiliationRepository
 from core.config import settings
 from core.logging import get_logger
 from utils.bars import bars
@@ -17,6 +15,7 @@ from utils.mapping import get_openalex_scienti
 
 client = MongoClient(host=str(settings.MONGO_URI))
 log = get_logger(__name__)
+
 
 class AffiliationPlotsService:
     def __init__(
@@ -35,13 +34,13 @@ class AffiliationPlotsService:
     def register_work_observer(self, repository: WorkRepository):
         log.info("Registering work repository on affiliation plots service")
         self.work_repository = repository
-    
+
     def register_affiliation_observer(self, repository: AffiliationRepository):
         log.info("Registering affiliation repository on affiliation plots service")
         self.affiliation_repository = repository
 
     def get_products_by_year_by_type(self, idx, typ=None, aff_type: str | None = None):
-        data, f = self.work_repository.get_research_products_by_affiliation_iterator(
+        data, f = self.work_repository.get_research_products_by_affiliation(
             idx, aff_type, project=["year_published", "types"], available_filters=False
         )
         return {"plot": self.bars.products_by_year_by_type(data)}
@@ -87,7 +86,7 @@ class AffiliationPlotsService:
         return {"plot": self.bars.products_by_affiliation_by_type(data)}
 
     def get_citations_by_year(self, idx, typ=None, aff_type: str | None = None):
-        data, f = self.work_repository.get_research_products_by_affiliation_iterator(
+        data, f = self.work_repository.get_research_products_by_affiliation(
             idx,
             aff_type,
             available_filters=False,
@@ -116,7 +115,7 @@ class AffiliationPlotsService:
             "bibliographic_info.is_open_access": {"$ne": None},
             "year_published": {"$ne": None},
         }
-        data, f = self.work_repository.get_research_products_by_affiliation_iterator(
+        data, f = self.work_repository.get_research_products_by_affiliation(
             idx,
             aff_type,
             match=_match,
@@ -138,7 +137,7 @@ class AffiliationPlotsService:
 
     def get_h_by_year(self, idx, typ=None, aff_type: str | None = None):
         _match = {"citations_by_year": {"$exists": 1}}
-        works, f = self.work_repository.get_research_products_by_affiliation_iterator(
+        works, f = self.work_repository.get_research_products_by_affiliation(
             idx,
             aff_type,
             match=_match,
@@ -235,12 +234,14 @@ class AffiliationPlotsService:
         data = []
         groups = self.affiliation_repository.get_groups_by_affiliation(idx, aff_type)
         for group in groups:
-            works, _ = self.work_repository.get_research_products_by_affiliation_iterator(
-                str(group.id),
-                "group",
-                match={"year_published": {"$ne": None}},
-                available_filters=False,
-                project=["year_published", "date_published"],
+            works, _ = (
+                self.work_repository.get_research_products_by_affiliation(
+                    str(group.id),
+                    "group",
+                    match={"year_published": {"$ne": None}},
+                    available_filters=False,
+                    project=["year_published", "date_published"],
+                )
             )
             for work in works:
                 work.ranking_ = group.ranking
@@ -256,6 +257,8 @@ class AffiliationPlotsService:
             if not "top_words" in data.keys():
                 return {"plot": None}
             data = data["top_words"]
+            if not data:
+                data = [{"name": "Sin información", "value": 1}]
             return {"plot": data}
         else:
             return {"plot": None}
@@ -268,7 +271,9 @@ class AffiliationPlotsService:
         )
         _data = {}
         for aff in affiliations:
-            _data[aff.name] = self.work_repository.count_citations(affiliation_id=aff.id)
+            _data[aff.name] = self.work_repository.count_citations(
+                affiliation_id=aff.id
+            )
         return self.pies.citations_by_affiliation(_data)
 
     def get_products_by_affiliations(self, idx, typ, aff_type: str | None = None):
@@ -306,12 +311,14 @@ class AffiliationPlotsService:
         )
         _data = {}
         for aff in affiliations:
-            works, _ = self.work_repository.get_research_products_by_affiliation_iterator(
-                aff.id,
-                aff.types[0].type,
-                match={"citations_count": {"$ne": []}},
-                available_filters=False,
-                project=["citations_count"],
+            works, _ = (
+                self.work_repository.get_research_products_by_affiliation(
+                    aff.id,
+                    aff.types[0].type,
+                    match={"citations_count": {"$ne": []}},
+                    available_filters=False,
+                    project=["citations_count"],
+                )
             )
             _data[aff.name] = map(
                 get_openalex_scienti,
@@ -338,7 +345,7 @@ class AffiliationPlotsService:
     def get_products_by_subject(
         self, idx, level: int = 0, typ: str = None, aff_type: str | None = None
     ):
-        works, _ = self.work_repository.get_research_products_by_affiliation_iterator(
+        works, _ = self.work_repository.get_research_products_by_affiliation(
             idx,
             aff_type,
             match={"subjects": {"$ne": []}},
@@ -359,7 +366,7 @@ class AffiliationPlotsService:
         return self.pies.products_by_subject(data)
 
     def get_products_by_database(self, idx, typ=None, aff_type: str | None = None):
-        works, _ = self.work_repository.get_research_products_by_affiliation_iterator(
+        works, _ = self.work_repository.get_research_products_by_affiliation(
             idx,
             aff_type,
             match={"updated": {"$ne": []}},
@@ -372,7 +379,7 @@ class AffiliationPlotsService:
     def get_products_by_open_access_status(
         self, idx, typ=None, aff_type: str | None = None
     ):
-        works, _ = self.work_repository.get_research_products_by_affiliation_iterator(
+        works, _ = self.work_repository.get_research_products_by_affiliation(
             idx,
             aff_type,
             available_filters=False,
@@ -449,7 +456,7 @@ class AffiliationPlotsService:
             return {"plot": None}
 
     def get_products_by_scienti_rank(self, idx, typ=None, aff_type: str | None = None):
-        works, _ = self.work_repository.get_research_products_by_affiliation_iterator(
+        works, _ = self.work_repository.get_research_products_by_affiliation(
             idx,
             aff_type,
             match={"ranking": {"$ne": []}},
@@ -618,10 +625,34 @@ class AffiliationPlotsService:
     def get_coauthorships_network(self, idx, typ=None, aff_type: str | None = None):
         if typ in ["group", "department", "faculty"]:
             return {"plot": None}
-        data = self.impactu_db["affiliations"].find_one(
-            {"_id": ObjectId(idx)}, {"coauthorship_network": 1}
-        )
-        if data:
+        pipeline = [
+            {"$match": {"_id": ObjectId(idx)}},
+            {"$project": {"coauthorship_network": 1}},
+            {
+                "$lookup": {
+                    "from": "affiliations_edges",
+                    "localField": "_id",
+                    "foreignField": "_id",
+                    "as": "complement",
+                }
+            },
+            {"$unwind": "$complement"},
+            {
+                "$project": {
+                    "coauthorship_network": {
+                        "nodes": "$coauthorship_network.nodes",
+                        "edges": {
+                            "$concatArrays": [
+                                "$coauthorship_network.edges",
+                                "$complement.coauthorship_network.edges",
+                            ]
+                        },
+                    }
+                }
+            },
+        ]
+        data = self.impactu_db["affiliations"].aggregate(pipeline)
+        if next(data):
             if "coauthorship_network" not in data.keys():
                 return {"plot": None}
             data = data["coauthorship_network"]

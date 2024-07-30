@@ -6,7 +6,7 @@ from flask import Blueprint, request, Response, Request
 
 # from flask_apidoc import ApiDoc
 
-from services.v1.person_app import person_app_service
+# from app.services.plots.person import person_app_service
 from services.person import person_service
 from services.work import work_service
 from schemas.work import WorkQueryParams
@@ -32,7 +32,7 @@ def person(
             if plot:
                 level = request.args.get("level", 0)
                 args = (id, level) if plot == "products_subject" else (id,)
-                result = person_app_service.plot_mapping[plot](*args)
+                result = person_service.plot_mappings[plot](*args)
             else:
                 params = WorkQueryParams(**request.args)
                 result = work_service.get_research_products_by_author(

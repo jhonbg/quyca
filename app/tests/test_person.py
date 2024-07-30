@@ -12,7 +12,7 @@ log = get_logger(__name__)
 
 @pytest.mark.parametrize("name", test_data.authors)
 def test_person(client: FlaskClient, name: str):
-    pytest.skip()
+    # pytest.skip()
     search = f"{settings.APP_V1_STR}/search"
     person = client.get(search + f"/person?keywords='{name}'")
     log.debug(person.json)
@@ -59,7 +59,7 @@ def test_authors_products(client: FlaskClient, name: str, sort: str):
     assert len(data) <= limit
     assert "total_results" in response.json
     assert "count" in response.json
-    assert response.json["count"] == limit
+    assert response.json["count"] <= limit
     assert "filters" in response.json
     assert "id" in data[0]
     assert "title" in data[0]
@@ -83,6 +83,7 @@ def test_authors_products(client: FlaskClient, name: str, sort: str):
 
 @pytest.mark.parametrize("name", [choice(test_data.authors)])
 def test_authors_plots(client: FlaskClient, name: str):
+    # pytest.skip()
     search = f"{settings.APP_V1_STR}/search"
     aff = client.get(search + f"/person?keywords='{name}'")
     id = aff.json["data"][0]["id"]

@@ -9,7 +9,7 @@ from schemas.general import (
     ExternalId,
     ExternalURL,
     QueryBase,
-    Status,
+    CitationsCount,
     Name,
 )
 from schemas.person import PersonList
@@ -105,7 +105,7 @@ class AffiliationSearch(AffiliationBase):
         return self
 
     products_count: int | None = None
-    citations_count: list[dict[str, Any]] | None = None
+    citations_count: list[CitationsCount] | None = None
     affiliations: list[dict[str, Any]] | None = None
 
 

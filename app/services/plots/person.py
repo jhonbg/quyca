@@ -3,132 +3,44 @@ from typing import Any, Callable
 from itertools import chain
 
 from bson import ObjectId
-from pymongo import ASCENDING, DESCENDING
+from pymongo import MongoClient
 
-from infraestructure.mongo.utils.session import client
-from infraestructure.mongo.repositories.work import WorkRepository
-from infraestructure.mongo.repositories.affiliation import affiliation_repository
-from infraestructure.mongo.models.source import Source
+from protocols.mongo.repositories.work import WorkRepository
 from core.config import settings
+from core.logging import get_logger
 from utils.bars import bars
 from utils.maps import maps
 from utils.pies import pies
 
 
-class PersonAppService:
-    def __init__(self):
+client = MongoClient(host=str(settings.MONGO_URI))
+log = get_logger(__name__)
+
+class PersonPlotsService:
+    def __init__(self, work_repository: WorkRepository = None):
+        self.work_repository = work_repository
         self.colav_db = client[settings.MONGO_INITDB_DATABASE]
         self.impactu_db = client[settings.MONGO_IMPACTU_DB]
         self.bars = bars()
         self.pies = pies()
         self.maps = maps()
 
-    def get_info(self, idx, start_year=None, end_year=None):
-        initial_year = 9999
-        final_year = 0
-
-        if start_year:
-            try:
-                start_year = int(start_year)
-            except:
-                print("Could not convert start year to int")
-                return None
-        if end_year:
-            try:
-                end_year = int(end_year)
-            except:
-                print("Could not convert end year to int")
-                return None
-
-        person = self.colav_db["person"].find_one({"_id": ObjectId(idx)})
-        if person:
-            aff_id = None
-            affiliation = None
-            for aff in person["affiliations"]:
-                if aff_id:
-                    break
-                for typ in aff["types"]:
-                    if not typ["type"] in ["group", "faculty", "department"]:
-                        aff_id = aff["id"]
-                        break
-            if aff_id:
-                affiliation = self.colav_db["affiliations"].find_one(
-                    {"_id": ObjectId(aff_id)}
-                )
-            logo = ""
-            if affiliation:
-                if "external_urls" in affiliation.keys():
-                    for ext in affiliation["external_urls"]:
-                        if ext["source"] == "logo":
-                            logo = ext["url"]
-
-            entry = {
-                "id": person["_id"],
-                "name": person["full_name"],
-                "citations_count": WorkRepository.count_citations_by_author(
-                    author_id=idx
-                ),
-                "products_count": WorkRepository.count_papers_by_author(author_id=idx),
-                "external_urls": (
-                    [
-                        ext
-                        for ext in person["external_urls"]
-                        if ext["source"] not in ["logo"]
-                    ]
-                    if "external_urls" in person.keys()
-                    else None
-                ),
-                "external_ids": (
-                    [
-                        ext
-                        for ext in person["external_ids"]
-                        if ext["source"]
-                        not in [
-                            "Cédula de Ciudadanía",
-                            "Cédula de Extranjería",
-                            "Passport",
-                        ]
-                    ]
-                    if "external_ids" in person.keys()
-                    else None
-                ),
-                "logo": logo,
-                "affiliations": person["affiliations"],
-            }
-            index_list = []
-
-            filters = {"years": {}}
-            for reg in (
-                self.colav_db["works"]
-                .find({"authors.id": ObjectId(idx), "year_published": {"$exists": 1}})
-                .sort([("year_published", ASCENDING)])
-                .limit(1)
-            ):
-                filters["years"]["start_year"] = reg["year_published"]
-            for reg in (
-                self.colav_db["works"]
-                .find({"authors.id": ObjectId(idx), "year_published": {"$exists": 1}})
-                .sort([("year_published", DESCENDING)])
-                .limit(1)
-            ):
-                filters["years"]["end_year"] = reg["year_published"]
-            filters["types"] = []
-
-            return {"data": entry, "filters": filters}
-        else:
-            return None
+    def register_work_observer(self, repository: WorkRepository):
+        log.info("Registering work repository on affiliation plots service")
+        self.work_repository = repository
 
     def get_products_by_year_by_type(self, idx: str):
         data = []
-        works, _ = WorkRepository.get_research_products_by_author_iterator(
+        works, _ = self.work_repository.get_research_products_by_author(
             author_id=idx, project=["year_published", "types"], available_filters=False
         )
         result = self.bars.products_by_year_by_type(works)
         return {"plot": result}
+    
 
     def get_citations_by_year(self, idx: str):
         _match = {"citations_by_year": {"$ne": []}, "year_published": {"$exists": 1}}
-        data, _ = WorkRepository.get_research_products_by_author_iterator(
+        data, _ = self.work_repository.get_research_products_by_author(
             author_id=idx,
             project=["year_published", "citations_by_year"],
             match=_match,
@@ -138,7 +50,7 @@ class PersonAppService:
         return {"plot": result}
 
     def get_apc_by_year(self, idx: str):
-        sources = WorkRepository.get_sources_by_author(
+        sources = self.work_repository.get_sources_by_author(
             idx,
             match={
                 "$and": [
@@ -156,7 +68,7 @@ class PersonAppService:
             "bibliographic_info.is_open_access": {"$ne": None},
             "year_published": {"$ne": None},
         }
-        data, _ = WorkRepository.get_research_products_by_author_iterator(
+        data, _ = self.work_repository.get_research_products_by_author(
             author_id=idx,
             match=_match,
             available_filters=False,
@@ -166,7 +78,7 @@ class PersonAppService:
         return {"plot": result}
 
     def get_products_by_year_by_publisher(self, idx: str):
-        sources = WorkRepository.get_sources_by_author(
+        sources = self.work_repository.get_sources_by_author(
             idx,
             match={"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
             project=["publisher", "apc"],
@@ -176,7 +88,7 @@ class PersonAppService:
 
     def get_h_by_year(self, idx: str):
         _match = {"citations_by_year": {"$exists": 1}}
-        works, _ = WorkRepository.get_research_products_by_author_iterator(
+        works, _ = self.work_repository.get_research_products_by_author(
             author_id=idx,
             match=_match,
             project=["citations_by_year"],
@@ -234,7 +146,7 @@ class PersonAppService:
             return {"plot": None}
 
     def get_products_by_publisher(self, idx: int):
-        sources = WorkRepository.get_sources_by_author(
+        sources = self.work_repository.get_sources_by_author(
             idx,
             match={"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
             project=["publisher"],
@@ -244,7 +156,7 @@ class PersonAppService:
 
     def get_products_by_subject(self, idx: str, level: int = 0):
         data = []
-        works, _ = WorkRepository.get_research_products_by_author_iterator(
+        works, _ = self.work_repository.get_research_products_by_author(
             author_id=idx,
             match={"subjects": {"$ne": []}},
             available_filters=False,
@@ -265,7 +177,7 @@ class PersonAppService:
         return result
 
     def get_products_by_database(self, idx: str):
-        works, _ = WorkRepository.get_research_products_by_author_iterator(
+        works, _ = self.work_repository.get_research_products_by_author(
             author_id=idx,
             match={"updated": {"$ne": []}},
             available_filters=False,
@@ -276,7 +188,7 @@ class PersonAppService:
         return result
 
     def get_products_by_open_access_status(self, idx):
-        works, _ = WorkRepository.get_research_products_by_author_iterator(
+        works, _ = self.work_repository.get_research_products_by_author(
             author_id=idx,
             match={"bibliographic_info.open_access_status": {"$exists": 1}},
             available_filters=False,
@@ -289,35 +201,33 @@ class PersonAppService:
     def get_products_by_author_age(self, idx):
         data = []
         pipeline = [
-            {"$match": {"authors.id": ObjectId(idx)}},
+            {"$match": {"authors.id": ObjectId("66999255868c32b56c5ccc48")}},
             {"$project": {"authors": 1, "date_published": 1, "year_published": 1}},
-            {"$unwind": "$authors"},
-            {"$match": {"authors.id": ObjectId(idx)}},
             {
                 "$lookup": {
                     "from": "person",
                     "localField": "authors.id",
                     "foreignField": "_id",
+                    "pipeline": [{"$project": {"birthdate": 1}}],
                     "as": "author",
                 }
             },
+            {"$unwind": "$author"},
             {
                 "$project": {
-                    "author.birthdate": 1,
-                    "date_published": 1,
-                    "year_published": 1,
+                    "work.date_published": "$date_published",
+                    "work.year_published": "$year_published",
+                    "birthdate": "$author.birthdate",
                 }
             },
-            {"$match": {"author.birthdate": {"$ne": -1, "$exists": 1}}},
         ]
         for work in self.colav_db["works"].aggregate(pipeline):
             data.append(work)
-        print(data)
         result = self.pies.products_by_age(data)
         return result
 
     def get_products_by_scienti_rank(self, idx):
-        works, _ = WorkRepository.get_research_products_by_author_iterator(
+        works, _ = self.work_repository.get_research_products_by_author(
             author_id=idx,
             match={"ranking": {"$ne": []}},
             available_filters=False,
@@ -327,7 +237,7 @@ class PersonAppService:
         return self.pies.products_by_scienti_rank(_data)
 
     def get_products_by_scimago_rank(self, idx):
-        sources = WorkRepository.get_sources_by_author(idx, project=["ranking"])
+        sources = self.work_repository.get_sources_by_author(idx, project=["ranking"])
         _data = chain.from_iterable(map(lambda x: x.ranking, sources))
         return self.pies.products_by_scimago_rank(_data)
 
@@ -349,27 +259,7 @@ class PersonAppService:
         institution = self.colav_db["affiliations"].find_one(
             {"_id": ObjectId(inst_id)}, {"names": 1}
         )
-        pipeline = [
-            {"$match": {"authors.id": ObjectId(idx)}},
-            {"$project": {"source": 1}},
-            {
-                "$lookup": {
-                    "from": "sources",
-                    "localField": "source.id",
-                    "foreignField": "_id",
-                    "as": "source",
-                }
-            },
-            {"$unwind": "$source"},
-            {"$project": {"source.publisher": 1}},
-            {
-                "$match": {
-                    "source.publisher": {"$ne": nan, "$exists": 1, "$ne": ""},
-                    "source.publisher.name": {"$ne": nan},
-                }
-            },
-        ]
-        data = map(lambda x: Source(**x["source"]), self.colav_db["works"].aggregate(pipeline))
+        data = self.work_repository.get_sources_by_author(idx, project=["publisher"])
         return self.pies.products_editorial_same_institution(data, institution)
 
     def get_coauthorships_worldmap(self, idx):
@@ -460,17 +350,11 @@ class PersonAppService:
             "year_publisher": self.get_products_by_year_by_publisher,
             "year_h": self.get_h_by_year,
             "year_researcher": self.get_products_by_year_by_researcher_category,
-            # "year_group": self.get_products_by_year_by_group_category,
             "title_words": self.get_title_words,
-            # "citations_affiliations": self.get_citations_by_affiliations,
-            # "products_affiliations": self.get_products_by_affiliations,
-            # "apc_affiliations": self.get_apc_by_affiliations,
-            # "h_affiliations": self.get_h_by_affiliations,
             "products_publisher": self.get_products_by_publisher,
             "products_subject": self.get_products_by_subject,
             "products_database": self.get_products_by_database,
             "products_oa": self.get_products_by_open_access_status,
-            # "products_sex": self.get_products_by_author_sex,
             "products_age": self.get_products_by_author_age,
             "scienti_rank": self.get_products_by_scienti_rank,
             "scimago_rank": self.get_products_by_scimago_rank,
@@ -481,4 +365,4 @@ class PersonAppService:
         }
 
 
-person_app_service = PersonAppService()
+person_plots_service = PersonPlotsService()

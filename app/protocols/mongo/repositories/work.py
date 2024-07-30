@@ -67,19 +67,6 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         ...
 
     @classmethod
-    def get_research_products_by_affiliation(
-        cls,
-        affiliation_id: str,
-        affiliation_type: str,
-        *,
-        sort: str | None = None,
-        skip: int | None = None,
-        limit: int | None = None,
-        filters: dict | None = {},
-    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-        ...
-
-    @classmethod
     def get_sources_by_author(
         cls,
         author_id: str,
@@ -119,7 +106,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         ...
 
     @classmethod
-    def get_research_products_by_affiliation_iterator(
+    def get_research_products_by_affiliation(
         cls,
         affiliation_id: str,
         affiliation_type: str,
@@ -170,33 +157,10 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         limit: int | None = None,
         sort: str = "alphabetical",
         filters: dict | None = {},
-    ) -> tuple[list[dict[str, Any]], dict[str, str]]:
-        ...
-
-    @classmethod
-    def get_research_products_by_author_iterator(
-        cls,
-        *,
-        author_id: str,
-        skip: int | None = None,
-        limit: int | None = None,
-        sort: str = "alphabetical",
-        filters: dict | None = {},
         available_filters: bool = False,
         project: list[str] = [],
         match: dict | None = {},
     ) -> tuple[Iterable[Work], dict[str, str]]:
-        ...
-
-    @classmethod
-    def get_research_products_by_author_csv(
-        cls,
-        *,
-        author_id: str,
-        sort: str = "title",
-        skip: int | None = None,
-        limit: int | None = None,
-    ) -> list[dict[str, Any]]:
         ...
 
     @classmethod

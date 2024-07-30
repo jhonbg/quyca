@@ -137,13 +137,8 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
             None
 
         """
-        if typ in ["department", "faculty"]:
-            group_pipeline = self.__groups_by_affiliation(idx, typ)
-            groups = engine.get_collection(Person).aggregate(group_pipeline)
-            return AffiliationIterator(groups)
-        groups = engine.get_collection(Affiliation).aggregate(
-            self.related_affiliations_by_type(idx, typ)
-        )
+        group_pipeline, collection = self.__groups_by_affiliation(idx, typ)
+        groups = engine.get_collection(collection).aggregate(group_pipeline)
         return AffiliationIterator(groups)
 
     def get_authors_by_affiliation(self, idx: str, typ: str) -> list[Person]:

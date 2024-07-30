@@ -378,35 +378,6 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         return results, available_filters
 
     @classmethod
-    def get_research_products_by_affiliation(
-        cls,
-        affiliation_id: str,
-        affiliation_type: str,
-        *,
-        sort: str | None = None,
-        skip: int | None = None,
-        limit: int | None = None,
-        filters: dict | None = {},
-    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-        results, available_filters = cls.__products_by_affiliation(
-            affiliation_id,
-            affiliation_type,
-            sort=sort,
-            skip=skip,
-            limit=limit,
-            filters=filters,
-        )
-        return [
-            {
-                **WorkListApp.model_validate_json(
-                    Work(**result).model_dump_json()
-                ).model_dump(exclude={"id"}),
-                "id": str(result["_id"]),
-            }
-            for result in results
-        ], available_filters
-
-    @classmethod
     def get_sources_by_author(
         cls,
         author_id: str,
@@ -630,7 +601,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         return SourceIterator(results)
 
     @classmethod
-    def get_research_products_by_affiliation_iterator(
+    def get_research_products_by_affiliation(
         cls,
         affiliation_id: str,
         affiliation_type: str,
@@ -721,29 +692,6 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         limit: int | None = None,
         sort: str = "alphabetical",
         filters: dict | None = {},
-    ) -> tuple[list[dict[str, Any]], dict[str, str]]:
-        results, available_filters = cls.__products_by_author(
-            author_id=author_id, skip=skip, limit=limit, sort=sort, filters=filters
-        )
-        return [
-            {
-                **WorkListApp.model_validate_json(
-                    Work(**result).model_dump_json()
-                ).model_dump(exclude={"id"}),
-                "id": str(result["_id"]),
-            }
-            for result in results
-        ], available_filters
-
-    @classmethod
-    def get_research_products_by_author_iterator(
-        cls,
-        *,
-        author_id: str,
-        skip: int | None = None,
-        limit: int | None = None,
-        sort: str = "alphabetical",
-        filters: dict | None = {},
         available_filters: bool = False,
         project: list[str] = [],
         match: dict | None = {},
@@ -758,28 +706,6 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             match=match,
         )
         return WorkIterator(results), available_filters
-
-    @classmethod
-    def get_research_products_by_author_csv(
-        cls,
-        *,
-        author_id: str,
-        sort: str = "title",
-        skip: int | None = None,
-        limit: int | None = None,
-    ) -> list[dict[str, Any]]:
-        works, f = cls.__products_by_author(
-            author_id=author_id, sort=sort, skip=skip, limit=limit
-        )
-        return [
-            {
-                **WorkCsv.model_validate_json(
-                    Work(**result).model_dump_json()
-                ).model_dump(exclude={"titles", "id"}),
-                "id": str(result["_id"]),
-            }
-            for result in works
-        ]
 
     @classmethod
     def get_available_filters(

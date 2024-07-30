@@ -51,14 +51,14 @@ class Author(BaseModel):
     full_name: str
     affiliations: list[Affiliation] | None = Field(default_factory=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
-    sex: str | None = None
+    sex: str | None = ""
 
 
 class Source(BaseModel):
     id: str | None = None
     name: str | Any | None = None
-    scimago_quartile: str | None = None
-    serials: Any | None = None
+    scimago_quartile: str | None = ""
+    serials: Any | None = ""
 
 
 class SubjectEmbedded(BaseModel):
@@ -157,7 +157,7 @@ class WorkListApp(WorkSearch):
         self.bibliographic_info = None
         return self
 
-    external_ids: list[ExternalId] = Field(default_factory=list)
+    external_ids: list[ExternalId] | list[dict[str, Any]] = Field(default_factory=list)
 
 
 class WorkProccessed(WorkListApp):

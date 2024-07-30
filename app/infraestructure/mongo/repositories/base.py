@@ -118,6 +118,10 @@ class RepositoryBase(Generic[ModelType, IteratorType]):
             """
             with self.engine.session() as session:
                 return session.count(self.model)
+    
+    def aggregate(self, pipeline: list[dict[str, Any]]) -> Iterable[ModelType]:
+         results = self.engine.get_collection(self.model).aggregate(pipeline)
+         return self.iterator(results)
 
     @staticmethod
     def get_sort_direction(sort: str) -> tuple[str, Literal[1, -1]]:
@@ -138,3 +142,5 @@ class RepositoryBase(Generic[ModelType, IteratorType]):
             sort_field = sort
             direction_value = 1
         return sort_field, direction_value
+    
+

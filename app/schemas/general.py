@@ -2,12 +2,16 @@ from typing import TypeVar, Any, Generic
 
 from typing_extensions import Self
 
-from pydantic import BaseModel, validator, Field, model_validator, field_validator
+from pydantic import BaseModel, Field, model_validator, field_validator
 from odmantic.bson import BSON_TYPES_ENCODERS
 from core.config import settings
 
 DBSchemaType = TypeVar("DBSchemaType", bound=BaseModel)
 
+
+class CitationsCount(BaseModel):
+    source: str | None = None
+    count: int | None = None
 
 class Type(BaseModel):
     source: str

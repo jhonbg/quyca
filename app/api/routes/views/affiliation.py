@@ -1,57 +1,16 @@
 import json
-from typing import Any
 import io
 import csv
 
-from flask import Blueprint, request, Response, Request
+from flask import Blueprint, request, Response, jsonify
+from pydantic import ValidationError
 
 from services.affiliation import affiliation_service
-from services.work import work_service
 from schemas.work import WorkQueryParams
 from utils.encoder import JsonEncoder
 from utils.flatten_json import flatten_json_list
 
 router = Blueprint("affiliation_app_v1", __name__)
-
-
-def affiliation(
-    request: Request,
-    *,
-    idx: str | None = None,
-    aff_type: str | None = None,
-    section: str | None = None,
-    tab: str | None = None,
-) -> dict[str, Any] | None:
-    result = None
-    if section == "info":
-        result = affiliation_service.get_info(id=idx)
-    elif section == "affiliations":
-        result = affiliation_service.get_affiliations(id=idx, typ=aff_type)
-    elif section == "research":
-        if tab == "products":
-            plot = request.args.get("plot")
-            if plot:
-                level = int(request.args.get("level", 0))
-                typ = plot.split(",")[-1] if "," in plot else aff_type
-                args = (
-                    (idx, level, typ, aff_type)
-                    if plot == "products_subject"
-                    else (idx, typ, aff_type)
-                )
-                result = affiliation_service.plot_mappings[plot](*args)
-            else:
-                params = WorkQueryParams(**request.args)
-                result = work_service.get_research_products_by_affiliation(
-                    affiliation_id=idx,
-                    affiliation_type=aff_type,
-                    skip=params.skip,
-                    limit=params.max,
-                    sort=params.sort,
-                    filters=params.get_filter(),
-                )
-    else:
-        result = None
-    return result
 
 
 @router.route("/<typ>/<id>", methods=["GET"])
@@ -61,23 +20,21 @@ def get_affiliation(
     id: str | None,
     typ: str | None = None,
     section: str | None = "info",
-    tab: str | None = None,
+    tab: str | None = "products",
 ):
-    result = affiliation(request, idx=id, aff_type=typ, section=section, tab=tab)
-    if result:
-        response = Response(
-            response=json.dumps(result, cls=JsonEncoder),
-            status=200,
-            mimetype="application/json",
-        )
-    else:
-        response = Response(
-            response=json.dumps({}, cls=JsonEncoder),
-            status=204,
-            mimetype="application/json",
-        )
-
-    return response
+    try:
+        params = WorkQueryParams.model_validate(request.args)
+    except ValidationError as e:
+        return jsonify(e, 400)
+    if section == "research" and tab == "products":
+        if plot := request.args.get("plot"):
+            level = int(request.args.get("level", 0))
+            _typ = plot.split(",")[-1] if "," in plot else typ
+            args = (
+                (id, level, _typ, typ) if plot == "products_subject" else (id, _typ, typ)
+            )
+            return affiliation_service.plot_mappings[plot](*args)
+        return affiliation_service.get_research_products(id=id, typ=typ, params=params)
 
 
 @router.route("/<typ>/<id>/csv", methods=["GET"])
@@ -89,9 +46,7 @@ def get_affiliation_csv(
     section: str | None = "info",
     tab: str | None = None,
 ):
-    result = work_service.get_research_products_info_by_affiliation_csv(
-        affiliation_id=id, affiliation_type=typ
-    )
+    result = affiliation_service.get_research_products_csv(id=id, typ=typ)
     if result:
         config = {
             "title": {
@@ -118,16 +73,10 @@ def get_affiliation_csv(
             "end_page": {"name": "página final"},
             "year_published": {"name": "año de publicación"},
             "types": {"name": "tipo de producto", "fields": ["type"]},
-            "subject_names": {
-                "name": "temas"
-            },
-            "doi": {
-                "name": "doi"
-            },
-            "source_name": {
-                "name": "revista"
-            },
-            "scimago_quartile": {"name": "cuartil de scimago"}, 
+            "subject_names": {"name": "temas"},
+            "doi": {"name": "doi"},
+            "source_name": {"name": "revista"},
+            "scimago_quartile": {"name": "cuartil de scimago"},
         }
         flat_data_list = flatten_json_list(result, config, 1)
         all_keys = []

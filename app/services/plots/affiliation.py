@@ -234,14 +234,12 @@ class AffiliationPlotsService:
         data = []
         groups = self.affiliation_repository.get_groups_by_affiliation(idx, aff_type)
         for group in groups:
-            works, _ = (
-                self.work_repository.get_research_products_by_affiliation(
-                    str(group.id),
-                    "group",
-                    match={"year_published": {"$ne": None}},
-                    available_filters=False,
-                    project=["year_published", "date_published"],
-                )
+            works, _ = self.work_repository.get_research_products_by_affiliation(
+                str(group.id),
+                "group",
+                match={"year_published": {"$ne": None}},
+                available_filters=False,
+                project=["year_published", "date_published"],
             )
             for work in works:
                 work.ranking_ = group.ranking
@@ -258,7 +256,12 @@ class AffiliationPlotsService:
                 return {"plot": None}
             data = data["top_words"]
             if not data:
-                data = [{"name": "Sin información", "value": 1}]
+                return {
+                    "plot": [
+                        {"name": "Sin información", "value": 1, "percentage": 100}
+                    ],
+                    "sum": 1,
+                }
             return {"plot": data}
         else:
             return {"plot": None}
@@ -311,14 +314,12 @@ class AffiliationPlotsService:
         )
         _data = {}
         for aff in affiliations:
-            works, _ = (
-                self.work_repository.get_research_products_by_affiliation(
-                    aff.id,
-                    aff.types[0].type,
-                    match={"citations_count": {"$ne": []}},
-                    available_filters=False,
-                    project=["citations_count"],
-                )
+            works, _ = self.work_repository.get_research_products_by_affiliation(
+                aff.id,
+                aff.types[0].type,
+                match={"citations_count": {"$ne": []}},
+                available_filters=False,
+                project=["citations_count"],
             )
             _data[aff.name] = map(
                 get_openalex_scienti,

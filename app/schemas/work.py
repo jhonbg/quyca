@@ -142,6 +142,8 @@ class WorkListApp(WorkSearch):
 
     bibliographic_info: BiblioGraphicInfo = Field(exclude=True)
 
+    num_authors: int | None = None
+
     @model_validator(mode="after")
     def get_title(self):
         def hierarchy_index(x: Title):
@@ -156,6 +158,14 @@ class WorkListApp(WorkSearch):
         self.open_access_status = self.bibliographic_info.open_access_status or ""
         self.bibliographic_info = None
         return self
+
+    @model_validator(mode="after")
+    def get_first_ten_authors(self):
+        if authors := len(self.authors) > 10:
+            self.authors = self.authors[:10]
+            self.num_authors = authors
+        return self
+
 
     external_ids: list[ExternalId] | list[dict[str, Any]] = Field(default_factory=list)
 
@@ -185,6 +195,10 @@ class WorkProccessed(WorkListApp):
     #         if maped_embedded_subjects
     #         else []
     #     )
+
+    @model_validator(mode="after")
+    def get_first_ten_authors(self):
+        return self
 
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
 
@@ -302,7 +316,7 @@ class Work(BaseModel):
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
     date_published: int | None = None
     year_published: int | str | None = None
-    bibligraphic_info: list[BiblioGraphicInfo] | None = Field(default_factory=list)
+    bibligraphic_info: BiblioGraphicInfo | None = Field(default_factory=list)
     references_count: int | None
     references: list[Any] | None = Field(default_factory=list)
     citations_count: list[CitationsCount] | None = Field(default_factory=list)

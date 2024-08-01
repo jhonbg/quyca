@@ -6,6 +6,9 @@ from protocols.mongo.utils.iterators import WorkIterator, SourceIterator
 
 
 class WorkRepository(RepositoryBase[Work, WorkIterator]):
+    def get_authors(self, *, id: str) -> Iterable[str]:
+        ...
+
     @classmethod
     def wrap_pipeline(
         cls, affiliation_id: str, affiliation_type: str

@@ -8,14 +8,25 @@ from infraestructure.mongo.repositories.affiliation import affiliation_repositor
 from infraestructure.mongo.repositories.affiliation_calculations import (
     affiliation_calculations_repository,
 )
-from infraestructure.mongo.models import Work, Person, Affiliation, general
+from infraestructure.mongo.models import Work, Affiliation, general
 from infraestructure.mongo.utils.session import engine
 from infraestructure.mongo.utils.iterators import WorkIterator, SourceIterator
-from schemas.work import WorkCsv, WorkListApp
 from core.config import settings
 
 
 class WorkRepository(RepositoryBase[Work, WorkIterator]):
+    def get_authors(self, *, id: str) -> Iterable[str]:
+            """
+            Retrieve the authors of a work based on its ID.
+
+            Returns:
+                A list of dictionaries representing the authors of the work.
+            """
+            with self.engine.session() as session:
+                work = session.find_one(self.model, self.model.id == ObjectId(id))
+                authors = work.authors
+            return map(lambda x: x.model_dump_json(), authors)
+    
     @classmethod
     def wrap_pipeline(
         cls, affiliation_id: str, affiliation_type: str

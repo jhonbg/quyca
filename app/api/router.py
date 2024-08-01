@@ -9,7 +9,7 @@ from api.routes.views.affiliation import router as affiliation_app_router_v1
 from api.routes.json.affiliation import router as affiliation_api_router_v1
 from api.routes.v1.person_app import router as person_app_router_v1
 from api.routes.v1.person_api import router as person_api_router_v1
-from api.routes.v1.work_app import router as work_app_router_v1
+from api.routes.views.work import router as work_app_router_v1
 from api.apidoc import router as apidoc_router
 
 api_router = Blueprint("router", __name__)

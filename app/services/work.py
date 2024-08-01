@@ -8,6 +8,7 @@ from schemas.work import (
     WorkListApp,
     WorkCsv,
     Work as WorkSchema,
+    Author,
 )
 from protocols.mongo.models.work import Work
 from protocols.mongo.repositories.work import WorkRepository
@@ -19,6 +20,14 @@ from schemas.general import GeneralMultiResponse
 class WorkService(
     ServiceBase[Work, WorkRepository, WorkQueryParams, WorkListApp, WorkProccessed]
 ):
+    def get_authors(self, *, id: str) -> list[dict[str, Any]]:
+        authors = self.repository.get_authors(id=id)
+        return {
+            "data": [
+                Author.model_validate_json(author).model_dump() for author in authors
+            ]
+        }
+
     @staticmethod
     def update_authors_external_ids(work: WorkProccessed):
         for author in work.authors:
@@ -28,7 +37,6 @@ class WorkService(
             author.external_ids = [ext_id.model_dump() for ext_id in ext_ids]
         return work
 
-    
     def count_papers(
         self,
         *,
@@ -80,10 +88,8 @@ class WorkService(
         sort: str = "alphabetical",
         filters: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
-        works, available_filters = (
-            self.repository.get_research_products_by_author(
-                author_id=author_id, skip=skip, limit=limit, sort=sort, filters=filters
-            )
+        works, available_filters = self.repository.get_research_products_by_author(
+            author_id=author_id, skip=skip, limit=limit, sort=sort, filters=filters
         )
         total_works = self.repository.count_papers_by_author(
             author_id=author_id, filters=filters

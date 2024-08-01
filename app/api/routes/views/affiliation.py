@@ -23,9 +23,13 @@ def get_affiliation(
     tab: str | None = "products",
 ):
     try:
-        params = WorkQueryParams.model_validate(request.args)
+        params = WorkQueryParams(**request.args)
     except ValidationError as e:
-        return jsonify(e, 400)
+        return jsonify(str(e), 400)
+    if section == "info":
+        return affiliation_service.get_info(id=id)
+    if section == "affiliations":
+        return affiliation_service.get_affiliations(id=id, typ=typ)
     if section == "research" and tab == "products":
         if plot := request.args.get("plot"):
             level = int(request.args.get("level", 0))

@@ -8,7 +8,13 @@ from schemas.affiliation import (
     AffiliationInfo,
     AffiliationRelatedInfo,
 )
-from schemas.work import WorkProccessed, WorkListApp, WorkQueryParams, WorkCsv
+from schemas.work import (
+    WorkProccessed,
+    WorkListApp,
+    WorkQueryParams,
+    WorkCsv,
+    Work as WorkSchema,
+)
 from schemas.person import PersonInfo
 from services.base import ServiceBase
 from services.source import source_service
@@ -141,7 +147,7 @@ class AffiliationService(
         )
         data = [
             source_service.update_source(
-                WorkProccessed.model_validate_json(work.model_dump_json())
+                WorkSchema.model_validate_json(work.model_dump_json())
             ).model_dump()
             for work in works
         ]

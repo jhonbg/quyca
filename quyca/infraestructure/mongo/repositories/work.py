@@ -3,15 +3,15 @@ from typing import Any, Iterable
 from bson import ObjectId
 from pymongo.collation import Collation
 
-from infraestructure.mongo.repositories.base import RepositoryBase
-from infraestructure.mongo.repositories.affiliation import affiliation_repository
-from infraestructure.mongo.repositories.affiliation_calculations import (
+from quyca.infraestructure.mongo.repositories.base import RepositoryBase
+from quyca.infraestructure.mongo.repositories.affiliation import affiliation_repository
+from quyca.infraestructure.mongo.repositories.affiliation_calculations import (
     affiliation_calculations_repository,
 )
-from infraestructure.mongo.models import Work, Affiliation, general
-from infraestructure.mongo.utils.session import engine
-from infraestructure.mongo.utils.iterators import WorkIterator, SourceIterator
-from core.config import settings
+from quyca.infraestructure.mongo.models import Work, Affiliation, general
+from quyca.infraestructure.mongo.utils.session import engine
+from quyca.infraestructure.mongo.utils.iterators import WorkIterator, SourceIterator
+from quyca.core.config import settings
 
 
 class WorkRepository(RepositoryBase[Work, WorkIterator]):

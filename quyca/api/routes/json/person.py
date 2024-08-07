@@ -2,11 +2,11 @@ import json
 
 from flask import Blueprint, request, Response
 
-from services.v1.person_api import person_api_service
-from services.work import work_service
-from utils.encoder import JsonEncoder
-from schemas.general import QueryBase
-from core.config import settings
+from quyca.services.v1.person_api import person_api_service
+from quyca.services.work import work_service
+from quyca.utils.encoder import JsonEncoder
+from quyca.schemas.general import QueryBase
+from quyca.core.config import settings
 
 router = Blueprint("person_api_v1", __name__)
 

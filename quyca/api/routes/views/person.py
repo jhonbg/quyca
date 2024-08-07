@@ -7,11 +7,11 @@ from flask import Blueprint, request, Response, Request
 # from flask_apidoc import ApiDoc
 
 # from quyca.services.plots.person import person_app_service
-from services.person import person_service
-from services.work import work_service
-from schemas.work import WorkQueryParams
-from utils.encoder import JsonEncoder
-from utils.flatten_json import flatten_json_list
+from quyca.services.person import person_service
+from quyca.services.work import work_service
+from quyca.schemas.work import WorkQueryParams
+from quyca.utils.encoder import JsonEncoder
+from quyca.utils.flatten_json import flatten_json_list
 
 router = Blueprint("person_app_v1", __name__)
 

@@ -1,12 +1,12 @@
 import datetime
 from typing import Iterable
 
-from utils.cpi import inflate
+from quyca.utils.cpi import inflate
 from currency_converter import CurrencyConverter
 
-from utils.hindex import hindex
-from protocols.mongo.models.work import Work
-from protocols.mongo.models.source import APC, Source
+from quyca.utils.hindex import hindex
+from quyca.protocols.mongo.models.work import Work
+from quyca.protocols.mongo.models.source import APC, Source
 
 
 class bars:

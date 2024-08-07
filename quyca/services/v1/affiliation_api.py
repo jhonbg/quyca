@@ -1,8 +1,8 @@
 from bson import ObjectId
 from pymongo import ASCENDING, DESCENDING
 
-from infraestructure.mongo.utils.session import client
-from core.config import settings
+from quyca.infraestructure.mongo.utils.session import client
+from quyca.core.config import settings
 
 
 class AffiliationApiService:

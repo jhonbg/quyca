@@ -1,7 +1,7 @@
 import subprocess
 
-from core.logging import get_logger
-from core.config import settings
+from quyca.core.logging import get_logger
+from quyca.core.config import settings
 
 log = get_logger(__name__)
 

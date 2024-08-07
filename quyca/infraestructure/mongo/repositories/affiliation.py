@@ -3,14 +3,14 @@ from typing import Any, Iterable
 from bson import ObjectId
 from odmantic import Model
 
-from infraestructure.mongo.repositories.base import RepositoryBase
-from infraestructure.mongo.models.affiliation import Affiliation
-from infraestructure.mongo.models.person import Person
-from infraestructure.mongo.utils.session import engine
-from infraestructure.mongo.utils.iterators import AffiliationIterator
-from schemas.affiliation import AffiliationRelated
-from schemas.person import PersonList
-from core.config import settings
+from quyca.infraestructure.mongo.repositories.base import RepositoryBase
+from quyca.infraestructure.mongo.models.affiliation import Affiliation
+from quyca.infraestructure.mongo.models.person import Person
+from quyca.infraestructure.mongo.utils.session import engine
+from quyca.infraestructure.mongo.utils.iterators import AffiliationIterator
+from quyca.schemas.affiliation import AffiliationRelated
+from quyca.schemas.person import PersonList
+from quyca.core.config import settings
 
 
 class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):

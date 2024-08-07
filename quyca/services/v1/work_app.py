@@ -1,7 +1,7 @@
 from bson import ObjectId
 
-from infraestructure.mongo.utils.session import client
-from core.config import settings
+from quyca.infraestructure.mongo.utils.session import client
+from quyca.core.config import settings
 
 
 class WorkAppService:

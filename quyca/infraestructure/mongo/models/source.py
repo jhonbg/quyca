@@ -3,7 +3,7 @@ from typing import Any
 from odmantic import Model, Field, ObjectId
 from pydantic import BaseModel
 
-from infraestructure.mongo.models.general import (
+from quyca.infraestructure.mongo.models.general import (
     Type,
     Updated,
     ExternalId,

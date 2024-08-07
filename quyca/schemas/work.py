@@ -3,8 +3,8 @@ from itertools import chain
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from schemas.general import Type, Updated, ExternalId, ExternalURL, QueryBase
-from core.config import settings
+from quyca.schemas.general import Type, Updated, ExternalId, ExternalURL, QueryBase
+from quyca.core.config import settings
 
 
 class Title(BaseModel):

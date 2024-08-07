@@ -1,8 +1,8 @@
-from services.base import ServiceBase
-from schemas.source import SourceQueryParams, Source as SourceSearch
-from schemas.work import WorkProccessed
-from protocols.mongo.models.source import Source
-from protocols.mongo.repositories.source import SourceRepository
+from quyca.services.base import ServiceBase
+from quyca.schemas.source import SourceQueryParams, Source as SourceSearch
+from quyca.schemas.work import WorkProccessed
+from quyca.protocols.mongo.models.source import Source
+from quyca.protocols.mongo.repositories.source import SourceRepository
 
 
 class SourceService(

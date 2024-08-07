@@ -1,6 +1,6 @@
-from infraestructure.mongo.models.person import Person
-from infraestructure.mongo.repositories.base import RepositoryBase
-from infraestructure.mongo.utils.iterators import PersonIterator
+from quyca.infraestructure.mongo.models.person import Person
+from quyca.infraestructure.mongo.repositories.base import RepositoryBase
+from quyca.infraestructure.mongo.utils.iterators import PersonIterator
 
 
 class PersonRepository(RepositoryBase[Person, PersonIterator]):

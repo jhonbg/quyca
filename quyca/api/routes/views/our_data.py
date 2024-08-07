@@ -2,8 +2,8 @@ import json
 
 from flask import Blueprint, Response
 
-from services.v1.our_data_app import our_data_app_service
-from utils.encoder import JsonEncoder
+from quyca.services.v1.our_data_app import our_data_app_service
+from quyca.utils.encoder import JsonEncoder
 
 router = Blueprint("our_data_app_v1", __name__)
 

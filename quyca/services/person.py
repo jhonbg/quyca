@@ -1,16 +1,16 @@
 from typing import Any, Callable
 from json import loads
 
-from schemas.general import GeneralMultiResponse
-from schemas.affiliation import AffiliationInfo
-from services.base import ServiceBase
-from services.plots.person import person_plots_service
-from schemas.person import PersonQueryParams, PersonSearch, PersonInfo
-from protocols.mongo.models.person import Person
-from protocols.mongo.repositories.person import PersonRepository
-from protocols.mongo.repositories.work import WorkRepository
-from protocols.mongo.repositories.affiliation import AffiliationRepository
-from core.config import settings
+from quyca.schemas.general import GeneralMultiResponse
+from quyca.schemas.affiliation import AffiliationInfo
+from quyca.services.base import ServiceBase
+from quyca.services.plots.person import person_plots_service
+from quyca.schemas.person import PersonQueryParams, PersonSearch, PersonInfo
+from quyca.protocols.mongo.models.person import Person
+from quyca.protocols.mongo.repositories.person import PersonRepository
+from quyca.protocols.mongo.repositories.work import WorkRepository
+from quyca.protocols.mongo.repositories.affiliation import AffiliationRepository
+from quyca.core.config import settings
 
 
 class PersonService(

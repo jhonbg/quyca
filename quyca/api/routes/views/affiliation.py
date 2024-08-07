@@ -5,10 +5,10 @@ import csv
 from flask import Blueprint, request, Response, jsonify
 from pydantic import ValidationError
 
-from services.affiliation import affiliation_service
-from schemas.work import WorkQueryParams
-from utils.encoder import JsonEncoder
-from utils.flatten_json import flatten_json_list
+from quyca.services.affiliation import affiliation_service
+from quyca.schemas.work import WorkQueryParams
+from quyca.utils.encoder import JsonEncoder
+from quyca.utils.flatten_json import flatten_json_list
 
 router = Blueprint("affiliation_app_v1", __name__)
 

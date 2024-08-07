@@ -4,7 +4,7 @@ from bson import ObjectId
 from odmantic import Model, Field, EmbeddedModel
 from odmantic.bson import BaseBSONModel
 
-from infraestructure.mongo.models.general import (
+from quyca.infraestructure.mongo.models.general import (
     Type,
     Updated,
     ExternalId,

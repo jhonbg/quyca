@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from services.work import work_service
+from quyca.services.work import work_service
 
 router = Blueprint("work_app_v1", __name__)
 

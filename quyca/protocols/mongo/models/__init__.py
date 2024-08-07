@@ -1,4 +1,4 @@
-from .affiliation import Affiliation, AffiliationCalculations
-from .person import Person
-from .source import Source
-from .work import Work
+from quyca.protocols.mongo.models.affiliation import Affiliation, AffiliationCalculations
+from quyca.protocols.mongo.models.person import Person
+from quyca.protocols.mongo.models.source import Source
+from quyca.protocols.mongo.models.work import Work

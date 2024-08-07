@@ -1,11 +1,11 @@
 from flask import Flask
 from flask_cors import CORS
 
-from api.router import api_router
-from core.config import get_settings
-from core.debugger import initialize_server_debugger_if_needed
-from core.apidoc import generate_apidoc
-from infraestructure.mongo import init_mongo_infraestructure
+from quyca.api.router import api_router
+from quyca.core.config import get_settings
+from quyca.core.debugger import initialize_server_debugger_if_needed
+from quyca.core.apidoc import generate_apidoc
+from quyca.infraestructure.mongo import init_mongo_infraestructure
 
 
 def create_app():

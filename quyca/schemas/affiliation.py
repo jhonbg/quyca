@@ -3,7 +3,7 @@ from typing import Any
 from typing_extensions import Self
 from pydantic import BaseModel, Field, model_validator
 
-from schemas.general import (
+from quyca.schemas.general import (
     Type,
     Updated,
     ExternalId,
@@ -12,8 +12,8 @@ from schemas.general import (
     CitationsCount,
     Name,
 )
-from schemas.person import PersonList
-from core.config import settings
+from quyca.schemas.person import PersonList
+from quyca.core.config import settings
 
 
 class Address(BaseModel):

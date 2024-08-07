@@ -1,15 +1,15 @@
 from flask import Blueprint
 
-from api.routes.ping import router as ping_router
-from core.config import settings
-from api.routes.views.search import router as search_app_router_v1
-from api.routes.json.search import router as search_api_router_v1
-from api.routes.views.affiliation import router as affiliation_app_router_v1
-from api.routes.json.affiliation import router as affiliation_api_router_v1
-from api.routes.views.person import router as person_app_router_v1
-from api.routes.json.person import router as person_api_router_v1
-from api.routes.views.work import router as work_app_router_v1
-from api.apidoc import router as apidoc_router
+from quyca.api.routes.ping import router as ping_router
+from quyca.core.config import settings
+from quyca.api.routes.views.search import router as search_app_router_v1
+from quyca.api.routes.json.search import router as search_api_router_v1
+from quyca.api.routes.views.affiliation import router as affiliation_app_router_v1
+from quyca.api.routes.json.affiliation import router as affiliation_api_router_v1
+from quyca.api.routes.views.person import router as person_app_router_v1
+from quyca.api.routes.json.person import router as person_api_router_v1
+from quyca.api.routes.views.work import router as work_app_router_v1
+from quyca.api.apidoc import router as apidoc_router
 
 api_router = Blueprint("router", __name__)
 

@@ -1,10 +1,10 @@
 from typing import Any, Iterable, TypeVar
 
-from protocols.mongo.repositories.base import RepositoryBase
-from protocols.mongo.models.affiliation import Affiliation
-from protocols.mongo.models.person import Person
-from protocols.mongo.utils.iterators import AffiliationIterator
-from schemas.affiliation import AffiliationRelated
+from quyca.protocols.mongo.repositories.base import RepositoryBase
+from quyca.protocols.mongo.models.affiliation import Affiliation
+from quyca.protocols.mongo.models.person import Person
+from quyca.protocols.mongo.utils.iterators import AffiliationIterator
+from quyca.schemas.affiliation import AffiliationRelated
 
 
 Model = TypeVar("Model", bound=Any)

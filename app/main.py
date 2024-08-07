@@ -14,6 +14,11 @@ app.register_blueprint(api_router)
 
 if __name__ == "__main__":
     generate_apidoc()
+
     initialize_server_debugger_if_needed()
+
     init_mongo_infraestructure()
-    app.run(host="0.0.0.0", port=settings.APP_PORT, threaded=True, debug=True)
+
+    app.run(
+        host="0.0.0.0", port=settings.APP_PORT, threaded=True, debug=settings.APP_DEBUG
+    )

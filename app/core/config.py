@@ -1,44 +1,34 @@
 from functools import lru_cache
-from typing import Any, Optional
-
+from typing import Optional
+from dotenv import dotenv_values
 from typing_extensions import Self
-
 from pydantic import model_validator, MongoDsn
-
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    """
-    Settings for the application.
-    """
+    env: dict = dotenv_values()
 
-    #: The application name
-    APP_NAME: str = "impactu Api"
-    #: The application version
-    APP_VERSION: str = "0.0.1"
-    #: The application debug mode
-    DEBUG: bool = False
-    #: The application api version
-    APP_V1_STR: str = "/app/v1"
-    APP_V2_STR: str = "/app/v2"
-    API_V1_STR: str = "/api/v1"
-    API_v2_STR: str = "/api/v2"
+    APP_NAME: str = env["APP_NAME"]
+    APP_VERSION: str = env["APP_VERSION"]
+    APP_DEBUG: bool = env["APP_DEBUG"]
+    APP_PORT: str | int = env["APP_PORT"]
+    APP_DOMAIN: str = env["APP_DOMAIN"]
+    APP_ENVIRONMENT: str = env["APP_ENVIRONMENT"]
 
-    MONGO_SERVER: str
-    MONGO_INITDB_ROOT_USERNAME: str
-    MONGO_INITDB_ROOT_PASSWORD: str
-    MONGO_INITDB_DATABASE: str
-    MONGO_INITDB_PORT: int = 27017
-    MONGO_IMPACTU_DB: str
+    APP_V1_STR: str = env["APP_V1_STR"]
+    APP_V2_STR: str = env["APP_V2_STR"]
+    API_V1_STR: str = env["API_V1_STR"]
+    API_v2_STR: str = env["API_v2_STR"]
+
+    MONGO_SERVER: str = env["MONGO_SERVER"]
+    MONGO_INITDB_ROOT_USERNAME: str = env["MONGO_INITDB_ROOT_USERNAME"]
+    MONGO_INITDB_ROOT_PASSWORD: str = env["MONGO_INITDB_ROOT_PASSWORD"]
+    MONGO_INITDB_DATABASE: str = env["MONGO_INITDB_DATABASE"]
+    MONGO_INITDB_PORT: int = env["MONGO_INITDB_PORT"]
+    MONGO_IMPACTU_DB: str = env["MONGO_IMPACTU_DB"]
 
     MONGO_URI: Optional[MongoDsn] = None
-
-    APP_PORT: str | int = 8010
-
-    APP_DOMAIN: str = "localhost:8010"
-
-    ENVIRONMENT: str = "dev"
 
     @model_validator(mode="after")
     def validate_mongo_uri(self) -> Self:

@@ -7,7 +7,7 @@ log = get_logger(__name__)
 
 
 def generate_apidoc():
-    if settings.ENVIRONMENT == "dev":
+    if settings.APP_ENVIRONMENT == "dev":
         return
     log.info("Generating API documentation")
     command = (

@@ -1,6 +1,6 @@
 from flask import Blueprint, send_from_directory, redirect, url_for
 
-router = Blueprint("apidoc", __name__, static_folder="/usr/src/app/app/api")
+router = Blueprint("apidoc", __name__, static_folder="/usr/src/quyca/quyca/api")
 
 
 @router.route("/apidoc/<path:path>")

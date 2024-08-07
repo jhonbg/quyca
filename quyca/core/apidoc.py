@@ -11,9 +11,9 @@ def generate_apidoc():
         return
     log.info("Generating API documentation")
     command = (
-        "apidoc -i /usr/src/app/app/api/routes/v1 "
-        f"-c /usr/src/app/app/core/docs/apidoc.{settings.ENVIRONMENT}.json "
-        "-o /usr/src/app/app/api/apidoc "
+        "apidoc -i /usr/src/quyca/quyca/api/routes/v1 "
+        f"-c /usr/src/quyca/quyca/core/docs/apidoc.{settings.ENVIRONMENT}.json "
+        "-o /usr/src/quyca/quyca/api/apidoc "
         
     )
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)

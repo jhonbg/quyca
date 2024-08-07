@@ -6,7 +6,7 @@ from flask import Blueprint, request, Response, Request
 
 # from flask_apidoc import ApiDoc
 
-# from app.services.plots.person import person_app_service
+# from quyca.services.plots.person import person_app_service
 from services.person import person_service
 from services.work import work_service
 from schemas.work import WorkQueryParams

@@ -5,9 +5,9 @@ services:
         build:
             context: ..
             dockerfile: docker/Dockerfile.dev
-        command: python app/app.py
+        command: python quyca/quyca.py
         volumes:
-            - ../:/usr/src/app/
+            - ../:/usr/src/quyca/
         ports:
             - "8002:8010"
             - "10001:10001"

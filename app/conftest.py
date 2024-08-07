@@ -1,6 +1,6 @@
 import pytest
 
-from .main import app as create_app
+from .app import app as create_app
 from infraestructure.mongo import init_mongo_infraestructure
 
 @pytest.fixture(scope="session")

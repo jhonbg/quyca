@@ -2,21 +2,25 @@ from flask import Flask
 from flask_cors import CORS
 
 from api.router import api_router
-from core.config import settings
+from core.config import get_settings
 from core.debugger import initialize_server_debugger_if_needed
 from core.apidoc import generate_apidoc
 from infraestructure.mongo import init_mongo_infraestructure
 
-app = Flask(__name__)
-CORS(app)
 
-app.register_blueprint(api_router)
+def create_app():
+    app_factory = Flask(__name__)
+    CORS(app_factory)
+    app_factory.register_blueprint(api_router)
+
+    return app_factory
+
 
 if __name__ == "__main__":
+    app = create_app()
+    settings = get_settings()
     generate_apidoc()
-
     initialize_server_debugger_if_needed()
-
     init_mongo_infraestructure()
 
     app.run(

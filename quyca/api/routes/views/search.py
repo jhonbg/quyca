@@ -1,13 +1,13 @@
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 
-from schemas import PersonQueryParams, AffiliationQueryParams, WorkQueryParams
-from services import person_service, affiliation_service, work_service
+from schemas import PersonQueryParams, AffiliationQueryParams, WorkQueryParams, SubjectQueryParams
+from services import person_service, affiliation_service, work_service, source_service
 
-router = Blueprint("search", __name__)
+router = Blueprint("search_app_v1", __name__)
 
 
-@router.route("/search/person", methods=["GET"])
+@router.route("/person", methods=["GET"])
 def read_person():
     try:
         query_params = PersonQueryParams(**request.args)
@@ -16,7 +16,7 @@ def read_person():
     return person_service.search(params=query_params)
 
 
-@router.route("/search/works", methods=["GET"])
+@router.route("/works", methods=["GET"])
 def read_works():
     try:
         query_params = WorkQueryParams(**request.args)
@@ -25,10 +25,20 @@ def read_works():
     return work_service.search(params=query_params)
 
 
-@router.route("/search/affiliations", methods=["GET"])
-def read_affiliations():
+@router.route("/affiliations/<affiliation_type>", methods=["GET"])
+def read_affiliations(affiliation_type: str | None = None):
     try:
-        query_params = AffiliationQueryParams(**request.args)
+        query_params = AffiliationQueryParams(**request.args, type=affiliation_type)
     except ValidationError as e:
         return jsonify({"error": str(e)}, 400)
+
     return affiliation_service.search(params=query_params)
+
+
+@router.route("/subjects", methods=["GET"])
+def read_subjects():
+    try:
+        query_params = SubjectQueryParams(**request.args)
+    except ValidationError as e:
+        return jsonify({"error": str(e)}, 400)
+    return source_service.search(params=query_params)

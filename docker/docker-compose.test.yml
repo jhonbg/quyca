@@ -5,10 +5,10 @@ services:
         build:
             context: ..
             dockerfile: docker/Dockerfile.test
-        working_dir: /usr/src/app/app
+        working_dir: /usr/src/quyca/quyca
         command: python -m pytest
         volumes:
-            - ../:/usr/src/app/
+            - ../:/usr/src/quyca/
         env_file:
             - ../.env
         networks:

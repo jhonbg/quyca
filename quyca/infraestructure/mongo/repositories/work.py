@@ -28,23 +28,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             return map(lambda x: x.model_dump_json(), authors)
     
     @classmethod
-    def wrap_pipeline(
+    def get_pipeline_works_by_affiliation_id(
         cls, affiliation_id: str, affiliation_type: str
     ) -> list[dict[str, Any]]:
-        """
-        Constructs a MongoDB aggregation pipeline based on the given affiliation ID and type.
-
-        Args:
-            affiliation_id (str): The ID of the affiliation.
-            affiliation_type (str): The type of the affiliation.
-
-        Returns:
-            list[dict[str, Any]]: The constructed MongoDB aggregation pipeline.
-
-        Raises:
-            None
-
-        """
         if affiliation_type in settings.institutions:
             pipeline = [
                 {
@@ -53,7 +39,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
                     },
                 },
             ]
+
             return pipeline
+
         if affiliation_type == "group":
             pipeline = [
                 {
@@ -62,7 +50,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
                     },
                 },
             ]
+
             return pipeline
+
         pipeline = [
             {"$match": {"_id": ObjectId(affiliation_id)}},
             {"$project": {"relations.types.type": 1, "relations.id": 1}},
@@ -91,11 +81,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             {"$unwind": "$work.authors"},
             {"$match": {"$expr": {"$eq": ["$person._id", "$work.authors.id"]}}},
             {"$unwind": "$work.authors.affiliations"},
-            {
-                "$match": {
-                    "$expr": {"$eq": ["$relations.id", "$work.authors.affiliations.id"]}
-                }
-            },
+            {"$match": {"$expr": {"$eq": ["$relations.id", "$work.authors.affiliations.id"]}}},
             {"$group": {"_id": "$work._id", "work": {"$first": "$work"}}},
             {"$project": {"work._id": 1}},
             {
@@ -108,6 +94,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             },
             {"$unwind": "$works"},
         ]
+
         return pipeline
 
     @classmethod
@@ -204,7 +191,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             if affiliation_type in settings.institutions
             else affiliation_type
         )
-        count_papers_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
+        count_papers_pipeline = cls.get_pipeline_works_by_affiliation_id(affiliation_id, affiliation_type)
         collection = (
             Affiliation if affiliation_type not in ["institution", "group"] else Work
         )
@@ -359,7 +346,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             if affiliation_type in settings.institutions
             else affiliation_type
         )
-        works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
+        works_pipeline = cls.get_pipeline_works_by_affiliation_id(affiliation_id, affiliation_type)
         collection = (
             Affiliation if affiliation_type not in ["institution", "group"] else Work
         )
@@ -531,7 +518,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             if affiliation_type in settings.institutions
             else affiliation_type
         )
-        works_pipeline = cls.wrap_pipeline(affiliation_id, affiliation_type)
+        works_pipeline = cls.get_pipeline_works_by_affiliation_id(affiliation_id, affiliation_type)
         person = True if affiliation_type not in ["institution", "group"] else False
         works_pipeline += [
             {

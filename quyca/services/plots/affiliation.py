@@ -490,69 +490,133 @@ class AffiliationPlotsService:
         )
         return self.pies.products_editorial_same_institution(sources, institution)
 
-    def get_coauthorships_worldmap(self, idx, typ=None, aff_type: str | None = None):
+    def get_coauthorships_worldmap(self, affiliation_id, affiliation_type, tab=None):
         data = []
-        if typ in ["group", "department", "faculty"]:
-            for author in self.colav_db["person"].find(
-                {"affiliations.id": ObjectId(idx)}, {"affiliations": 1}
-            ):
-                pipeline = [
-                    {"$match": {"authors.id": author["_id"]}},
-                    {"$unwind": "$authors"},
-                    {
-                        "$group": {
-                            "_id": "$authors.affiliations.id",
-                            "count": {"$sum": 1},
+
+        if affiliation_type in ["group", "department", "faculty"]:
+            institution_id = self.colav_db["affiliations"].aggregate([
+                {
+                    '$match': {
+                        '_id': ObjectId('665e0b3daa7c2077adf68220')
+                    }
+                }, {
+                    '$unwind': '$relations'
+                }, {
+                    '$match': {
+                        'relations.types.type': 'Education'
+                    }
+                }
+            ]).next().get("relations", [])["id"]
+
+            pipeline = [
+                {
+                    '$match': {
+                        'affiliations.id': ObjectId(affiliation_id)
+                    }
+                }, {
+                    '$project': {
+                        '_id': 1
+                    }
+                }, {
+                    '$lookup': {
+                        'from': 'works',
+                        'localField': '_id',
+                        'foreignField': 'authors.id',
+                        'as': 'work',
+                        'pipeline': [
+                            {
+                                '$project': {
+                                    '_id': 1,
+                                    'authors': 1
+                                }
+                            }
+                        ]
+                    }
+                }, {
+                    '$unwind': '$work'
+                }, {
+                    '$match': {
+                        'work.authors.affiliations.id': institution_id
+                    }
+                }, {
+                    '$unwind': '$work.authors'
+                }, {
+                    '$unwind': '$work.authors.affiliations'
+                }, {
+                    '$group': {
+                        '_id': '$work.authors.affiliations.id',
+                        'count': {
+                            '$sum': 1
                         }
-                    },
-                    {"$unwind": "$_id"},
-                    {
-                        "$lookup": {
-                            "from": "affiliations",
-                            "localField": "_id",
-                            "foreignField": "_id",
-                            "as": "affiliation",
-                        }
-                    },
-                    {
-                        "$project": {
-                            "count": 1,
-                            "affiliation.addresses.country_code": 1,
-                            "affiliation.addresses.country": 1,
-                        }
-                    },
-                    {"$unwind": "$affiliation"},
-                    {"$unwind": "$affiliation.addresses"},
-                ]
-                for work in self.colav_db["works"].aggregate(pipeline):
-                    data.append(work)
+                    }
+                }, {
+                    '$lookup': {
+                        'from': 'affiliations',
+                        'localField': '_id',
+                        'foreignField': '_id',
+                        'as': 'affiliation',
+                        'pipeline': [
+                            {
+                                '$project': {
+                                    'addresses.country_code': 1,
+                                    'addresses.country': 1
+                                }
+                            }
+                        ]
+                    }
+                }, {
+                    '$unwind': '$affiliation'
+                }, {
+                    '$unwind': '$affiliation.addresses'
+                }
+            ]
+
+            for person in self.colav_db["person"].aggregate(pipeline):
+                data.append(person)
         else:
             pipeline = [
-                {"$match": {"authors.affiliations.id": ObjectId(idx)}},
-                {"$unwind": "$authors"},
-                {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},
-                {"$unwind": "$_id"},
                 {
-                    "$lookup": {
-                        "from": "affiliations",
-                        "localField": "_id",
-                        "foreignField": "_id",
-                        "as": "affiliation",
+                    '$match': {
+                        'authors.affiliations.id': ObjectId(affiliation_id)
                     }
-                },
-                {
-                    "$project": {
-                        "count": 1,
-                        "affiliation.addresses.country_code": 1,
-                        "affiliation.addresses.country": 1,
+                }, {
+                    '$unwind': '$authors'
+                }, {
+                    '$unwind': '$authors.affiliations'
+                }, {
+                    '$group': {
+                        '_id': '$authors.affiliations.id',
+                        'count': {
+                            '$sum': 1
+                        }
                     }
-                },
-                {"$unwind": "$affiliation"},
-                {"$unwind": "$affiliation.addresses"},
+                }, {
+                    '$lookup': {
+                        'from': 'affiliations',
+                        'localField': '_id',
+                        'foreignField': '_id',
+                        'as': 'affiliation',
+                        'pipeline': [
+                            {
+                                '$project': {
+                                    'addresses.country_code': 1,
+                                    'addresses.country': 1
+                                }
+                            }
+                        ]
+                    }
+                }, {
+                    '$unwind': '$affiliation'
+                }, {
+                    '$unwind': '$affiliation.addresses'
+                }
             ]
+
             for work in self.colav_db["works"].aggregate(pipeline):
                 data.append(work)
+
         result = self.maps.get_coauthorship_world_map(data)
+
         if result:
             return {"plot": result}
         else:

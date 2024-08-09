@@ -29,15 +29,15 @@ RUN curl -sSL https://install.python-poetry.org | python
 WORKDIR $PYSETUP_PATH
 RUN poetry config virtualenvs.options.system-site-packages true
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/quyca
 COPY pyproject.toml poetry.lock ./
 
 RUN poetry export --without-hashes --with dev --format=requirements.txt > requirements.txt
 
 
 FROM python-base as compile-image
-WORKDIR /usr/src/app
-COPY --from=requirements-image /usr/src/app/requirements.txt /usr/src/app/requirements.txt
+WORKDIR /usr/src/quyca
+COPY --from=requirements-image /usr/src/quyca/requirements.txt /usr/src/quyca/requirements.txt
 # set environment varibles
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -59,10 +59,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
 ENV PYTHONUNBUFFERED TRUE
 COPY --from=compile-image /home/venv /home/venv
 ENV PATH="/home/venv/bin:$PATH"
-WORKDIR /usr/src/app
+WORKDIR /usr/src/quyca
 COPY .dockerignore .dockerignore
 EXPOSE 80
-COPY app/ app/
-# RUN apidoc -i /usr/src/app/app/api/routes/v1 \
-#     -o /usr/src/app/app/api/apidoc/ \
-#     -c /usr/src/app/app/apidoc.json
+COPY quyca/ quyca/
+# RUN apidoc -i /usr/src/quyca/app/api/routes/v1 \
+#     -o /usr/src/quyca/app/api/apidoc/ \
+#     -c /usr/src/quyca/app/apidoc.json

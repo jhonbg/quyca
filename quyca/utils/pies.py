@@ -3,14 +3,14 @@ from typing import Iterable, Callable, Any
 from collections import Counter
 import functools
 
-from quyca.utils.cpi import inflate
+from utils.cpi import inflate
 from currency_converter import CurrencyConverter
 
-from quyca.utils.hindex import hindex
-from quyca.protocols.mongo.models.work import Work, SubjectEmbedded, Updated
-from quyca.protocols.mongo.models.general import CitationsCount
-from quyca.protocols.mongo.models.source import Publisher, Source, Ranking
-from quyca.schemas.source import APC
+from utils.hindex import hindex
+from protocols.mongo.models.work import Work, SubjectEmbedded, Updated
+from protocols.mongo.models.general import CitationsCount
+from protocols.mongo.models.source import Publisher, Source, Ranking
+from schemas.source import APC
 
 
 class pies:

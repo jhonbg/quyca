@@ -3,7 +3,7 @@ from typing import Any
 from odmantic import Model, EmbeddedModel, Field
 from bson import ObjectId
 
-from quyca.infraestructure.mongo.models.general import Type, Updated, ExternalId
+from infraestructure.mongo.models.general import Type, Updated, ExternalId
 
 
 class Affiliation(EmbeddedModel):

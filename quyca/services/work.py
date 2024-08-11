@@ -1,8 +1,8 @@
 from typing import Any
 from json import loads
 
-from quyca.services.base import ServiceBase
-from quyca.schemas.work import (
+from services.base import ServiceBase
+from schemas.work import (
     WorkQueryParams,
     WorkProccessed,
     WorkListApp,
@@ -10,11 +10,11 @@ from quyca.schemas.work import (
     Work as WorkSchema,
     Author,
 )
-from quyca.protocols.mongo.models.work import Work
-from quyca.protocols.mongo.repositories.work import WorkRepository
-from quyca.services.person import person_service
-from quyca.services.source import source_service
-from quyca.schemas.general import GeneralMultiResponse
+from protocols.mongo.models.work import Work
+from protocols.mongo.repositories.work import WorkRepository
+from services.person import person_service
+from services.source import source_service
+from schemas.general import GeneralMultiResponse
 
 
 class WorkService(

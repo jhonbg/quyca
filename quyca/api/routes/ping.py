@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from quyca.core.config import settings
+from core.config import settings
 
 router = Blueprint("ping", __name__)
 

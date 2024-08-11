@@ -2,7 +2,7 @@ from typing import Generic, TypeVar, Iterable, ClassVar
 
 from odmantic import Model
 
-from quyca.infraestructure.mongo.models import (
+from infraestructure.mongo.models import (
     Affiliation,
     Person,
     Source,

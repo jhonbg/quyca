@@ -3,15 +3,15 @@ import json
 from flask import Blueprint, request, jsonify, Response
 from pydantic import ValidationError
 
-from quyca.schemas import (
+from schemas import (
     PersonQueryParams,
     AffiliationQueryParams,
     WorkQueryParams,
     SubjectQueryParams,
 )
-from quyca.services.v1.search_api import search_api_service
-from quyca.services import work_service
-from quyca.utils.encoder import JsonEncoder
+from services.v1.search_api import search_api_service
+from services import work_service
+from utils.encoder import JsonEncoder
 
 router = Blueprint("search_api_v1", __name__)
 

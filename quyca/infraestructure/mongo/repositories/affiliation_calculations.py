@@ -1,9 +1,9 @@
 from bson import ObjectId
 
-from quyca.infraestructure.mongo.repositories.base import RepositoryBase
-from quyca.infraestructure.mongo.models.affiliation import AffiliationCalculations
-from quyca.infraestructure.mongo.utils.iterators import AffiliationCalculationsIterator
-from quyca.infraestructure.mongo.utils.session import engine_calculations
+from infraestructure.mongo.repositories.base import RepositoryBase
+from infraestructure.mongo.models.affiliation import AffiliationCalculations
+from infraestructure.mongo.utils.iterators import AffiliationCalculationsIterator
+from infraestructure.mongo.utils.session import engine_calculations
 
 
 class AffiliationCalculationsRepository(

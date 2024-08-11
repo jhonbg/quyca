@@ -1,6 +1,6 @@
 from pytest import fixture
 
-from quyca.app import create_app
+from quyca import create_app
 
 
 @fixture()

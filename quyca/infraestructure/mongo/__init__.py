@@ -1,10 +1,10 @@
 from typing import NoReturn
 
 
-from quyca.services import affiliation_service, person_service, work_service, source_service
-from quyca.services.plots.affiliation import affiliation_plots_service
-from quyca.services.plots.person import person_plots_service
-from quyca.infraestructure.mongo.repositories import (
+from services import affiliation_service, person_service, work_service, source_service
+from services.plots.affiliation import affiliation_plots_service
+from services.plots.person import person_plots_service
+from infraestructure.mongo.repositories import (
     affiliation_repository,
     affiliation_calculations_repository,
     work_repository,

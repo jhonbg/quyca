@@ -1,6 +1,6 @@
-from quyca.infraestructure.mongo.models.source import Source
-from quyca.infraestructure.mongo.repositories.base import RepositoryBase
-from quyca.infraestructure.mongo.utils.iterators import SourceIterator
+from infraestructure.mongo.models.source import Source
+from infraestructure.mongo.repositories.base import RepositoryBase
+from infraestructure.mongo.utils.iterators import SourceIterator
 
 
 class SourceRepository(RepositoryBase[Source, SourceIterator]):

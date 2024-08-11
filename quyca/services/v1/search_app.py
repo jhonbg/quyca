@@ -1,10 +1,10 @@
 from bson import ObjectId
 from pymongo import ASCENDING, DESCENDING
 
-from quyca.infraestructure.mongo.utils.session import client
-from quyca.infraestructure.mongo.repositories.work import WorkRepository
-from quyca.infraestructure.mongo.repositories.affiliation import AffiliationRepository
-from quyca.core.config import settings
+from infraestructure.mongo.utils.session import client
+from infraestructure.mongo.repositories.work import WorkRepository
+from infraestructure.mongo.repositories.affiliation import AffiliationRepository
+from core.config import settings
 
 
 class SearchAppService:

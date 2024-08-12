@@ -1,9 +1,9 @@
 import pytest
 from flask.testing import FlaskClient
 
-from quyca.core.logging import get_logger
-from quyca.core.config import settings
-from quyca.tests.utils import data as test_data
+from core import get_logger
+from core import settings
+from tests.utils import data as test_data
 
 log = get_logger(__name__)
 

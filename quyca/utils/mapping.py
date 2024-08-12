@@ -1,5 +1,5 @@
-from quyca.protocols.mongo.models.general import CitationsCount
-from quyca.protocols.mongo.models.work import Work
+from protocols.mongo.models.general import CitationsCount
+from protocols.mongo.models.work import Work
 
 
 def get_openalex_scienti(x: Work) -> int:

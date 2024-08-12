@@ -1,7 +1,7 @@
 import pytest
 
-from quyca.app import create_app
-from quyca.infraestructure.mongo import init_mongo_infraestructure
+from app import create_app
+from infraestructure.mongo import init_mongo_infraestructure
 
 @pytest.fixture(scope="session")
 def client():

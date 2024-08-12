@@ -1,4 +1,4 @@
-from quyca.schemas.general import QueryBase
+from schemas.general import QueryBase
 
 
 class SubjectQueryParams(QueryBase):

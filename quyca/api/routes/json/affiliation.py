@@ -4,8 +4,8 @@ from typing import Any
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 
-from quyca.services.affiliation import affiliation_service
-from quyca.schemas.affiliation import AffiliationQueryParams
+from services.affiliation import affiliation_service
+from schemas.affiliation import AffiliationQueryParams
 
 router = Blueprint("affiliation_api_v1", __name__)
 

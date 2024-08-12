@@ -1,0 +1,14 @@
+services:
+  quyca-dev:
+    container_name: quyca-dev
+    network_mode: host
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    image: colav/quyca-dev:dev
+    volumes:
+      - .:/app
+    working_dir: /app
+    entrypoint: ["poetry", "run", "python", "./quyca/app.py"]

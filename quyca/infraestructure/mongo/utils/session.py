@@ -1,7 +1,7 @@
 from odmantic.engine import SyncEngine
 from pymongo import MongoClient
 
-from quyca.core.config import settings
+from core.config import settings
 
 client = MongoClient(host=str(settings.MONGO_URI))
 

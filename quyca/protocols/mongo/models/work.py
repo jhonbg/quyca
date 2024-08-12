@@ -1,6 +1,6 @@
 from typing import Protocol, Any, NewType
 
-from quyca.protocols.mongo.models.general import (
+from protocols.mongo.models.general import (
     Type,
     Updated,
     ExternalId,

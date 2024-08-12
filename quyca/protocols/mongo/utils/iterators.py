@@ -1,6 +1,6 @@
 from typing import Protocol, TypeVar, Iterable, ClassVar
 
-from quyca.protocols.mongo.models import (
+from protocols.mongo.models import (
     Affiliation,
     Person,
     Source,

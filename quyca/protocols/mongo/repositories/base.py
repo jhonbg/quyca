@@ -1,6 +1,6 @@
 from typing import Protocol, TypeVar, Any, Literal, Iterable
 
-from quyca.protocols.mongo.utils.iterators import CollectionIterator
+from protocols.mongo.utils.iterators import CollectionIterator
 
 ModelType = TypeVar("ModelType")
 IteratorType = TypeVar("IteratorType", bound=CollectionIterator)

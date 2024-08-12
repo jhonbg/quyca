@@ -1,8 +1,8 @@
 from typing import Any, Iterable
 
-from quyca.protocols.mongo.repositories.base import RepositoryBase
-from quyca.protocols.mongo.models import Work, general
-from quyca.protocols.mongo.utils.iterators import WorkIterator, SourceIterator
+from protocols.mongo.repositories.base import RepositoryBase
+from protocols.mongo.models import Work, general
+from protocols.mongo.utils.iterators import WorkIterator, SourceIterator
 
 
 class WorkRepository(RepositoryBase[Work, WorkIterator]):

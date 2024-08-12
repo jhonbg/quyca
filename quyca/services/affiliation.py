@@ -1,35 +1,35 @@
 from json import loads
 from typing import Any, Callable
 
-from quyca.schemas.general import GeneralMultiResponse
-from quyca.schemas.affiliation import (
+from schemas.general import GeneralMultiResponse
+from schemas.affiliation import (
     AffiliationQueryParams,
     AffiliationSearch,
     AffiliationInfo,
     AffiliationRelatedInfo,
 )
-from quyca.schemas.work import (
+from schemas.work import (
     WorkProccessed,
     WorkListApp,
     WorkQueryParams,
     WorkCsv,
     Work as WorkSchema,
 )
-from quyca.schemas.person import PersonInfo
-from quyca.services.base import ServiceBase
-from quyca.services.source import source_service
-from quyca.services.plots.affiliation import affiliation_plots_service
-from quyca.protocols.mongo.models.affiliation import Affiliation
-from quyca.protocols.mongo.repositories.affiliation import (
+from schemas.person import PersonInfo
+from services.base import ServiceBase
+from services.source import source_service
+from services.plots.affiliation import affiliation_plots_service
+from protocols.mongo.models.affiliation import Affiliation
+from protocols.mongo.repositories.affiliation import (
     AffiliationRepository,
 )
-from quyca.protocols.mongo.repositories.affiliation_calculations import (
+from protocols.mongo.repositories.affiliation_calculations import (
     AffiliationCalculationsRepository,
 )
-from quyca.protocols.mongo.repositories.person import PersonRepository
-from quyca.protocols.mongo.repositories.work import WorkRepository
-from quyca.core.logging import get_logger
-from quyca.core.config import settings
+from protocols.mongo.repositories.person import PersonRepository
+from protocols.mongo.repositories.work import WorkRepository
+from core.logging import get_logger
+from core.config import settings
 
 
 log = get_logger(__name__)

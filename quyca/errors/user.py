@@ -1,4 +1,4 @@
-from quyca.errors.base import BaseErrors
+from errors.base import BaseErrors
 
 
 class UserErrors(BaseErrors):

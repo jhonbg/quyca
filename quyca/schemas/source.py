@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
-from quyca.schemas.general import Type, Updated, ExternalId, ExternalURL, QueryBase, Name
+from schemas.general import Type, Updated, ExternalId, ExternalURL, QueryBase, Name
 
 
 class SourceQueryParams(QueryBase): ...

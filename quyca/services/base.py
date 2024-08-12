@@ -3,9 +3,9 @@ from json import loads
 
 from pydantic import BaseModel
 
-from quyca.protocols.mongo.repositories.base import RepositoryBase
-from quyca.schemas.general import QueryBase, GeneralMultiResponse
-from quyca.core.logging import get_logger
+from protocols.mongo.repositories.base import RepositoryBase
+from schemas.general import QueryBase, GeneralMultiResponse
+from core.logging import get_logger
 
 log = get_logger(__name__)
 

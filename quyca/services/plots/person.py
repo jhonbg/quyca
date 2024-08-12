@@ -5,12 +5,12 @@ from itertools import chain
 from bson import ObjectId
 from pymongo import MongoClient
 
-from quyca.protocols.mongo.repositories.work import WorkRepository
-from quyca.core.config import settings
-from quyca.core.logging import get_logger
-from quyca.utils.bars import bars
-from quyca.utils.maps import maps
-from quyca.utils.pies import pies
+from protocols.mongo.repositories.work import WorkRepository
+from core.config import settings
+from core.logging import get_logger
+from utils.bars import bars
+from utils.maps import maps
+from utils.pies import pies
 
 
 client = MongoClient(host=str(settings.MONGO_URI))

@@ -5,8 +5,8 @@ from odmantic import Model, ObjectId
 from odmantic.engine import SyncEngine
 from odmantic.query import desc, asc
 
-from quyca.infraestructure.mongo.utils.session import engine
-from quyca.infraestructure.mongo.utils.iterators import CollectionIterator
+from infraestructure.mongo.utils.session import engine
+from infraestructure.mongo.utils.iterators import CollectionIterator
 
 ModelType = TypeVar("ModelType", bound=Model)
 IteratorType = TypeVar("IteratorType", bound=CollectionIterator)

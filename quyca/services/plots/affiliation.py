@@ -497,7 +497,7 @@ class AffiliationPlotsService:
             institution_id = self.colav_db["affiliations"].aggregate([
                 {
                     '$match': {
-                        '_id': ObjectId('665e0b3daa7c2077adf68220')
+                        '_id': ObjectId(affiliation_id)
                     }
                 }, {
                     '$unwind': '$relations'

@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 from typing import Optional
 from dotenv import dotenv_values
@@ -7,7 +8,11 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    env: dict = dotenv_values()
+    env: dict = {}
+    if os.getenv("ENVIRONMENT") == "dev":
+        env = dotenv_values(".env.dev")
+    elif os.getenv("ENVIRONMENT") == "prod":
+        env = dotenv_values(".env.prod")
 
     APP_NAME: str = env["APP_NAME"]
     APP_VERSION: str = env["APP_VERSION"]

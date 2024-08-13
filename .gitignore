@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+.idea/
 build/
 develop-eggs/
 dist/
@@ -102,7 +103,8 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+.env.dev
+.env.prod
 .venv
 env/
 venv/
@@ -132,3 +134,4 @@ dmypy.json
 mongo-data/
 db/
 storage/
+apidoc/

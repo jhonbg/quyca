@@ -1,10 +1,9 @@
 [tool.poetry]
-name = "impactu"
+name = "quyca"
 version = "0.1.0"
 description = ""
 authors = ["Simón <simon.garcial@udea.edu.co>"]
 readme = "README.md"
-packages = [{include = "fast_api_template"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"

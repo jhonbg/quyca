@@ -1,0 +1,11 @@
+{
+  "name": "colav-apidoc",
+  "version": "1.0.0",
+  "description": "Colav API Documentation",
+  "title": "Colav APIDoc",
+  "url": "https://api.dev.impactu.colav.co/apidoc",
+  "sampleUrl": "https://api.dev.impactu.colav.co/api/v1",
+  "header": {
+    "filename": "app/core/docs/apidoc-header.md"
+  }
+}

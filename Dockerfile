@@ -1,7 +1,5 @@
 FROM python:3.10-slim AS base
 
-FROM base AS development
-
 ENV \
 	PIP_NO_CACHE_DIR=off \
 	PIP_DISABLE_PIP_VERSION_CHECK=on \
@@ -29,3 +27,9 @@ RUN python -m venv $VIRTUAL_ENV \
 COPY . /quyca
 
 RUN poetry install
+
+FROM base AS development
+ENV ENVIRONMENT=dev
+
+FROM base AS production
+ENV ENVIRONMENT=prod

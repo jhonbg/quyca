@@ -13,25 +13,24 @@ class Settings(BaseSettings):
         env = dotenv_values(".env.dev")
     elif os.getenv("ENVIRONMENT") == "prod":
         env = dotenv_values(".env.prod")
+    elif os.getenv("ENVIRONMENT") == "local":
+        env = dotenv_values(".env.local")
 
     APP_NAME: str = env["APP_NAME"]
     APP_VERSION: str = env["APP_VERSION"]
     APP_DEBUG: bool = env["APP_DEBUG"]
     APP_PORT: str | int = env["APP_PORT"]
     APP_DOMAIN: str = env["APP_DOMAIN"]
-    APP_ENVIRONMENT: str = env["APP_ENVIRONMENT"]
 
-    APP_V1_STR: str = env["APP_V1_STR"]
-    APP_V2_STR: str = env["APP_V2_STR"]
-    API_V1_STR: str = env["API_V1_STR"]
-    API_V2_STR: str = env["API_V2_STR"]
+    APP_URL_PREFIX: str = env["APP_URL_PREFIX"]
+    API_URL_PREFIX: str = env["API_URL_PREFIX"]
 
     MONGO_SERVER: str = env["MONGO_SERVER"]
-    MONGO_INITDB_ROOT_USERNAME: str = env["MONGO_INITDB_ROOT_USERNAME"]
-    MONGO_INITDB_ROOT_PASSWORD: str = env["MONGO_INITDB_ROOT_PASSWORD"]
-    MONGO_INITDB_DATABASE: str = env["MONGO_INITDB_DATABASE"]
-    MONGO_INITDB_PORT: int = env["MONGO_INITDB_PORT"]
-    MONGO_IMPACTU_DB: str = env["MONGO_IMPACTU_DB"]
+    MONGO_USERNAME: str = env["MONGO_USERNAME"]
+    MONGO_PASSWORD: str = env["MONGO_PASSWORD"]
+    MONGO_DATABASE: str = env["MONGO_DATABASE"]
+    MONGO_PORT: int = env["MONGO_PORT"]
+    MONGO_CALCULATIONS_DATABASE: str = env["MONGO_CALCULATIONS_DATABASE"]
 
     MONGO_URI: Optional[MongoDsn] = None
 
@@ -40,9 +39,9 @@ class Settings(BaseSettings):
         self.MONGO_URI = MongoDsn.build(
             scheme="mongodb",
             host=self.MONGO_SERVER,
-            username=self.MONGO_INITDB_ROOT_USERNAME,
-            password=self.MONGO_INITDB_ROOT_PASSWORD,
-            port=self.MONGO_INITDB_PORT
+            username=self.MONGO_USERNAME,
+            password=self.MONGO_PASSWORD,
+            port=self.MONGO_PORT
         )
         return self
 

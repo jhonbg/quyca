@@ -6,8 +6,8 @@ from core.config import settings
 
 class WorkAppService:
     def __init__(self):
-        self.colav_db = client[settings.MONGO_INITDB_DATABASE]
-        self.impactu_db = client[settings.MONGO_IMPACTU_DB]
+        self.colav_db = client[settings.MONGO_DATABASE]
+        self.impactu_db = client[settings.MONGO_CALCULATIONS_DATABASE]
 
     def get_info(self, idx):
         document = self.colav_db["works"].find_one({"_id": ObjectId(idx)})

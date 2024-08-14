@@ -19,8 +19,8 @@ log = get_logger(__name__)
 class PersonPlotsService:
     def __init__(self, work_repository: WorkRepository = None):
         self.work_repository = work_repository
-        self.colav_db = client[settings.MONGO_INITDB_DATABASE]
-        self.impactu_db = client[settings.MONGO_IMPACTU_DB]
+        self.colav_db = client[settings.MONGO_DATABASE]
+        self.impactu_db = client[settings.MONGO_CALCULATIONS_DATABASE]
         self.bars = bars()
         self.pies = pies()
         self.maps = maps()

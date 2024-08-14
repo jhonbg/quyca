@@ -14,6 +14,7 @@ class maps():
     # Map of world procedence of coauthors
     def get_coauthorship_world_map(self, data):
         countries = {}
+
         for work in data:
             if not "country_code" in work["affiliation"]["addresses"].keys():
                 continue
@@ -27,15 +28,19 @@ class maps():
                         "count": work["count"],
                         "name": country_name
                     }
+
         for key, val in countries.items():
             countries[key]["log_count"] = log(val["count"])
-        for i, feat in enumerate(self.worldmap["features"]):
+
+        worldmap = json.load(open(str(Path(__file__).parent) + "/etc/world_map.json", "r"))
+
+        for i, feat in enumerate(worldmap["features"]):
             if feat["properties"]["country_code"] in countries.keys():
                 alpha2 = feat["properties"]["country_code"]
-                self.worldmap["features"][i]["properties"]["count"] = countries[alpha2]["count"]
-                self.worldmap["features"][i]["properties"]["log_count"] = countries[alpha2]["log_count"]
+                worldmap["features"][i]["properties"]["count"] = countries[alpha2]["count"]
+                worldmap["features"][i]["properties"]["log_count"] = countries[alpha2]["log_count"]
 
-        return self.worldmap
+        return worldmap
 
     #map of colombian coauthors
     def get_coauthorship_colombia_map(self, data):

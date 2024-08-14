@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     APP_V1_STR: str = env["APP_V1_STR"]
     APP_V2_STR: str = env["APP_V2_STR"]
     API_V1_STR: str = env["API_V1_STR"]
-    API_v2_STR: str = env["API_v2_STR"]
+    API_V2_STR: str = env["API_V2_STR"]
 
     MONGO_SERVER: str = env["MONGO_SERVER"]
     MONGO_INITDB_ROOT_USERNAME: str = env["MONGO_INITDB_ROOT_USERNAME"]

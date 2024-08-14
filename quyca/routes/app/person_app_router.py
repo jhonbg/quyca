@@ -2,18 +2,36 @@ import json
 import io
 import csv
 
+from bson.errors import InvalidId
 from flask import Blueprint, request, Response, Request
 
-# from flask_apidoc import ApiDoc
-
-# from services.plots.person import person_app_service
+from exceptions.person_exception import PersonException
 from services.person import person_service
+from services.person_service import PersonService
 from services.work import work_service
 from schemas.work import WorkQueryParams
 from utils.encoder import JsonEncoder
 from utils.flatten_json import flatten_json_list
 
 person_app_router = Blueprint("person_app_router", __name__)
+
+@person_app_router.route("/<person_id>", methods=["GET"])
+def get_person_by_id(person_id: str):
+    try:
+        person_model = PersonService.get_by_id(person_id)
+
+        return Response(
+            response = person_model.model_dump_json(),
+            status = 200,
+            mimetype = "application/json",
+        )
+
+    except (PersonException, InvalidId) as e:
+        return Response(
+            response = json.dumps({"error": str(e)}),
+            status = 404,
+            mimetype = "application/json",
+        )
 
 
 def person(
@@ -47,7 +65,6 @@ def person(
     return result
 
 
-@person_app_router.route("/<id>", methods=["GET"])
 @person_app_router.route("/<id>/<section>/<tab>", methods=["GET"])
 def get_person(
     id: str | None = None, section: str | None = "info", tab: str | None = None

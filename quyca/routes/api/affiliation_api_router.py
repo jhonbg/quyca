@@ -1,18 +1,15 @@
-import json
-from typing import Any
-
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 
 from services.affiliation import affiliation_service
 from schemas.affiliation import AffiliationQueryParams
 
-router = Blueprint("affiliation_api_v1", __name__)
+affiliation_api_router = Blueprint("affiliation_api_router", __name__)
 
 
-@router.route("/<typ>/<id>", methods=["GET"])
-@router.route("/<typ>/<id>/<section>", methods=["GET"])
-@router.route("/<typ>/<id>/<section>/<tab>", methods=["GET"])
+@affiliation_api_router.route("/<typ>/<id>", methods=["GET"])
+@affiliation_api_router.route("/<typ>/<id>/<section>", methods=["GET"])
+@affiliation_api_router.route("/<typ>/<id>/<section>/<tab>", methods=["GET"])
 def api_affiliation(
     id: str | None,
     section: str | None = "info",

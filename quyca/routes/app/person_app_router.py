@@ -13,7 +13,7 @@ from schemas.work import WorkQueryParams
 from utils.encoder import JsonEncoder
 from utils.flatten_json import flatten_json_list
 
-router = Blueprint("person_app_v1", __name__)
+person_app_router = Blueprint("person_app_router", __name__)
 
 
 def person(
@@ -47,8 +47,8 @@ def person(
     return result
 
 
-@router.route("/<id>", methods=["GET"])
-@router.route("/<id>/<section>/<tab>", methods=["GET"])
+@person_app_router.route("/<id>", methods=["GET"])
+@person_app_router.route("/<id>/<section>/<tab>", methods=["GET"])
 def get_person(
     id: str | None = None, section: str | None = "info", tab: str | None = None
 ):
@@ -68,8 +68,8 @@ def get_person(
     return response
 
 
-@router.route("/<id>/csv", methods=["GET"])
-@router.route("/<id>/<section>/<tab>/csv", methods=["GET"])
+@person_app_router.route("/<id>/csv", methods=["GET"])
+@person_app_router.route("/<id>/<section>/<tab>/csv", methods=["GET"])
 def get_person_csv(
     id: str | None = None, section: str | None = "info", tab: str | None = None
 ):

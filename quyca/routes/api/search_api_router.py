@@ -13,10 +13,10 @@ from services.v1.search_api import search_api_service
 from services import work_service
 from utils.encoder import JsonEncoder
 
-router = Blueprint("search_api_v1", __name__)
+search_api_router = Blueprint("search_api_router", __name__)
 
 
-@router.route("/person", methods=["GET"])
+@search_api_router.route("/person", methods=["GET"])
 def read_person():
     """
     @api {get} /search/person search by person name
@@ -52,7 +52,7 @@ def read_person():
     )
 
 
-@router.route("/works", methods=["GET"])
+@search_api_router.route("/works", methods=["GET"])
 def read_works():
     """
     @api {get} /search/works search by work title
@@ -73,7 +73,7 @@ def read_works():
     return work_service.search_api(params=query_params)
 
 
-@router.route("/affiliations", methods=["GET"])
+@search_api_router.route("/affiliations", methods=["GET"])
 def read_affiliations():
     """
     @api {get} /search/affiliations search by affiliation name
@@ -108,7 +108,7 @@ def read_affiliations():
     )
 
 
-@router.route("/subjects", methods=["GET"])
+@search_api_router.route("/subjects", methods=["GET"])
 def read_subjects():
     """
     @api {get} /search/subjects search by subject

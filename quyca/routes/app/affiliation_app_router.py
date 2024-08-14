@@ -10,12 +10,12 @@ from schemas.work import WorkQueryParams
 from utils.encoder import JsonEncoder
 from utils.flatten_json import flatten_json_list
 
-router = Blueprint("affiliation_app_v1", __name__)
+affiliation_app_router = Blueprint("affiliation_app_router", __name__)
 
 
-@router.route("/<typ>/<id>", methods=["GET"])
-@router.route("/<typ>/<id>/<section>", methods=["GET"])
-@router.route("/<typ>/<id>/<section>/<tab>", methods=["GET"])
+@affiliation_app_router.route("/<typ>/<id>", methods=["GET"])
+@affiliation_app_router.route("/<typ>/<id>/<section>", methods=["GET"])
+@affiliation_app_router.route("/<typ>/<id>/<section>/<tab>", methods=["GET"])
 def get_affiliation(
     id: str | None,
     typ: str | None = None,
@@ -41,9 +41,9 @@ def get_affiliation(
         return affiliation_service.get_research_products(id=id, typ=typ, params=params)
 
 
-@router.route("/<typ>/<id>/csv", methods=["GET"])
-@router.route("/<typ>/<id>/<section>/csv", methods=["GET"])
-@router.route("/<typ>/<id>/<section>/<tab>/csv", methods=["GET"])
+@affiliation_app_router.route("/<typ>/<id>/csv", methods=["GET"])
+@affiliation_app_router.route("/<typ>/<id>/<section>/csv", methods=["GET"])
+@affiliation_app_router.route("/<typ>/<id>/<section>/<tab>/csv", methods=["GET"])
 def get_affiliation_csv(
     id: str | None,
     typ: str | None = None,

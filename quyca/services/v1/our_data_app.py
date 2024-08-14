@@ -4,8 +4,8 @@ from core.config import settings
 
 class OurDataAppService:
     def __init__(self):
-        self.colav_db = client[settings.MONGO_INITDB_DATABASE]
-        self.impactu_db = client[settings.MONGO_IMPACTU_DB]
+        self.colav_db = client[settings.MONGO_DATABASE]
+        self.impactu_db = client[settings.MONGO_CALCULATIONS_DATABASE]
 
     def get_our_data(self):
         entry = {

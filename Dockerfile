@@ -33,3 +33,6 @@ ENV ENVIRONMENT=dev
 
 FROM base AS production
 ENV ENVIRONMENT=prod
+
+FROM base AS local
+ENV ENVIRONMENT=local

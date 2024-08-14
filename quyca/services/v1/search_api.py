@@ -7,7 +7,7 @@ from core.config import settings
 
 class SearchApiService:
     def __init__(self):
-        self.colav_db = client[settings.MONGO_INITDB_DATABASE]
+        self.colav_db = client[settings.MONGO_DATABASE]
 
     def search_subjects(
         self,

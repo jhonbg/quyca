@@ -9,7 +9,7 @@ from core.config import settings
 
 class SearchAppService:
     def __init__(self):
-        self.colav_db = client[settings.MONGO_INITDB_DATABASE]
+        self.colav_db = client[settings.MONGO_DATABASE]
 
     def search_subjects(
         self,

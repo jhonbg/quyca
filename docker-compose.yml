@@ -27,3 +27,17 @@ services:
       - .:/app
     working_dir: /app
     entrypoint: [ "poetry", "run", "python", "./quyca/app.py" ]
+
+  local:
+    container_name: quyca-local
+    network_mode: host
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: local
+    image: colav/quyca-local:local
+    volumes:
+      - .:/app
+    working_dir: /app
+    entrypoint: [ "poetry", "run", "python", "./quyca/app.py" ]

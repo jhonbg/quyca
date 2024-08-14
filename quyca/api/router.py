@@ -16,27 +16,27 @@ api_router = Blueprint("router", __name__)
 api_router.register_blueprint(ping_router)
 
 api_router.register_blueprint(
-    search_app_router_v1, url_prefix=f"{settings.APP_V1_STR}/search"
+    search_app_router_v1, url_prefix=f"{settings.APP_URL_PREFIX}/search"
 )
 api_router.register_blueprint(
-    search_api_router_v1, url_prefix=f"{settings.API_V1_STR}/search"
-)
-
-api_router.register_blueprint(
-    affiliation_app_router_v1, url_prefix=f"{settings.APP_V1_STR}/affiliation"
-)
-api_router.register_blueprint(
-    affiliation_api_router_v1, url_prefix=f"{settings.API_V1_STR}/affiliation"
+    search_api_router_v1, url_prefix=f"{settings.API_URL_PREFIX}/search"
 )
 
 api_router.register_blueprint(
-    person_app_router_v1, url_prefix=f"{settings.APP_V1_STR}/person"
+    affiliation_app_router_v1, url_prefix=f"{settings.APP_URL_PREFIX}/affiliation"
 )
 api_router.register_blueprint(
-    person_api_router_v1, url_prefix=f"{settings.API_V1_STR}/person"
+    affiliation_api_router_v1, url_prefix=f"{settings.API_URL_PREFIX}/affiliation"
 )
 
 api_router.register_blueprint(
-    work_app_router_v1, url_prefix=f"{settings.APP_V1_STR}/work"
+    person_app_router_v1, url_prefix=f"{settings.APP_URL_PREFIX}/person"
+)
+api_router.register_blueprint(
+    person_api_router_v1, url_prefix=f"{settings.API_URL_PREFIX}/person"
+)
+
+api_router.register_blueprint(
+    work_app_router_v1, url_prefix=f"{settings.APP_URL_PREFIX}/work"
 )
 api_router.register_blueprint(apidoc_router, url_prefix="")

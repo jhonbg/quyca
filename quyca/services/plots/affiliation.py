@@ -25,8 +25,8 @@ class AffiliationPlotsService:
     ):
         self.work_repository = work_repository
         self.affiliation_repository = affiliation_repository
-        self.colav_db = client[settings.MONGO_INITDB_DATABASE]
-        self.impactu_db = client[settings.MONGO_IMPACTU_DB]
+        self.colav_db = client[settings.MONGO_DATABASE]
+        self.impactu_db = client[settings.MONGO_CALCULATIONS_DATABASE]
         self.bars = bars()
         self.pies = pies()
         self.maps = maps()

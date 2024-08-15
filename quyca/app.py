@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 
-from api.router import api_router
+from routes.router import router
 from core.config import get_settings
 from core.debugger import initialize_server_debugger_if_needed
 # from core.apidoc import generate_apidoc
@@ -11,7 +11,7 @@ from infraestructure.mongo import init_mongo_infraestructure
 def create_app():
     app_factory = Flask(__name__)
     CORS(app_factory)
-    app_factory.register_blueprint(api_router)
+    app_factory.register_blueprint(router)
 
     return app_factory
 

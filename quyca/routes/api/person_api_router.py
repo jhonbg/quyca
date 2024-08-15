@@ -8,10 +8,10 @@ from utils.encoder import JsonEncoder
 from schemas.general import QueryBase
 from core.config import settings
 
-router = Blueprint("person_api_v1", __name__)
+person_api_router = Blueprint("person_api_router", __name__)
 
 
-@router.route("/<id>/<section>/<tab>", methods=["GET"])
+@person_api_router.route("/<id>/<section>/<tab>", methods=["GET"])
 def get_person(id: str | None, section: str | None, tab: str | None):
     """
     @api {get} /person/:id/:section/:tab get info of a person

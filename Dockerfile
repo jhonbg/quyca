@@ -24,7 +24,7 @@ RUN python -m venv $VIRTUAL_ENV \
 	&& . $VIRTUAL_ENV/bin/activate \
 	&& poetry install --no-root
 
-COPY . /quyca
+COPY . .
 
 RUN poetry install
 

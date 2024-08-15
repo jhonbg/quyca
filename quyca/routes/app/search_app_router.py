@@ -4,10 +4,10 @@ from pydantic import ValidationError
 from schemas import PersonQueryParams, AffiliationQueryParams, WorkQueryParams, SubjectQueryParams
 from services import person_service, affiliation_service, work_service, source_service
 
-router = Blueprint("search_app_v1", __name__)
+search_app_router = Blueprint("search_app_router", __name__)
 
 
-@router.route("/person", methods=["GET"])
+@search_app_router.route("/person", methods=["GET"])
 def read_person():
     try:
         query_params = PersonQueryParams(**request.args)
@@ -16,7 +16,7 @@ def read_person():
     return person_service.search(params=query_params)
 
 
-@router.route("/works", methods=["GET"])
+@search_app_router.route("/works", methods=["GET"])
 def read_works():
     try:
         query_params = WorkQueryParams(**request.args)
@@ -25,7 +25,7 @@ def read_works():
     return work_service.search(params=query_params)
 
 
-@router.route("/affiliations/<affiliation_type>", methods=["GET"])
+@search_app_router.route("/affiliations/<affiliation_type>", methods=["GET"])
 def read_affiliations(affiliation_type: str | None = None):
     try:
         query_params = AffiliationQueryParams(**request.args, type=affiliation_type)
@@ -35,7 +35,7 @@ def read_affiliations(affiliation_type: str | None = None):
     return affiliation_service.search(params=query_params)
 
 
-@router.route("/subjects", methods=["GET"])
+@search_app_router.route("/subjects", methods=["GET"])
 def read_subjects():
     try:
         query_params = SubjectQueryParams(**request.args)

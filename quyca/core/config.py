@@ -1,37 +1,35 @@
 import os
 from functools import lru_cache
 from typing import Optional
-from dotenv import dotenv_values
 from typing_extensions import Self
 from pydantic import model_validator, MongoDsn
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    env: dict = {}
-    if os.getenv("ENVIRONMENT") == "dev":
-        env = dotenv_values(".env.dev")
-    elif os.getenv("ENVIRONMENT") == "prod":
-        env = dotenv_values(".env.prod")
-    elif os.getenv("ENVIRONMENT") == "local":
-        env = dotenv_values(".env.local")
+    class Config:
+        if os.getenv("ENVIRONMENT") == "dev":
+            env_file = "../.env.dev"
+        elif os.getenv("ENVIRONMENT") == "prod":
+            env_file = "../.env.prod"
+        else:
+            env_file = "../.env.local"
 
-    APP_NAME: str = env["APP_NAME"]
-    APP_VERSION: str = env["APP_VERSION"]
-    APP_DEBUG: bool = env["APP_DEBUG"]
-    APP_PORT: str | int = env["APP_PORT"]
-    APP_DOMAIN: str = env["APP_DOMAIN"]
+    APP_NAME: str
+    APP_VERSION: str
+    APP_DEBUG: bool
+    APP_PORT: str | int
+    APP_DOMAIN: str
 
-    APP_URL_PREFIX: str = env["APP_URL_PREFIX"]
-    API_URL_PREFIX: str = env["API_URL_PREFIX"]
+    APP_URL_PREFIX: str
+    API_URL_PREFIX: str
 
-    MONGO_SERVER: str = env["MONGO_SERVER"]
-    MONGO_USERNAME: str = env["MONGO_USERNAME"]
-    MONGO_PASSWORD: str = env["MONGO_PASSWORD"]
-    MONGO_DATABASE: str = env["MONGO_DATABASE"]
-    MONGO_PORT: int = env["MONGO_PORT"]
-    MONGO_CALCULATIONS_DATABASE: str = env["MONGO_CALCULATIONS_DATABASE"]
-
+    MONGO_SERVER: str
+    MONGO_USERNAME: str
+    MONGO_PASSWORD: str
+    MONGO_DATABASE: str
+    MONGO_PORT: int
+    MONGO_CALCULATIONS_DATABASE: str
     MONGO_URI: Optional[MongoDsn] = None
 
     @model_validator(mode="after")

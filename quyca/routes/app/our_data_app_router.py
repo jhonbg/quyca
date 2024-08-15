@@ -5,10 +5,10 @@ from flask import Blueprint, Response
 from services.v1.our_data_app import our_data_app_service
 from utils.encoder import JsonEncoder
 
-router = Blueprint("our_data_app_v1", __name__)
+our_data_app_router = Blueprint("our_data_app_router", __name__)
 
 
-@router.route("", methods=["GET"])
+@our_data_app_router.route("", methods=["GET"])
 def get_our_data():
     result = our_data_app_service.get_our_data()
     if result:

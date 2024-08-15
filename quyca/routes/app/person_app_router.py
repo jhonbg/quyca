@@ -21,12 +21,12 @@ def get_person_by_id(person_id: str):
         person_model = PersonService.get_by_id(person_id)
 
         return Response(
-            response = person_model.model_dump_json(),
+            response = json.dumps({"data": person_model.model_dump(by_alias=True), "filters": {}}),
             status = 200,
             mimetype = "application/json",
         )
 
-    except (PersonException, InvalidId) as e:
+    except (PersonException, InvalidId, ValueError) as e:
         return Response(
             response = json.dumps({"error": str(e)}),
             status = 404,
@@ -64,7 +64,7 @@ def person(
         result = None
     return result
 
-
+# @person_app_router.route("/<id>", methods=["GET"])
 @person_app_router.route("/<id>/<section>/<tab>", methods=["GET"])
 def get_person(
     id: str | None = None, section: str | None = "info", tab: str | None = None
@@ -76,6 +76,7 @@ def get_person(
             status=200,
             mimetype="application/json",
         )
+
     else:
         response = Response(
             response=json.dumps({}, cls=JsonEncoder),

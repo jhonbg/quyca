@@ -1,6 +1,8 @@
 from typing import Any, Optional, List
+
+from bson import ObjectId
 from pydantic import BaseModel, Field
-from models.base_model import PyObjectId
+from models.base_model import PyObjectId, CitationsCount
 
 
 class Updated(BaseModel):
@@ -53,14 +55,14 @@ class Degree(BaseModel):
 class Person(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     updated: List[Updated]
-    full_name: Optional[str]
+    full_name: Optional[str] = Field(serialization_alias="name")
     first_names: List[str]
     last_names: List[str]
+    external_ids: Optional[List[ExternalId]] = Field(default_factory=list)
+    affiliations: List[Affiliation] = Field(default_factory=list)
     initials: Optional[str | List[str]]
     aliases: List[str]
-    affiliations: List[Affiliation] = Field(default_factory=List)
     keywords: List[str]
-    external_ids: Optional[List[ExternalId]] = Field(default_factory=List)
     sex: Optional[str]
     marital_status: Optional[str]
     ranking: List[Ranking]
@@ -68,7 +70,11 @@ class Person(BaseModel):
     birthdate: Optional[int | str] = None
     degrees: List[Degree]
     subjects: List[Any]
+    citations_count: Optional[List[CitationsCount]] = Field(default_factory=list)
+    products_count: Optional[int] = None
+    logo: Optional[str] = None
 
     class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
+        json_encoders = {
+            ObjectId: str
+        }

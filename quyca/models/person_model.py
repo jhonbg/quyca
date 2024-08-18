@@ -2,17 +2,7 @@ from typing import Any, Optional, List
 
 from bson import ObjectId
 from pydantic import BaseModel, Field
-from models.base_model import PyObjectId, CitationsCount
-
-
-class Updated(BaseModel):
-    time: Optional[int]
-    source: Optional[str]
-
-
-class Type(BaseModel):
-    source: Optional[str]
-    type: Optional[str]
+from models.base_model import PyObjectId, CitationsCount, Updated, ExternalId, Type
 
 
 class Affiliation(BaseModel):
@@ -22,12 +12,6 @@ class Affiliation(BaseModel):
     start_date: Optional[int | str]
     end_date: Optional[int | str]
     position: Optional[str] = None
-
-
-class ExternalId(BaseModel):
-    id: Optional[str | dict] = None
-    source: Optional[str] = None
-    provenance: Optional[str] = None
 
 
 class Ranking(BaseModel):

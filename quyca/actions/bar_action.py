@@ -3,15 +3,13 @@ from typing import Generator
 
 from currency_converter import CurrencyConverter
 
-from models.source_model import Source
-from models.work_model import Work
 from utils.cpi import inflate
 from utils.hindex import hindex
 
 
 class BarAction:
     @staticmethod
-    def get_by_work_year_and_work_type(works: Generator[Work]):
+    def get_by_work_year_and_work_type(works: Generator) -> list:
         result = {}
 
         for work in works:
@@ -42,8 +40,9 @@ class BarAction:
 
         return plot
 
+
     @staticmethod
-    def get_by_affiliation_type(data):
+    def get_by_affiliation_type(data) -> list:
         if not isinstance(data, dict):
             print(type(data))
             return None
@@ -79,9 +78,10 @@ class BarAction:
         plot = sorted(plot, key=lambda x: x["y"], reverse=True)
 
         return plot
-    
+
+
     @staticmethod
-    def get_citations_by_year(works: Generator[Work]):
+    def get_citations_by_year(works: Generator) -> list:
         result = {}
         no_info = 0
         
@@ -102,8 +102,9 @@ class BarAction:
         
         return plot
 
+
     @staticmethod
-    def apc_by_year(sources: Generator[Source], base_year):
+    def apc_by_year(sources: Generator, base_year) -> list:
 
         data = map(lambda x: x.apc, sources)
         currency = CurrencyConverter()
@@ -140,8 +141,9 @@ class BarAction:
 
         return plot
 
+
     @staticmethod
-    def oa_by_year(works: Generator[Work]):
+    def oa_by_year(works: Generator) -> list:
         result = {}
 
         for work in works:
@@ -165,8 +167,9 @@ class BarAction:
 
         return sorted(result_list, key=lambda x: x["x"])
 
+
     @staticmethod
-    def works_by_publisher_year(data: Generator[Source]):
+    def works_by_publisher_year(data: Generator) -> list:
         result = {}
         top5 = {}
 
@@ -203,8 +206,9 @@ class BarAction:
 
         return plot
 
+
     @staticmethod
-    def h_index_by_year(works: Generator[Work]):
+    def h_index_by_year(works: Generator) -> list:
         h_by_year = {}
         total_work_citations_by_year = []
 
@@ -251,8 +255,9 @@ class BarAction:
 
         return sorted_index_by_year
 
+
     @staticmethod
-    def works_by_researcher_category_and_year(data):
+    def works_by_researcher_category_and_year(data) -> list:
         result = {}
 
         for work in data:
@@ -277,8 +282,9 @@ class BarAction:
 
         return plot
 
+
     @staticmethod
-    def products_by_year_by_group_category(works: list):
+    def products_by_year_by_group_category(works: list) -> list:
         result = {}
 
         for work in works:

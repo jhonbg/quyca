@@ -28,7 +28,7 @@ class MapAction:
         for key, val in countries.items():
             countries[key]["log_count"] = log(val["count"])
 
-        with open(os.path.join(os.path.dirname(__file__), "worldmap.json"), "r") as worldmap_file:
+        with open(os.path.join(os.path.dirname(__file__), "concerns/worldmap.json"), "r") as worldmap_file:
             worldmap = json.load(worldmap_file)
 
         for item, feat in enumerate(worldmap["features"]):
@@ -44,7 +44,7 @@ class MapAction:
     def get_collaboration_colombiamap(works: Iterable):
         states = {}
 
-        with open(os.path.join(os.path.dirname(__file__), "cities_by_state.csv"), "r") as cities_by_state_file:
+        with open(os.path.join(os.path.dirname(__file__), "concerns/cities_by_state.csv"), "r") as cities_by_state_file:
             cities_by_state = read_csv(cities_by_state_file)
 
         for work in works:
@@ -71,7 +71,7 @@ class MapAction:
         for key, value in states.items():
             states[key]["log_count"] = log(value["count"])
 
-        with open(os.path.join(os.path.dirname(__file__), "colombiamap.json"), "r") as colombiamap_file:
+        with open(os.path.join(os.path.dirname(__file__), "concerns/colombiamap.json"), "r") as colombiamap_file:
             colombiamap = json.load(colombiamap_file)
 
         for item, feat in enumerate(colombiamap["features"]):

@@ -3,7 +3,7 @@ from itertools import chain
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from models.base_model import PyObjectId, CitationsCount
+from database.models.base_model import PyObjectId, CitationsCount
 from schemas.general import Type, Updated, ExternalId, ExternalURL, QueryBase
 from core.config import settings
 

@@ -6,11 +6,11 @@ from werkzeug.datastructures.structures import MultiDict
 from actions.bar_action import BarAction
 from actions.pie_action import PieAction
 from actions.map_action import MapAction
-from models.affiliation_model import Affiliation
-from repositories.affiliation_repository import AffiliationRepository
-from repositories.mongo import calculations_database, database
-from repositories.plot_repository import PlotRepository
-from repositories.work_repository import WorkRepository
+from database.models.affiliation_model import Affiliation
+from database.repositories.affiliation_repository import AffiliationRepository
+from database.mongo import calculations_database, database
+from database.repositories.plot_repository import PlotRepository
+from database.repositories.work_repository import WorkRepository
 from utils.mapping import get_openalex_scienti
 
 

@@ -1,6 +1,6 @@
 from bson import ObjectId
 
-from repositories.mongo import database, calculations_database
+from database.mongo import database, calculations_database
 
 
 class PlotRepository:

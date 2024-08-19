@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
-from models.base_model import Type, Updated, ExternalId, ExternalURL, Name
+from database.models.base_model import Type, Updated, ExternalId, ExternalURL, Name
 
 
 

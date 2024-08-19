@@ -1,4 +1,4 @@
-from repositories.mongo import database
+from database.mongo import database
 
 random_affiliation_id = database['affiliations'].aggregate([{ '$sample': { 'size': 1 } }]).next()["_id"]
 

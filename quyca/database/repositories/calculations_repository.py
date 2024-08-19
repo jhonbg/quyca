@@ -1,8 +1,8 @@
 from bson import ObjectId
 
-from models.affiliation_calculations_model import AffiliationCalculations
-from models.person_calculations_model import PersonCalculations
-from repositories.mongo import calculations_database
+from database.models.affiliation_calculations_model import AffiliationCalculations
+from database.models.person_calculations_model import PersonCalculations
+from database.mongo import calculations_database
 
 
 class CalculationsRepository:

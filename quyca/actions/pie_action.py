@@ -4,7 +4,7 @@ from typing import Callable, Generator, Iterable
 from collections import Counter
 from currency_converter import CurrencyConverter
 
-from models.base_model import CitationsCount
+from database.models.base_model import CitationsCount
 from utils.cpi import inflate
 from utils.hindex import hindex
 

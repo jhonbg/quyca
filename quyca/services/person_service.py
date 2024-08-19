@@ -5,11 +5,11 @@ from bson import ObjectId
 from actions.bar_action import BarAction
 from actions.map_action import MapAction
 from actions.pie_action import PieAction
-from models.person_model import Person
-from repositories.mongo import calculations_database, database
-from repositories.person_repository import PersonRepository
-from repositories.plot_repository import PlotRepository
-from repositories.work_repository import WorkRepository
+from database.models.person_model import Person
+from database.mongo import calculations_database, database
+from database.repositories.person_repository import PersonRepository
+from database.repositories.plot_repository import PlotRepository
+from database.repositories.work_repository import WorkRepository
 
 
 class PersonService:

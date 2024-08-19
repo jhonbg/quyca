@@ -1,6 +1,6 @@
 from pymongo.cursor import Cursor
 
-from models.work_model import Work
+from database.models.work_model import Work
 
 
 class WorkGenerator:

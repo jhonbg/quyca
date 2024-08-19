@@ -1,6 +1,6 @@
 from pymongo.cursor import Cursor
 
-from models.affiliation_model import Affiliation
+from database.models.affiliation_model import Affiliation
 
 
 class AffiliationGenerator:

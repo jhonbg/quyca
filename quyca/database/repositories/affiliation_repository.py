@@ -4,16 +4,16 @@ from bson import ObjectId
 
 from core.config import settings
 from exceptions.affiliation_exception import AffiliationException
-from generators.affiliation_generator import AffiliationGenerator
-from models.affiliation_model import Affiliation
-from repositories.calculations_repository import CalculationsRepository
-from repositories.mongo import database
+from database.generators.affiliation_generator import AffiliationGenerator
+from database.models.affiliation_model import Affiliation
+from database.repositories.calculations_repository import CalculationsRepository
+from database.mongo import database
 
 
 class AffiliationRepository:
     @classmethod
     def get_by_id(cls, affiliation_id: str) -> Affiliation:
-        from repositories.work_repository import WorkRepository
+        from database.repositories.work_repository import WorkRepository
 
         affiliation_data = database["affiliations"].find_one({"_id": ObjectId(affiliation_id)})
 

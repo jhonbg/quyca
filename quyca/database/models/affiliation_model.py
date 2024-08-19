@@ -2,8 +2,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
-from models.base_model import Type, Updated, ExternalId, ExternalURL, CitationsCount, Name, PyObjectId
-from models.person_model import Person
+from database.models.base_model import Type, Updated, ExternalId, ExternalURL, CitationsCount, Name, PyObjectId
+from database.models.person_model import Person
 
 
 class Address(BaseModel):

@@ -1,6 +1,6 @@
 from pymongo.cursor import Cursor
 
-from models.source_model import Source
+from database.models.source_model import Source
 
 
 class SourceGenerator:

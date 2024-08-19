@@ -1,6 +1,6 @@
 from pymongo.cursor import Cursor
 
-from models.person_model import Person
+from database.models.person_model import Person
 
 
 class PersonGenerator:

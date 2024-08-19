@@ -1,10 +1,10 @@
 from bson import ObjectId
 
 from exceptions.person_exception import PersonException
-from models.person_model import Person
-from repositories.calculations_repository import CalculationsRepository
-from repositories.mongo import database
-from repositories.work_repository import WorkRepository
+from database.models.person_model import Person
+from database.repositories.calculations_repository import CalculationsRepository
+from database.mongo import database
+from database.repositories.work_repository import WorkRepository
 
 
 class PersonRepository:

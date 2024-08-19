@@ -1,14 +1,14 @@
-from typing import Optional, Any, Generator, Dict
+from typing import Optional, Any, Generator
 
 from bson import ObjectId
 from werkzeug.datastructures.structures import MultiDict
 
 from core.config import settings
-from generators.source_generator import SourceGenerator
-from generators.work_generator import WorkGenerator
-from models.base_model import CitationsCount
-from repositories.calculations_repository import CalculationsRepository
-from repositories.mongo import database
+from database.generators.source_generator import SourceGenerator
+from database.generators.work_generator import WorkGenerator
+from database.models.base_model import CitationsCount
+from database.repositories.calculations_repository import CalculationsRepository
+from database.mongo import database
 
 
 class WorkRepository:
@@ -115,7 +115,7 @@ class WorkRepository:
     def get_sources_by_related_affiliation(
             affiliation_id: str, affiliation_type: str, relation_type: str, pipeline_params: dict | None = None
     ) -> Generator:
-        from repositories.affiliation_repository import AffiliationRepository
+        from database.repositories.affiliation_repository import AffiliationRepository
 
         if pipeline_params is None:
             pipeline_params = {}

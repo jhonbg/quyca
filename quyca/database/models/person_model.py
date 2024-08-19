@@ -2,7 +2,7 @@ from typing import Any, Optional, List
 
 from bson import ObjectId
 from pydantic import BaseModel, Field
-from models.base_model import PyObjectId, CitationsCount, Updated, ExternalId, Type
+from database.models.base_model import PyObjectId, CitationsCount, Updated, ExternalId, Type
 
 
 class Affiliation(BaseModel):

@@ -76,15 +76,10 @@ class Affiliation(BaseModel):
         return self
 
 
-class AffiliationReduced(BaseModel):
-    id: str
-    name: str | None = None
-
-
-class AffiliationRelatedInfo(BaseModel):
-    faculties: list[AffiliationReduced] | None = None
-    departments: list[AffiliationReduced] | None = None
-    groups: list[AffiliationReduced] | None = None
+class RelatedAffiliations(BaseModel):
+    faculties: list[Affiliation] | None = None
+    departments: list[Affiliation] | None = None
+    groups: list[Affiliation] | None = None
     authors: list[Person] | None = None
 
 

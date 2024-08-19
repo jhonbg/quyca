@@ -3,10 +3,11 @@ from itertools import chain
 from bson import ObjectId
 from werkzeug.datastructures.structures import MultiDict
 
+from database.repositories.person_repository import PersonRepository
 from services.actions.bar_action import BarAction
 from services.actions.pie_action import PieAction
 from services.actions.map_action import MapAction
-from database.models.affiliation_model import Affiliation
+from database.models.affiliation_model import Affiliation, RelatedAffiliations
 from database.repositories.affiliation_repository import AffiliationRepository
 from database.mongo import calculations_database, database
 from database.repositories.plot_repository import PlotRepository
@@ -18,6 +19,39 @@ class AffiliationService:
     @staticmethod
     def get_by_id(affiliation_id: str) -> Affiliation:
         return AffiliationRepository.get_by_id(affiliation_id)
+
+    @staticmethod
+    def get_related_affiliations_by_affiliation(affiliation_id: str, affiliation_type: str) -> dict:
+        data = {}
+        if affiliation_type == "institution":
+            faculties = AffiliationRepository.get_related_affiliations_by_type(
+                affiliation_id, affiliation_type, "faculty"
+            )
+
+            data["faculties"] = [faculty.model_dump(include={"id", "name"}) for faculty in faculties]
+
+        if affiliation_type in ["faculty", "institution"]:
+            departments = AffiliationRepository.get_related_affiliations_by_type(
+                affiliation_id, affiliation_type, "department"
+            )
+
+            data["departments"] = [department.modeld_dump(include={"id", "name"}) for department in departments]
+
+        if affiliation_type in ["department", "faculty", "institution"]:
+            groups = AffiliationRepository.get_related_affiliations_by_type(
+                affiliation_id, affiliation_type, "group"
+            )
+
+            data["groups"] = [group.model_dump(include={"id", "name"}) for group in groups]
+
+
+        if affiliation_type in ["group", "department", "faculty"]:
+            authors = PersonRepository.get_persons_by_affiliation(affiliation_id)
+
+            data["authors"] = [author.model_dump(include={"id", "full_name"}) for author in authors]
+
+
+        return data
 
 
     @classmethod

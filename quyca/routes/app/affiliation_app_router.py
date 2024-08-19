@@ -2,11 +2,9 @@ import json
 import io
 import csv
 
-from bson.errors import InvalidId
 from flask import Blueprint, request, Response, jsonify
 from pydantic import ValidationError
 
-from exceptions.affiliation_exception import AffiliationException
 from services.affiliation import affiliation_service
 from schemas.work import WorkQueryParams
 from services.affiliation_service import AffiliationService
@@ -20,22 +18,30 @@ affiliation_app_router = Blueprint("affiliation_app_router", __name__)
 def get_affiliation_by_id(affiliation_type: str, affiliation_id: str):
     try:
         affiliation = AffiliationService.get_by_id(affiliation_id)
+        response_data = json.dumps({"data": affiliation.model_dump(by_alias=True), "filters": {}})
 
-        return Response(
-            response = json.dumps({"data": affiliation.model_dump(by_alias=True), "filters": {}}),
-            status = 200,
-            mimetype = "application/json",
-        )
+        return Response(response_data, 200, mimetype="application/json")
 
     except Exception as e:
-        return Response(
-            response = json.dumps({"error": str(e)}),
-            status = 404,
-            mimetype = "application/json",
-        )
+        return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
 
 
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/<section>", methods=["GET"])
+def get_affiliation_section(affiliation_type: str, affiliation_id: str, section: str):
+    if section == "affiliations":
+        try:
+            related_affiliations = AffiliationService.get_related_affiliations_by_affiliation(
+                affiliation_id, affiliation_type
+            )
+
+            return Response(json.dumps(related_affiliations), 200, mimetype = "application/json")
+
+        except Exception as e:
+            return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
+
+    return Response(json.dumps({"error": f"There is no {section} section"}), 400, mimetype="application/json")
+
+
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/<section>/<tab>", methods=["GET"])
 def get_affiliation(
     affiliation_id: str | None,
@@ -47,12 +53,6 @@ def get_affiliation(
         params = WorkQueryParams(**request.args)
     except ValidationError as e:
         return jsonify(str(e), 400)
-
-    if section == "info":
-        return affiliation_service.get_info(id=affiliation_id)
-
-    if section == "affiliations":
-        return affiliation_service.get_affiliations(id=affiliation_id, typ=affiliation_type)
 
     if section == "research" and tab == "products":
         if plot_type := request.args.get("plot"):

@@ -1,5 +1,6 @@
 from bson import ObjectId
 
+from database.generators.person_generator import PersonGenerator
 from exceptions.person_exception import PersonException
 from database.models.person_model import Person
 from database.repositories.calculations_repository import CalculationsRepository
@@ -24,3 +25,14 @@ class PersonRepository:
         person.products_count = WorkRepository.get_works_count_by_person(person_id)
 
         return person
+
+    @staticmethod
+    def get_persons_by_affiliation(affiliation_id: str) -> list:
+        pipeline = [
+            {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
+            {"$project": {"full_name": 1}},
+        ]
+
+        cursor = database["person"].aggregate(pipeline)
+
+        return PersonGenerator.get(cursor)

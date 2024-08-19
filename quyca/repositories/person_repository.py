@@ -21,6 +21,6 @@ class PersonRepository:
         person = Person(**person_data)
 
         person.citations_count = person_calculations.citations_count
-        person.products_count = WorkRepository.get_works_count_by_person_id(person_id)
+        person.products_count = WorkRepository.get_works_count_by_person(person_id)
 
         return person

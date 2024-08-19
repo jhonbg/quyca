@@ -45,7 +45,7 @@ class PlotRepository:
 
 
     @staticmethod
-    def get_bars_data_by_researcher_category_and_year(affiliation_id, affiliation_type: str) -> list:
+    def get_bars_data_by_researcher_and_affiliation(affiliation_id, affiliation_type: str) -> list:
         data = []
 
         if affiliation_type in ["group", "department", "faculty"]:
@@ -127,6 +127,41 @@ class PlotRepository:
 
 
     @staticmethod
+    def get_bars_data_by_researcher_and_person(person_id: str):
+        data = []
+
+        pipeline = [
+            {"$match": {"authors.id": ObjectId(person_id)}},
+            {"$project": {"year_published": 1, "authors": 1}},
+            {"$unwind": "$authors"},
+            {"$match": {"authors.id": ObjectId(person_id)}},
+            {
+                "$lookup": {
+                    "from": "person",
+                    "localField": "authors.id",
+                    "foreignField": "_id",
+                    "as": "researcher",
+                }
+            },
+            {"$project": {"year_published": 1, "researcher.ranking": 1}},
+            {"$match": {"researcher.ranking.source": "scienti"}},
+        ]
+
+        for work in database["works"].aggregate(pipeline):
+            for researcher in work["researcher"]:
+                for rank in researcher["ranking"]:
+                    if rank["source"] == "scienti":
+                        data.append(
+                            {
+                                "year_published": work["year_published"],
+                                "rank": rank["rank"],
+                            }
+                        )
+
+        return data
+
+
+    @staticmethod
     def get_products_by_author_sex(affiliation_id: str):
         pipeline = [
             {"$project": {"affiliations": 1, "sex": 1}},
@@ -159,7 +194,7 @@ class PlotRepository:
         return list(database["person"].aggregate(pipeline))
 
     @staticmethod
-    def get_products_by_author_age(affiliation_id: str):
+    def get_products_by_author_age_and_affiliation(affiliation_id: str):
         pipeline = [
             {"$project": {"affiliations": 1, "birthdate": 1}},
             {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
@@ -185,7 +220,34 @@ class PlotRepository:
 
 
     @staticmethod
-    def get_collaboration_worldmap(affiliation_id, affiliation_type):
+    def get_products_by_author_age_and_person(person_id: str):
+        pipeline = [
+            {"$match": {"authors.id": ObjectId(person_id)}},
+            {"$project": {"authors": 1, "date_published": 1, "year_published": 1}},
+            {
+                "$lookup": {
+                    "from": "person",
+                    "localField": "authors.id",
+                    "foreignField": "_id",
+                    "pipeline": [{"$project": {"birthdate": 1}}],
+                    "as": "author",
+                }
+            },
+            {"$unwind": "$author"},
+            {
+                "$project": {
+                    "work.date_published": "$date_published",
+                    "work.year_published": "$year_published",
+                    "birthdate": "$author.birthdate",
+                }
+            },
+        ]
+
+        return database["works"].aggregate(pipeline)
+
+
+    @staticmethod
+    def get_collaboration_worldmap_by_affiliation(affiliation_id, affiliation_type):
         data = []
 
         if affiliation_type in ["group", "department", "faculty"]:
@@ -314,7 +376,41 @@ class PlotRepository:
 
 
     @staticmethod
-    def get_collaboration_colombiamap(affiliation_id, affiliation_type):
+    def get_collaboration_worldmap_by_person(person_id):
+        data = []
+
+        pipeline = [
+            {"$match": {"authors.id": ObjectId(person_id)}},
+            {"$unwind": "$authors"},
+            {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},
+            {"$unwind": "$_id"},
+            {
+                "$lookup": {
+                    "from": "affiliations",
+                    "localField": "_id",
+                    "foreignField": "_id",
+                    "as": "affiliation",
+                }
+            },
+            {
+                "$project": {
+                    "count": 1,
+                    "affiliation.addresses.country_code": 1,
+                    "affiliation.addresses.country": 1,
+                }
+            },
+            {"$unwind": "$affiliation"},
+            {"$unwind": "$affiliation.addresses"},
+        ]
+
+        for work in database["works"].aggregate(pipeline):
+            data.append(work)
+
+        return data
+
+
+    @staticmethod
+    def get_collaboration_colombiamap_by_affiliation(affiliation_id, affiliation_type):
         data = []
         if affiliation_type in ["group", "department", "faculty"]:
             for author in database["person"].find(
@@ -379,6 +475,39 @@ class PlotRepository:
 
         return data
 
+    @staticmethod
+    def get_collaboration_colombiamap_by_person(person_id):
+        data = []
+
+        pipeline = [
+            {"$match": {"authors.id": ObjectId(person_id)}},
+            {"$unwind": "$authors"},
+            {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},
+            {"$unwind": "$_id"},
+            {
+                "$lookup": {
+                    "from": "affiliations",
+                    "localField": "_id",
+                    "foreignField": "_id",
+                    "as": "affiliation",
+                }
+            },
+            {
+                "$project": {
+                    "count": 1,
+                    "affiliation.addresses.country_code": 1,
+                    "affiliation.addresses.city": 1,
+                }
+            },
+            {"$unwind": "$affiliation"},
+            {"$unwind": "$affiliation.addresses"},
+        ]
+
+        for work in database["works"].aggregate(pipeline):
+            data.append(work)
+
+        return data
+
 
     @staticmethod
     def get_collaboration_network(affiliation_id):
@@ -410,3 +539,4 @@ class PlotRepository:
         ]
 
         return calculations_database["affiliations"].aggregate(pipeline)
+

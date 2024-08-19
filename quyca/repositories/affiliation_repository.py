@@ -2,11 +2,86 @@ from typing import Generator
 
 from bson import ObjectId
 
+from core.config import settings
+from exceptions.affiliation_exception import AffiliationException
 from generators.affiliation_generator import AffiliationGenerator
+from models.affiliation_model import Affiliation
+from repositories.calculations_repository import CalculationsRepository
 from repositories.mongo import database
 
 
 class AffiliationRepository:
+    @classmethod
+    def get_by_id(cls, affiliation_id: str) -> Affiliation:
+        from repositories.work_repository import WorkRepository
+
+        affiliation_data = database["affiliations"].find_one({"_id": ObjectId(affiliation_id)})
+
+        if affiliation_data is None:
+            raise AffiliationException(affiliation_id)
+
+        affiliation = Affiliation(**affiliation_data)
+
+        upper_affiliations, logo = cls.get_upper_affiliations(
+            [relation.model_dump() for relation in affiliation.relations], affiliation.types[0].type
+        )
+
+        affiliation_calculations = CalculationsRepository.get_affiliation_calculations(affiliation_id)
+
+        affiliation.citations_count = affiliation_calculations.citations_count
+        affiliation.products_count = WorkRepository.get_works_count_by_affiliation(affiliation_id, affiliation.types[0].type)
+        affiliation.affiliations = upper_affiliations
+
+        if logo:
+            affiliation.logo = logo
+
+        return affiliation
+
+
+    @staticmethod
+    def get_upper_affiliations(affiliations: list, affiliation_type: str) -> tuple[list, str]:
+        affiliations_hierarchy = ["group", "department", "faculty"] + settings.institutions
+        affiliation_position = affiliations_hierarchy.index(affiliation_type)
+
+        affiliations = list(
+            filter(
+                lambda x: x["types"][0]["type"] in affiliations_hierarchy
+                and affiliations_hierarchy.index(x["types"][0]["type"]) > affiliation_position,
+                affiliations,
+            )
+        )
+
+        logo = ""
+        upper_affiliations = []
+
+        for affiliation in affiliations:
+            affiliation_id = (
+                affiliation["id"] if isinstance(affiliation["id"], ObjectId) else ObjectId(affiliation["id"])
+            )
+
+            affiliation = database["affiliations"].find_one(
+                {"_id": affiliation_id}, {"names": 1, "types": 1, "external_urls": 1}
+            )
+
+            if affiliation:
+                if affiliation["types"][0]["type"] in settings.institutions:
+                    for external_url in affiliation["external_urls"]:
+                        if external_url["source"] == "logo":
+                            logo = external_url["url"]
+
+                upper_affiliations.append(
+                    {
+                        "id": str(affiliation["_id"]),
+                        "name": next(
+                            filter(lambda name: name["lang"] == "es", affiliation["names"]),
+                            affiliation["names"][0]
+                        )["name"],
+                        "types": affiliation["types"],
+                    }
+                )
+
+        return upper_affiliations, logo
+
     @classmethod
     def get_groups_by_affiliation(cls, affiliation_id: str, affiliation_type: str):
         pipeline = cls.get_groups_by_affiliation_pipeline(affiliation_id, affiliation_type)
@@ -58,19 +133,21 @@ class AffiliationRepository:
 
 
     @classmethod
-    def get_related_affiliations_by_type(cls, affiliation_id: str, relation_type: str) -> Generator:
-            pipeline = cls.get_related_affiliations_by_type_pipeline(affiliation_id, relation_type)
+    def get_related_affiliations_by_type(
+            cls, affiliation_id: str, affiliation_type: str, relation_type: str
+    ) -> Generator:
+            pipeline = cls.get_related_affiliations_by_type_pipeline(affiliation_id, affiliation_type, relation_type)
             affiliations = database["affiliations"].aggregate(pipeline)
 
             return AffiliationGenerator.get(affiliations)
 
 
-    @staticmethod
-    def get_related_affiliations_by_type_pipeline(affiliation_id: str, relation_type: str) -> list:
+    @classmethod
+    def get_related_affiliations_by_type_pipeline(
+            cls, affiliation_id: str, affiliation_type: str, relation_type: str
+    ) -> list:
         if relation_type == "group":
-            return [
-                {"$match": {"_id": ObjectId(affiliation_id)}}
-            ]
+            return cls.get_groups_by_affiliation_pipeline(affiliation_id, affiliation_type)
 
         return [
             {

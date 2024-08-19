@@ -82,6 +82,7 @@ class Source(BaseModel):
     ranking: list[Ranking] | None = Field(default_factory=list)
     date_published: str | int | None = Field(None, exclude=True)
     scimago_quartile: str | None = Field(None, exclude=True)
+    affiliation_names: list[Name] | None = None
 
     @model_validator(mode="after")
     def get_scimag_quartile(self):

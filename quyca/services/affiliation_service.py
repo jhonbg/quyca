@@ -6,6 +6,7 @@ from werkzeug.datastructures.structures import MultiDict
 from actions.bar_action import BarAction
 from actions.pie_action import PieAction
 from actions.map_action import MapAction
+from models.affiliation_model import Affiliation
 from repositories.affiliation_repository import AffiliationRepository
 from repositories.mongo import calculations_database, database
 from repositories.plot_repository import PlotRepository
@@ -14,6 +15,11 @@ from utils.mapping import get_openalex_scienti
 
 
 class AffiliationService:
+    @staticmethod
+    def get_by_id(affiliation_id: str) -> Affiliation:
+        return AffiliationRepository.get_by_id(affiliation_id)
+
+
     @classmethod
     def get_affiliation_plot(cls, affiliation_id: str, affiliation_type: str, plot_type: str, query_params: MultiDict):
         if plot_type in ["type_faculty", "type_department", "type_group"]:
@@ -24,7 +30,7 @@ class AffiliationService:
         if plot_type in ["citations_faculty", "citations_department", "citations_group"]:
             relation_type = plot_type.split("_")[-1]
 
-            return cls.plot_citations_by_affiliations(affiliation_id, relation_type)
+            return cls.plot_citations_by_affiliations(affiliation_id, affiliation_type, relation_type)
 
         if plot_type in ["products_faculty", "products_department", "products_group"]:
             relation_type = plot_type.split("_")[-1]
@@ -34,12 +40,12 @@ class AffiliationService:
         if plot_type in ["apc_faculty", "apc_department", "apc_group"]:
             relation_type = plot_type.split("_")[-1]
 
-            return cls.plot_apc_by_affiliation(affiliation_id, relation_type)
+            return cls.plot_apc_by_affiliation(affiliation_id, affiliation_type, relation_type)
         
         if plot_type in ["h_faculty", "h_department", "h_group"]:
             relation_type = plot_type.split("_")[-1]
 
-            return cls.plot_h_by_affiliation(affiliation_id, relation_type, query_params)
+            return cls.plot_h_by_affiliation(affiliation_id, affiliation_type, relation_type, query_params)
 
         return getattr(cls, "plot_" + plot_type)(affiliation_id, affiliation_type, query_params)
 
@@ -211,9 +217,12 @@ class AffiliationService:
 
 
     @staticmethod
-    def plot_citations_by_affiliations(affiliation_id: str, relation_type: str):
+    def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, relation_type: str):
 
-        affiliations = AffiliationRepository.get_related_affiliations_by_type(affiliation_id, relation_type)
+        affiliations = AffiliationRepository.get_related_affiliations_by_type(
+            affiliation_id, affiliation_type, relation_type
+        )
+
         data = {}
 
         for affiliation in affiliations:
@@ -224,19 +233,22 @@ class AffiliationService:
 
     @staticmethod
     def plot_products_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str):
-        affiliations = AffiliationRepository.get_related_affiliations_by_type(affiliation_id, relation_type)
+        affiliations = AffiliationRepository.get_related_affiliations_by_type(
+            affiliation_id, affiliation_type, relation_type
+        )
+
         data = {}
 
         for affiliation in affiliations:
-            data[affiliation.name] = WorkRepository.count_papers(affiliation.id, affiliation.types[0].type)
+            data[affiliation.name] = WorkRepository.get_works_count_by_affiliation(affiliation.id, affiliation.types[0].type)
 
-        total_works = WorkRepository.count_papers(affiliation_id, affiliation_type)
+        total_works = WorkRepository.get_works_count_by_affiliation(affiliation_id, affiliation_type)
 
         return PieAction.get_products_by_affiliation(data, total_works)
 
 
     @staticmethod
-    def plot_apc_by_affiliation(affiliation_id: str, relation_type: str):
+    def plot_apc_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str):
         pipeline_params = {
             "match": {
                 "$and": [
@@ -247,15 +259,21 @@ class AffiliationService:
             "project": ["apc", "affiliation_names"],
         }
 
-        sources = WorkRepository.get_sources_by_related_affiliation(affiliation_id, relation_type, pipeline_params)
+        sources = WorkRepository.get_sources_by_related_affiliation(
+            affiliation_id, affiliation_type, relation_type, pipeline_params
+        )
 
         return PieAction.get_apc_by_sources(sources, 2022)
 
 
     @staticmethod
-    def plot_h_by_affiliation(affiliation_id: str, relation_type: str, query_params):
-        affiliations = AffiliationRepository.get_related_affiliations_by_type(affiliation_id, relation_type)
+    def plot_h_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str, query_params):
+        affiliations = AffiliationRepository.get_related_affiliations_by_type(
+            affiliation_id, affiliation_type, relation_type
+        )
+
         data = {}
+
         pipeline_params = {
             "match": {"citations_count": {"$ne": []}},
             "project": ["citations_count"],
@@ -398,7 +416,7 @@ class AffiliationService:
             pipeline_params
             )
 
-        total_works = WorkRepository.count_papers(affiliation_id, affiliation_type)
+        total_works = WorkRepository.get_works_count_by_affiliation(affiliation_id, affiliation_type)
         data = chain.from_iterable(map(lambda x: x.ranking, works))
 
         return PieAction.get_products_by_scienti_rank(data, total_works)

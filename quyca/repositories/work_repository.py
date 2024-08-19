@@ -7,7 +7,6 @@ from core.config import settings
 from generators.source_generator import SourceGenerator
 from generators.work_generator import WorkGenerator
 from models.base_model import CitationsCount
-from repositories.affiliation_repository import AffiliationRepository
 from repositories.calculations_repository import CalculationsRepository
 from repositories.mongo import database
 
@@ -347,6 +346,8 @@ class WorkRepository:
 
     @staticmethod
     def get_sources_by_related_affiliation(affiliation_id: str, relation_type: str, pipeline_params: dict) -> Generator:
+        from repositories.affiliation_repository import AffiliationRepository
+
         pipeline = AffiliationRepository.get_related_affiliations_by_type_pipeline(affiliation_id, relation_type)
 
         pipeline += [{"$project": {"id": 1, "names": 1}}]

@@ -27,7 +27,7 @@ def get_affiliation_by_id(affiliation_type: str, affiliation_id: str):
             mimetype = "application/json",
         )
 
-    except (AffiliationException, InvalidId) as e:
+    except Exception as e:
         return Response(
             response = json.dumps({"error": str(e)}),
             status = 404,

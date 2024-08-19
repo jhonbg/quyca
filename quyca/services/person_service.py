@@ -2,9 +2,9 @@ from itertools import chain
 
 from bson import ObjectId
 
-from actions.bar_action import BarAction
-from actions.map_action import MapAction
-from actions.pie_action import PieAction
+from services.actions.bar_action import BarAction
+from services.actions.map_action import MapAction
+from services.actions.pie_action import PieAction
 from database.models.person_model import Person
 from database.mongo import calculations_database, database
 from database.repositories.person_repository import PersonRepository

@@ -3,9 +3,9 @@ from itertools import chain
 from bson import ObjectId
 from werkzeug.datastructures.structures import MultiDict
 
-from actions.bar_action import BarAction
-from actions.pie_action import PieAction
-from actions.map_action import MapAction
+from services.actions.bar_action import BarAction
+from services.actions.pie_action import PieAction
+from services.actions.map_action import MapAction
 from database.models.affiliation_model import Affiliation
 from database.repositories.affiliation_repository import AffiliationRepository
 from database.mongo import calculations_database, database

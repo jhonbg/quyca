@@ -306,10 +306,10 @@ class WorkRepository:
 
 
     @classmethod
-    def count_papers(cls, affiliation_id: str, affiliation_type: str, filters: dict[str, Any] = None) -> int:
+    def get_works_count_by_affiliation(cls, affiliation_id: str, affiliation_type: str, filters: dict[str, Any] = None) -> int:
         affiliation_type = "institution" if affiliation_type in settings.institutions else affiliation_type
         pipeline = cls.get_works_by_affiliation_pipeline(affiliation_id, affiliation_type)
-        collection = "affiliation" if affiliation_type not in ["department", "faculty"] else "work"
+        collection = "affiliations" if affiliation_type in ["department", "faculty"] else "works"
 
         if collection == "affiliations":
             pipeline += [{"$replaceRoot": {"newRoot": "$works"}}]
@@ -345,10 +345,14 @@ class WorkRepository:
 
 
     @staticmethod
-    def get_sources_by_related_affiliation(affiliation_id: str, relation_type: str, pipeline_params: dict) -> Generator:
+    def get_sources_by_related_affiliation(
+            affiliation_id: str, affiliation_type: str, relation_type: str, pipeline_params: dict
+    ) -> Generator:
         from repositories.affiliation_repository import AffiliationRepository
 
-        pipeline = AffiliationRepository.get_related_affiliations_by_type_pipeline(affiliation_id, relation_type)
+        pipeline = AffiliationRepository.get_related_affiliations_by_type_pipeline(
+            affiliation_id, affiliation_type, relation_type
+        )
 
         pipeline += [{"$project": {"id": 1, "names": 1}}]
 

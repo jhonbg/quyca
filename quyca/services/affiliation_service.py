@@ -161,7 +161,7 @@ class AffiliationService:
 
     @staticmethod
     def plot_year_researcher(affiliation_id: str, affiliation_type: str, query_params):
-        data = PlotRepository.get_bars_data_by_researcher_category_and_year(affiliation_id, affiliation_type)
+        data = PlotRepository.get_bars_data_by_researcher_and_affiliation(affiliation_id, affiliation_type)
         plot = BarAction.works_by_researcher_category_and_year(data)
 
         if plot:
@@ -392,7 +392,7 @@ class AffiliationService:
 
     @staticmethod
     def plot_products_age(affiliation_id: str, affiliation_type: str, query_params):
-        works = PlotRepository.get_products_by_author_age(affiliation_id)
+        works = PlotRepository.get_products_by_author_age_and_affiliation(affiliation_id)
 
         result = PieAction.get_products_by_age(works)
 
@@ -442,7 +442,7 @@ class AffiliationService:
 
     @staticmethod
     def plot_collaboration_worldmap(affiliation_id: str, affiliation_type: str, query_params):
-        data = PlotRepository.get_collaboration_worldmap(affiliation_id, affiliation_type)
+        data = PlotRepository.get_collaboration_worldmap_by_affiliation(affiliation_id, affiliation_type)
 
         result = MapAction.get_collaboration_worldmap(data)
 
@@ -454,7 +454,7 @@ class AffiliationService:
 
     @staticmethod
     def plot_collaboration_colombiamap(affiliation_id: str, affiliation_type: str, query_params):
-        data = PlotRepository.get_collaboration_colombiamap(affiliation_id, affiliation_type)
+        data = PlotRepository.get_collaboration_colombiamap_by_affiliation(affiliation_id, affiliation_type)
 
         return {"plot": MapAction.get_collaboration_colombiamap(data)}
 
@@ -464,9 +464,11 @@ class AffiliationService:
         if affiliation_type in ["group", "department", "faculty"]:
             return {"plot": None}
 
-        data = PlotRepository.get_collaboration_network(affiliation_id)
+        data = calculations_database["affiliations"].find_one(
+            {"_id": ObjectId(affiliation_id)}, {"coauthorship_network": 1}
+        )
 
-        if next(data):
+        if data:
             if "coauthorship_network" not in data.keys():
                 return {"plot": None}
 

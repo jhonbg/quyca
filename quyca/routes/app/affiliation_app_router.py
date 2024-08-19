@@ -2,9 +2,11 @@ import json
 import io
 import csv
 
+from bson.errors import InvalidId
 from flask import Blueprint, request, Response, jsonify
 from pydantic import ValidationError
 
+from exceptions.affiliation_exception import AffiliationException
 from services.affiliation import affiliation_service
 from schemas.work import WorkQueryParams
 from services.affiliation_service import AffiliationService
@@ -15,6 +17,24 @@ affiliation_app_router = Blueprint("affiliation_app_router", __name__)
 
 
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>", methods=["GET"])
+def get_affiliation_by_id(affiliation_type: str, affiliation_id: str):
+    try:
+        affiliation = AffiliationService.get_by_id(affiliation_id)
+
+        return Response(
+            response = json.dumps({"data": affiliation.model_dump(by_alias=True), "filters": {}}),
+            status = 200,
+            mimetype = "application/json",
+        )
+
+    except (AffiliationException, InvalidId) as e:
+        return Response(
+            response = json.dumps({"error": str(e)}),
+            status = 404,
+            mimetype = "application/json",
+        )
+
+
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/<section>", methods=["GET"])
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/<section>/<tab>", methods=["GET"])
 def get_affiliation(

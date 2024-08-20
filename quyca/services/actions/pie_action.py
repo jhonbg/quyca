@@ -239,7 +239,10 @@ class PieAction:
     @get_percentage
     def get_products_by_same_institution(sources: Iterable, institution) -> list:
         results = {"same": 0, "different": 0, "Sin información": 0}
-        names = list(set([n["name"].lower() for n in institution["names"]]))
+        names = []
+
+        if institution:
+            names = list(set([name["name"].lower() for name in institution["names"]]))
 
         for source in sources:
             if (

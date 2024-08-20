@@ -3,7 +3,7 @@ from typing import Any
 from bson import ObjectId
 from pydantic import BaseModel, Field
 
-from database.models.base_model import PyObjectId, CitationsCount, Type, ExternalId, ExternalURL, Subject, Updated
+from database.models.base_model import PyObjectId, CitationsCount, Type, ExternalId, ExternalURL, Subject, Updated, Ranking
 
 
 class Affiliation(BaseModel):
@@ -46,13 +46,6 @@ class Group(BaseModel):
 
     class Config:
         json_encoders = {ObjectId: str}
-
-
-class Ranking(BaseModel):
-    date: str | int | None
-    provenance: str | None
-    rank: str | None
-    source: str | None
 
 
 class Source(BaseModel):

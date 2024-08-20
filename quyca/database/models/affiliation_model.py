@@ -1,9 +1,8 @@
-from typing import Any
-
+from bson import ObjectId
 from pydantic import BaseModel, Field, model_validator
 
-from database.models.base_model import Type, Updated, ExternalId, ExternalURL, CitationsCount, Name, PyObjectId
-from database.models.person_model import Person
+from database.models.base_model import Type, Updated, ExternalURL, CitationsCount, Name, PyObjectId, ExternalId, \
+    Subject, Ranking
 
 
 class Address(BaseModel):
@@ -12,17 +11,17 @@ class Address(BaseModel):
     country_code: str | None
     lat: float | str | None
     lng: float | str | None
-    postcode: str | None = None
+    postcode: str | None
     state: str | None
 
 
 class DescriptionText(BaseModel):
-    TXT_ESTADO_ARTE: str
-    TXT_OBJETIVOS: str
-    TXT_PLAN_TRABAJO: str
-    TXT_PROD_DESTACADA: str
-    TXT_RETOS: str
-    TXT_VISION: str
+    TXT_ESTADO_ARTE: str | None
+    TXT_OBJETIVOS: str | None
+    TXT_PLAN_TRABAJO: str | None
+    TXT_PROD_DESTACADA: str | None
+    TXT_RETOS: str | None
+    TXT_VISION: str | None
 
 
 class Description(BaseModel):
@@ -30,37 +29,35 @@ class Description(BaseModel):
     source: str
 
 
-class Ranking(BaseModel):
-    date: int | Any = None
-    from_date: int | Any = None
-    order: int | Any = None
-    rank: str | None = None
-    source: str | None = None
-    to_date: str | Any = None
-
-
 class Relation(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId)
-    name: str | None | Name
-    types: list[Type] | None = None
+    name: str | Name | None
+    types: list[Type] | None
+
+
+class Status(BaseModel):
+    source: str | None
+    status: str | None
 
 
 class Affiliation(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
-    names: list[Name] | None = Field(default_factory=list)
-    relations: list[Relation] | None = Field(default_factory=list)
-    addresses: list[Address] | Address | None = Field(default_factory=list)
-    external_ids: list[ExternalId] | None = Field(default_factory=list)
-    external_urls: list[ExternalURL] | None = Field(default_factory=list)
-    types: list[Type] | Type | None = Field(default_factory=list)
     abbreviations: list[str] | None = Field(default_factory=list)
+    addresses: list[Address] | Address | None = Field(default_factory=list)
     aliases: list[str] | None = Field(default_factory=list)
     birthdate: str | int | None = None
-    ranking: Ranking | list[Ranking] | None
-    status: Any
-    subjects: list[Any] | None = Field(default_factory=list)
+    description: list[Description] | None = Field(default_factory=list)
+    external_ids: list[ExternalId] | None = Field(default_factory=list)
+    external_urls: list[ExternalURL] | None = Field(default_factory=list)
+    names: list[Name] | None = Field(default_factory=list)
+    ranking: list[Ranking] | None = Field(default_factory=list)
+    relations: list[Relation] | Relation | None = Field(default_factory=list)
+    status: list[str] | list[Status] | None = Field(default_factory=list)
+    subjects: list[Subject] | None = Field(default_factory=list)
+    types: list[Type] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
     year_established: int | None
+
     name: str | None = None
     citations_count: list[CitationsCount] | None = Field(default_factory=list)
     products_count: int | None = None
@@ -75,11 +72,5 @@ class Affiliation(BaseModel):
 
         return self
 
-
-class RelatedAffiliations(BaseModel):
-    faculties: list[Affiliation] | None = None
-    departments: list[Affiliation] | None = None
-    groups: list[Affiliation] | None = None
-    authors: list[Person] | None = None
-
-
+    class Config:
+        json_encoders = {ObjectId: str}

@@ -7,7 +7,7 @@ from database.repositories.person_repository import PersonRepository
 from services.actions.bar_action import BarAction
 from services.actions.pie_action import PieAction
 from services.actions.map_action import MapAction
-from database.models.affiliation_model import Affiliation, RelatedAffiliations
+from database.models.affiliation_model import Affiliation
 from database.repositories.affiliation_repository import AffiliationRepository
 from database.mongo import calculations_database, database
 from database.repositories.plot_repository import PlotRepository

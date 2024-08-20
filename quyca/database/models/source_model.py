@@ -1,85 +1,65 @@
-from typing import Any
-
+from bson import ObjectId
 from pydantic import BaseModel, Field, model_validator
 
-from database.models.base_model import Type, Updated, ExternalId, ExternalURL, Name
+from database.models.base_model import Type, Updated, ExternalId, ExternalURL, Name, PyObjectId, Ranking, Subject
 
+
+class APC(BaseModel):
+    charges: int | None = None
+    currency: str | None = None
+    year_published: int | None = None
+
+
+class Copyright(BaseModel):
+    author_retains: bool | None = None
+    url: str | None = None
+
+
+class Licence(BaseModel):
+    BY: bool | None
+    NC: bool | None
+    ND: bool | None
+    SA: bool | None
+    type: str | None
+    url: str | None = None
 
 
 class Publisher(BaseModel):
     id: str | None = None
-    name: str | Any | None = None
-    country_code: str | Any | None = None
+    country_code: str | None = None
+    name: str | float | None = None
 
 
 class Waiver(BaseModel):
-    has_waiver: bool | Any | None = None
-    url: str | Any | None = None
-
-
-class APC(BaseModel):
-    charges: int | Any | None = None
-    currency: str | Any | None = None
-    year_published: int | str | None = None
-
-
-class Copyright(BaseModel):
-    author_retains: bool | Any | None = None
-    url: str | Any | None = None
-
-
-class Licence(BaseModel):
-    BY: bool | Any | None = None
-    NC: bool | Any | None = None
-    ND: bool | Any | None = None
-    SA: bool | Any | None = None
-    type: str | Any | None = None
-    url: str | Any | None = None
-
-
-class SubjectEmbedded(BaseModel):
-    id: str | None = None
-    level: int | None = None
-    name: str | None = None
-
-
-class Subject(BaseModel):
-    source: str | None
-    subjects: list[SubjectEmbedded]
-
-
-class Ranking(BaseModel):
-    from_date: float | int
-    issn: Any | None = None
-    order: int | None = None
-    rank: str | int | float | None = None
-    source: str | None = None
-    to_date: float | int
+    has_waiver: bool | None = None
+    url: str | None = None
 
 
 class Source(BaseModel):
-    updated: list[Updated] | None = Field(default_factory=list)
-    names: list[Name] | None = Field(default_factory=list)
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     abbreviations: list[str] | None = Field(default_factory=list)
-    types: list[Type] | None = Field(default_factory=list)
-    keywords: list[str] | None = Field(default_factory=list)
-    languages: list[str] | None = Field(default_factory=list)
-    publisher: Publisher | str |None = None
-    relations: list[Any] | None = Field(default_factory=list)
-    addresses: list[Any] | None = Field(default_factory=list)
+    addresses: list | None = Field(default_factory=list)
+    apc: APC | None = Field(default_factory=APC)
+    copyright: Copyright | None = Field(default_factory=Copyright)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
-    review_process: list[str] | Any | None = Field(default_factory=list)
-    review_processes: list[Any] | None = Field(default_factory=list)
-    waiver: Waiver | Any | None = None
-    plagiarim_detection: bool = Field(default_factory=list)
-    open_access_start_year: int | Any | None = None
-    publication_time_weeks: int | Any | None = None
-    apc: APC | Any | None = None
-    copyright: Copyright | Any | None = None
+    keywords: list[str] | None = Field(default_factory=list)
+    languages: list[str] | None = Field(default_factory=list)
     licenses: list[Licence] | None = Field(default_factory=list)
-    subjects: list[Subject] | None = Field(default_factory=list)
+    names: list[Name] | None = Field(default_factory=list)
+    open_access_start_year: int | None = None
+    plagiarism_detection: bool | None = None
+    publication_time_weeks: int | None = None
+    publisher: Publisher | str | None = Field(default_factory=Publisher)
     ranking: list[Ranking] | None = Field(default_factory=list)
+    relations: list | None = Field(default_factory=list)
+    review_process: list[str] | None = Field(default_factory=list)
+    review_processes: list | None = Field(default_factory=list)
+    subjects: list[Subject] | None = Field(default_factory=list)
+    types: list[Type] | None = Field(default_factory=list)
+    updated: list[Updated] | None = Field(default_factory=list)
+    waiver: Waiver | None = None
+
     date_published: str | int | None = Field(None, exclude=True)
     scimago_quartile: str | None = Field(None, exclude=True)
     affiliation_names: list[Name] | None = None
@@ -91,3 +71,6 @@ class Source(BaseModel):
                 if rank.source == "scimago Best Quartile" and rank.rank != "-":
                     self.scimago_quartile = rank.rank
         return self
+
+    class Config:
+        json_encoders = {ObjectId: str}

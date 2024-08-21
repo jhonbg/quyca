@@ -1,5 +1,5 @@
 from bson import ObjectId
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from database.models.base_model import PyObjectId, CitationsCount, Updated, ExternalId, Type, Identifier, Subject, \
     Ranking
 
@@ -71,6 +71,15 @@ class Person(BaseModel):
     citations_count: list[CitationsCount] | None = Field(default_factory=list)
     products_count: int | None = None
     logo: str | None = None
+
+    @field_validator("external_ids")
+    @classmethod
+    def delete_sensitive_external_ids(cls, value):
+        return list(filter(
+            lambda external_id: external_id.source not in ["Cédula de Ciudadanía", "Cédula de Extranjería", "Passport"],
+            value
+        ))
+
 
     class Config:
         json_encoders = {ObjectId: str}

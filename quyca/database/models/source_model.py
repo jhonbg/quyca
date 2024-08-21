@@ -61,16 +61,7 @@ class Source(BaseModel):
     waiver: Waiver | None = None
 
     date_published: str | int | None = Field(None, exclude=True)
-    scimago_quartile: str | None = Field(None, exclude=True)
     affiliation_names: list[Name] | None = None
-
-    @model_validator(mode="after")
-    def get_scimag_quartile(self):
-        if self.ranking:
-            for rank in self.ranking:
-                if rank.source == "scimago Best Quartile" and rank.rank != "-":
-                    self.scimago_quartile = rank.rank
-        return self
 
     class Config:
         json_encoders = {ObjectId: str}

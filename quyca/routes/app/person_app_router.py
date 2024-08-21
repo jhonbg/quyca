@@ -18,7 +18,7 @@ person_app_router = Blueprint("person_app_router", __name__)
 @person_app_router.route("/<person_id>", methods=["GET"])
 def get_person_by_id(person_id: str):
     try:
-        person_model = PersonService.get_by_id(person_id)
+        person_model = PersonService.get_person_by_id(person_id)
 
         return Response(
             response = json.dumps({"data": person_model.model_dump(by_alias=True), "filters": {}}),

@@ -12,12 +12,12 @@ from database.mongo import database
 
 class AffiliationRepository:
     @classmethod
-    def get_by_id(cls, affiliation_id: str) -> Affiliation:
+    def get_affiliation_by_id(cls, affiliation_id: str) -> Affiliation:
         from database.repositories.work_repository import WorkRepository
 
         affiliation_data = database["affiliations"].find_one({"_id": ObjectId(affiliation_id)})
 
-        if affiliation_data is None:
+        if not affiliation_data:
             raise AffiliationException(affiliation_id)
 
         affiliation = Affiliation(**affiliation_data)

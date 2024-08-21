@@ -18,7 +18,7 @@ from utils.mapping import get_openalex_scienti
 class AffiliationService:
     @staticmethod
     def get_by_id(affiliation_id: str) -> Affiliation:
-        return AffiliationRepository.get_by_id(affiliation_id)
+        return AffiliationRepository.get_affiliation_by_id(affiliation_id)
 
     @staticmethod
     def get_related_affiliations_by_affiliation(affiliation_id: str, affiliation_type: str) -> dict:

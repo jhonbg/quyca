@@ -2,6 +2,7 @@ from itertools import chain
 
 from bson import ObjectId
 
+from database.repositories.calculations_repository import CalculationsRepository
 from services.actions.bar_action import BarAction
 from services.actions.map_action import MapAction
 from services.actions.pie_action import PieAction
@@ -14,8 +15,14 @@ from database.repositories.work_repository import WorkRepository
 
 class PersonService:
     @staticmethod
-    def get_by_id(person_id: str) -> Person:
-        return PersonRepository.get_by_id(person_id)
+    def get_person_by_id(person_id: str) -> Person:
+        person = PersonRepository.get_person_by_id(person_id)
+        person_calculations = CalculationsRepository.get_person_calculations(person_id)
+
+        person.citations_count = person_calculations.citations_count
+        person.products_count = WorkRepository.get_works_count_by_person(person_id)
+
+        return person
 
 
     @classmethod

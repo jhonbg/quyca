@@ -68,13 +68,14 @@ class Identifier(BaseModel):
 
 class ExternalId(BaseModel):
     id: str | int | list[str] | Identifier | None = None
+    provenance: str | None = None
     source: str | None
 
-    @classmethod
     @field_validator("id", mode="after")
+    @classmethod
     def id_validator(cls, value: str | Identifier):
-        if isinstance(value, Identifier):
-            value = Identifier.COD_RH
+        if isinstance(value, Identifier) and not value.COD_PRODUCTO:
+            value = value.COD_RH
 
         return value
 
@@ -93,7 +94,7 @@ class Name(BaseModel):
 
 
 class Ranking(BaseModel):
-    date: int | None = None
+    date: int | str | None = None
     from_date: int | str | None = None
     issn: str | None = None
     order: str | int | None = None
@@ -110,7 +111,7 @@ class Status(BaseModel):
 class SubjectContent(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
-    level: int | None
+    level: int | None = None
     name: str | None
 
     class Config:

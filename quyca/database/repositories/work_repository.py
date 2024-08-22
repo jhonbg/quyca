@@ -7,11 +7,22 @@ from core.config import settings
 from database.generators.source_generator import SourceGenerator
 from database.generators.work_generator import WorkGenerator
 from database.models.base_model import CitationsCount
+from database.models.work_model import Work
 from database.repositories.calculations_repository import CalculationsRepository
 from database.mongo import database
+from exceptions.work_exception import WorkException
 
 
 class WorkRepository:
+    @staticmethod
+    def get_work_by_id(work_id: id) -> Work:
+        work = database["works"].find_one(ObjectId(work_id))
+
+        if not work:
+            raise WorkException(work_id)
+
+        return Work(**work)
+
     @classmethod
     def get_works_by_affiliation(
             cls,

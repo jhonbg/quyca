@@ -20,6 +20,8 @@ class Author(BaseModel):
     affiliations: list[Affiliation] | None = Field(default_factory=list)
     full_name: str | None
 
+    external_ids: list[ExternalId] | None = Field(default_factory=list)
+
     class Config:
         json_encoders = {ObjectId: str}
 
@@ -51,6 +53,9 @@ class Group(BaseModel):
 class Source(BaseModel):
     id: PyObjectId | str | None = Field(default_factory=PyObjectId)
     name: str | Any | None = None
+
+    scimago_quartile: str | None = None
+    serials: dict | None = None
 
     class Config:
         json_encoders = {ObjectId: str}
@@ -92,6 +97,13 @@ class Work(BaseModel):
     types: list[Type] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
     year_published: int | str | None = None
+
+    issue: str | None = None
+    language: str | None = None
+    open_access_status: str | None = None
+    product_types: list[ProductType] | None = None
+    title: str | None = None
+    volume: str | int | None = None
 
     class Config:
         json_encoders = {ObjectId: str}

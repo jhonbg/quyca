@@ -80,7 +80,8 @@ class ExternalId(BaseModel):
         return value
 
 
-class ExternalURL(BaseModel):
+
+class ExternalUrl(BaseModel):
     url: str | int | None
     source: str | None
     provenance: str | None = None

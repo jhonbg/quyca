@@ -1,7 +1,7 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field, model_validator
 
-from database.models.base_model import Type, Updated, ExternalURL, CitationsCount, Name, PyObjectId, ExternalId, \
+from database.models.base_model import Type, Updated, ExternalUrl, CitationsCount, Name, PyObjectId, ExternalId, \
     Subject, Ranking
 
 
@@ -48,7 +48,7 @@ class Affiliation(BaseModel):
     birthdate: str | int | None = None
     description: list[Description] | None = Field(default_factory=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
-    external_urls: list[ExternalURL] | None = Field(default_factory=list)
+    external_urls: list[ExternalUrl] | None = Field(default_factory=list)
     names: list[Name] | None = Field(default_factory=list)
     ranking: list[Ranking] | None = Field(default_factory=list)
     relations: list[Relation] | Relation | None = Field(default_factory=list)

@@ -1,7 +1,7 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field, model_validator
 
-from database.models.base_model import Type, Updated, ExternalId, ExternalURL, Name, PyObjectId, Ranking, Subject
+from database.models.base_model import Type, Updated, ExternalId, ExternalUrl, Name, PyObjectId, Ranking, Subject
 
 
 class APC(BaseModel):
@@ -42,7 +42,7 @@ class Source(BaseModel):
     apc: APC | None = Field(default_factory=APC)
     copyright: Copyright | None = Field(default_factory=Copyright)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
-    external_urls: list[ExternalURL] | None = Field(default_factory=list)
+    external_urls: list[ExternalUrl] | None = Field(default_factory=list)
     keywords: list[str] | None = Field(default_factory=list)
     languages: list[str] | None = Field(default_factory=list)
     licenses: list[Licence] | None = Field(default_factory=list)

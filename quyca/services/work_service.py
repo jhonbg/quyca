@@ -68,7 +68,7 @@ class WorkService:
         for ranking in source.ranking:
             condition = (
                     ranking.source == "scimago Best Quartile" and
-                    ranking.rank is not "-" and
+                    ranking.rank != "-" and
                     ranking.from_date <= work.date_published <= ranking.to_date
             )
             if condition:

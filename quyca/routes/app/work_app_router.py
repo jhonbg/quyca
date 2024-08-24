@@ -25,8 +25,6 @@ def get_work_by_id(work_id: str):
             "references": True,
             "types": True,
             "updated": True,
-            "external_urls": {"__all__": {"provenance"}},
-            "external_ids": {"__all__": {"provenance"}},
             "subjects": {'__all__':{"subjects": {"__all__": {"external_ids"}}}},
         }
         return {"data": work.model_dump(exclude=exclude_fields, exclude_none=True)}

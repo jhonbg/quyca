@@ -71,20 +71,27 @@ class ExternalId(BaseModel):
     provenance: str | None = None
     source: str | None
 
-    @field_validator("id", mode="after")
+    @field_validator("id", mode="before")
     @classmethod
-    def id_validator(cls, value: str | Identifier):
-        if isinstance(value, Identifier) and not value.COD_PRODUCTO:
-            value = value.COD_RH
-
+    def id_validator(cls, value: str | int | list[str] | Identifier | None) -> str:
+        if isinstance(value, Identifier):
+            if value.COD_PRODUCTO:
+                value = value.COD_RH + "-" + value.COD_PRODUCTO
+            else:
+                value = value.COD_RH
         return value
 
+    def __hash__(self):
+        return hash(str(self.id) + str(self.source))
 
 
 class ExternalUrl(BaseModel):
     url: str | int | None
     source: str | None
     provenance: str | None = None
+
+    def __hash__(self):
+        return hash(str(self.url) + str(self.source))
 
 
 class Name(BaseModel):

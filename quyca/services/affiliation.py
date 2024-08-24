@@ -159,7 +159,7 @@ class AffiliationService(
                 "total_products": count,
                 "count": len(data),
                 "cursor": params.get_cursor(
-                    path=f"{settings.API_V1_STR}/affiliation/{typ}/{id}/research/products",
+                    path=f"{settings.API_URL_PREFIX}/affiliation/{typ}/{id}/research/products",
                     total=count,
                 ),
             },

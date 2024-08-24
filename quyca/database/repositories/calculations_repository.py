@@ -1,6 +1,7 @@
 from bson import ObjectId
 
 from database.models.affiliation_calculations_model import AffiliationCalculations
+from database.models.base_model import CoauthorshipNetwork
 from database.models.person_calculations_model import PersonCalculations
 from database.mongo import calculations_database
 from exceptions.affiliation_calculations_exception import AffiliationCalculationsException
@@ -14,7 +15,12 @@ class CalculationsRepository:
         person_calculations = calculations_database["person"].find_one({"_id": ObjectId(person_id)})
 
         if not person_calculations:
-            raise PersonCalculationsException(person_id)
+            return PersonCalculations(
+                id=ObjectId(person_id),
+                citations_count=[],
+                coauthorship_network=CoauthorshipNetwork(nodes=[], edges=[]),
+                top_words=[])
+            # raise PersonCalculationsException(person_id)
 
         return PersonCalculations(**person_calculations)
 
@@ -23,6 +29,12 @@ class CalculationsRepository:
         affiliation_calculations = calculations_database["affiliations"].find_one({"_id": ObjectId(affiliation_id)})
 
         if not affiliation_calculations:
-            raise AffiliationCalculationsException(affiliation_id)
+            return AffiliationCalculations(
+                id=ObjectId(affiliation_id),
+                citations_count=[],
+                coauthorship_network=CoauthorshipNetwork(nodes=[], edges=[]),
+                top_words=[]
+            )
+            # raise AffiliationCalculationsException(affiliation_id)
 
         return AffiliationCalculations(**affiliation_calculations)

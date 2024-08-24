@@ -71,7 +71,7 @@ class ExternalId(BaseModel):
     provenance: str | None = None
     source: str | None
 
-    @field_validator("id", mode="before")
+    @field_validator("id", mode="after")
     @classmethod
     def id_validator(cls, value: str | int | list[str] | Identifier | None) -> str:
         if isinstance(value, Identifier):

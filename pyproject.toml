@@ -2,8 +2,8 @@
 name = "quyca"
 version = "0.1.0"
 description = ""
-authors = ["Simón <simon.garcial@udea.edu.co>"]
-readme = "README.md"
+authors = ["joselomanuelo <joselomanuelo@gmail.com>", "Simón <simon.garcial@udea.edu.co>"]
+
 
 [tool.poetry.dependencies]
 python = "^3.10"

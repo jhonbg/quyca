@@ -18,7 +18,7 @@ person_app_router = Blueprint("person_app_router", __name__)
 @person_app_router.route("/<person_id>", methods=["GET"])
 def get_person_by_id(person_id: str):
     try:
-        person_model = PersonService.get_by_id(person_id)
+        person_model = PersonService.get_person_by_id(person_id)
 
         return Response(
             response = json.dumps({"data": person_model.model_dump(by_alias=True), "filters": {}}),
@@ -35,7 +35,7 @@ def get_person_by_id(person_id: str):
 
 
 def person(
-    request: Request, id: str | None, section: str | None = None, tab: str | None = None
+    request: Request, person_id: str | None, section: str | None = None, tab: str | None = None
 ):
     data = request.args.get("data")
     typ = request.args.get("typ", None)
@@ -43,33 +43,30 @@ def person(
     result = None
 
     if section == "info":
-        result = person_service.get_info(id=id)
+        result = person_service.get_info(id=person_id)
     elif section == "research":
         if tab == "products":
-            plot = request.args.get("plot")
-            if plot:
-                level = request.args.get("level", 0)
-                args = (id, level) if plot == "products_subject" else (id,)
-                result = person_service.plot_mappings[plot](*args)
-            else:
-                params = WorkQueryParams(**request.args)
-                result = work_service.get_research_products_by_author(
-                    author_id=id,
-                    skip=params.skip,
-                    limit=params.max,
-                    sort=params.sort,
-                    filters=params.get_filter(),
-                )
+            if request.args.get("plot"):
+                return PersonService.get_person_plot(person_id, request.args)
+
+            params = WorkQueryParams(**request.args)
+            result = work_service.get_research_products_by_author(
+                author_id=person_id,
+                skip=params.skip,
+                limit=params.max,
+                sort=params.sort,
+                filters=params.get_filter(),
+            )
     else:
         result = None
     return result
 
 # @person_app_router.route("/<id>", methods=["GET"])
-@person_app_router.route("/<id>/<section>/<tab>", methods=["GET"])
+@person_app_router.route("/<person_id>/<section>/<tab>", methods=["GET"])
 def get_person(
-    id: str | None = None, section: str | None = "info", tab: str | None = None
+    person_id: str | None = None, section: str | None = "info", tab: str | None = None
 ):
-    result = person(request, id=id, section=section, tab=tab)
+    result = person(request, person_id=person_id, section=section, tab=tab)
     if result:
         response = Response(
             response=json.dumps(result, cls=JsonEncoder),

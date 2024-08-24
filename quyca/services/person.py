@@ -4,7 +4,6 @@ from json import loads
 from schemas.general import GeneralMultiResponse
 from schemas.affiliation import AffiliationInfo
 from services.base import ServiceBase
-from services.plots.person import person_plots_service
 from schemas.person import PersonQueryParams, PersonSearch, PersonInfo
 from protocols.mongo.models.person import Person
 from protocols.mongo.repositories.person import PersonRepository
@@ -77,30 +76,5 @@ class PersonService(
         results.data = data
         results.count = len(data)
         return loads(results.model_dump_json(exclude_none=True, by_alias=True))
-
-    @property
-    def plot_mappings(self) -> dict[str, Callable[[Any, Any], dict[str, list] | None]]:
-        return {
-            "year_type": person_plots_service.get_products_by_year_by_type,
-            "year_citations": person_plots_service.get_citations_by_year,
-            "year_apc": person_plots_service.get_apc_by_year,
-            "year_oa": person_plots_service.get_oa_by_year,
-            "year_publisher": person_plots_service.get_products_by_year_by_publisher,
-            "year_h": person_plots_service.get_h_by_year,
-            "year_researcher": person_plots_service.get_products_by_year_by_researcher_category,
-            "title_words": person_plots_service.get_title_words,
-            "products_publisher": person_plots_service.get_products_by_publisher,
-            "products_subject": person_plots_service.get_products_by_subject,
-            "products_database": person_plots_service.get_products_by_database,
-            "products_oa": person_plots_service.get_products_by_open_access_status,
-            "products_age": person_plots_service.get_products_by_author_age,
-            "scienti_rank": person_plots_service.get_products_by_scienti_rank,
-            "scimago_rank": person_plots_service.get_products_by_scimago_rank,
-            "published_institution": person_plots_service.get_publisher_same_institution,
-            "collaboration_worldmap": person_plots_service.get_coauthorships_worldmap,
-            "collaboration_colombiamap": person_plots_service.get_coauthorships_colombiamap,
-            "collaboration_network": person_plots_service.get_coauthorships_network,
-        }
-
 
 person_service = PersonService(PersonSearch, PersonInfo)

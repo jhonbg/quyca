@@ -18,7 +18,6 @@ from schemas.work import (
 from schemas.person import PersonInfo
 from services.base import ServiceBase
 from services.source import source_service
-from services.plots.affiliation import affiliation_plots_service
 from protocols.mongo.models.affiliation import Affiliation
 from protocols.mongo.repositories.affiliation import (
     AffiliationRepository,
@@ -213,47 +212,5 @@ class AffiliationService(
             ).model_dump()
             for work in works
         ]
-
-    @property
-    def plot_mappings(self) -> dict[str, Callable[[Any, Any], dict[str, list] | None]]:
-        return {
-            "year_type": affiliation_plots_service.get_products_by_year_by_type,
-            "type,faculty": affiliation_plots_service.get_products_by_affiliation_by_type,
-            "type,department": affiliation_plots_service.get_products_by_affiliation_by_type,
-            "type,group": affiliation_plots_service.get_products_by_affiliation_by_type,
-            "year_citations": affiliation_plots_service.get_citations_by_year,
-            "year_apc": affiliation_plots_service.get_apc_by_year,
-            "year_oa": affiliation_plots_service.get_oa_by_year,
-            "year_publisher": affiliation_plots_service.get_products_by_year_by_publisher,
-            "year_h": affiliation_plots_service.get_h_by_year,
-            "year_researcher": affiliation_plots_service.get_products_by_year_by_researcher_category,
-            "year_group": affiliation_plots_service.get_products_by_year_by_group_category,
-            "title_words": affiliation_plots_service.get_title_words,
-            "citations,faculty": affiliation_plots_service.get_citations_by_affiliations,
-            "citations,department": affiliation_plots_service.get_citations_by_affiliations,
-            "citations,group": affiliation_plots_service.get_citations_by_affiliations,
-            "products,faculty": affiliation_plots_service.get_products_by_affiliations,
-            "products,department": affiliation_plots_service.get_products_by_affiliations,
-            "products,group": affiliation_plots_service.get_products_by_affiliations,
-            "apc,faculty": affiliation_plots_service.get_apc_by_affiliations,
-            "apc,department": affiliation_plots_service.get_apc_by_affiliations,
-            "apc,group": affiliation_plots_service.get_apc_by_affiliations,
-            "h,faculty": affiliation_plots_service.get_h_by_affiliations,
-            "h,department": affiliation_plots_service.get_h_by_affiliations,
-            "h,group": affiliation_plots_service.get_h_by_affiliations,
-            "products_publisher": affiliation_plots_service.get_products_by_publisher,
-            "products_subject": affiliation_plots_service.get_products_by_subject,
-            "products_database": affiliation_plots_service.get_products_by_database,
-            "products_oa": affiliation_plots_service.get_products_by_open_access_status,
-            "products_sex": affiliation_plots_service.get_products_by_author_sex,
-            "products_age": affiliation_plots_service.get_products_by_author_age,
-            "scienti_rank": affiliation_plots_service.get_products_by_scienti_rank,
-            "scimago_rank": affiliation_plots_service.get_products_by_scimago_rank,
-            "published_institution": affiliation_plots_service.get_publisher_same_institution,
-            "collaboration_worldmap": affiliation_plots_service.get_coauthorships_worldmap,
-            "collaboration_colombiamap": affiliation_plots_service.get_coauthorships_colombiamap,
-            "collaboration_network": affiliation_plots_service.get_coauthorships_network,
-        }
-
 
 affiliation_service = AffiliationService(AffiliationSearch, AffiliationInfo)

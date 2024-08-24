@@ -17,7 +17,7 @@ build-prod:
 	docker build --file Dockerfile -t colav/quyca-prod:latest --target development .
 
 up-local:
-	docker-compose up -d --build local;
+	docker-compose up --build local;
 down-local:
 	docker stop quyca-local; docker rm quyca-local; docker rmi colav/quyca-local:local
 shell-local:

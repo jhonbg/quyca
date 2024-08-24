@@ -36,31 +36,31 @@ class Waiver(BaseModel):
 
 
 class Source(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    abbreviations: list[str] | None = Field(default_factory=list)
-    addresses: list | None = Field(default_factory=list)
-    apc: APC | None = Field(default_factory=APC)
-    copyright: Copyright | None = Field(default_factory=Copyright)
-    external_ids: list[ExternalId] | None = Field(default_factory=list)
-    external_urls: list[ExternalUrl] | None = Field(default_factory=list)
-    keywords: list[str] | None = Field(default_factory=list)
-    languages: list[str] | None = Field(default_factory=list)
-    licenses: list[Licence] | None = Field(default_factory=list)
-    names: list[Name] | None = Field(default_factory=list)
+    id: PyObjectId = Field(alias='_id')
+    abbreviations: list[str] | None = None
+    addresses: list | None = None
+    apc: APC | None = None
+    copyright: Copyright | None = None
+    external_ids: list[ExternalId] | None = None
+    external_urls: list[ExternalUrl] | None = None
+    keywords: list[str] | None = None
+    languages: list[str] | None = None
+    licenses: list[Licence] | None = None
+    names: list[Name] | None = None
     open_access_start_year: int | None = None
     plagiarism_detection: bool | None = None
     publication_time_weeks: int | None = None
-    publisher: Publisher | str | None = Field(default_factory=Publisher)
-    ranking: list[Ranking] | None = Field(default_factory=list)
-    relations: list | None = Field(default_factory=list)
-    review_process: list[str] | None = Field(default_factory=list)
-    review_processes: list | None = Field(default_factory=list)
-    subjects: list[Subject] | None = Field(default_factory=list)
-    types: list[Type] | None = Field(default_factory=list)
-    updated: list[Updated] | None = Field(default_factory=list)
+    publisher: Publisher | str | None = None
+    ranking: list[Ranking] | None = None
+    relations: list | None = None
+    review_process: list[str] | None = None
+    review_processes: list | None = None
+    subjects: list[Subject] | None = None
+    types: list[Type] | None = None
+    updated: list[Updated] | None = None
     waiver: Waiver | None = None
 
-    date_published: str | int | None = Field(None, exclude=True)
+    date_published: str | int | None = None
     affiliation_names: list[Name] | None = None
 
     class Config:

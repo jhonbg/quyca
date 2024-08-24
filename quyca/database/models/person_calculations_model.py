@@ -4,7 +4,7 @@ from database.models.base_model import PyObjectId, CitationsCount, CoauthorshipN
 
 
 class PersonCalculations(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
-    citations_count: list[CitationsCount] | None = Field(default_factory=list)
+    id: PyObjectId = Field(alias='_id')
+    citations_count: list[CitationsCount] | None = None
     coauthorship_network: CoauthorshipNetwork | None = None
     top_words: list[TopWord]

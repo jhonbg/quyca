@@ -3,24 +3,24 @@ from typing import Any
 from bson import ObjectId
 from pydantic import BaseModel, Field
 
-from database.models.base_model import PyObjectId, CitationsCount, Type, ExternalId, ExternalURL, Subject, Updated, Ranking
+from database.models.base_model import PyObjectId, CitationsCount, Type, ExternalId, ExternalUrl, Subject, Updated, Ranking
 
 
 class Affiliation(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId)
+    id: PyObjectId = None
     name: str | None
-    types: list[Type] | None = Field(default_factory=list)
+    types: list[Type] | None = None
 
     class Config:
         json_encoders = {ObjectId: str}
 
 
 class Author(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId)
-    affiliations: list[Affiliation] | None = Field(default_factory=list)
+    id: PyObjectId = None
+    affiliations: list[Affiliation] | None = None
     full_name: str | None
 
-    external_ids: list[ExternalId] | None = Field(default_factory=list)
+    external_ids: list[ExternalId] | None = None
 
     class Config:
         json_encoders = {ObjectId: str}
@@ -43,7 +43,7 @@ class CitationByYear(BaseModel):
 
 
 class Group(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId)
+    id: PyObjectId = None
     name: str | None
 
     class Config:
@@ -51,7 +51,7 @@ class Group(BaseModel):
 
 
 class Source(BaseModel):
-    id: PyObjectId | str | None = Field(default_factory=PyObjectId)
+    id: PyObjectId | str | None = None
     name: str | Any | None = None
 
     scimago_quartile: str | None = None
@@ -74,28 +74,28 @@ class ProductType(BaseModel):
 
 
 class Work(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    id: PyObjectId = Field(alias='_id')
     abstract: str | None = None
     author_count: int | None = None
-    authors: list[Author] | None = Field(default_factory=list)
-    bibliographic_info: BiblioGraphicInfo | None = Field(default_factory=BiblioGraphicInfo)
+    authors: list[Author] | None = None
+    bibliographic_info: BiblioGraphicInfo | None = None
     citations: list | None = Field(default_factory=list)
-    citations_by_year: list[CitationByYear] | None = Field(default_factory=list)
-    citations_count: list[CitationsCount] | None = Field(default_factory=list)
+    citations_by_year: list[CitationByYear] | None = None
+    citations_count: list[CitationsCount] | None = None
     date_published: int | None = None
-    external_ids: list[ExternalId] | None = Field(default_factory=list)
-    external_urls: list[ExternalURL] | None = Field(default_factory=list)
-    groups: list[Group] | None = Field(default_factory=list)
-    keywords: list | None = Field(default_factory=list)
-    ranking: list[Ranking] | None = Field(default_factory=list)
-    references: list | None = Field(default_factory=list)
+    external_ids: list[ExternalId] | None = None
+    external_urls: list[ExternalUrl] | None = None
+    groups: list[Group] | None = None
+    keywords: list | None = None
+    ranking: list[Ranking] | None = None
+    references: list | None = None
     references_count: int | None = None
-    source: Source | None = Field(default_factory=Source)
-    subjects: list[Subject] | None = Field(default_factory=list)
+    source: Source | None = None
+    subjects: list[Subject] | None = None
     subtitle: str | None = None
-    titles: list[Title] | None = Field(default_factory=list)
-    types: list[Type] | None = Field(default_factory=list)
-    updated: list[Updated] | None = Field(default_factory=list)
+    titles: list[Title] | None = None
+    types: list[Type] | None = None
+    updated: list[Updated] | None = None
     year_published: int | str | None = None
 
     issue: str | None = None

@@ -30,7 +30,7 @@ class Description(BaseModel):
 
 
 class Relation(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId)
+    id: PyObjectId = None
     name: str | Name | None
     types: list[Type] | None
 
@@ -41,25 +41,25 @@ class Status(BaseModel):
 
 
 class Affiliation(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
-    abbreviations: list[str] | None = Field(default_factory=list)
-    addresses: list[Address] | Address | None = Field(default_factory=list)
-    aliases: list[str] | None = Field(default_factory=list)
+    id: PyObjectId = Field(alias='_id')
+    abbreviations: list[str] | None = None
+    addresses: list[Address] | Address | None = None
+    aliases: list[str] | None = None
     birthdate: str | int | None = None
-    description: list[Description] | None = Field(default_factory=list)
-    external_ids: list[ExternalId] | None = Field(default_factory=list)
-    external_urls: list[ExternalUrl] | None = Field(default_factory=list)
-    names: list[Name] | None = Field(default_factory=list)
-    ranking: list[Ranking] | None = Field(default_factory=list)
-    relations: list[Relation] | Relation | None = Field(default_factory=list)
-    status: list[str] | list[Status] | None = Field(default_factory=list)
-    subjects: list[Subject] | None = Field(default_factory=list)
-    types: list[Type] | None = Field(default_factory=list)
-    updated: list[Updated] | None = Field(default_factory=list)
+    description: list[Description] | None = None
+    external_ids: list[ExternalId] | None = None
+    external_urls: list[ExternalUrl] | None = None
+    names: list[Name] | None = None
+    ranking: list[Ranking] | None = None
+    relations: list[Relation] | Relation | None = None
+    status: list[str] | list[Status] | None = None
+    subjects: list[Subject] | None = None
+    types: list[Type] | None = None
+    updated: list[Updated] | None = None
     year_established: int | None
 
     name: str | None = None
-    citations_count: list[CitationsCount] | None = Field(default_factory=list)
+    citations_count: list[CitationsCount] | None = None
     products_count: int | None = None
     logo: str | None = None
     affiliations: list | None = None

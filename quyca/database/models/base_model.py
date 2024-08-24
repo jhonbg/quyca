@@ -33,8 +33,8 @@ class Edge(BaseModel):
 
 
 class CoauthorshipNetwork(BaseModel):
-    nodes: list[Node] | None = Field(default_factory=list)
-    edges: list[Edge] | None = Field(default_factory=list)
+    nodes: list[Node] | None = None
+    edges: list[Edge] | None = None
 
 
 class TopWord(BaseModel):
@@ -117,8 +117,8 @@ class Status(BaseModel):
 
 
 class SubjectContent(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId)
-    external_ids: list[ExternalId] | None = Field(default_factory=list)
+    id: PyObjectId = None
+    external_ids: list[ExternalId] | None = None
     level: int | None = None
     name: str | None
 
@@ -129,4 +129,4 @@ class SubjectContent(BaseModel):
 class Subject(BaseModel):
     provenance: str | None = None
     source: str | None
-    subjects: list[SubjectContent] | None = Field(default_factory=list)
+    subjects: list[SubjectContent] | None = None

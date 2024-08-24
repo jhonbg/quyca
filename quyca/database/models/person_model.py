@@ -49,7 +49,7 @@ class RelatedWork(BaseModel):
 
 
 class Person(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    id: PyObjectId = Field(alias='_id')
     affiliations: list[Affiliation] | None = Field(default_factory=list)
     aliases: list[str] | None = Field(default_factory=list)
     birthdate: int | str | None

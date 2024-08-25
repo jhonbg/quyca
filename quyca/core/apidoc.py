@@ -10,7 +10,7 @@ def generate_apidoc():
     command = (
         "apidoc -i /quyca/routes "
         f"-c /quyca/core/docs/apidoc.{getenv('ENVIRONMENT', 'dev')}.json "
-        "-o /quyca/core/docs/apidoc"
+        "-o /quyca/static"
 
     )
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)

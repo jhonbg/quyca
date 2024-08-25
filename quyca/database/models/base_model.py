@@ -33,8 +33,8 @@ class Edge(BaseModel):
 
 
 class CoauthorshipNetwork(BaseModel):
-    nodes: list[Node] | None = None
-    edges: list[Edge] | None = None
+    nodes: list[Node] | None = Field(default_factory=list)
+    edges: list[Edge] | None = Field(default_factory=list)
 
 
 class TopWord(BaseModel):

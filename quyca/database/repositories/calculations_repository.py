@@ -15,11 +15,7 @@ class CalculationsRepository:
         person_calculations = calculations_database["person"].find_one({"_id": ObjectId(person_id)})
 
         if not person_calculations:
-            return PersonCalculations(
-                id=ObjectId(person_id),
-                citations_count=[],
-                coauthorship_network=CoauthorshipNetwork(nodes=[], edges=[]),
-                top_words=[])
+            return PersonCalculations()
             # raise PersonCalculationsException(person_id)
 
         return PersonCalculations(**person_calculations)
@@ -29,12 +25,7 @@ class CalculationsRepository:
         affiliation_calculations = calculations_database["affiliations"].find_one({"_id": ObjectId(affiliation_id)})
 
         if not affiliation_calculations:
-            return AffiliationCalculations(
-                id=ObjectId(affiliation_id),
-                citations_count=[],
-                coauthorship_network=CoauthorshipNetwork(nodes=[], edges=[]),
-                top_words=[]
-            )
+            return AffiliationCalculations()
             # raise AffiliationCalculationsException(affiliation_id)
 
         return AffiliationCalculations(**affiliation_calculations)

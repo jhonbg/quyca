@@ -1,12 +1,11 @@
 from urllib.parse import urlparse
 
 from database.models.base_model import ExternalUrl
-from database.models.source_model import Source
 from database.models.work_model import Work, Title, ProductType
 from database.repositories.person_repository import PersonRepository
-from database.repositories.source_repository import SourceRepository
 from database.repositories.work_repository import WorkRepository
 from enums.external_urls import external_urls
+from services import source_service
 
 
 class WorkService:
@@ -21,9 +20,7 @@ class WorkService:
         if work.bibliographic_info:
             cls.set_bibliographic_info(work)
         if work.source.id:
-            source = SourceRepository.get_source_by_id(work.source.id)
-            cls.set_source_serials(work, source)
-            cls.set_source_scimago_quartile(work, source)
+            source_service.update_work_source(work)
         if work.titles:
             cls.set_title_and_language(work)
         if work.types:
@@ -62,25 +59,6 @@ class WorkService:
         for author in work.authors:
             if author.id:
                 author.external_ids = PersonRepository.get_person_by_id(str(author.id)).external_ids
-
-    @staticmethod
-    def set_source_scimago_quartile(work: Work, source: Source):
-        for ranking in source.ranking:
-            condition = (
-                    ranking.source == "scimago Best Quartile" and
-                    ranking.rank != "-" and
-                    ranking.from_date <= work.date_published <= ranking.to_date
-            )
-            if condition:
-                work.source.scimago_quartile = ranking.rank
-                break
-
-    @staticmethod
-    def set_source_serials(work: Work, source: Source):
-        serials = {}
-        for external_id in source.external_ids:
-            serials[external_id.source] = external_id.id
-        work.source.serials = serials
 
     @staticmethod
     def limit_authors(work: Work, limit: int = 10):

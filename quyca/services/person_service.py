@@ -2,11 +2,11 @@ from itertools import chain
 
 from bson import ObjectId
 
-from parsers import work_parser
+from services.parsers import work_parser
 from services import new_source_service
-from services.actions.bar_action import BarAction
-from services.actions.map_action import MapAction
-from services.actions.pie_action import PieAction
+from services.parsers.bar_parser import BarAction
+from services.parsers.map_parser import MapAction
+from services.parsers.pie_parser import PieAction
 from database.models.person_model import Person
 from database.mongo import calculations_database, database
 from database.repositories import calculations_repository

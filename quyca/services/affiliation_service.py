@@ -4,11 +4,11 @@ from bson import ObjectId
 from werkzeug.datastructures.structures import MultiDict
 
 from database.repositories import person_repository
-from parsers import work_parser
+from services.parsers import work_parser
 from services import new_source_service
-from services.actions.bar_action import BarAction
-from services.actions.pie_action import PieAction
-from services.actions.map_action import MapAction
+from services.parsers.bar_parser import BarAction
+from services.parsers.pie_parser import PieAction
+from services.parsers.map_parser import MapAction
 from database.models.affiliation_model import Affiliation
 from database.repositories import affiliation_repository
 from database.mongo import calculations_database, database

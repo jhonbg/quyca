@@ -8,7 +8,7 @@ from services.parsers import work_parser
 from services import new_source_service
 from services.parsers import bar_parser
 from services.parsers.pie_parser import PieAction
-from services.parsers.map_parser import MapAction
+from services.parsers import map_parser
 from database.models.affiliation_model import Affiliation
 from database.repositories import affiliation_repository
 from database.mongo import calculations_database, database
@@ -489,7 +489,7 @@ class AffiliationService:
     def plot_collaboration_worldmap(affiliation_id: str, affiliation_type: str, query_params):
         data = plot_repository.get_collaboration_worldmap_by_affiliation(affiliation_id, affiliation_type)
 
-        result = MapAction.get_collaboration_worldmap(data)
+        result = map_parser.get_collaboration_worldmap(data)
 
         if result:
             return {"plot": result}
@@ -501,7 +501,7 @@ class AffiliationService:
     def plot_collaboration_colombiamap(affiliation_id: str, affiliation_type: str, query_params):
         data = plot_repository.get_collaboration_colombiamap_by_affiliation(affiliation_id, affiliation_type)
 
-        return {"plot": MapAction.get_collaboration_colombiamap(data)}
+        return {"plot": map_parser.get_collaboration_colombiamap(data)}
 
 
     @staticmethod

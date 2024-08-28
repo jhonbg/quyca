@@ -5,7 +5,7 @@ from bson import ObjectId
 from services.parsers import work_parser
 from services import new_source_service
 from services.parsers import bar_parser
-from services.parsers.map_parser import MapAction
+from services.parsers import map_parser
 from services.parsers.pie_parser import PieAction
 from database.models.person_model import Person
 from database.mongo import calculations_database, database
@@ -273,7 +273,7 @@ class PersonService:
     def plot_collaboration_worldmap(person_id: str, query_params):
         data = plot_repository.get_collaboration_worldmap_by_person(person_id)
 
-        result = MapAction.get_collaboration_worldmap(data)
+        result = map_parser.get_collaboration_worldmap(data)
 
         if result:
             return {"plot": result}
@@ -285,7 +285,7 @@ class PersonService:
     def plot_collaboration_colombiamap(person_id: str, query_params):
         data = plot_repository.get_collaboration_colombiamap_by_person(person_id)
 
-        return {"plot": MapAction.get_collaboration_colombiamap(data)}
+        return {"plot": map_parser.get_collaboration_colombiamap(data)}
 
     @staticmethod
     def plot_collaboration_network(person_id: str, query_params):

@@ -2,7 +2,7 @@ from urllib.parse import urlparse
 
 from database.models.base_model import ExternalUrl
 from database.models.work_model import Work, Title, ProductType
-from database.repositories.person_repository import PersonRepository
+from database.repositories import person_repository
 from database.repositories.work_repository import WorkRepository
 from enums.external_urls import external_urls
 from services import new_source_service
@@ -58,7 +58,7 @@ class WorkService:
     def set_authors_external_ids(work: Work):
         for author in work.authors:
             if author.id:
-                author.external_ids = PersonRepository.get_person_by_id(str(author.id)).external_ids
+                author.external_ids = person_repository.get_person_by_id(str(author.id)).external_ids
 
     @staticmethod
     def limit_authors(work: Work, limit: int = 10):

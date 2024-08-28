@@ -10,7 +10,7 @@ from services.actions.map_action import MapAction
 from services.actions.pie_action import PieAction
 from database.models.person_model import Person
 from database.mongo import calculations_database, database
-from database.repositories.person_repository import PersonRepository
+from database.repositories import person_repository
 from database.repositories.plot_repository import PlotRepository
 from database.repositories.work_repository import WorkRepository
 
@@ -18,7 +18,7 @@ from database.repositories.work_repository import WorkRepository
 class PersonService:
     @staticmethod
     def get_person_by_id(person_id: str) -> Person:
-        person = PersonRepository.get_person_by_id(person_id)
+        person = person_repository.get_person_by_id(person_id)
         person_calculations = calculations_repository.get_person_calculations(person_id)
 
         person.citations_count = person_calculations.citations_count

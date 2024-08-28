@@ -3,7 +3,7 @@ from itertools import chain
 from bson import ObjectId
 from werkzeug.datastructures.structures import MultiDict
 
-from database.repositories.person_repository import PersonRepository
+from database.repositories import person_repository
 from parsers import work_parser
 from services import new_source_service
 from services.actions.bar_action import BarAction
@@ -57,7 +57,7 @@ class AffiliationService:
 
 
         if affiliation_type in ["group", "department", "faculty"]:
-            authors = PersonRepository.get_persons_by_affiliation(affiliation_id)
+            authors = person_repository.get_persons_by_affiliation(affiliation_id)
 
             data["authors"] = [author.model_dump(include={"id", "full_name"}) for author in authors]
 

@@ -6,7 +6,7 @@ from services.parsers import work_parser
 from services import new_source_service
 from services.parsers import bar_parser
 from services.parsers import map_parser
-from services.parsers.pie_parser import PieAction
+from services.parsers import pie_parser
 from database.models.person_model import Person
 from database.mongo import calculations_database, database
 from database.repositories import calculations_repository
@@ -157,7 +157,7 @@ class PersonService:
 
         data = map(lambda x: x.publisher.name, sources)
 
-        return PieAction.get_products_by_publisher(data)
+        return pie_parser.get_products_by_publisher(data)
 
 
     @staticmethod
@@ -181,7 +181,7 @@ class PersonService:
             )
         )
 
-        return PieAction.get_products_by_subject(data)
+        return pie_parser.get_products_by_subject(data)
 
 
     @staticmethod
@@ -195,7 +195,7 @@ class PersonService:
 
         data = chain.from_iterable(map(lambda x: x.updated, works))
 
-        return PieAction.get_products_by_database(data)
+        return pie_parser.get_products_by_database(data)
 
 
     @staticmethod
@@ -208,14 +208,14 @@ class PersonService:
 
         data = map(lambda x: x.bibliographic_info.open_access_status, works)
 
-        return PieAction.get_products_by_open_access(data)
+        return pie_parser.get_products_by_open_access(data)
 
 
     @staticmethod
     def plot_products_age(person_id: str, query_params):
         works = plot_repository.get_products_by_author_age_and_person(person_id)
 
-        result = PieAction.get_products_by_age(works)
+        result = pie_parser.get_products_by_age(works)
 
         if result:
             return result
@@ -234,7 +234,7 @@ class PersonService:
 
         data = chain.from_iterable(map(lambda x: x.ranking, works))
 
-        return PieAction.get_products_by_scienti_rank(data)
+        return pie_parser.get_products_by_scienti_rank(data)
 
 
     @staticmethod
@@ -243,7 +243,7 @@ class PersonService:
         sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
         data = chain.from_iterable(map(lambda x: x.ranking, sources))
 
-        return PieAction.get_products_by_scimago_rank(data)
+        return pie_parser.get_products_by_scimago_rank(data)
 
 
     @staticmethod
@@ -266,7 +266,7 @@ class PersonService:
         pipeline_params = {"project": ["publisher"], }
         sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
 
-        return PieAction.get_products_by_same_institution(sources, institution)
+        return pie_parser.get_products_by_same_institution(sources, institution)
 
 
     @staticmethod

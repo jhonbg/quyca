@@ -7,7 +7,7 @@ from database.repositories import person_repository
 from services.parsers import work_parser
 from services import new_source_service
 from services.parsers import bar_parser
-from services.parsers.pie_parser import PieAction
+from services.parsers import pie_parser
 from services.parsers import map_parser
 from database.models.affiliation_model import Affiliation
 from database.repositories import affiliation_repository
@@ -273,7 +273,7 @@ class AffiliationService:
         for affiliation in affiliations:
             data[affiliation.name] = work_repository.get_citations_count_by_affiliation(affiliation.id)
 
-        return PieAction.get_citations_by_affiliation(data)
+        return pie_parser.get_citations_by_affiliation(data)
 
 
     @staticmethod
@@ -289,7 +289,7 @@ class AffiliationService:
 
         total_works = work_repository.get_works_count_by_affiliation(affiliation_id, affiliation_type)
 
-        return PieAction.get_products_by_affiliation(data, total_works)
+        return pie_parser.get_products_by_affiliation(data, total_works)
 
 
     @staticmethod
@@ -308,7 +308,7 @@ class AffiliationService:
             affiliation_id, affiliation_type, relation_type, pipeline_params
         )
 
-        return PieAction.get_apc_by_sources(sources, 2022)
+        return pie_parser.get_apc_by_sources(sources, 2022)
 
 
     @staticmethod
@@ -334,7 +334,7 @@ class AffiliationService:
 
             data[affiliation.name] = map(get_openalex_scienti, works)
 
-        return PieAction.get_h_by_affiliation(data)
+        return pie_parser.get_h_by_affiliation(data)
 
 
     @staticmethod
@@ -355,7 +355,7 @@ class AffiliationService:
             sources,
         )
 
-        return PieAction.get_products_by_publisher(data)
+        return pie_parser.get_products_by_publisher(data)
 
 
     @staticmethod
@@ -384,7 +384,7 @@ class AffiliationService:
             )
         )
 
-        return PieAction.get_products_by_subject(data)
+        return pie_parser.get_products_by_subject(data)
 
 
     @staticmethod
@@ -403,7 +403,7 @@ class AffiliationService:
 
         data = chain.from_iterable(map(lambda x: x.updated, works))
 
-        return PieAction.get_products_by_database(data)
+        return pie_parser.get_products_by_database(data)
 
 
     @staticmethod
@@ -425,11 +425,11 @@ class AffiliationService:
             works,
         )
 
-        return PieAction.get_products_by_open_access(data)
+        return pie_parser.get_products_by_open_access(data)
 
 
     @staticmethod
-    @PieAction.get_percentage
+    @pie_parser.get_percentage
     def plot_products_sex(affiliation_id: str, affiliation_type: str, query_params):
 
         return plot_repository.get_products_by_author_sex(affiliation_id)
@@ -439,7 +439,7 @@ class AffiliationService:
     def plot_products_age(affiliation_id: str, affiliation_type: str, query_params):
         works = plot_repository.get_products_by_author_age_and_affiliation(affiliation_id)
 
-        result = PieAction.get_products_by_age(works)
+        result = pie_parser.get_products_by_age(works)
 
         if result:
             return result
@@ -464,7 +464,7 @@ class AffiliationService:
         total_works = work_repository.get_works_count_by_affiliation(affiliation_id, affiliation_type)
         data = chain.from_iterable(map(lambda x: x.ranking, works))
 
-        return PieAction.get_products_by_scienti_rank(data, total_works)
+        return pie_parser.get_products_by_scienti_rank(data, total_works)
 
 
     @staticmethod
@@ -473,7 +473,7 @@ class AffiliationService:
         sources = work_repository.get_sources_by_affiliation(affiliation_id,affiliation_type,pipeline_params)
         data = chain.from_iterable(map(lambda x: x.ranking, sources))
 
-        return PieAction.get_products_by_scimago_rank(data)
+        return pie_parser.get_products_by_scimago_rank(data)
 
 
     @staticmethod
@@ -482,7 +482,7 @@ class AffiliationService:
         pipeline_params = {"project": ["publisher"],}
         sources = work_repository.get_sources_by_affiliation(affiliation_id, affiliation_type, pipeline_params)
 
-        return PieAction.get_products_by_same_institution(sources, institution)
+        return pie_parser.get_products_by_same_institution(sources, institution)
 
 
     @staticmethod

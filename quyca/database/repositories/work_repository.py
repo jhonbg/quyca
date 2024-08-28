@@ -8,7 +8,7 @@ from database.generators import source_generator
 from database.generators import work_generator
 from database.models.base_model import CitationsCount
 from database.models.work_model import Work
-from database.repositories.calculations_repository import CalculationsRepository
+from database.repositories import calculations_repository
 from database.mongo import database
 from exceptions.work_exception import WorkException
 
@@ -119,7 +119,7 @@ class WorkRepository:
     @staticmethod
     def get_citations_count_by_affiliation(affiliation_id: str) -> list[CitationsCount]:
 
-        affiliation_calculations = CalculationsRepository.get_affiliation_calculations(affiliation_id)
+        affiliation_calculations = calculations_repository.get_affiliation_calculations(affiliation_id)
 
         return affiliation_calculations.citations_count
 

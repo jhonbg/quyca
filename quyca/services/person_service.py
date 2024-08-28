@@ -2,7 +2,7 @@ from itertools import chain
 
 from bson import ObjectId
 
-from database.repositories.calculations_repository import CalculationsRepository
+from database.repositories import calculations_repository
 from parsers import work_parser
 from services import new_source_service
 from services.actions.bar_action import BarAction
@@ -19,7 +19,7 @@ class PersonService:
     @staticmethod
     def get_person_by_id(person_id: str) -> Person:
         person = PersonRepository.get_person_by_id(person_id)
-        person_calculations = CalculationsRepository.get_person_calculations(person_id)
+        person_calculations = calculations_repository.get_person_calculations(person_id)
 
         person.citations_count = person_calculations.citations_count
         person.products_count = WorkRepository.get_works_count_by_person(person_id)

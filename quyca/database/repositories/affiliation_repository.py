@@ -6,7 +6,7 @@ from core.config import settings
 from exceptions.affiliation_exception import AffiliationException
 from database.generators import affiliation_generator
 from database.models.affiliation_model import Affiliation
-from database.repositories.calculations_repository import CalculationsRepository
+from database.repositories import calculations_repository
 from database.mongo import database
 
 
@@ -21,7 +21,7 @@ def get_affiliation_by_id(affiliation_id: str) -> Affiliation:
         [relation.model_dump() for relation in affiliation.relations],
         affiliation.types[0].type
     )
-    affiliation_calculations = CalculationsRepository.get_affiliation_calculations(affiliation_id)
+    affiliation_calculations = calculations_repository.get_affiliation_calculations(affiliation_id)
     affiliation.citations_count = affiliation_calculations.citations_count
     affiliation.products_count = WorkRepository.get_works_count_by_affiliation(
         affiliation_id, affiliation.types[0].type

@@ -1,3 +1,4 @@
+from database.models.base_model import ExternalId
 from database.models.source_model import Source
 from database.models.work_model import Work
 from database.repositories.source_repository import SourceRepository
@@ -24,3 +25,9 @@ def set_source_serials(work: Work, source: Source):
     for external_id in source.external_ids:
         serials[external_id.source] = external_id.id
     work.source.serials = serials
+
+def set_source_fields(work: Work):
+    doi = next(filter(lambda external_id: external_id.source == "doi", work.external_ids), ExternalId())
+    work.doi = doi.id
+    work.source_name = work.source.name
+    work.scimago_quartile = work.source.scimago_quartile

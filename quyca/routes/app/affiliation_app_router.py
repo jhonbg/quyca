@@ -61,7 +61,17 @@ def get_affiliation(
         return affiliation_service.get_research_products(id=affiliation_id, typ=affiliation_type, params=params)
 
 
-@affiliation_app_router.route("/<typ>/<id>/csv", methods=["GET"])
+@affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/csv", methods=["GET"])
+def get_csv_by_affiliation(affiliation_type: str, affiliation_id: str):
+    try:
+        data = AffiliationService.get_works_by_affiliation_csv(affiliation_id, affiliation_type)
+        response = Response(data, content_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
+        return response
+    except Exception as e:
+        return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
+
+
 @affiliation_app_router.route("/<typ>/<id>/<section>/csv", methods=["GET"])
 @affiliation_app_router.route("/<typ>/<id>/<section>/<tab>/csv", methods=["GET"])
 def get_affiliation_csv(

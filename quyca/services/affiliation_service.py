@@ -4,6 +4,8 @@ from bson import ObjectId
 from werkzeug.datastructures.structures import MultiDict
 
 from database.repositories.person_repository import PersonRepository
+from parsers import work_parser
+from services import new_source_service
 from services.actions.bar_action import BarAction
 from services.actions.pie_action import PieAction
 from services.actions.map_action import MapAction
@@ -19,6 +21,15 @@ class AffiliationService:
     @staticmethod
     def get_by_id(affiliation_id: str) -> Affiliation:
         return AffiliationRepository.get_affiliation_by_id(affiliation_id)
+
+    @staticmethod
+    def get_works_by_affiliation_csv(affiliation_id: str, affiliation_type: str) -> str:
+        works = WorkRepository.get_works_by_affiliation(affiliation_id, affiliation_type)
+        for work in works:
+            if work.source.id:
+                new_source_service.update_work_source(work)
+                new_source_service.set_source_fields(work)
+        return work_parser.parse_csv(works)
 
     @staticmethod
     def get_related_affiliations_by_affiliation(affiliation_id: str, affiliation_type: str) -> dict:
@@ -518,7 +529,3 @@ class AffiliationService:
             return {"plot": {"nodes": nodes, "edges": edges}}
         else:
             return {"plot": None}
-
-
-
-    

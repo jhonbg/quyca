@@ -5,7 +5,7 @@ from database.models.work_model import Work, Title, ProductType
 from database.repositories.person_repository import PersonRepository
 from database.repositories.work_repository import WorkRepository
 from enums.external_urls import external_urls
-from services import source_service
+from services import new_source_service
 
 
 class WorkService:
@@ -20,7 +20,7 @@ class WorkService:
         if work.bibliographic_info:
             cls.set_bibliographic_info(work)
         if work.source.id:
-            source_service.update_work_source(work)
+            new_source_service.update_work_source(work)
         if work.titles:
             cls.set_title_and_language(work)
         if work.types:

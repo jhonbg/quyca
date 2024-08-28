@@ -83,7 +83,16 @@ def get_person(
     return response
 
 
-@person_app_router.route("/<id>/csv", methods=["GET"])
+@person_app_router.route("/<person_id>/csv", methods=["GET"])
+def get_csv_by_person(person_id: str):
+    try:
+        data = PersonService.get_works_by_person_csv(person_id)
+        response = Response(data, content_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
+        return response
+    except Exception as e:
+        return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
+
 @person_app_router.route("/<id>/<section>/<tab>/csv", methods=["GET"])
 def get_person_csv(
     id: str | None = None, section: str | None = "info", tab: str | None = None

@@ -69,7 +69,7 @@ class Identifier(BaseModel):
 class ExternalId(BaseModel):
     id: str | int | list[str] | Identifier | None = None
     provenance: str | None = None
-    source: str | None
+    source: str | None = None
 
     @field_validator("id", mode="after")
     @classmethod

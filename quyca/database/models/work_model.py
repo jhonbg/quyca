@@ -98,10 +98,14 @@ class Work(BaseModel):
     updated: list[Updated] | None = None
     year_published: int | str | None = None
 
+    doi: str | None = None
     issue: str | None = None
     language: str | None = None
     open_access_status: str | None = None
     product_types: list[ProductType] | None = None
+    scimago_quartile: str | None = None
+    source_name: str | None = None
+    subject_names: str | None = None
     title: str | None = None
     volume: str | int | None = None
 

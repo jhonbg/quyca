@@ -3,6 +3,8 @@ from itertools import chain
 from bson import ObjectId
 
 from database.repositories.calculations_repository import CalculationsRepository
+from parsers import work_parser
+from services import new_source_service
 from services.actions.bar_action import BarAction
 from services.actions.map_action import MapAction
 from services.actions.pie_action import PieAction
@@ -23,6 +25,16 @@ class PersonService:
         person.products_count = WorkRepository.get_works_count_by_person(person_id)
 
         return person
+
+
+    @classmethod
+    def get_works_by_person_csv(cls, person_id):
+        works = WorkRepository.get_works_by_person(person_id)
+        for work in works:
+            if work.source.id:
+                new_source_service.update_work_source(work)
+                new_source_service.set_source_fields(work)
+        return work_parser.parse_csv(works)
 
 
     @classmethod
@@ -274,7 +286,6 @@ class PersonService:
         data = PlotRepository.get_collaboration_colombiamap_by_person(person_id)
 
         return {"plot": MapAction.get_collaboration_colombiamap(data)}
-
 
     @staticmethod
     def plot_collaboration_network(person_id: str, query_params):

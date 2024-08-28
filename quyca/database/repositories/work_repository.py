@@ -28,9 +28,11 @@ class WorkRepository:
             cls,
             affiliation_id: str,
             affiliation_type: str,
-            query_params: MultiDict,
+            query_params: MultiDict | None = None,
             pipeline_params: dict | None = None
     ) -> Generator:
+        if query_params is None:
+            query_params = {}
         if pipeline_params is None:
             pipeline_params = {}
 
@@ -233,7 +235,14 @@ class WorkRepository:
 
 
     @classmethod
-    def get_works_by_person(cls, person_id: str, query_params, pipeline_params: dict = None) -> Generator:
+    def get_works_by_person(
+            cls,
+            person_id: str,
+            query_params: MultiDict | None = None,
+            pipeline_params: dict = None
+    ) -> Generator:
+        if query_params is None:
+            query_params = {}
         if pipeline_params is None:
             pipeline_params = {}
 

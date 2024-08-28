@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 from database.models.base_model import ExternalUrl
 from database.models.work_model import Work, Title, ProductType
 from database.repositories import person_repository
-from database.repositories.work_repository import WorkRepository
+from database.repositories import work_repository
 from enums.external_urls import external_urls
 from services import new_source_service
 
@@ -11,7 +11,7 @@ from services import new_source_service
 class WorkService:
     @classmethod
     def get_work_by_id(cls, work_id: str):
-        work = WorkRepository.get_work_by_id(work_id)
+        work = work_repository.get_work_by_id(work_id)
         cls.set_external_ids(work)
         cls.set_external_urls(work)
         if work.authors:

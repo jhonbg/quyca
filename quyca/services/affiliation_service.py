@@ -13,7 +13,7 @@ from database.models.affiliation_model import Affiliation
 from database.repositories import affiliation_repository
 from database.mongo import calculations_database, database
 from database.repositories import plot_repository
-from database.repositories.work_repository import WorkRepository
+from database.repositories import work_repository
 from utils.mapping import get_openalex_scienti
 
 
@@ -24,7 +24,7 @@ class AffiliationService:
 
     @staticmethod
     def get_works_by_affiliation_csv(affiliation_id: str, affiliation_type: str) -> str:
-        works = WorkRepository.get_works_by_affiliation(affiliation_id, affiliation_type)
+        works = work_repository.get_works_by_affiliation(affiliation_id, affiliation_type)
         for work in works:
             if work.source.id:
                 new_source_service.update_work_source(work)
@@ -99,7 +99,7 @@ class AffiliationService:
     def plot_year_type(affiliation_id: str, affiliation_type: str, query_params):
         pipeline_params = {"project": ["year_published", "types"]}
 
-        works = WorkRepository.get_works_by_affiliation(
+        works = work_repository.get_works_by_affiliation(
             affiliation_id,
             affiliation_type,
             query_params,
@@ -121,7 +121,7 @@ class AffiliationService:
 
     @staticmethod
     def plot_year_citations(affiliation_id: str, affiliation_type: str, query_params):
-        works = WorkRepository.get_works_by_affiliation(
+        works = work_repository.get_works_by_affiliation(
             affiliation_id,
             affiliation_type,
             query_params
@@ -142,7 +142,7 @@ class AffiliationService:
             "project": ["apc"],
         }
 
-        sources = WorkRepository.get_sources_by_affiliation(
+        sources = work_repository.get_sources_by_affiliation(
             affiliation_id,
             affiliation_type,
             pipeline_params
@@ -161,7 +161,7 @@ class AffiliationService:
             "project": ["year_published", "bibliographic_info"],
         }
 
-        works = WorkRepository.get_works_by_affiliation(
+        works = work_repository.get_works_by_affiliation(
             affiliation_id,
             affiliation_type,
             query_params,
@@ -178,7 +178,7 @@ class AffiliationService:
             "project": ["publisher", "apc"],
         }
 
-        sources = WorkRepository.get_sources_by_affiliation(
+        sources = work_repository.get_sources_by_affiliation(
             affiliation_id,
             affiliation_type,
             pipeline_params
@@ -194,7 +194,7 @@ class AffiliationService:
             "project": {"citations_by_year"}
         }
 
-        works = WorkRepository.get_works_by_affiliation(
+        works = work_repository.get_works_by_affiliation(
             affiliation_id,
             affiliation_type,
             query_params,
@@ -226,7 +226,7 @@ class AffiliationService:
                 "project": ["year_published", "date_published"],
             }
 
-            works = WorkRepository.get_works_by_affiliation(
+            works = work_repository.get_works_by_affiliation(
                 str(group.id),
                 "group",
                 query_params,
@@ -271,7 +271,7 @@ class AffiliationService:
         data = {}
 
         for affiliation in affiliations:
-            data[affiliation.name] = WorkRepository.get_citations_count_by_affiliation(affiliation.id)
+            data[affiliation.name] = work_repository.get_citations_count_by_affiliation(affiliation.id)
 
         return PieAction.get_citations_by_affiliation(data)
 
@@ -285,9 +285,9 @@ class AffiliationService:
         data = {}
 
         for affiliation in affiliations:
-            data[affiliation.name] = WorkRepository.get_works_count_by_affiliation(affiliation.id, affiliation.types[0].type)
+            data[affiliation.name] = work_repository.get_works_count_by_affiliation(affiliation.id, affiliation.types[0].type)
 
-        total_works = WorkRepository.get_works_count_by_affiliation(affiliation_id, affiliation_type)
+        total_works = work_repository.get_works_count_by_affiliation(affiliation_id, affiliation_type)
 
         return PieAction.get_products_by_affiliation(data, total_works)
 
@@ -304,7 +304,7 @@ class AffiliationService:
             "project": ["apc", "affiliation_names"],
         }
 
-        sources = WorkRepository.get_sources_by_related_affiliation(
+        sources = work_repository.get_sources_by_related_affiliation(
             affiliation_id, affiliation_type, relation_type, pipeline_params
         )
 
@@ -325,7 +325,7 @@ class AffiliationService:
         }
 
         for affiliation in affiliations:
-            works = WorkRepository.get_works_by_affiliation(
+            works = work_repository.get_works_by_affiliation(
                 affiliation.id,
                 affiliation.types[0].type,
                 query_params,
@@ -340,7 +340,7 @@ class AffiliationService:
     @staticmethod
     def plot_products_publisher(affiliation_id: str, affiliation_type: str, query_params):
         pipeline_params = {"project": ["publisher"],}
-        sources = WorkRepository.get_sources_by_affiliation(
+        sources = work_repository.get_sources_by_affiliation(
             affiliation_id,
             affiliation_type,
             pipeline_params
@@ -365,7 +365,7 @@ class AffiliationService:
             "project": ["subjects"],
         }
 
-        works = WorkRepository.get_works_by_affiliation(
+        works = work_repository.get_works_by_affiliation(
             affiliation_id,
             affiliation_type,
             query_params,
@@ -394,7 +394,7 @@ class AffiliationService:
             "project": ["updated"],
         }
 
-        works = WorkRepository.get_works_by_affiliation(
+        works = work_repository.get_works_by_affiliation(
             affiliation_id,
             affiliation_type,
             query_params,
@@ -409,7 +409,7 @@ class AffiliationService:
     @staticmethod
     def plot_products_oa(affiliation_id: str, affiliation_type: str, query_params):
         pipeline_params = {"project": ["bibliographic_info"],}
-        works = WorkRepository.get_works_by_affiliation(
+        works = work_repository.get_works_by_affiliation(
             affiliation_id,
             affiliation_type,
             query_params,
@@ -454,14 +454,14 @@ class AffiliationService:
             "project":["ranking"],
         }
 
-        works = WorkRepository.get_works_by_affiliation(
+        works = work_repository.get_works_by_affiliation(
             affiliation_id,
             affiliation_type,
             query_params,
             pipeline_params
             )
 
-        total_works = WorkRepository.get_works_count_by_affiliation(affiliation_id, affiliation_type)
+        total_works = work_repository.get_works_count_by_affiliation(affiliation_id, affiliation_type)
         data = chain.from_iterable(map(lambda x: x.ranking, works))
 
         return PieAction.get_products_by_scienti_rank(data, total_works)
@@ -470,7 +470,7 @@ class AffiliationService:
     @staticmethod
     def plot_scimago_rank(affiliation_id: str, affiliation_type: str, query_params):
         pipeline_params = {"project": ["ranking"],}
-        sources = WorkRepository.get_sources_by_affiliation(affiliation_id,affiliation_type,pipeline_params)
+        sources = work_repository.get_sources_by_affiliation(affiliation_id,affiliation_type,pipeline_params)
         data = chain.from_iterable(map(lambda x: x.ranking, sources))
 
         return PieAction.get_products_by_scimago_rank(data)
@@ -480,7 +480,7 @@ class AffiliationService:
     def plot_published_institution(affiliation_id: str, affiliation_type: str, query_params):
         institution = database["affiliations"].find_one({"_id": ObjectId(affiliation_id)}, {"names": 1})
         pipeline_params = {"project": ["publisher"],}
-        sources = WorkRepository.get_sources_by_affiliation(affiliation_id, affiliation_type, pipeline_params)
+        sources = work_repository.get_sources_by_affiliation(affiliation_id, affiliation_type, pipeline_params)
 
         return PieAction.get_products_by_same_institution(sources, institution)
 

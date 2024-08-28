@@ -2,7 +2,6 @@ from itertools import chain
 
 from bson import ObjectId
 
-from database.repositories import calculations_repository
 from parsers import work_parser
 from services import new_source_service
 from services.actions.bar_action import BarAction
@@ -10,9 +9,10 @@ from services.actions.map_action import MapAction
 from services.actions.pie_action import PieAction
 from database.models.person_model import Person
 from database.mongo import calculations_database, database
+from database.repositories import calculations_repository
 from database.repositories import person_repository
 from database.repositories import plot_repository
-from database.repositories.work_repository import WorkRepository
+from database.repositories import work_repository
 
 
 class PersonService:
@@ -22,14 +22,14 @@ class PersonService:
         person_calculations = calculations_repository.get_person_calculations(person_id)
 
         person.citations_count = person_calculations.citations_count
-        person.products_count = WorkRepository.get_works_count_by_person(person_id)
+        person.products_count = work_repository.get_works_count_by_person(person_id)
 
         return person
 
 
     @classmethod
     def get_works_by_person_csv(cls, person_id):
-        works = WorkRepository.get_works_by_person(person_id)
+        works = work_repository.get_works_by_person(person_id)
         for work in works:
             if work.source.id:
                 new_source_service.update_work_source(work)
@@ -45,14 +45,14 @@ class PersonService:
     @staticmethod
     def plot_year_type(person_id: str, query_params):
 
-        works = WorkRepository.get_works_by_person(person_id, query_params)
+        works = work_repository.get_works_by_person(person_id, query_params)
 
         return {"plot": BarAction.get_by_work_year_and_work_type(works)}
 
 
     @staticmethod
     def plot_year_citations(person_id: str, query_params):
-        works = WorkRepository.get_works_by_person(person_id, query_params)
+        works = work_repository.get_works_by_person(person_id, query_params)
 
         return {"plot": BarAction.get_citations_by_year(works)}
 
@@ -69,7 +69,7 @@ class PersonService:
             "project": ["apc"],
         }
 
-        sources = WorkRepository.get_sources_by_person(person_id, query_params, pipeline_params)
+        sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
 
         return {"plot": BarAction.apc_by_year(sources, 2022)}
 
@@ -84,7 +84,7 @@ class PersonService:
             "project": ["year_published", "bibliographic_info"],
         }
 
-        works = WorkRepository.get_works_by_person(person_id, query_params, pipeline_params)
+        works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
 
         return {"plot": BarAction.oa_by_year(works)}
 
@@ -96,7 +96,7 @@ class PersonService:
             "project": ["publisher", "apc"],
         }
 
-        sources = WorkRepository.get_sources_by_person(person_id, query_params, pipeline_params)
+        sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
 
         return {"plot": BarAction.works_by_publisher_year(sources)}
 
@@ -108,7 +108,7 @@ class PersonService:
             "project": {"citations_by_year"}
         }
 
-        works = WorkRepository.get_works_by_person(person_id, query_params, pipeline_params)
+        works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
 
         return {"plot": BarAction.h_index_by_year(works)}
 
@@ -153,7 +153,7 @@ class PersonService:
             "project": ["publisher"]
         }
 
-        sources = WorkRepository.get_sources_by_person(person_id, query_params, pipeline_params)
+        sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
 
         data = map(lambda x: x.publisher.name, sources)
 
@@ -167,7 +167,7 @@ class PersonService:
             "project": ["subjects"],
         }
 
-        works = WorkRepository.get_works_by_person(person_id, query_params, pipeline_params)
+        works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
 
         data = chain.from_iterable(
             map(
@@ -191,7 +191,7 @@ class PersonService:
             "project": ["updated"],
         }
 
-        works = WorkRepository.get_works_by_person(person_id, query_params, pipeline_params)
+        works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
 
         data = chain.from_iterable(map(lambda x: x.updated, works))
 
@@ -204,7 +204,7 @@ class PersonService:
             "match": {"bibliographic_info.open_access_status": {"$exists": 1}},
             "project": ["bibliographic_info"]
         }
-        works = WorkRepository.get_works_by_person(person_id, query_params, pipeline_params)
+        works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
 
         data = map(lambda x: x.bibliographic_info.open_access_status, works)
 
@@ -230,7 +230,7 @@ class PersonService:
             "project": ["ranking"],
         }
 
-        works = WorkRepository.get_works_by_person(person_id, query_params, pipeline_params)
+        works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
 
         data = chain.from_iterable(map(lambda x: x.ranking, works))
 
@@ -240,7 +240,7 @@ class PersonService:
     @staticmethod
     def plot_scimago_rank(person_id: str, query_params):
         pipeline_params = {"project": ["ranking"], }
-        sources = WorkRepository.get_sources_by_person(person_id, query_params, pipeline_params)
+        sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
         data = chain.from_iterable(map(lambda x: x.ranking, sources))
 
         return PieAction.get_products_by_scimago_rank(data)
@@ -264,7 +264,7 @@ class PersonService:
 
         institution = database["affiliations"].find_one({"_id": ObjectId(institution_id)}, {"names": 1})
         pipeline_params = {"project": ["publisher"], }
-        sources = WorkRepository.get_sources_by_person(person_id, query_params, pipeline_params)
+        sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
 
         return PieAction.get_products_by_same_institution(sources, institution)
 

@@ -1,11 +1,13 @@
 from database.mongo import database
 
-random_institution_id = database['affiliations'].aggregate([{ '$sample': { 'size': 1 } }]).next()["_id"]
-random_affiliation_id = database['affiliations'].aggregate([
-    { "$match": {"types.type": "faculty"}},
-    { '$sample': { 'size': 1 } }
-]).next()["_id"]
-
+random_institution_id = (
+    database["affiliations"].aggregate([{"$sample": {"size": 1}}]).next()["_id"]
+)
+random_affiliation_id = (
+    database["affiliations"]
+    .aggregate([{"$match": {"types.type": "faculty"}}, {"$sample": {"size": 1}}])
+    .next()["_id"]
+)
 
 
 def test_it_can_plot_collaboration_colombiamap_by_institution(client):

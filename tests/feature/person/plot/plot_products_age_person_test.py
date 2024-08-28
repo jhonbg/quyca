@@ -1,6 +1,8 @@
 from database.mongo import database
 
-random_person_id = database["person"].aggregate([{ '$sample': { 'size': 1 } }]).next()["_id"]
+random_person_id = (
+    database["person"].aggregate([{"$sample": {"size": 1}}]).next()["_id"]
+)
 
 
 def test_it_can_plot_products_age_by_institution(client):
@@ -9,4 +11,3 @@ def test_it_can_plot_products_age_by_institution(client):
     )
 
     assert response.status_code == 200
-

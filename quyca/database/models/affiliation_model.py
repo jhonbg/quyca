@@ -1,8 +1,17 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field, model_validator
 
-from database.models.base_model import Type, Updated, ExternalUrl, CitationsCount, Name, PyObjectId, ExternalId, \
-    Subject, Ranking
+from database.models.base_model import (
+    Type,
+    Updated,
+    ExternalUrl,
+    CitationsCount,
+    Name,
+    PyObjectId,
+    ExternalId,
+    Subject,
+    Ranking,
+)
 
 
 class Address(BaseModel):
@@ -41,7 +50,7 @@ class Status(BaseModel):
 
 
 class Affiliation(BaseModel):
-    id: PyObjectId = Field(alias='_id')
+    id: PyObjectId = Field(alias="_id")
     abbreviations: list[str] | None = None
     addresses: list[Address] | Address | None = None
     aliases: list[str] | None = None

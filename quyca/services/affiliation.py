@@ -168,15 +168,16 @@ class AffiliationService(
     def get_research_products(
         self, *, id: str, typ: str, params: WorkQueryParams
     ) -> dict[str, Any]:
-        works, available_filters = (
-            self.work_repository.get_research_products_by_affiliation(
-                affiliation_id=id,
-                affiliation_type=typ,
-                skip=params.skip,
-                limit=params.max,
-                sort=params.sort,
-                filters=params.get_filter(),
-            )
+        (
+            works,
+            available_filters,
+        ) = self.work_repository.get_research_products_by_affiliation(
+            affiliation_id=id,
+            affiliation_type=typ,
+            skip=params.skip,
+            limit=params.max,
+            sort=params.sort,
+            filters=params.get_filter(),
         )
         total_works = self.work_repository.count_papers(
             affiliation_id=id, affiliation_type=typ, filters=params.get_filter()
@@ -212,5 +213,6 @@ class AffiliationService(
             ).model_dump()
             for work in works
         ]
+
 
 affiliation_service = AffiliationService(AffiliationSearch, AffiliationInfo)

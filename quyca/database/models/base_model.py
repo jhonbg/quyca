@@ -41,6 +41,7 @@ class TopWord(BaseModel):
     name: str
     value: int
 
+
 class CitationsCount(BaseModel):
     source: str | None
     count: int | None

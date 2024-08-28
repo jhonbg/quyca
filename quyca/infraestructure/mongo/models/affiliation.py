@@ -10,7 +10,7 @@ from infraestructure.mongo.models.general import (
     ExternalId,
     ExternalURL,
     Name,
-    CitationsCount
+    CitationsCount,
 )
 
 
@@ -41,10 +41,11 @@ class Description(BaseBSONModel):
 class Ranking(BaseBSONModel):
     date: int | Any = None
     from_date: int | Any = None
-    order: int| str | Any = None
+    order: int | str | Any = None
     rank: str | None = None
     source: str | None = None
     to_date: str | Any = None
+
 
 class Relation(EmbeddedModel):
     id: ObjectId | None | str = None
@@ -57,7 +58,7 @@ class Affiliation(Model):
     aliases: list[str] | None = Field(default_factory=list)
     birthdate: str | int | None = None
     ranking: list[Ranking] | None = None
-    status: Any#Status | list[Status] | None | str = None
+    status: Any  # Status | list[Status] | None | str = None
     subjects: list[Any] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
     year_established: int | None = None
@@ -68,9 +69,7 @@ class Affiliation(Model):
     external_urls: list[ExternalURL] | None = Field(default_factory=list)
     types: list[Type] | None = Field(default_factory=list)
 
-    model_config = {
-        "collection": "affiliations"
-    }
+    model_config = {"collection": "affiliations"}
 
 
 class Node(BaseBSONModel):
@@ -85,7 +84,7 @@ class Edge(BaseBSONModel):
     size: int | float
     source: str
     target: str
-    
+
 
 class CoauthorshipNetwork(BaseBSONModel):
     nodes: list[Node] | None = Field(default_factory=list)
@@ -96,11 +95,10 @@ class TopWord(BaseBSONModel):
     name: str
     value: int
 
+
 class AffiliationCalculations(Model):
     coauthorship_network: CoauthorshipNetwork | None = None
     citations_count: list[CitationsCount] | None = Field(default_factory=list)
     top_words: list[TopWord]
 
-    model_config = {
-        "collection": "affiliations"
-    }
+    model_config = {"collection": "affiliations"}

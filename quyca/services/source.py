@@ -7,7 +7,7 @@ from protocols.mongo.repositories.source import SourceRepository
 
 class SourceService(
     ServiceBase[Source, SourceRepository, SourceQueryParams, SourceSearch, SourceSearch]
-): 
+):
     def update_source(self, work: WorkProccessed):
         if work.source.id:
             source = self.get_by_id(id=work.source.id)
@@ -17,7 +17,6 @@ class SourceService(
             work.source.serials = serials
             work.source.scimago_quartile = source.scimago_quartile
         return work
-
 
 
 source_service = SourceService(SourceSearch, SourceSearch)

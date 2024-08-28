@@ -23,7 +23,6 @@ class Ranking(EmbeddedModel):
     order: int | Any | None = None
 
 
-
 class BirthPlace(EmbeddedModel):
     city: str | None = None
     state: str | None = None

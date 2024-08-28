@@ -25,12 +25,13 @@ def get_work_by_id(work_id: str):
             "references": True,
             "types": True,
             "updated": True,
-            "subjects": {'__all__':{"subjects": {"__all__": {"external_ids"}}}},
+            "subjects": {"__all__": {"subjects": {"__all__": {"external_ids"}}}},
         }
         return {"data": work.model_dump(exclude=exclude_fields, exclude_none=True)}
 
     except Exception as e:
         return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
+
 
 @work_app_router.route("/<id>/<section>", methods=["GET"])
 def get_work(id: str, section: str | None = "info"):

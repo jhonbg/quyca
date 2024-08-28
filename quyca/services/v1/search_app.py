@@ -267,7 +267,9 @@ class SearchAppService:
                 del entry["relations"]
                 entry["relations"] = []
                 name = affiliation["names"][0]["name"]
-                entry["affiliations"] = AffiliationRepository.upside_relations(affiliation["relations"], aff_type)
+                entry["affiliations"] = AffiliationRepository.upside_relations(
+                    affiliation["relations"], aff_type
+                )
                 for n in affiliation["names"]:
                     if n["lang"] == "es":
                         name = n["name"]

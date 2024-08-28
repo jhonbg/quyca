@@ -6,10 +6,10 @@ from protocols.mongo.models.general import (
     ExternalId,
     ExternalURL,
     Name,
-    CitationsCount
+    CitationsCount,
 )
 
-ObjectId = NewType('ObjectId', str)
+ObjectId = NewType("ObjectId", str)
 
 
 class Address(Protocol):
@@ -44,26 +44,27 @@ class Ranking(Protocol):
     source: str | None = None
     to_date: str | Any = None
 
+
 class Relation(Protocol):
     id: ObjectId | None | str = None
     name: str | None | Name
     types: list[Type] | None = None
-    
+
 
 class Affiliation(Protocol):
-    abbreviations: list[str] | None 
+    abbreviations: list[str] | None
     aliases: list[str] | None
     birthdate: str | int | None
     ranking: list[Ranking] | None = None
-    status: Any#Status | list[Status] | None | str = None
+    status: Any  # Status | list[Status] | None | str = None
     subjects: list[Any] | None
     updated: list[Updated] | None
     year_established: int | None
     names: list[Name] | None
     relations: list[Relation] | None
     addresses: list[Address] | None
-    external_ids: list[ExternalId] | None 
-    external_urls: list[ExternalURL] | None 
+    external_ids: list[ExternalId] | None
+    external_urls: list[ExternalURL] | None
     types: list[Type] | None
 
 
@@ -79,7 +80,7 @@ class Edge(Protocol):
     size: int | float
     source: str
     target: str
-    
+
 
 class CoauthorshipNetwork(Protocol):
     nodes: list[Node] | None
@@ -89,6 +90,7 @@ class CoauthorshipNetwork(Protocol):
 class TopWord(Protocol):
     name: str
     value: int
+
 
 class AffiliationCalculations(Protocol):
     coauthorship_network: CoauthorshipNetwork | None = None

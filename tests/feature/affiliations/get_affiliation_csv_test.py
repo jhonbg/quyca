@@ -1,6 +1,6 @@
 from database.mongo import database
 
-random_affiliation_id = '66b583d97102ee7e0fcda396'
+random_affiliation_id = "66b583d97102ee7e0fcda396"
 
 
 def test_get_institution_by_id(client):

@@ -1,6 +1,8 @@
 from database.mongo import database
 
-random_affiliation_id = database['affiliations'].aggregate([{ '$sample': { 'size': 1 } }]).next()["_id"]
+random_affiliation_id = (
+    database["affiliations"].aggregate([{"$sample": {"size": 1}}]).next()["_id"]
+)
 
 
 def test_it_can_plot_type_department_by_institution(client):

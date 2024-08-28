@@ -15,27 +15,33 @@ from utils.flatten_json import flatten_json_list
 
 person_app_router = Blueprint("person_app_router", __name__)
 
+
 @person_app_router.route("/<person_id>", methods=["GET"])
 def get_person_by_id(person_id: str):
     try:
         person_model = new_person_service.get_person_by_id(person_id)
 
         return Response(
-            response = json.dumps({"data": person_model.model_dump(by_alias=True), "filters": {}}),
-            status = 200,
-            mimetype = "application/json",
+            response=json.dumps(
+                {"data": person_model.model_dump(by_alias=True), "filters": {}}
+            ),
+            status=200,
+            mimetype="application/json",
         )
 
     except (PersonException, InvalidId, ValueError) as e:
         return Response(
-            response = json.dumps({"error": str(e)}),
-            status = 404,
-            mimetype = "application/json",
+            response=json.dumps({"error": str(e)}),
+            status=404,
+            mimetype="application/json",
         )
 
 
 def person(
-    request: Request, person_id: str | None, section: str | None = None, tab: str | None = None
+    request: Request,
+    person_id: str | None,
+    section: str | None = None,
+    tab: str | None = None,
 ):
     data = request.args.get("data")
     typ = request.args.get("typ", None)
@@ -60,6 +66,7 @@ def person(
     else:
         result = None
     return result
+
 
 # @person_app_router.route("/<id>", methods=["GET"])
 @person_app_router.route("/<person_id>/<section>/<tab>", methods=["GET"])
@@ -92,6 +99,7 @@ def get_csv_by_person(person_id: str):
         return response
     except Exception as e:
         return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
+
 
 @person_app_router.route("/<id>/<section>/<tab>/csv", methods=["GET"])
 def get_person_csv(

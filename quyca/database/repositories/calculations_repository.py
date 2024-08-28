@@ -6,7 +6,9 @@ from database.mongo import calculations_database
 
 
 def get_person_calculations(person_id: str) -> PersonCalculations:
-    person_calculations = calculations_database["person"].find_one({"_id": ObjectId(person_id)})
+    person_calculations = calculations_database["person"].find_one(
+        {"_id": ObjectId(person_id)}
+    )
 
     if not person_calculations:
         return PersonCalculations()
@@ -14,8 +16,11 @@ def get_person_calculations(person_id: str) -> PersonCalculations:
 
     return PersonCalculations(**person_calculations)
 
+
 def get_affiliation_calculations(affiliation_id: str) -> AffiliationCalculations:
-    affiliation_calculations = calculations_database["affiliations"].find_one({"_id": ObjectId(affiliation_id)})
+    affiliation_calculations = calculations_database["affiliations"].find_one(
+        {"_id": ObjectId(affiliation_id)}
+    )
 
     if not affiliation_calculations:
         return AffiliationCalculations()

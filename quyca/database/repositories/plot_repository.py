@@ -3,7 +3,9 @@ from bson import ObjectId
 from database.mongo import database, calculations_database
 
 
-def get_bars_data_by_affiliation_type(affiliation_id: str, affiliation_type: str) -> dict:
+def get_bars_data_by_affiliation_type(
+    affiliation_id: str, affiliation_type: str
+) -> dict:
     pipeline = [
         {
             "$match": {
@@ -38,11 +40,14 @@ def get_bars_data_by_affiliation_type(affiliation_id: str, affiliation_type: str
         data[_data["name"]].append(_data["work"])
     return data
 
-def get_bars_data_by_researcher_and_affiliation(affiliation_id, affiliation_type: str) -> list:
+
+def get_bars_data_by_researcher_and_affiliation(
+    affiliation_id, affiliation_type: str
+) -> list:
     data = []
     if affiliation_type in ["group", "department", "faculty"]:
         for author in database["person"].find(
-                {"affiliations.id": ObjectId(affiliation_id)}, {"affiliations": 1}
+            {"affiliations.id": ObjectId(affiliation_id)}, {"affiliations": 1}
         ):
             pipeline = [
                 {
@@ -68,7 +73,6 @@ def get_bars_data_by_researcher_and_affiliation(affiliation_id, affiliation_type
                         "researcher._id": 1,
                     }
                 },
-
                 {"$match": {"researcher.ranking.source": "scienti"}},
             ]
             for work in database["works"].aggregate(pipeline):
@@ -115,6 +119,7 @@ def get_bars_data_by_researcher_and_affiliation(affiliation_id, affiliation_type
                         )
     return data
 
+
 def get_bars_data_by_researcher_and_person(person_id: str):
     data = []
     pipeline = [
@@ -144,6 +149,7 @@ def get_bars_data_by_researcher_and_person(person_id: str):
                         }
                     )
     return data
+
 
 def get_products_by_author_sex(affiliation_id: str):
     pipeline = [
@@ -175,6 +181,7 @@ def get_products_by_author_sex(affiliation_id: str):
     ]
     return list(database["person"].aggregate(pipeline))
 
+
 def get_products_by_author_age_and_affiliation(affiliation_id: str):
     pipeline = [
         {"$project": {"affiliations": 1, "birthdate": 1}},
@@ -197,6 +204,7 @@ def get_products_by_author_age_and_affiliation(affiliation_id: str):
         },
     ]
     return database["person"].aggregate(pipeline)
+
 
 def get_products_by_author_age_and_person(person_id: str):
     pipeline = [
@@ -222,130 +230,92 @@ def get_products_by_author_age_and_person(person_id: str):
     ]
     return database["works"].aggregate(pipeline)
 
+
 def get_collaboration_worldmap_by_affiliation(affiliation_id, affiliation_type):
     data = []
 
     if affiliation_type in ["group", "department", "faculty"]:
-        institution_id = database["affiliations"].aggregate([
-            {
-                '$match': {
-                    '_id': ObjectId(affiliation_id)
-                }
-            }, {
-                '$unwind': '$relations'
-            }, {
-                '$match': {
-                    'relations.types.type': 'education'
-                }
-            }
-        ]).next().get("relations", [])["id"]
+        institution_id = (
+            database["affiliations"]
+            .aggregate(
+                [
+                    {"$match": {"_id": ObjectId(affiliation_id)}},
+                    {"$unwind": "$relations"},
+                    {"$match": {"relations.types.type": "education"}},
+                ]
+            )
+            .next()
+            .get("relations", [])["id"]
+        )
 
         pipeline = [
+            {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
+            {"$project": {"_id": 1}},
             {
-                '$match': {
-                    'affiliations.id': ObjectId(affiliation_id)
+                "$lookup": {
+                    "from": "works",
+                    "localField": "_id",
+                    "foreignField": "authors.id",
+                    "as": "work",
+                    "pipeline": [{"$project": {"_id": 1, "authors": 1}}],
                 }
-            }, {
-                '$project': {
-                    '_id': 1
-                }
-            }, {
-                '$lookup': {
-                    'from': 'works',
-                    'localField': '_id',
-                    'foreignField': 'authors.id',
-                    'as': 'work',
-                    'pipeline': [
+            },
+            {"$unwind": "$work"},
+            {"$match": {"work.authors.affiliations.id": institution_id}},
+            {"$unwind": "$work.authors"},
+            {"$unwind": "$work.authors.affiliations"},
+            {"$group": {"_id": "$work.authors.affiliations.id", "count": {"$sum": 1}}},
+            {
+                "$lookup": {
+                    "from": "affiliations",
+                    "localField": "_id",
+                    "foreignField": "_id",
+                    "as": "affiliation",
+                    "pipeline": [
                         {
-                            '$project': {
-                                '_id': 1,
-                                'authors': 1
+                            "$project": {
+                                "addresses.country_code": 1,
+                                "addresses.country": 1,
                             }
                         }
-                    ]
+                    ],
                 }
-            }, {
-                '$unwind': '$work'
-            }, {
-                '$match': {
-                    'work.authors.affiliations.id': institution_id
-                }
-            }, {
-                '$unwind': '$work.authors'
-            }, {
-                '$unwind': '$work.authors.affiliations'
-            }, {
-                '$group': {
-                    '_id': '$work.authors.affiliations.id',
-                    'count': {
-                        '$sum': 1
-                    }
-                }
-            }, {
-                '$lookup': {
-                    'from': 'affiliations',
-                    'localField': '_id',
-                    'foreignField': '_id',
-                    'as': 'affiliation',
-                    'pipeline': [
-                        {
-                            '$project': {
-                                'addresses.country_code': 1,
-                                'addresses.country': 1
-                            }
-                        }
-                    ]
-                }
-            }, {
-                '$unwind': '$affiliation'
-            }, {
-                '$unwind': '$affiliation.addresses'
-            }
+            },
+            {"$unwind": "$affiliation"},
+            {"$unwind": "$affiliation.addresses"},
         ]
 
         for person in database["person"].aggregate(pipeline):
             data.append(person)
     else:
         pipeline = [
+            {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+            {"$unwind": "$authors"},
+            {"$unwind": "$authors.affiliations"},
+            {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},
             {
-                '$match': {
-                    'authors.affiliations.id': ObjectId(affiliation_id)
-                }
-            }, {
-                '$unwind': '$authors'
-            }, {
-                '$unwind': '$authors.affiliations'
-            }, {
-                '$group': {
-                    '_id': '$authors.affiliations.id',
-                    'count': {
-                        '$sum': 1
-                    }
-                }
-            }, {
-                '$lookup': {
-                    'from': 'affiliations',
-                    'localField': '_id',
-                    'foreignField': '_id',
-                    'as': 'affiliation',
-                    'pipeline': [
+                "$lookup": {
+                    "from": "affiliations",
+                    "localField": "_id",
+                    "foreignField": "_id",
+                    "as": "affiliation",
+                    "pipeline": [
                         {
-                            '$project': {
-                                'addresses.country_code': 1,
-                                'addresses.country': 1
+                            "$project": {
+                                "addresses.country_code": 1,
+                                "addresses.country": 1,
                             }
                         }
-                    ]
+                    ],
                 }
-            }, {
-                '$unwind': '$affiliation'
-            }, {
-                '$unwind': '$affiliation.addresses'
-            }
+            },
+            {"$unwind": "$affiliation"},
+            {"$unwind": "$affiliation.addresses"},
         ]
         for work in database["works"].aggregate(pipeline):
             data.append(work)
     return data
+
 
 def get_collaboration_worldmap_by_person(person_id):
     data = []
@@ -376,11 +346,12 @@ def get_collaboration_worldmap_by_person(person_id):
         data.append(work)
     return data
 
+
 def get_collaboration_colombiamap_by_affiliation(affiliation_id, affiliation_type):
     data = []
     if affiliation_type in ["group", "department", "faculty"]:
         for author in database["person"].find(
-                {"affiliations.id": ObjectId(affiliation_id)}, {"affiliations": 1}
+            {"affiliations.id": ObjectId(affiliation_id)}, {"affiliations": 1}
         ):
             pipeline = [
                 {"$match": {"authors.id": author["_id"]}},
@@ -440,6 +411,7 @@ def get_collaboration_colombiamap_by_affiliation(affiliation_id, affiliation_typ
             data.append(work)
     return data
 
+
 def get_collaboration_colombiamap_by_person(person_id: str):
     data = []
     pipeline = [
@@ -468,6 +440,7 @@ def get_collaboration_colombiamap_by_person(person_id: str):
     for work in database["works"].aggregate(pipeline):
         data.append(work)
     return data
+
 
 def get_collaboration_network(affiliation_id):
     pipeline = [

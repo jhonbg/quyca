@@ -3,7 +3,7 @@ from typing import Any
 import datetime
 
 
-def get_flat_data(data: list, config: dict, level = 0) -> list:
+def get_flat_data(data: list, config: dict, level=0) -> list:
     flat_data = []
     for item in data:
         flat_item = get_flat_item(item, config, level)
@@ -11,7 +11,9 @@ def get_flat_data(data: list, config: dict, level = 0) -> list:
     return flat_data
 
 
-def get_flat_item(item: dict, config: dict, level: int = 0, separator: str = "/", parent_key: str = ""):
+def get_flat_item(
+    item: dict, config: dict, level: int = 0, separator: str = "/", parent_key: str = ""
+):
     flat_item = {}
 
     for key in config.keys():
@@ -21,7 +23,9 @@ def get_flat_item(item: dict, config: dict, level: int = 0, separator: str = "/"
         if level > 0 and isinstance(value, dict) and new_key in config.keys():
             new_key = config.get(new_key, {"name": new_key})["name"]
             config = config[key].get("config", config)
-            flat_item.update(get_flat_item(value, config, level - 1, separator, new_key))
+            flat_item.update(
+                get_flat_item(value, config, level - 1, separator, new_key)
+            )
         elif (
             level > 0
             and isinstance(value, list)

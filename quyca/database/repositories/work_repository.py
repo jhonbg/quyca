@@ -19,32 +19,36 @@ def get_work_by_id(work_id: id) -> Work:
         raise WorkException(work_id)
     return Work(**work)
 
+
 def get_works_by_affiliation(
-        affiliation_id: str,
-        affiliation_type: str,
-        query_params: MultiDict | None = None,
-        pipeline_params: dict | None = None
+    affiliation_id: str,
+    affiliation_type: str,
+    query_params: MultiDict | None = None,
+    pipeline_params: dict | None = None,
 ) -> Generator:
     if query_params is None:
         query_params = {}
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = get_works_by_affiliation_pipeline(affiliation_id, affiliation_type)
-    collection = "affiliations" if affiliation_type in ["faculty", "department"] else "works"
+    collection = (
+        "affiliations" if affiliation_type in ["faculty", "department"] else "works"
+    )
     if collection == "affiliations":
         pipeline += [{"$replaceRoot": {"newRoot": "$works"}}]
     pipeline = process_params(pipeline, query_params, pipeline_params)
     cursor = database[collection].aggregate(pipeline)
     return work_generator.get(cursor)
 
+
 def get_sources_by_affiliation(
-        affiliation_id: str,
-        affiliation_type: str,
-        pipeline_params: dict | None = None
+    affiliation_id: str, affiliation_type: str, pipeline_params: dict | None = None
 ) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
-    collection = "affiliations" if affiliation_type in ["faculty", "department"] else "works"
+    collection = (
+        "affiliations" if affiliation_type in ["faculty", "department"] else "works"
+    )
     pipeline = get_sources_by_affiliation_pipeline(affiliation_id, affiliation_type)
     if match_param := pipeline_params.get("match"):
         pipeline += [{"$match": match_param}]
@@ -59,7 +63,7 @@ def get_sources_by_affiliation(
                             "as": "rank",
                             "cond": {
                                 "$and": [
-                                    {"$lte": ["$$rank.from_date","$date_published"]},
+                                    {"$lte": ["$$rank.from_date", "$date_published"]},
                                     {"$gte": ["$$rank.to_date", "$date_published"]},
                                 ]
                             },
@@ -72,28 +76,43 @@ def get_sources_by_affiliation(
     cursor = database[collection].aggregate(pipeline)
     return source_generator.get(cursor)
 
+
 def get_works_count_by_affiliation(
-        affiliation_id: str, affiliation_type: str, filters: dict | None = None
+    affiliation_id: str, affiliation_type: str, filters: dict | None = None
 ) -> int:
-    affiliation_type = "institution" if affiliation_type in settings.institutions else affiliation_type
+    affiliation_type = (
+        "institution" if affiliation_type in settings.institutions else affiliation_type
+    )
     pipeline = get_works_by_affiliation_pipeline(affiliation_id, affiliation_type)
-    collection = "affiliations" if affiliation_type in ["department", "faculty"] else "works"
+    collection = (
+        "affiliations" if affiliation_type in ["department", "faculty"] else "works"
+    )
     if collection == "affiliations":
         pipeline += [{"$replaceRoot": {"newRoot": "$works"}}]
     if filters:
         pipeline += get_filter_list(filters)
     pipeline += [{"$count": "total"}]
-    works_count = next(database[collection].aggregate(pipeline), {"total": 0}).get("total", 0)
+    works_count = next(database[collection].aggregate(pipeline), {"total": 0}).get(
+        "total", 0
+    )
     return works_count
 
+
 def get_citations_count_by_affiliation(affiliation_id: str) -> list[CitationsCount]:
-    affiliation_calculations = calculations_repository.get_affiliation_calculations(affiliation_id)
+    affiliation_calculations = calculations_repository.get_affiliation_calculations(
+        affiliation_id
+    )
     return affiliation_calculations.citations_count
 
+
 def get_sources_by_related_affiliation(
-        affiliation_id: str, affiliation_type: str, relation_type: str, pipeline_params: dict | None = None
+    affiliation_id: str,
+    affiliation_type: str,
+    relation_type: str,
+    pipeline_params: dict | None = None,
 ) -> Generator:
     from database.repositories import affiliation_repository
+
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = affiliation_repository.get_related_affiliations_by_type_pipeline(
@@ -188,10 +207,9 @@ def get_sources_by_related_affiliation(
     sources = database["affiliations"].aggregate(pipeline)
     return source_generator.get(sources)
 
+
 def get_works_by_person(
-        person_id: str,
-        query_params: MultiDict | None = None,
-        pipeline_params: dict = None
+    person_id: str, query_params: MultiDict | None = None, pipeline_params: dict = None
 ) -> Generator:
     if query_params is None:
         query_params = {}
@@ -204,19 +222,28 @@ def get_works_by_person(
     cursor = database["works"].aggregate(pipeline)
     return work_generator.get(cursor)
 
-def get_works_count_by_person(person_id) -> Optional[int]:
-    return database["works"].aggregate([
-        {"$match": {"authors.id": ObjectId(person_id)}},
-        {"$count": "total"}
-    ]).next().get("total", 0)
 
-def get_sources_by_person(person_id: str, query_params, pipeline_params: dict | None = None) -> Generator:
+def get_works_count_by_person(person_id) -> Optional[int]:
+    return (
+        database["works"]
+        .aggregate(
+            [{"$match": {"authors.id": ObjectId(person_id)}}, {"$count": "total"}]
+        )
+        .next()
+        .get("total", 0)
+    )
+
+
+def get_sources_by_person(
+    person_id: str, query_params, pipeline_params: dict | None = None
+) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = get_sources_by_person_pipeline(person_id)
     pipeline = process_params(pipeline, query_params, pipeline_params)
     cursor = database["works"].aggregate(pipeline)
     return source_generator.get(cursor)
+
 
 def get_works_by_affiliation_pipeline(affiliation_id: str, affiliation_type: str):
     if affiliation_type == "institution":
@@ -265,7 +292,11 @@ def get_works_by_affiliation_pipeline(affiliation_id: str, affiliation_type: str
         {"$unwind": "$work.authors"},
         {"$match": {"$expr": {"$eq": ["$person._id", "$work.authors.id"]}}},
         {"$unwind": "$work.authors.affiliations"},
-        {"$match": {"$expr": {"$eq": ["$relations.id", "$work.authors.affiliations.id"]}}},
+        {
+            "$match": {
+                "$expr": {"$eq": ["$relations.id", "$work.authors.affiliations.id"]}
+            }
+        },
         {"$group": {"_id": "$work._id", "work": {"$first": "$work"}}},
         {"$project": {"work._id": 1}},
         {
@@ -279,6 +310,7 @@ def get_works_by_affiliation_pipeline(affiliation_id: str, affiliation_type: str
         {"$unwind": "$works"},
     ]
     return pipeline
+
 
 def get_sources_by_affiliation_pipeline(affiliation_id, affiliation_type):
     pipeline = get_works_by_affiliation_pipeline(affiliation_id, affiliation_type)
@@ -307,6 +339,7 @@ def get_sources_by_affiliation_pipeline(affiliation_id, affiliation_type):
     ]
     return pipeline
 
+
 def get_sources_by_person_pipeline(person_id):
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
@@ -329,6 +362,7 @@ def get_sources_by_person_pipeline(person_id):
     ]
     return pipeline
 
+
 def process_params(pipeline, query_params, pipeline_params: dict | None = None):
     if pipeline_params is None:
         pipeline_params = {}
@@ -343,6 +377,7 @@ def process_params(pipeline, query_params, pipeline_params: dict | None = None):
     if skip_param := pipeline_params.get("skip"):
         pipeline += [{"$skip": skip_param}]
     return pipeline
+
 
 def get_sort(sort: str) -> list[dict]:
     sort_field, direction = (sort[:-1], -1) if sort.endswith("-") else (sort, 1)
@@ -370,21 +405,15 @@ def get_sort(sort: str) -> list[dict]:
                         "$switch": {
                             "branches": [
                                 {
-                                    "case": {
-                                        "$eq": ["$titles.0.source", "openalex"]
-                                    },
+                                    "case": {"$eq": ["$titles.0.source", "openalex"]},
                                     "then": source_priority["openalex"],
                                 },
                                 {
-                                    "case": {
-                                        "$eq": ["$titles.0.source", "scholar"]
-                                    },
+                                    "case": {"$eq": ["$titles.0.source", "scholar"]},
                                     "then": source_priority["scholar"],
                                 },
                                 {
-                                    "case": {
-                                        "$eq": ["$titles.0.source", "scienti"]
-                                    },
+                                    "case": {"$eq": ["$titles.0.source", "scienti"]},
                                     "then": source_priority["scienti"],
                                 },
                                 {
@@ -394,9 +423,7 @@ def get_sort(sort: str) -> list[dict]:
                                     "then": source_priority["minciencias"],
                                 },
                                 {
-                                    "case": {
-                                        "$eq": ["$titles.0.source", "ranking"]
-                                    },
+                                    "case": {"$eq": ["$titles.0.source", "ranking"]},
                                     "then": source_priority["ranking"],
                                 },
                             ],
@@ -434,12 +461,14 @@ def get_sort(sort: str) -> list[dict]:
         ]
     return pipeline
 
+
 def filter_translation(value: Any) -> dict[str, Any]:
     return {
         "type": {"$match": {"types.type": value}},
         "start_year": {"$match": {"year_published": {"$gte": value}}},
         "end_year": {"$match": {"year_published": {"$lte": value}}},
     }
+
 
 def get_filter_list(filters: dict[str, Any]) -> list[dict[str, Any]]:
     filter_list = []

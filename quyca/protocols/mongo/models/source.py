@@ -25,7 +25,7 @@ class Waiver(Protocol):
 class APC(Protocol):
     charges: int | Any | None
     currency: str | Any | None
-    year_published: str | int | None 
+    year_published: str | int | None
 
 
 class Copyright(Protocol):
@@ -85,5 +85,5 @@ class Source(Protocol):
     licenses: list[Licence] | None
     subjects: list[Subject] | None
     ranking: list[Ranking] | None
-    date_published: str | int | None 
+    date_published: str | int | None
     affiliation_names: list[Name] | None

@@ -1,6 +1,8 @@
 from database.mongo import database
 
-random_person_id = database["person"].aggregate([{ '$sample': { 'size': 1 } }]).next()["_id"]
+random_person_id = (
+    database["person"].aggregate([{"$sample": {"size": 1}}]).next()["_id"]
+)
 
 
 def test_get_by_id(client):

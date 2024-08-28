@@ -9,7 +9,7 @@ from utils.cpi import inflate
 from utils.hindex import hindex
 
 
-def get_percentage(func: Callable[..., list[dict[str, str| int]]]):
+def get_percentage(func: Callable[..., list[dict[str, str | int]]]):
     @wraps(func)
     def wrapper(*args, **kwargs) -> dict[str, list[dict[str, str | int | float]] | int]:
         data = func(*args, **kwargs)
@@ -17,10 +17,14 @@ def get_percentage(func: Callable[..., list[dict[str, str| int]]]):
         for item in data:
             item["percentage"] = round(item["value"] / total * 100, 2) if total else 0
         return {"plot": data, "sum": total}
+
     return wrapper
 
+
 @get_percentage
-def get_citations_by_affiliation(data: dict[str, list[CitationsCount]]) -> list[dict[str, str | int]]:
+def get_citations_by_affiliation(
+    data: dict[str, list[CitationsCount]]
+) -> list[dict[str, str | int]]:
     counter = 0
     results = {}
     for name, citations in data.items():
@@ -38,13 +42,17 @@ def get_citations_by_affiliation(data: dict[str, list[CitationsCount]]) -> list[
         plot.append({"name": name, "value": value})
     return plot
 
+
 @get_percentage
-def get_products_by_affiliation(data: dict[str, int], total_works=0) -> list[dict[str, str | int]]:
+def get_products_by_affiliation(
+    data: dict[str, int], total_works=0
+) -> list[dict[str, str | int]]:
     plot = []
     for name, value in data.items():
         plot.append({"name": name, "value": value})
     plot.append({"name": "Sin información", "value": total_works - sum(data.values())})
     return plot
+
 
 @get_percentage
 def get_apc_by_sources(sources: Generator, base_year) -> list:
@@ -54,11 +62,15 @@ def get_apc_by_sources(sources: Generator, base_year) -> list:
         apc = source.apc
         if apc.currency == "USD":
             raw_value = apc.charges
-            value = inflate(raw_value,apc.year_published,to=max(base_year, apc.year_published))
+            value = inflate(
+                raw_value, apc.year_published, to=max(base_year, apc.year_published)
+            )
         else:
             try:
                 raw_value = currency_converter.convert(apc.charges, apc.currency, "USD")
-                value = inflate(raw_value,apc.year_published,to=max(base_year, apc.year_published))
+                value = inflate(
+                    raw_value, apc.year_published, to=max(base_year, apc.year_published)
+                )
             except Exception as e:
                 value = 0
         if value and (name := source.affiliation_names[0].name):
@@ -71,12 +83,14 @@ def get_apc_by_sources(sources: Generator, base_year) -> list:
         plot.append({"name": name, "value": int(value)})
     return plot
 
+
 @get_percentage
 def get_h_by_affiliation(data: dict) -> list:
     plot = []
     for idx, value in data.items():
         plot.append({"name": idx, "value": hindex(value)})
     return plot
+
 
 @get_percentage
 def get_products_by_publisher(data: Iterable[str]) -> list:
@@ -86,6 +100,7 @@ def get_products_by_publisher(data: Iterable[str]) -> list:
         plot += [{"name": name, "value": value}]
     return plot
 
+
 @get_percentage
 def get_products_by_subject(data: Iterable) -> list:
     results = Counter(sub.name for sub in data)
@@ -93,6 +108,7 @@ def get_products_by_subject(data: Iterable) -> list:
     for name, value in results.items():
         plot.append({"name": name, "value": value})
     return plot
+
 
 @get_percentage
 def get_products_by_database(data: Iterable) -> list:
@@ -102,6 +118,7 @@ def get_products_by_database(data: Iterable) -> list:
         plot.append({"name": name, "value": value})
     return plot
 
+
 @get_percentage
 def get_products_by_open_access(data: Iterable) -> list:
     results = Counter(data)
@@ -109,6 +126,7 @@ def get_products_by_open_access(data: Iterable) -> list:
     for name, value in results.items():
         plot.append({"name": name, "value": value})
     return plot
+
 
 @get_percentage
 def get_products_by_age(works: Iterable) -> list:
@@ -123,12 +141,8 @@ def get_products_by_age(works: Iterable) -> list:
             results["Sin información"] += 1
             continue
         if work["birthdate"]:
-            birthdate = datetime.fromtimestamp(
-                work["birthdate"]
-            ).year
-            date_published = datetime.fromtimestamp(
-                work["work"]["date_published"]
-            ).year
+            birthdate = datetime.fromtimestamp(work["birthdate"]).year
+            date_published = datetime.fromtimestamp(work["work"]["date_published"]).year
             age = date_published - birthdate
             for name, (date_low, date_high) in ranges.items():
                 if date_low <= age <= date_high:
@@ -138,6 +152,7 @@ def get_products_by_age(works: Iterable) -> list:
     for name, value in results.items():
         plot.append({"name": name, "value": value})
     return plot
+
 
 @get_percentage
 def get_products_by_scienti_rank(data: Iterable, total_works=0) -> list:
@@ -156,6 +171,7 @@ def get_products_by_scienti_rank(data: Iterable, total_works=0) -> list:
     )
     return plot
 
+
 @get_percentage
 def get_products_by_scimago_rank(data: Iterable) -> list:
     scimago_rank = filter(lambda x: x.source == "scimago Best Quartile", data)
@@ -165,6 +181,7 @@ def get_products_by_scimago_rank(data: Iterable) -> list:
         plot.append({"name": name, "value": value})
     return plot
 
+
 @get_percentage
 def get_products_by_same_institution(sources: Iterable, institution) -> list:
     results = {"same": 0, "different": 0, "Sin información": 0}
@@ -173,9 +190,9 @@ def get_products_by_same_institution(sources: Iterable, institution) -> list:
         names = list(set([name["name"].lower() for name in institution["names"]]))
     for source in sources:
         if (
-                not source.publisher
-                or not source.publisher.name
-                or not isinstance(source.publisher.name, str)
+            not source.publisher
+            or not source.publisher.name
+            or not isinstance(source.publisher.name, str)
         ):
             results["Sin información"] += 1
             continue

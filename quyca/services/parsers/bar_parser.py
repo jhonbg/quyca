@@ -16,7 +16,10 @@ def get_by_work_year_and_work_type(works: Generator) -> list:
         if work_year not in result.keys():
             result[work_year] = {}
         for work_type in work.types:
-            if work_type.source == "scienti" and work_type.type == "Publicado en revista especializada":
+            if (
+                work_type.source == "scienti"
+                and work_type.type == "Publicado en revista especializada"
+            ):
                 if work_type.type not in result[work_year].keys():
                     result[work_year][work_type.type] = 1
                 else:
@@ -25,10 +28,13 @@ def get_by_work_year_and_work_type(works: Generator) -> list:
     for year in result.keys():
         for work_type in result[year].keys():
             plot += (
-                [{"x": year, "y": result[year][work_type], "type": work_type}] if year else []
+                [{"x": year, "y": result[year][work_type], "type": work_type}]
+                if year
+                else []
             )
     plot = sorted(plot, key=lambda x: x.get("x", -99))
     return plot
+
 
 def get_by_affiliation_type(data) -> list:
     if not isinstance(data, dict):
@@ -60,6 +66,7 @@ def get_by_affiliation_type(data) -> list:
     plot = sorted(plot, key=lambda x: x["y"], reverse=True)
     return plot
 
+
 def get_citations_by_year(works: Generator) -> list:
     result = {}
     no_info = 0
@@ -76,6 +83,7 @@ def get_citations_by_year(works: Generator) -> list:
     plot = [{"x": x[0], "y": x[1]} for x in plot]
     plot += [{"x": "Sin información", "y": no_info}]
     return plot
+
 
 def apc_by_year(sources: Generator, base_year) -> list:
     data = map(lambda x: x.apc, sources)
@@ -108,6 +116,7 @@ def apc_by_year(sources: Generator, base_year) -> list:
     plot = [{"x": x[0], "y": int(x[1])} for x in sorted_result]
     return plot
 
+
 def oa_by_year(works: Generator) -> list:
     result = {}
     for work in works:
@@ -128,6 +137,7 @@ def oa_by_year(works: Generator) -> list:
             result_list.append({"x": year, "y": result[year][typ], "type": typ})
     return sorted(result_list, key=lambda x: x["x"])
 
+
 def works_by_publisher_year(data: Generator) -> list:
     result = {}
     top5 = {}
@@ -144,7 +154,9 @@ def works_by_publisher_year(data: Generator) -> list:
             top5[source.publisher.name] = 1
         else:
             top5[source.publisher.name] += 1
-    top5 = [top[0] for top in sorted(top5.items(), key=lambda x: x[1], reverse=True)][:5]
+    top5 = [top[0] for top in sorted(top5.items(), key=lambda x: x[1], reverse=True)][
+        :5
+    ]
     plot = []
     for year in result.keys():
         for publisher in top5:
@@ -156,6 +168,7 @@ def works_by_publisher_year(data: Generator) -> list:
                 plot.append({"x": year, "y": 0, "type": publisher})
     plot = sorted(plot, key=lambda x: x["x"])
     return plot
+
 
 def h_index_by_year(works: Generator) -> list:
     h_by_year = {}
@@ -196,6 +209,7 @@ def h_index_by_year(works: Generator) -> list:
     sorted_index_by_year = sorted(index_by_year, key=lambda x: x["x"])
     return sorted_index_by_year
 
+
 def works_by_researcher_category_and_year(data) -> list:
     result = {}
     for work in data:
@@ -216,6 +230,7 @@ def works_by_researcher_category_and_year(data) -> list:
     plot = sorted(plot, key=lambda x: x["x"] if x["x"] else -1)
     return plot
 
+
 def products_by_year_by_group_category(works: list) -> list:
     result = {}
     for work in works:
@@ -225,7 +240,10 @@ def products_by_year_by_group_category(works: list) -> list:
             rank_name = ""
             for rank in work.ranking_:
                 if rank.source == "scienti" and rank.from_date and rank.to_date:
-                    if (rank.from_date < year_timestamp and rank.to_date > year_timestamp):
+                    if (
+                        rank.from_date < year_timestamp
+                        and rank.to_date > year_timestamp
+                    ):
                         rank_name = rank.rank
                         break
             if rank_name != "":

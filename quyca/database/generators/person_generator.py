@@ -4,5 +4,5 @@ from database.models.person_model import Person
 
 
 def get(cursor: Cursor):
-   for document in cursor:
-       yield Person(**document)
+    for document in cursor:
+        yield Person(**document)

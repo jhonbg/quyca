@@ -3,7 +3,16 @@ from typing import Any
 from bson import ObjectId
 from pydantic import BaseModel, Field
 
-from database.models.base_model import PyObjectId, CitationsCount, Type, ExternalId, ExternalUrl, Subject, Updated, Ranking
+from database.models.base_model import (
+    PyObjectId,
+    CitationsCount,
+    Type,
+    ExternalId,
+    ExternalUrl,
+    Subject,
+    Updated,
+    Ranking,
+)
 
 
 class Affiliation(BaseModel):
@@ -74,7 +83,7 @@ class ProductType(BaseModel):
 
 
 class Work(BaseModel):
-    id: PyObjectId = Field(alias='_id')
+    id: PyObjectId = Field(alias="_id")
     abstract: str | None = None
     author_count: int | None = None
     authors: list[Author] | None = None

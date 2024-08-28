@@ -19,6 +19,6 @@ class OurDataAppService:
             "sources": self.colav_db["sources"].count_documents({}),
         }
         return entry
-    
+
 
 our_data_app_service = OurDataAppService()

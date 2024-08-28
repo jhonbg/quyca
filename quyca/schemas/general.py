@@ -13,6 +13,7 @@ class CitationsCount(BaseModel):
     source: str | None = None
     count: int | None = None
 
+
 class Type(BaseModel):
     source: str
     type: str | None

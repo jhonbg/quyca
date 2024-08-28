@@ -25,7 +25,7 @@ class Updated(BaseModel):
 
 class Ranking(BaseModel):
     date: str | None
-    rank: str | None |Any
+    rank: str | None | Any
     source: str | None
 
 
@@ -94,7 +94,6 @@ class PersonSearch(PersonBase):
 class PersonInfo(PersonSearch):
     full_name: str = Field(serialization_alias="name")
     logo: str | None = None
-    
 
 
 class PersonQueryParams(QueryBase):

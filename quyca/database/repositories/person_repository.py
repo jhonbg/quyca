@@ -12,6 +12,7 @@ def get_person_by_id(person_id: str) -> Person:
         raise PersonException(person_id)
     return Person(**person_data)
 
+
 def get_persons_by_affiliation(affiliation_id: str) -> list:
     pipeline = [
         {"$match": {"affiliations.id": ObjectId(affiliation_id)}},

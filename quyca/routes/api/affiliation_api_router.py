@@ -83,4 +83,6 @@ def api_affiliation(
     if section == "info":
         return affiliation_service.get_info(id=id, typ=typ, params=query_params)
     if section == "research" and tab == "products":
-        return affiliation_service.get_research_products_json(id=id, typ=typ, params=query_params)
+        return affiliation_service.get_research_products_json(
+            id=id, typ=typ, params=query_params
+        )

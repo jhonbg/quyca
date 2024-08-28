@@ -1,7 +1,16 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field, model_validator
 
-from database.models.base_model import Type, Updated, ExternalId, ExternalUrl, Name, PyObjectId, Ranking, Subject
+from database.models.base_model import (
+    Type,
+    Updated,
+    ExternalId,
+    ExternalUrl,
+    Name,
+    PyObjectId,
+    Ranking,
+    Subject,
+)
 
 
 class APC(BaseModel):
@@ -36,7 +45,7 @@ class Waiver(BaseModel):
 
 
 class Source(BaseModel):
-    id: PyObjectId = Field(alias='_id')
+    id: PyObjectId = Field(alias="_id")
     abbreviations: list[str] | None = None
     addresses: list | None = None
     apc: APC | None = None

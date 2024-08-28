@@ -5,7 +5,8 @@ from pydantic import BaseModel, Field, model_validator
 from schemas.general import Type, Updated, ExternalId, ExternalURL, QueryBase, Name
 
 
-class SourceQueryParams(QueryBase): ...
+class SourceQueryParams(QueryBase):
+    ...
 
 
 class Publisher(BaseModel):

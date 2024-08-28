@@ -1,7 +1,12 @@
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 
-from schemas import PersonQueryParams, AffiliationQueryParams, WorkQueryParams, SubjectQueryParams
+from schemas import (
+    PersonQueryParams,
+    AffiliationQueryParams,
+    WorkQueryParams,
+    SubjectQueryParams,
+)
 from services import person_service, affiliation_service, work_service, source_service
 
 search_app_router = Blueprint("search_app_router", __name__)

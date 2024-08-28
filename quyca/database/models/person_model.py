@@ -1,7 +1,15 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field, field_validator
-from database.models.base_model import PyObjectId, CitationsCount, Updated, ExternalId, Type, Identifier, Subject, \
-    Ranking
+from database.models.base_model import (
+    PyObjectId,
+    CitationsCount,
+    Updated,
+    ExternalId,
+    Type,
+    Identifier,
+    Subject,
+    Ranking,
+)
 
 
 class Affiliation(BaseModel):
@@ -49,7 +57,7 @@ class RelatedWork(BaseModel):
 
 
 class Person(BaseModel):
-    id: PyObjectId = Field(alias='_id')
+    id: PyObjectId = Field(alias="_id")
     affiliations: list[Affiliation] | None = Field(default_factory=list)
     aliases: list[str] | None = Field(default_factory=list)
     birthdate: int | str | None
@@ -75,11 +83,13 @@ class Person(BaseModel):
     @field_validator("external_ids")
     @classmethod
     def delete_sensitive_external_ids(cls, value):
-        return list(filter(
-            lambda external_id: external_id.source not in ["Cédula de Ciudadanía", "Cédula de Extranjería", "Passport"],
-            value
-        ))
-
+        return list(
+            filter(
+                lambda external_id: external_id.source
+                not in ["Cédula de Ciudadanía", "Cédula de Extranjería", "Passport"],
+                value,
+            )
+        )
 
     class Config:
         json_encoders = {ObjectId: str}

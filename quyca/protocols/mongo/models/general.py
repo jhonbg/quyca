@@ -33,6 +33,7 @@ class Status(Protocol):
     source: str | None
     status: str | None
 
+
 class CitationsCount(Protocol):
     source: str | None
     count: int | None

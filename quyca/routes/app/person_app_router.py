@@ -7,7 +7,7 @@ from flask import Blueprint, request, Response, Request
 
 from exceptions.person_exception import PersonException
 from services.person import person_service
-from services.new_person_service import PersonService
+from services import new_person_service
 from services.work import work_service
 from schemas.work import WorkQueryParams
 from utils.encoder import JsonEncoder
@@ -18,7 +18,7 @@ person_app_router = Blueprint("person_app_router", __name__)
 @person_app_router.route("/<person_id>", methods=["GET"])
 def get_person_by_id(person_id: str):
     try:
-        person_model = PersonService.get_person_by_id(person_id)
+        person_model = new_person_service.get_person_by_id(person_id)
 
         return Response(
             response = json.dumps({"data": person_model.model_dump(by_alias=True), "filters": {}}),
@@ -47,7 +47,7 @@ def person(
     elif section == "research":
         if tab == "products":
             if request.args.get("plot"):
-                return PersonService.get_person_plot(person_id, request.args)
+                return new_person_service.get_person_plot(person_id, request.args)
 
             params = WorkQueryParams(**request.args)
             result = work_service.get_research_products_by_author(
@@ -86,7 +86,7 @@ def get_person(
 @person_app_router.route("/<person_id>/csv", methods=["GET"])
 def get_csv_by_person(person_id: str):
     try:
-        data = PersonService.get_works_by_person_csv(person_id)
+        data = new_person_service.get_works_by_person_csv(person_id)
         response = Response(data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response

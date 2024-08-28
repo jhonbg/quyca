@@ -12,7 +12,7 @@ from services.actions.map_action import MapAction
 from database.models.affiliation_model import Affiliation
 from database.repositories import affiliation_repository
 from database.mongo import calculations_database, database
-from database.repositories.plot_repository import PlotRepository
+from database.repositories import plot_repository
 from database.repositories.work_repository import WorkRepository
 from utils.mapping import get_openalex_scienti
 
@@ -114,7 +114,7 @@ class AffiliationService:
         if affiliation_plot_type not in ["group", "department", "faculty"]:
             return None
 
-        data = PlotRepository.get_bars_data_by_affiliation_type(affiliation_id, affiliation_plot_type)
+        data = plot_repository.get_bars_data_by_affiliation_type(affiliation_id, affiliation_plot_type)
 
         return {"plot": BarAction.get_by_affiliation_type(data)}
 
@@ -206,7 +206,7 @@ class AffiliationService:
 
     @staticmethod
     def plot_year_researcher(affiliation_id: str, affiliation_type: str, query_params):
-        data = PlotRepository.get_bars_data_by_researcher_and_affiliation(affiliation_id, affiliation_type)
+        data = plot_repository.get_bars_data_by_researcher_and_affiliation(affiliation_id, affiliation_type)
         plot = BarAction.works_by_researcher_category_and_year(data)
 
         if plot:
@@ -432,12 +432,12 @@ class AffiliationService:
     @PieAction.get_percentage
     def plot_products_sex(affiliation_id: str, affiliation_type: str, query_params):
 
-        return PlotRepository.get_products_by_author_sex(affiliation_id)
+        return plot_repository.get_products_by_author_sex(affiliation_id)
 
 
     @staticmethod
     def plot_products_age(affiliation_id: str, affiliation_type: str, query_params):
-        works = PlotRepository.get_products_by_author_age_and_affiliation(affiliation_id)
+        works = plot_repository.get_products_by_author_age_and_affiliation(affiliation_id)
 
         result = PieAction.get_products_by_age(works)
 
@@ -487,7 +487,7 @@ class AffiliationService:
 
     @staticmethod
     def plot_collaboration_worldmap(affiliation_id: str, affiliation_type: str, query_params):
-        data = PlotRepository.get_collaboration_worldmap_by_affiliation(affiliation_id, affiliation_type)
+        data = plot_repository.get_collaboration_worldmap_by_affiliation(affiliation_id, affiliation_type)
 
         result = MapAction.get_collaboration_worldmap(data)
 
@@ -499,7 +499,7 @@ class AffiliationService:
 
     @staticmethod
     def plot_collaboration_colombiamap(affiliation_id: str, affiliation_type: str, query_params):
-        data = PlotRepository.get_collaboration_colombiamap_by_affiliation(affiliation_id, affiliation_type)
+        data = plot_repository.get_collaboration_colombiamap_by_affiliation(affiliation_id, affiliation_type)
 
         return {"plot": MapAction.get_collaboration_colombiamap(data)}
 

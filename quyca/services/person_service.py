@@ -11,7 +11,7 @@ from services.actions.pie_action import PieAction
 from database.models.person_model import Person
 from database.mongo import calculations_database, database
 from database.repositories import person_repository
-from database.repositories.plot_repository import PlotRepository
+from database.repositories import plot_repository
 from database.repositories.work_repository import WorkRepository
 
 
@@ -115,7 +115,7 @@ class PersonService:
 
     @staticmethod
     def plot_year_researcher(person_id: str, query_params):
-        data = PlotRepository.get_bars_data_by_researcher_and_person(person_id)
+        data = plot_repository.get_bars_data_by_researcher_and_person(person_id)
         plot = BarAction.works_by_researcher_category_and_year(data)
 
         if plot:
@@ -213,7 +213,7 @@ class PersonService:
 
     @staticmethod
     def plot_products_age(person_id: str, query_params):
-        works = PlotRepository.get_products_by_author_age_and_person(person_id)
+        works = plot_repository.get_products_by_author_age_and_person(person_id)
 
         result = PieAction.get_products_by_age(works)
 
@@ -271,7 +271,7 @@ class PersonService:
 
     @staticmethod
     def plot_collaboration_worldmap(person_id: str, query_params):
-        data = PlotRepository.get_collaboration_worldmap_by_person(person_id)
+        data = plot_repository.get_collaboration_worldmap_by_person(person_id)
 
         result = MapAction.get_collaboration_worldmap(data)
 
@@ -283,7 +283,7 @@ class PersonService:
 
     @staticmethod
     def plot_collaboration_colombiamap(person_id: str, query_params):
-        data = PlotRepository.get_collaboration_colombiamap_by_person(person_id)
+        data = plot_repository.get_collaboration_colombiamap_by_person(person_id)
 
         return {"plot": MapAction.get_collaboration_colombiamap(data)}
 

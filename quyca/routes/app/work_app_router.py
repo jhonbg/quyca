@@ -2,7 +2,7 @@ import json
 
 from flask import Blueprint, Response
 
-from services.new_work_service import WorkService
+from services import new_work_service
 from services.work import work_service
 
 work_app_router = Blueprint("work_app_router", __name__)
@@ -11,7 +11,7 @@ work_app_router = Blueprint("work_app_router", __name__)
 @work_app_router.route("/<work_id>", methods=["GET"])
 def get_work_by_id(work_id: str):
     try:
-        work = WorkService.get_work_by_id(work_id)
+        work = new_work_service.get_work_by_id(work_id)
         exclude_fields = {
             "subtitle": True,
             "titles": True,

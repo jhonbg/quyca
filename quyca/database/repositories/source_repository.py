@@ -5,13 +5,8 @@ from database.mongo import database
 from exceptions.source_exception import SourceException
 
 
-class SourceRepository:
-    @staticmethod
-    def get_source_by_id(source_id: str) -> Source:
-        source_data = database["sources"].find_one({"_id": ObjectId(source_id)})
-
-        if not source_data:
-            raise SourceException(source_id)
-
-        return Source(**source_data)
-
+def get_source_by_id(source_id: str) -> Source:
+    source_data = database["sources"].find_one({"_id": ObjectId(source_id)})
+    if not source_data:
+        raise SourceException(source_id)
+    return Source(**source_data)

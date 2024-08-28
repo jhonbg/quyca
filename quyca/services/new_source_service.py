@@ -1,11 +1,11 @@
 from database.models.base_model import ExternalId
 from database.models.source_model import Source
 from database.models.work_model import Work
-from database.repositories.source_repository import SourceRepository
+from database.repositories import source_repository
 
 
 def update_work_source(work: Work):
-    source = SourceRepository.get_source_by_id(work.source.id)
+    source = source_repository.get_source_by_id(work.source.id)
     set_source_serials(work, source)
     set_source_scimago_quartile(work, source)
 

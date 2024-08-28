@@ -6,7 +6,7 @@ from werkzeug.datastructures.structures import MultiDict
 from database.repositories import person_repository
 from services.parsers import work_parser
 from services import new_source_service
-from services.parsers.bar_parser import BarAction
+from services.parsers import bar_parser
 from services.parsers.pie_parser import PieAction
 from services.parsers.map_parser import MapAction
 from database.models.affiliation_model import Affiliation
@@ -106,7 +106,7 @@ class AffiliationService:
             pipeline_params
         )
 
-        return {"plot": BarAction.get_by_work_year_and_work_type(works)}
+        return {"plot": bar_parser.get_by_work_year_and_work_type(works)}
 
 
     @staticmethod
@@ -116,7 +116,7 @@ class AffiliationService:
 
         data = plot_repository.get_bars_data_by_affiliation_type(affiliation_id, affiliation_plot_type)
 
-        return {"plot": BarAction.get_by_affiliation_type(data)}
+        return {"plot": bar_parser.get_by_affiliation_type(data)}
 
 
     @staticmethod
@@ -127,7 +127,7 @@ class AffiliationService:
             query_params
         )
 
-        return {"plot": BarAction.get_citations_by_year(works)}
+        return {"plot": bar_parser.get_citations_by_year(works)}
 
 
     @staticmethod
@@ -148,7 +148,7 @@ class AffiliationService:
             pipeline_params
         )
 
-        return {"plot": BarAction.apc_by_year(sources, 2022)}
+        return {"plot": bar_parser.apc_by_year(sources, 2022)}
 
 
     @staticmethod
@@ -168,7 +168,7 @@ class AffiliationService:
             pipeline_params,
         )
 
-        return {"plot": BarAction.oa_by_year(works)}
+        return {"plot": bar_parser.oa_by_year(works)}
 
 
     @staticmethod
@@ -184,7 +184,7 @@ class AffiliationService:
             pipeline_params
         )
 
-        return {"plot": BarAction.works_by_publisher_year(sources)}
+        return {"plot": bar_parser.works_by_publisher_year(sources)}
 
 
     @staticmethod
@@ -201,13 +201,13 @@ class AffiliationService:
             pipeline_params
         )
 
-        return {"plot": BarAction.h_index_by_year(works)}
+        return {"plot": bar_parser.h_index_by_year(works)}
 
 
     @staticmethod
     def plot_year_researcher(affiliation_id: str, affiliation_type: str, query_params):
         data = plot_repository.get_bars_data_by_researcher_and_affiliation(affiliation_id, affiliation_type)
-        plot = BarAction.works_by_researcher_category_and_year(data)
+        plot = bar_parser.works_by_researcher_category_and_year(data)
 
         if plot:
             return {"plot": plot}
@@ -236,7 +236,7 @@ class AffiliationService:
             for work in works:
                 work.ranking = group.ranking
 
-        return {"plot": BarAction.products_by_year_by_group_category(data)}
+        return {"plot": bar_parser.products_by_year_by_group_category(data)}
 
 
     @staticmethod

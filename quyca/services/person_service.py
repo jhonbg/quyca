@@ -4,7 +4,7 @@ from bson import ObjectId
 
 from services.parsers import work_parser
 from services import new_source_service
-from services.parsers.bar_parser import BarAction
+from services.parsers import bar_parser
 from services.parsers.map_parser import MapAction
 from services.parsers.pie_parser import PieAction
 from database.models.person_model import Person
@@ -47,14 +47,14 @@ class PersonService:
 
         works = work_repository.get_works_by_person(person_id, query_params)
 
-        return {"plot": BarAction.get_by_work_year_and_work_type(works)}
+        return {"plot": bar_parser.get_by_work_year_and_work_type(works)}
 
 
     @staticmethod
     def plot_year_citations(person_id: str, query_params):
         works = work_repository.get_works_by_person(person_id, query_params)
 
-        return {"plot": BarAction.get_citations_by_year(works)}
+        return {"plot": bar_parser.get_citations_by_year(works)}
 
 
     @staticmethod
@@ -71,7 +71,7 @@ class PersonService:
 
         sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
 
-        return {"plot": BarAction.apc_by_year(sources, 2022)}
+        return {"plot": bar_parser.apc_by_year(sources, 2022)}
 
 
     @staticmethod
@@ -86,7 +86,7 @@ class PersonService:
 
         works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
 
-        return {"plot": BarAction.oa_by_year(works)}
+        return {"plot": bar_parser.oa_by_year(works)}
 
 
     @staticmethod
@@ -98,7 +98,7 @@ class PersonService:
 
         sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
 
-        return {"plot": BarAction.works_by_publisher_year(sources)}
+        return {"plot": bar_parser.works_by_publisher_year(sources)}
 
 
     @staticmethod
@@ -110,13 +110,13 @@ class PersonService:
 
         works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
 
-        return {"plot": BarAction.h_index_by_year(works)}
+        return {"plot": bar_parser.h_index_by_year(works)}
 
 
     @staticmethod
     def plot_year_researcher(person_id: str, query_params):
         data = plot_repository.get_bars_data_by_researcher_and_person(person_id)
-        plot = BarAction.works_by_researcher_category_and_year(data)
+        plot = bar_parser.works_by_researcher_category_and_year(data)
 
         if plot:
             return {"plot": plot}

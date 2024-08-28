@@ -4,8 +4,8 @@ from bson import ObjectId
 from werkzeug.datastructures.structures import MultiDict
 
 from core.config import settings
-from database.generators.source_generator import SourceGenerator
-from database.generators.work_generator import WorkGenerator
+from database.generators import source_generator
+from database.generators import work_generator
 from database.models.base_model import CitationsCount
 from database.models.work_model import Work
 from database.repositories.calculations_repository import CalculationsRepository
@@ -44,7 +44,7 @@ class WorkRepository:
 
         cursor = database[collection].aggregate(pipeline)
 
-        return WorkGenerator.get(cursor)
+        return work_generator.get(cursor)
 
 
     @classmethod
@@ -90,7 +90,7 @@ class WorkRepository:
 
         cursor = database[collection].aggregate(pipeline)
 
-        return SourceGenerator.get(cursor)
+        return source_generator.get(cursor)
 
 
     @classmethod
@@ -229,7 +229,7 @@ class WorkRepository:
 
         sources = database["affiliations"].aggregate(pipeline)
 
-        return SourceGenerator.get(sources)
+        return source_generator.get(sources)
 
 
     @classmethod
@@ -245,7 +245,7 @@ class WorkRepository:
 
         cursor = database["works"].aggregate(pipeline)
 
-        return WorkGenerator.get(cursor)
+        return work_generator.get(cursor)
 
 
     @staticmethod
@@ -267,7 +267,7 @@ class WorkRepository:
 
         cursor = database["works"].aggregate(pipeline)
 
-        return SourceGenerator.get(cursor)
+        return source_generator.get(cursor)
 
 
     @classmethod

@@ -4,7 +4,7 @@ from bson import ObjectId
 
 from core.config import settings
 from exceptions.affiliation_exception import AffiliationException
-from database.generators.affiliation_generator import AffiliationGenerator
+from database.generators import affiliation_generator
 from database.models.affiliation_model import Affiliation
 from database.repositories.calculations_repository import CalculationsRepository
 from database.mongo import database
@@ -88,7 +88,7 @@ class AffiliationRepository:
         collection = "person" if affiliation_type in ["faculty", "department"] else "affiliations"
         groups = database[collection].aggregate(pipeline)
 
-        return AffiliationGenerator.get(groups)
+        return affiliation_generator.get(groups)
 
 
     @staticmethod
@@ -139,7 +139,7 @@ class AffiliationRepository:
             pipeline = cls.get_related_affiliations_by_type_pipeline(affiliation_id, affiliation_type, relation_type)
             affiliations = database["affiliations"].aggregate(pipeline)
 
-            return AffiliationGenerator.get(affiliations)
+            return affiliation_generator.get(affiliations)
 
 
     @classmethod

@@ -1,6 +1,6 @@
 from bson import ObjectId
 
-from database.generators.person_generator import PersonGenerator
+from database.generators import person_generator
 from exceptions.person_exception import PersonException
 from database.models.person_model import Person
 from database.mongo import database
@@ -27,4 +27,4 @@ class PersonRepository:
 
         cursor = database["person"].aggregate(pipeline)
 
-        return PersonGenerator.get(cursor)
+        return person_generator.get(cursor)

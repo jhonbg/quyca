@@ -10,7 +10,7 @@ from services.actions.bar_action import BarAction
 from services.actions.pie_action import PieAction
 from services.actions.map_action import MapAction
 from database.models.affiliation_model import Affiliation
-from database.repositories.affiliation_repository import AffiliationRepository
+from database.repositories import affiliation_repository
 from database.mongo import calculations_database, database
 from database.repositories.plot_repository import PlotRepository
 from database.repositories.work_repository import WorkRepository
@@ -20,7 +20,7 @@ from utils.mapping import get_openalex_scienti
 class AffiliationService:
     @staticmethod
     def get_by_id(affiliation_id: str) -> Affiliation:
-        return AffiliationRepository.get_affiliation_by_id(affiliation_id)
+        return affiliation_repository.get_affiliation_by_id(affiliation_id)
 
     @staticmethod
     def get_works_by_affiliation_csv(affiliation_id: str, affiliation_type: str) -> str:
@@ -35,21 +35,21 @@ class AffiliationService:
     def get_related_affiliations_by_affiliation(affiliation_id: str, affiliation_type: str) -> dict:
         data = {}
         if affiliation_type == "institution":
-            faculties = AffiliationRepository.get_related_affiliations_by_type(
+            faculties = affiliation_repository.get_related_affiliations_by_type(
                 affiliation_id, affiliation_type, "faculty"
             )
 
             data["faculties"] = [faculty.model_dump(include={"id", "name"}) for faculty in faculties]
 
         if affiliation_type in ["faculty", "institution"]:
-            departments = AffiliationRepository.get_related_affiliations_by_type(
+            departments = affiliation_repository.get_related_affiliations_by_type(
                 affiliation_id, affiliation_type, "department"
             )
 
             data["departments"] = [department.modeld_dump(include={"id", "name"}) for department in departments]
 
         if affiliation_type in ["department", "faculty", "institution"]:
-            groups = AffiliationRepository.get_related_affiliations_by_type(
+            groups = affiliation_repository.get_related_affiliations_by_type(
                 affiliation_id, affiliation_type, "group"
             )
 
@@ -218,7 +218,7 @@ class AffiliationService:
     @staticmethod
     def plot_year_group(affiliation_id: str, affiliation_type: str, query_params):
         data = []
-        groups = AffiliationRepository.get_groups_by_affiliation(affiliation_id, affiliation_type)
+        groups = affiliation_repository.get_groups_by_affiliation(affiliation_id, affiliation_type)
 
         for group in groups:
             pipeline_params = {
@@ -264,7 +264,7 @@ class AffiliationService:
     @staticmethod
     def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, relation_type: str):
 
-        affiliations = AffiliationRepository.get_related_affiliations_by_type(
+        affiliations = affiliation_repository.get_related_affiliations_by_type(
             affiliation_id, affiliation_type, relation_type
         )
 
@@ -278,7 +278,7 @@ class AffiliationService:
 
     @staticmethod
     def plot_products_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str):
-        affiliations = AffiliationRepository.get_related_affiliations_by_type(
+        affiliations = affiliation_repository.get_related_affiliations_by_type(
             affiliation_id, affiliation_type, relation_type
         )
 
@@ -313,7 +313,7 @@ class AffiliationService:
 
     @staticmethod
     def plot_h_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str, query_params):
-        affiliations = AffiliationRepository.get_related_affiliations_by_type(
+        affiliations = affiliation_repository.get_related_affiliations_by_type(
             affiliation_id, affiliation_type, relation_type
         )
 

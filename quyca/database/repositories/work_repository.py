@@ -128,12 +128,12 @@ class WorkRepository:
     def get_sources_by_related_affiliation(
             affiliation_id: str, affiliation_type: str, relation_type: str, pipeline_params: dict | None = None
     ) -> Generator:
-        from database.repositories.affiliation_repository import AffiliationRepository
+        from database.repositories import affiliation_repository
 
         if pipeline_params is None:
             pipeline_params = {}
 
-        pipeline = AffiliationRepository.get_related_affiliations_by_type_pipeline(
+        pipeline = affiliation_repository.get_related_affiliations_by_type_pipeline(
             affiliation_id, affiliation_type, relation_type
         )
 

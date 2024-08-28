@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from services.affiliation import affiliation_service
 from schemas.work import WorkQueryParams
-from services.new_affiliation_service import AffiliationService
+from services import new_affiliation_service
 from utils.encoder import JsonEncoder
 from utils.flatten_json import flatten_json_list
 
@@ -17,7 +17,7 @@ affiliation_app_router = Blueprint("affiliation_app_router", __name__)
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>", methods=["GET"])
 def get_affiliation_by_id(affiliation_type: str, affiliation_id: str):
     try:
-        affiliation = AffiliationService.get_by_id(affiliation_id)
+        affiliation = new_affiliation_service.get_by_id(affiliation_id)
         response_data = json.dumps({"data": affiliation.model_dump(by_alias=True), "filters": {}})
 
         return Response(response_data, 200, mimetype="application/json")
@@ -30,7 +30,7 @@ def get_affiliation_by_id(affiliation_type: str, affiliation_id: str):
 def get_affiliation_section(affiliation_type: str, affiliation_id: str, section: str):
     if section == "affiliations":
         try:
-            related_affiliations = AffiliationService.get_related_affiliations_by_affiliation(
+            related_affiliations = new_affiliation_service.get_related_affiliations_by_affiliation(
                 affiliation_id, affiliation_type
             )
 
@@ -56,7 +56,7 @@ def get_affiliation(
 
     if section == "research" and tab == "products":
         if plot_type := request.args.get("plot"):
-            return AffiliationService.get_affiliation_plot(affiliation_id, affiliation_type, plot_type, request.args)
+            return new_affiliation_service.get_affiliation_plot(affiliation_id, affiliation_type, plot_type, request.args)
 
         return affiliation_service.get_research_products(id=affiliation_id, typ=affiliation_type, params=params)
 
@@ -64,7 +64,7 @@ def get_affiliation(
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/csv", methods=["GET"])
 def get_csv_by_affiliation(affiliation_type: str, affiliation_id: str):
     try:
-        data = AffiliationService.get_works_by_affiliation_csv(affiliation_id, affiliation_type)
+        data = new_affiliation_service.get_works_by_affiliation_csv(affiliation_id, affiliation_type)
         response = Response(data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response

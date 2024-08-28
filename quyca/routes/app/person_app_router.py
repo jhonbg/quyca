@@ -7,7 +7,7 @@ from flask import Blueprint, request, Response, Request
 
 from exceptions.person_exception import PersonException
 from services.person import person_service
-from services.person_service import PersonService
+from services.new_person_service import PersonService
 from services.work import work_service
 from schemas.work import WorkQueryParams
 from utils.encoder import JsonEncoder

@@ -2,7 +2,7 @@ import json
 
 from flask import Blueprint, Response
 
-from services.work_service import WorkService
+from services.new_work_service import WorkService
 from services.work import work_service
 
 work_app_router = Blueprint("work_app_router", __name__)

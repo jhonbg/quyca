@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from services.affiliation import affiliation_service
 from schemas.work import WorkQueryParams
-from services.affiliation_service import AffiliationService
+from services.new_affiliation_service import AffiliationService
 from utils.encoder import JsonEncoder
 from utils.flatten_json import flatten_json_list
 

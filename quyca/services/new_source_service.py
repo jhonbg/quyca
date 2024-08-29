@@ -1,4 +1,3 @@
-from database.models.base_model import ExternalId
 from database.models.source_model import Source
 from database.models.work_model import Work
 from database.repositories import source_repository
@@ -6,11 +5,33 @@ from database.repositories import source_repository
 
 def update_work_source(work: Work):
     source = source_repository.get_source_by_id(work.source.id)
-    set_source_serials(work, source)
-    set_source_scimago_quartile(work, source)
+    set_serials(work, source)
+    set_scimago_quartile(work, source)
 
 
-def set_source_scimago_quartile(work: Work, source: Source):
+def update_csv_work_source(work: Work):
+    if work.source.id:
+        source = source_repository.get_source_by_id(work.source.id)
+        set_csv_scimago_quartile(work, source)
+        set_source_urls(work, source)
+        if source.publisher:
+            work.publisher = (
+                str(source.publisher.name) + " / " + str(source.publisher.country_code)
+            )
+        if source.apc:
+            work.source_apc = str(source.apc.charges) + " / " + str(source.apc.currency)
+        work.source_languages = " | ".join(set(source.languages))
+        work.source_name = work.source.name
+
+
+def set_source_urls(work, source):
+    source_urls = []
+    for external_url in source.external_urls:
+        source_urls.append(external_url.source + " / " + external_url.url)
+    work.source_urls = " | ".join(set(source_urls))
+
+
+def set_scimago_quartile(work: Work, source: Source):
     for ranking in source.ranking:
         condition = (
             ranking.source == "scimago Best Quartile"
@@ -22,18 +43,20 @@ def set_source_scimago_quartile(work: Work, source: Source):
             break
 
 
-def set_source_serials(work: Work, source: Source):
+def set_csv_scimago_quartile(work: Work, source: Source):
+    for ranking in source.ranking:
+        condition = (
+            ranking.source == "scimago Best Quartile"
+            and ranking.rank != "-"
+            and ranking.from_date <= work.date_published <= ranking.to_date
+        )
+        if condition:
+            work.scimago_quartile = ranking.rank
+            break
+
+
+def set_serials(work: Work, source: Source):
     serials = {}
     for external_id in source.external_ids:
         serials[external_id.source] = external_id.id
     work.source.serials = serials
-
-
-def set_source_fields(work: Work):
-    doi = next(
-        filter(lambda external_id: external_id.source == "doi", work.external_ids),
-        ExternalId(),
-    )
-    work.doi = doi.id
-    work.source_name = work.source.name
-    work.scimago_quartile = work.source.scimago_quartile

@@ -86,35 +86,46 @@ class Work(BaseModel):
     id: PyObjectId = Field(alias="_id")
     abstract: str | None = None
     author_count: int | None = None
-    authors: list[Author] | None = None
+    authors: list[Author] | str | None = None
     bibliographic_info: BiblioGraphicInfo | None = None
     citations: list | None = Field(default_factory=list)
     citations_by_year: list[CitationByYear] | None = None
-    citations_count: list[CitationsCount] | None = None
+    citations_count: list[CitationsCount] | str | None = None
     date_published: int | None = None
     external_ids: list[ExternalId] | None = None
     external_urls: list[ExternalUrl] | None = None
-    groups: list[Group] | None = None
+    groups: list[Group] | str | None = None
     keywords: list | None = None
     ranking: list[Ranking] | None = None
     references: list | None = None
     references_count: int | None = None
     source: Source | None = None
-    subjects: list[Subject] | None = None
+    subjects: list[Subject] | str | None = None
     subtitle: str | None = None
-    titles: list[Title] | None = None
+    titles: list[Title] | str | None = None
     types: list[Type] | None = None
     updated: list[Updated] | None = None
     year_published: int | str | None = None
 
+    bibtex: str | None = None
+    is_open_access: bool | None = None
+    pages: str | None = None
+    start_page: str | None = None
+    end_page: str | None = None
+    affiliations: str | None = None
     doi: str | None = None
     issue: str | None = None
     language: str | None = None
     open_access_status: str | None = None
     product_types: list[ProductType] | None = None
+    publisher: str | None = None
+    openalex_types: str | None = None
+    scienti_types: str | None = None
     scimago_quartile: str | None = None
+    source_apc: str | None = None
     source_name: str | None = None
-    subject_names: str | None = None
+    source_urls: str | None = None
+    source_languages: str | None = None
     title: str | None = None
     volume: str | int | None = None
 

@@ -3,31 +3,21 @@ from itertools import chain
 from bson import ObjectId
 from werkzeug.datastructures.structures import MultiDict
 
-from database.repositories import person_repository
-from services.parsers import work_parser
 from services import new_source_service
-from services.parsers import bar_parser
-from services.parsers import pie_parser
-from services.parsers import map_parser
+from services.parsers import bar_parser, pie_parser, map_parser, work_parser
 from database.models.affiliation_model import Affiliation
-from database.repositories import affiliation_repository
 from database.mongo import calculations_database, database
-from database.repositories import plot_repository
-from database.repositories import work_repository
+from database.repositories import (
+    person_repository,
+    affiliation_repository,
+    plot_repository,
+    work_repository,
+)
 from utils.mapping import get_openalex_scienti
 
 
 def get_by_id(affiliation_id: str) -> Affiliation:
     return affiliation_repository.get_affiliation_by_id(affiliation_id)
-
-
-def get_works_by_affiliation_csv(affiliation_id: str, affiliation_type: str) -> str:
-    works = work_repository.get_works_by_affiliation(affiliation_id, affiliation_type)
-    for work in works:
-        if work.source.id:
-            new_source_service.update_work_source(work)
-            new_source_service.set_source_fields(work)
-    return work_parser.parse_csv(works)
 
 
 def get_related_affiliations_by_affiliation(

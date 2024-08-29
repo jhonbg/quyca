@@ -5,9 +5,7 @@ from pydantic import ValidationError
 
 from services.affiliation import affiliation_service
 from schemas.work import WorkQueryParams
-from services import new_affiliation_service
-from utils.encoder import JsonEncoder
-from utils.flatten_json import flatten_json_list
+from services import new_affiliation_service, new_work_service
 
 affiliation_app_router = Blueprint("affiliation_app_router", __name__)
 
@@ -84,7 +82,7 @@ def get_affiliation(
 )
 def get_csv_by_affiliation(affiliation_type: str, affiliation_id: str):
     try:
-        data = new_affiliation_service.get_works_by_affiliation_csv(
+        data = new_work_service.get_works_csv_by_affiliation(
             affiliation_id, affiliation_type
         )
         response = Response(data, content_type="text/csv")

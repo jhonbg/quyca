@@ -1,11 +1,12 @@
 from urllib.parse import urlparse
 
-from database.models.base_model import ExternalUrl
+from database.models.base_model import ExternalUrl, ExternalId
 from database.models.work_model import Work, Title, ProductType
 from database.repositories import person_repository
 from database.repositories import work_repository
 from enums.external_urls import external_urls
 from services import new_source_service
+from services.parsers import work_parser
 
 
 def get_work_by_id(work_id: str):
@@ -24,6 +25,111 @@ def get_work_by_id(work_id: str):
     if work.types:
         set_product_types(work)
     return work
+
+
+def get_works_csv_by_affiliation(affiliation_id: str, affiliation_type: str) -> str:
+    works = work_repository.get_works_by_affiliation(affiliation_id, affiliation_type)
+    data = get_csv_data(works)
+    return work_parser.parse_csv(data)
+
+
+def get_works_csv_by_person(person_id: str) -> str:
+    works = work_repository.get_works_by_person(person_id)
+    data = get_csv_data(works)
+    return work_parser.parse_csv(data)
+
+
+def get_csv_data(works):
+    data = []
+    for work in works:
+        set_doi(work)
+        set_csv_affiliations(work)
+        set_csv_authors(work)
+        set_csv_bibliographic_info(work)
+        set_csv_citations_count(work)
+        set_csv_groups(work)
+        set_csv_subjects(work)
+        set_csv_titles(work)
+        set_csv_types(work)
+        new_source_service.update_csv_work_source(work)
+        data.append(work)
+    return data
+
+
+def set_doi(work: Work):
+    work.doi = next(
+        filter(lambda external_id: external_id.source == "doi", work.external_ids),
+        ExternalId(),
+    ).id
+
+
+def set_csv_types(work: Work):
+    openalex_types = []
+    scienti_types = []
+    for work_type in work.types:
+        if work_type.source == "openalex":
+            openalex_types.append(str(work_type.type))
+        elif work_type.source == "scienti":
+            scienti_types.append(work_type.type)
+    work.openalex_types = " | ".join(set(openalex_types))
+    work.scienti_types = " | ".join(set(scienti_types))
+
+
+def set_csv_titles(work: Work):
+    titles = []
+    for title in work.titles:
+        titles.append(str(title.title) + " / " + str(title.lang))
+    work.titles = " | ".join(set(titles))
+
+
+def set_csv_subjects(work: Work):
+    if work.subjects:
+        subjects = []
+        for subject in work.subjects[0].subjects:
+            subjects.append(str(subject.name))
+        work.subjects = " | ".join(set(subjects))
+
+
+def set_csv_groups(work: Work):
+    groups = []
+    for group in work.groups:
+        groups.append(group.name + " / " + str(group.id))
+    work.groups = " | ".join(set(groups))
+
+
+def set_csv_citations_count(work: Work):
+    citations_count = []
+    for citation_count in work.citations_count:
+        citations_count.append(
+            str(citation_count.count) + " / " + str(citation_count.source)
+        )
+    work.citations_count = " | ".join(set(citations_count))
+
+
+def set_csv_bibliographic_info(work: Work):
+    work.bibtex = work.bibliographic_info.bibtex
+    work.issue = work.bibliographic_info.issue
+    work.is_open_access = work.bibliographic_info.is_open_access
+    work.open_access_status = work.bibliographic_info.open_access_status
+    work.pages = work.bibliographic_info.pages
+    work.start_page = work.bibliographic_info.start_page
+    work.end_page = work.bibliographic_info.end_page
+    work.volume = work.bibliographic_info.volume
+
+
+def set_csv_authors(work: Work):
+    authors = []
+    for author in work.authors:
+        authors.append(str(author.full_name))
+    work.authors = " | ".join(set(authors))
+
+
+def set_csv_affiliations(work: Work):
+    affiliations = []
+    for author in work.authors:
+        for affiliation in author.affiliations:
+            affiliations.append(str(affiliation.name))
+    work.affiliations = " | ".join(set(affiliations))
 
 
 def set_title_and_language(work: Work):

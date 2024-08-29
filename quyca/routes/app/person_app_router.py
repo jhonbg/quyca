@@ -5,7 +5,7 @@ from flask import Blueprint, request, Response, Request
 
 from exceptions.person_exception import PersonException
 from services.person import person_service
-from services import new_person_service
+from services import new_person_service, new_work_service
 from services.work import work_service
 from schemas.work import WorkQueryParams
 from utils.encoder import JsonEncoder
@@ -90,7 +90,7 @@ def get_person(
 @person_app_router.route("/<person_id>/csv", methods=["GET"])
 def get_csv_by_person(person_id: str):
     try:
-        data = new_person_service.get_works_by_person_csv(person_id)
+        data = new_work_service.get_works_csv_by_person(person_id)
         response = Response(data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response

@@ -24,15 +24,6 @@ def get_person_by_id(person_id: str) -> Person:
     return person
 
 
-def get_works_by_person_csv(person_id: str):
-    works = work_repository.get_works_by_person(person_id)
-    for work in works:
-        if work.source.id:
-            new_source_service.update_work_source(work)
-            new_source_service.set_source_fields(work)
-    return work_parser.parse_csv(works)
-
-
 def get_person_plot(person_id: str, query_params: MultiDict):
     return globals()["plot_" + query_params.get("plot")](person_id, query_params)
 

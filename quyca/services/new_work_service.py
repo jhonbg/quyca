@@ -2,7 +2,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 from database.models.base_model import ExternalUrl, ExternalId
-from database.models.work_model import Work, Title, ProductType
+from database.models.work_model import Work, Title, ProductType, Affiliation
 from database.repositories import person_repository, affiliation_repository
 from database.repositories import work_repository
 from enums.external_urls import external_urls
@@ -30,12 +30,13 @@ def get_work_by_id(work_id: str):
 
 
 def get_works_csv_by_affiliation(affiliation_id: str, affiliation_type: str) -> str:
+    works = None
     if affiliation_type == "institution":
-        works = work_repository.get_csv_works_by_institution(affiliation_id)
-    else:
-        works = work_repository.get_works_by_affiliation(
-            affiliation_id, affiliation_type
-        )
+        works = work_repository.get_works_csv_by_institution(affiliation_id)
+    elif affiliation_type == "group":
+        works = work_repository.get_works_csv_by_group(affiliation_id)
+    elif affiliation_type in ["faculty", "department"]:
+        works = work_repository.get_works_csv_by_faculty_or_department(affiliation_id)
     data = get_csv_data(works)
     return work_parser.parse_csv(data)
 
@@ -50,6 +51,7 @@ def get_csv_data(works):
     data = []
     for work in works:
         set_doi(work)
+        set_csv_ranking(work)
         set_csv_affiliations(work)
         set_csv_authors(work)
         set_csv_bibliographic_info(work)
@@ -63,10 +65,19 @@ def get_csv_data(works):
     return data
 
 
+def set_csv_ranking(work):
+    if work.ranking:
+        rankings = []
+        for ranking in work.ranking:
+            (rankings.append(str(ranking.rank) + " / " + str(ranking.source)))
+        work.ranking = " | ".join(set(rankings))
+
+
 def set_csv_date_published(work: Work):
-    work.date_published = datetime.fromtimestamp(work.date_published).strftime(
-        "%d-%m-%Y"
-    )
+    if type(work.date_published) == int:
+        work.date_published = datetime.fromtimestamp(work.date_published).strftime(
+            "%d-%m-%Y"
+        )
 
 
 def set_doi(work: Work):
@@ -112,6 +123,8 @@ def set_csv_citations_count(work: Work):
 
 
 def set_csv_bibliographic_info(work: Work):
+    work.bibtex = work.bibliographic_info.bibtex
+    work.pages = work.bibliographic_info.pages
     work.issue = work.bibliographic_info.issue
     work.is_open_access = work.bibliographic_info.is_open_access
     work.open_access_status = work.bibliographic_info.open_access_status
@@ -136,40 +149,38 @@ def set_csv_affiliations(work: Work):
     for author in work.authors:
         for affiliation in author.affiliations:
             affiliation_data = next(
-                filter(lambda x: x.id == affiliation.id, work.affiliations_data)
+                filter(lambda x: x.id == affiliation.id, work.affiliations_data),
+                Affiliation(),
             )
-            if affiliation.types[0].type in institutions_list:
-                institutions.append(
-                    str(affiliation.name)
-                    + " / "
-                    + str(affiliation_data.addresses[0].country)
-                )
-            elif affiliation.types[0].type == "department":
-                departments.append(
-                    str(affiliation.name)
-                    + " / "
-                    + str(affiliation_data.addresses[0].country)
-                )
-            elif affiliation.types[0].type == "faculty":
-                faculties.append(
-                    str(affiliation.name)
-                    + " / "
-                    + str(affiliation_data.addresses[0].country)
-                )
-            elif affiliation.types[0].type == "group":
-                groups.append(
-                    str(affiliation.name)
-                    + " / "
-                    + str(affiliation_data.addresses[0].country)
-                )
-                ranking = affiliation_data.ranking[0]
-                if type(ranking.date) == int:
-                    groups_ranking.append(
-                        str(ranking.rank)
-                        + str(ranking.order)
-                        + " / "
-                        + datetime.fromtimestamp(ranking.date).strftime("%d-%m-%Y")
-                    )
+            if affiliation.types and affiliation.types[0].type in institutions_list:
+                institution = str(affiliation.name)
+                if affiliation_data.addresses:
+                    institution += " / " + str(affiliation_data.addresses[0].country)
+                institutions.append(institution)
+            elif affiliation.types and affiliation.types[0].type == "department":
+                department = str(affiliation.name)
+                if affiliation_data.addresses:
+                    department += " / " + str(affiliation_data.addresses[0].country)
+                departments.append(department)
+            elif affiliation.types and affiliation.types[0].type == "faculty":
+                faculty = str(affiliation.name)
+                if affiliation_data.addresses:
+                    faculty += " / " + str(affiliation_data.addresses[0].country)
+                faculties.append(faculty)
+            elif affiliation.types and affiliation.types[0].type == "group":
+                group = str(affiliation.name)
+                if affiliation_data.addresses:
+                    group += " / " + str(affiliation_data.addresses[0].country)
+                groups.append(group)
+                if affiliation_data.ranking:
+                    ranking = affiliation_data.ranking[0]
+                    if type(ranking.date) == int:
+                        groups_ranking.append(
+                            str(ranking.rank)
+                            + str(ranking.order)
+                            + " / "
+                            + datetime.fromtimestamp(ranking.date).strftime("%d-%m-%Y")
+                        )
     work.institutions = " | ".join(set(institutions))
     work.departments = " | ".join(set(departments))
     work.faculties = " | ".join(set(faculties))

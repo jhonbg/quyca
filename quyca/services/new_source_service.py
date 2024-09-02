@@ -51,6 +51,7 @@ def set_csv_scimago_quartile(work: Work, source: Source):
         condition = (
             ranking.source == "scimago Best Quartile"
             and ranking.rank != "-"
+            and work.date_published
             and ranking.from_date <= work.date_published <= ranking.to_date
         )
         if condition:

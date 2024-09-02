@@ -106,7 +106,7 @@ class Work(BaseModel):
     external_urls: list[ExternalUrl] | None = None
     groups: list[Group] | str | None = None
     keywords: list | None = None
-    ranking: list[Ranking] | None = None
+    ranking: list[Ranking] | str | None = None
     references: list | None = None
     references_count: int | None = None
     source: Source | None = None
@@ -129,6 +129,7 @@ class Work(BaseModel):
     pages: str | None = None
     start_page: str | None = None
     end_page: str | None = None
+    bibtex: str | None = None
     doi: str | None = None
     issue: str | None = None
     language: str | None = None

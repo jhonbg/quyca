@@ -245,7 +245,7 @@ def get_sources_by_person(
     return source_generator.get(cursor)
 
 
-def get_csv_works_by_institution(institution_id: str) -> Generator:
+def get_works_csv_by_institution(institution_id: str) -> Generator:
     pipeline = [
         {"$match": {"authors.affiliations.id": ObjectId(institution_id)}},
         {
@@ -277,7 +277,7 @@ def get_csv_works_by_institution(institution_id: str) -> Generator:
                 ],
             }
         },
-        {"$unwind": {"path": "$source_data"}},
+        {"$unwind": "$source_data"},
         {
             "$project": {
                 "external_ids": 1,
@@ -291,10 +291,160 @@ def get_csv_works_by_institution(institution_id: str) -> Generator:
                 "source": 1,
                 "source_data": 1,
                 "date_published": 1,
+                "ranking": 1,
+                "abstract": 1,
             }
         },
     ]
     cursor = database["works"].aggregate(pipeline)
+    return work_generator.get(cursor)
+
+
+def get_works_csv_by_group(group_id: str) -> Generator:
+    pipeline = [
+        {"$match": {"groups.id": ObjectId(group_id)}},
+        {
+            "$lookup": {
+                "from": "affiliations",
+                "localField": "authors.affiliations.id",
+                "foreignField": "_id",
+                "as": "affiliations_data",
+                "pipeline": [
+                    {"$project": {"id": "$_id", "addresses.country": 1, "ranking": 1}}
+                ],
+            }
+        },
+        {
+            "$lookup": {
+                "from": "sources",
+                "localField": "source.id",
+                "foreignField": "_id",
+                "as": "source_data",
+                "pipeline": [
+                    {
+                        "$project": {
+                            "external_urls": 1,
+                            "ranking": 1,
+                            "publisher": 1,
+                            "apc": 1,
+                        }
+                    }
+                ],
+            }
+        },
+        {"$unwind": "$source_data"},
+        {
+            "$project": {
+                "external_ids": 1,
+                "authors": 1,
+                "affiliations_data": 1,
+                "bibliographic_info": 1,
+                "citations_count": 1,
+                "subjects": 1,
+                "titles": 1,
+                "types": 1,
+                "source": 1,
+                "source_data": 1,
+                "date_published": 1,
+                "ranking": 1,
+                "abstract": 1,
+            }
+        },
+    ]
+    cursor = database["works"].aggregate(pipeline)
+    return work_generator.get(cursor)
+
+
+def get_works_csv_by_faculty_or_department(affiliation_id: str):
+    institution_id = (
+        database["affiliations"]
+        .aggregate(
+            [
+                {"$match": {"_id": ObjectId(affiliation_id)}},
+                {"$unwind": "$relations"},
+                {"$match": {"relations.types.type": "education"}},
+            ]
+        )
+        .next()
+        .get("relations", [])["id"]
+    )
+    pipeline = [
+        {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
+        {"$project": {"_id": 1}},
+        {
+            "$lookup": {
+                "from": "works",
+                "localField": "_id",
+                "foreignField": "authors.id",
+                "as": "work",
+                "pipeline": [
+                    {
+                        "$project": {
+                            "external_ids": 1,
+                            "authors": 1,
+                            "bibliographic_info": 1,
+                            "citations_count": 1,
+                            "subjects": 1,
+                            "titles": 1,
+                            "types": 1,
+                            "source": 1,
+                            "date_published": 1,
+                        }
+                    }
+                ],
+            }
+        },
+        {"$unwind": "$work"},
+        {"$match": {"work.authors.affiliations.id": ObjectId(institution_id)}},
+        {
+            "$lookup": {
+                "from": "affiliations",
+                "localField": "work.authors.affiliations.id",
+                "foreignField": "_id",
+                "as": "affiliations_data",
+                "pipeline": [
+                    {"$project": {"id": "$_id", "addresses.country": 1, "ranking": 1}}
+                ],
+            }
+        },
+        {
+            "$lookup": {
+                "from": "sources",
+                "localField": "work.source.id",
+                "foreignField": "_id",
+                "as": "source_data",
+                "pipeline": [
+                    {
+                        "$project": {
+                            "external_urls": 1,
+                            "ranking": 1,
+                            "publisher": 1,
+                            "apc": 1,
+                        }
+                    }
+                ],
+            }
+        },
+        {"$unwind": "$source_data"},
+        {
+            "$project": {
+                "external_ids": "$work.external_ids",
+                "authors": "$work.authors",
+                "affiliations_data": 1,
+                "bibliographic_info": "$work.bibliographic_info",
+                "citations_count": "$work.citations_count",
+                "subjects": "$work.subjects",
+                "titles": "$work.titles",
+                "types": "$work.types",
+                "source": "$work.source",
+                "source_data": 1,
+                "date_published": "$work.date_published",
+                "ranking": "$work.ranking",
+                "abstract": "$work.abstract",
+            }
+        },
+    ]
+    cursor = database["person"].aggregate(pipeline)
     return work_generator.get(cursor)
 
 

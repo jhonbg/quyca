@@ -10,13 +10,9 @@ from database.models.base_model import (
     PyObjectId,
     Ranking,
     Subject,
+    Publisher,
+    APC,
 )
-
-
-class APC(BaseModel):
-    charges: int | None = None
-    currency: str | None = None
-    year_published: int | None = None
 
 
 class Copyright(BaseModel):
@@ -31,12 +27,6 @@ class Licence(BaseModel):
     SA: bool | None
     type: str | None
     url: str | None = None
-
-
-class Publisher(BaseModel):
-    id: str | None = None
-    country_code: str | None = None
-    name: str | float | None = None
 
 
 class Waiver(BaseModel):

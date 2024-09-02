@@ -11,16 +11,19 @@ def update_work_source(work: Work):
 
 def update_csv_work_source(work: Work):
     if work.source.id:
-        source = source_repository.get_source_by_id(work.source.id)
-        set_csv_scimago_quartile(work, source)
-        set_source_urls(work, source)
-        if source.publisher:
+        source_data = work.source_data
+        set_csv_scimago_quartile(work, source_data)
+        set_source_urls(work, source_data)
+        if source_data.publisher:
             work.publisher = (
-                str(source.publisher.name) + " / " + str(source.publisher.country_code)
+                str(source_data.publisher.name)
+                + " / "
+                + str(source_data.publisher.country_code)
             )
-        if source.apc:
-            work.source_apc = str(source.apc.charges) + " / " + str(source.apc.currency)
-        work.source_languages = " | ".join(set(source.languages))
+        if source_data.apc:
+            work.source_apc = (
+                str(source_data.apc.charges) + " / " + str(source_data.apc.currency)
+            )
         work.source_name = work.source.name
 
 

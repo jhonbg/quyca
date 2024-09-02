@@ -1,10 +1,12 @@
+from datetime import datetime
 from urllib.parse import urlparse
 
 from database.models.base_model import ExternalUrl, ExternalId
 from database.models.work_model import Work, Title, ProductType
-from database.repositories import person_repository
+from database.repositories import person_repository, affiliation_repository
 from database.repositories import work_repository
 from enums.external_urls import external_urls
+from enums.institutions import institutions_list
 from services import new_source_service
 from services.parsers import work_parser
 
@@ -28,7 +30,12 @@ def get_work_by_id(work_id: str):
 
 
 def get_works_csv_by_affiliation(affiliation_id: str, affiliation_type: str) -> str:
-    works = work_repository.get_works_by_affiliation(affiliation_id, affiliation_type)
+    if affiliation_type == "institution":
+        works = work_repository.get_csv_works_by_institution(affiliation_id)
+    else:
+        works = work_repository.get_works_by_affiliation(
+            affiliation_id, affiliation_type
+        )
     data = get_csv_data(works)
     return work_parser.parse_csv(data)
 
@@ -47,13 +54,19 @@ def get_csv_data(works):
         set_csv_authors(work)
         set_csv_bibliographic_info(work)
         set_csv_citations_count(work)
-        set_csv_groups(work)
         set_csv_subjects(work)
         set_csv_titles(work)
         set_csv_types(work)
         new_source_service.update_csv_work_source(work)
+        set_csv_date_published(work)
         data.append(work)
     return data
+
+
+def set_csv_date_published(work: Work):
+    work.date_published = datetime.fromtimestamp(work.date_published).strftime(
+        "%d-%m-%Y"
+    )
 
 
 def set_doi(work: Work):
@@ -90,28 +103,18 @@ def set_csv_subjects(work: Work):
         work.subjects = " | ".join(set(subjects))
 
 
-def set_csv_groups(work: Work):
-    groups = []
-    for group in work.groups:
-        groups.append(group.name + " / " + str(group.id))
-    work.groups = " | ".join(set(groups))
-
-
 def set_csv_citations_count(work: Work):
-    citations_count = []
     for citation_count in work.citations_count:
-        citations_count.append(
-            str(citation_count.count) + " / " + str(citation_count.source)
-        )
-    work.citations_count = " | ".join(set(citations_count))
+        if citation_count.source == "openalex":
+            work.openalex_citations_count = str(citation_count.count)
+        elif citation_count.source == "scholar":
+            work.scholar_citations_count = str(citation_count.count)
 
 
 def set_csv_bibliographic_info(work: Work):
-    work.bibtex = work.bibliographic_info.bibtex
     work.issue = work.bibliographic_info.issue
     work.is_open_access = work.bibliographic_info.is_open_access
     work.open_access_status = work.bibliographic_info.open_access_status
-    work.pages = work.bibliographic_info.pages
     work.start_page = work.bibliographic_info.start_page
     work.end_page = work.bibliographic_info.end_page
     work.volume = work.bibliographic_info.volume
@@ -125,11 +128,53 @@ def set_csv_authors(work: Work):
 
 
 def set_csv_affiliations(work: Work):
-    affiliations = []
+    institutions = []
+    departments = []
+    faculties = []
+    groups = []
+    groups_ranking = []
     for author in work.authors:
         for affiliation in author.affiliations:
-            affiliations.append(str(affiliation.name))
-    work.affiliations = " | ".join(set(affiliations))
+            affiliation_data = next(
+                filter(lambda x: x.id == affiliation.id, work.affiliations_data)
+            )
+            if affiliation.types[0].type in institutions_list:
+                institutions.append(
+                    str(affiliation.name)
+                    + " / "
+                    + str(affiliation_data.addresses[0].country)
+                )
+            elif affiliation.types[0].type == "department":
+                departments.append(
+                    str(affiliation.name)
+                    + " / "
+                    + str(affiliation_data.addresses[0].country)
+                )
+            elif affiliation.types[0].type == "faculty":
+                faculties.append(
+                    str(affiliation.name)
+                    + " / "
+                    + str(affiliation_data.addresses[0].country)
+                )
+            elif affiliation.types[0].type == "group":
+                groups.append(
+                    str(affiliation.name)
+                    + " / "
+                    + str(affiliation_data.addresses[0].country)
+                )
+                ranking = affiliation_data.ranking[0]
+                if type(ranking.date) == int:
+                    groups_ranking.append(
+                        str(ranking.rank)
+                        + str(ranking.order)
+                        + " / "
+                        + datetime.fromtimestamp(ranking.date).strftime("%d-%m-%Y")
+                    )
+    work.institutions = " | ".join(set(institutions))
+    work.departments = " | ".join(set(departments))
+    work.faculties = " | ".join(set(faculties))
+    work.groups = " | ".join(set(groups))
+    work.groups_ranking = " | ".join(set(groups_ranking))
 
 
 def set_title_and_language(work: Work):

@@ -11,17 +11,8 @@ from database.models.base_model import (
     ExternalId,
     Subject,
     Ranking,
+    Address,
 )
-
-
-class Address(BaseModel):
-    city: str | None
-    country: str | None
-    country_code: str | None
-    lat: float | str | None
-    lng: float | str | None
-    postcode: str | None
-    state: str | None
 
 
 class DescriptionText(BaseModel):

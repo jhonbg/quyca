@@ -12,13 +12,19 @@ from database.models.base_model import (
     Subject,
     Updated,
     Ranking,
+    Address,
+    Publisher,
+    APC,
 )
 
 
 class Affiliation(BaseModel):
     id: PyObjectId = None
-    name: str | None
+    name: str | None = None
     types: list[Type] | None = None
+
+    addresses: list[Address] | None = None
+    ranking: list[Ranking] | None = None
 
     class Config:
         json_encoders = {ObjectId: str}
@@ -65,6 +71,10 @@ class Source(BaseModel):
 
     scimago_quartile: str | None = None
     serials: dict | None = None
+    external_urls: list[ExternalUrl] | None = None
+    ranking: list[Ranking] | None = None
+    publisher: Publisher | str | None = None
+    apc: APC | None = None
 
     class Config:
         json_encoders = {ObjectId: str}
@@ -96,23 +106,31 @@ class Work(BaseModel):
     external_urls: list[ExternalUrl] | None = None
     groups: list[Group] | str | None = None
     keywords: list | None = None
-    ranking: list[Ranking] | None = None
+    ranking: list[Ranking] | str | None = None
     references: list | None = None
     references_count: int | None = None
     source: Source | None = None
     subjects: list[Subject] | str | None = None
     subtitle: str | None = None
-    titles: list[Title] | str | None = None
+    titles: list[Title] | None = None
     types: list[Type] | None = None
     updated: list[Updated] | None = None
     year_published: int | str | None = None
 
-    bibtex: str | None = None
+    countries: str | None = None
+    source_data: Source | None = None
+    affiliations_data: list[Affiliation] | None = None
+    openalex_citations_count: str | None = None
+    scholar_citations_count: str | None = None
+    institutions: str | None = None
+    departments: str | None = None
+    faculties: str | None = None
+    groups_ranking: str | None = None
     is_open_access: bool | None = None
     pages: str | None = None
     start_page: str | None = None
     end_page: str | None = None
-    affiliations: str | None = None
+    bibtex: str | None = None
     doi: str | None = None
     issue: str | None = None
     language: str | None = None
@@ -125,7 +143,6 @@ class Work(BaseModel):
     source_apc: str | None = None
     source_name: str | None = None
     source_urls: str | None = None
-    source_languages: str | None = None
     title: str | None = None
     volume: str | int | None = None
 

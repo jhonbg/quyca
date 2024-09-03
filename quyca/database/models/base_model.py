@@ -133,6 +133,28 @@ class Subject(BaseModel):
     subjects: list[SubjectContent] | None = None
 
 
+class Address(BaseModel):
+    city: str | None = None
+    country: str | None = None
+    country_code: str | None = None
+    lat: float | str | None = None
+    lng: float | str | None = None
+    postcode: str | None = None
+    state: str | None = None
+
+
+class Publisher(BaseModel):
+    id: str | None = None
+    country_code: str | None = None
+    name: str | float | None = None
+
+
+class APC(BaseModel):
+    charges: int | None = None
+    currency: str | None = None
+    year_published: int | None = None
+
+
 class QueryParams(BaseModel):
     limit: conint(ge=10) = Field(default=None, alias="max")
     page: conint(ge=1) = None

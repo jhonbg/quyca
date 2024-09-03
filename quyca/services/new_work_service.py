@@ -42,7 +42,7 @@ def get_works_csv_by_affiliation(affiliation_id: str, affiliation_type: str) -> 
 
 
 def get_works_csv_by_person(person_id: str) -> str:
-    works = work_repository.get_works_by_person(person_id)
+    works = work_repository.get_works_csv_by_person(person_id)
     data = get_csv_data(works)
     return work_parser.parse_csv(data)
 

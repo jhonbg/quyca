@@ -3,6 +3,7 @@ import json
 from flask import Blueprint, request, Response, jsonify
 from pydantic import ValidationError
 
+from database.models.base_model import QueryParams
 from services.affiliation import affiliation_service
 from schemas.work import WorkQueryParams
 from services import new_affiliation_service, new_work_service
@@ -67,9 +68,10 @@ def get_affiliation(
         return jsonify(str(e), 400)
 
     if section == "research" and tab == "products":
-        if plot_type := request.args.get("plot"):
+        query_params = QueryParams(**request.args)
+        if query_params.plot:
             return new_affiliation_service.get_affiliation_plot(
-                affiliation_id, affiliation_type, plot_type, request.args
+                affiliation_id, affiliation_type, query_params
             )
 
         return affiliation_service.get_research_products(

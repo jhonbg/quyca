@@ -3,6 +3,7 @@ import json
 from bson.errors import InvalidId
 from flask import Blueprint, request, Response, Request
 
+from database.models.base_model import QueryParams
 from exceptions.person_exception import PersonException
 from services.person import person_service
 from services import new_person_service, new_work_service
@@ -49,8 +50,9 @@ def person(
         result = person_service.get_info(id=person_id)
     elif section == "research":
         if tab == "products":
-            if request.args.get("plot"):
-                return new_person_service.get_person_plot(person_id, request.args)
+            query_params = QueryParams(**request.args)
+            if query_params.plot:
+                return new_person_service.get_person_plot(person_id, query_params)
 
             params = WorkQueryParams(**request.args)
             result = work_service.get_research_products_by_author(

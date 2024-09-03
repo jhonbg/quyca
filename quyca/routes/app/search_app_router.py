@@ -1,24 +1,32 @@
-from flask import Blueprint, request, jsonify
+import json
+
+from flask import Blueprint, request, jsonify, Response
 from pydantic import ValidationError
 
+from database.models.base_model import QueryParams
 from schemas import (
-    PersonQueryParams,
     AffiliationQueryParams,
     WorkQueryParams,
     SubjectQueryParams,
 )
-from services import person_service, affiliation_service, work_service, source_service
+from services import (
+    affiliation_service,
+    work_service,
+    source_service,
+    new_person_service,
+)
 
 search_app_router = Blueprint("search_app_router", __name__)
 
 
 @search_app_router.route("/person", methods=["GET"])
-def read_person():
+def search_person():
     try:
-        query_params = PersonQueryParams(**request.args)
-    except ValidationError as e:
-        return jsonify({"error": str(e)}, 400)
-    return person_service.search(params=query_params)
+        query_params = QueryParams(**request.args)
+        data = new_person_service.search_person(query_params)
+        return Response(json.dumps(data), 200, mimetype="application/json")
+    except Exception as e:
+        return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
 
 
 @search_app_router.route("/works", methods=["GET"])

@@ -1,14 +1,13 @@
 from typing import Optional, Any, Generator
 
 from bson import ObjectId
-from werkzeug.datastructures.structures import MultiDict
 
 from core.config import settings
 from database.generators import source_generator
 from database.generators import work_generator
-from database.models.base_model import CitationsCount
+from database.models.base_model import CitationsCount, QueryParams
 from database.models.work_model import Work
-from database.repositories import calculations_repository
+from database.repositories import calculations_repository, base_repository
 from database.mongo import database
 from exceptions.work_exception import WorkException
 
@@ -23,11 +22,9 @@ def get_work_by_id(work_id: id) -> Work:
 def get_works_by_affiliation(
     affiliation_id: str,
     affiliation_type: str,
-    query_params: MultiDict | None = None,
+    query_params: QueryParams,
     pipeline_params: dict | None = None,
 ) -> Generator:
-    if query_params is None:
-        query_params = {}
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = get_works_by_affiliation_pipeline(affiliation_id, affiliation_type)
@@ -36,7 +33,7 @@ def get_works_by_affiliation(
     )
     if collection == "affiliations":
         pipeline += [{"$replaceRoot": {"newRoot": "$works"}}]
-    pipeline = process_params(pipeline, query_params, pipeline_params)
+    base_repository.process_params(pipeline, query_params, pipeline_params)
     cursor = database[collection].aggregate(pipeline)
     return work_generator.get(cursor)
 
@@ -209,16 +206,14 @@ def get_sources_by_related_affiliation(
 
 
 def get_works_by_person(
-    person_id: str, query_params: MultiDict | None = None, pipeline_params: dict = None
+    person_id: str, query_params: QueryParams, pipeline_params: dict = None
 ) -> Generator:
-    if query_params is None:
-        query_params = {}
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
     ]
-    pipeline = process_params(pipeline, query_params, pipeline_params)
+    base_repository.process_params(pipeline, query_params, pipeline_params)
     cursor = database["works"].aggregate(pipeline)
     return work_generator.get(cursor)
 
@@ -240,7 +235,7 @@ def get_sources_by_person(
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = get_sources_by_person_pipeline(person_id)
-    pipeline = process_params(pipeline, query_params, pipeline_params)
+    base_repository.process_params(pipeline, query_params, pipeline_params)
     cursor = database["works"].aggregate(pipeline)
     return source_generator.get(cursor)
 
@@ -360,22 +355,6 @@ def get_sources_by_person_pipeline(person_id):
         },
         {"$replaceRoot": {"newRoot": "$source"}},
     ]
-    return pipeline
-
-
-def process_params(pipeline, query_params, pipeline_params: dict | None = None):
-    if pipeline_params is None:
-        pipeline_params = {}
-    if sort := query_params.get("sort"):
-        pipeline += get_sort(sort)
-    if match_param := pipeline_params.get("match"):
-        pipeline += [{"$match": match_param}]
-    if project_param := pipeline_params.get("project"):
-        pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project_param}}}]
-    if limit_param := pipeline_params.get("limit"):
-        pipeline += [{"$limit": limit_param}]
-    if skip_param := pipeline_params.get("skip"):
-        pipeline += [{"$skip": skip_param}]
     return pipeline
 
 

@@ -60,19 +60,19 @@ class Person(BaseModel):
     id: PyObjectId = Field(alias="_id")
     affiliations: list[Affiliation] | None = Field(default_factory=list)
     aliases: list[str] | None = Field(default_factory=list)
-    birthdate: int | str | None
-    birthplace: BirthPlace | None
+    birthdate: int | str | None = None
+    birthplace: BirthPlace | None = None
     degrees: list[Degree] | None = Field(default_factory=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
     first_names: list[str] | None = Field(default_factory=list)
     full_name: str | None = Field(serialization_alias="name")
-    initials: str | None
+    initials: str | None = None
     keywords: list | None = Field(default_factory=list)
     last_names: list[str] | None = Field(default_factory=list)
-    marital_status: str | None
+    marital_status: str | None = None
     ranking: list[Ranking] | None = Field(default_factory=list)
     related_works: list[RelatedWork] | None = Field(default_factory=list)
-    sex: str | None
+    sex: str | None = None
     subjects: list[Subject] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
 

@@ -1,9 +1,8 @@
 from itertools import chain
 
 from bson import ObjectId
-from werkzeug.datastructures.structures import MultiDict
 
-from services import new_source_service
+from database.models.base_model import QueryParams
 from services.parsers import bar_parser, pie_parser, map_parser, work_parser
 from database.models.affiliation_model import Affiliation
 from database.mongo import calculations_database, database
@@ -52,8 +51,9 @@ def get_related_affiliations_by_affiliation(
 
 
 def get_affiliation_plot(
-    affiliation_id: str, affiliation_type: str, plot_type: str, query_params: MultiDict
+    affiliation_id: str, affiliation_type: str, query_params: QueryParams
 ):
+    plot_type = query_params.plot
     if plot_type in ["type_faculty", "type_department", "type_group"]:
         affiliation_plot_type = plot_type.split("_")[-1]
         return plot_affiliation_type(affiliation_id, affiliation_plot_type)

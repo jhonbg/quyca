@@ -1,10 +1,9 @@
 from itertools import chain
 
 from bson import ObjectId
-from werkzeug.datastructures.structures import MultiDict
 
-from services.parsers import work_parser
-from services import new_source_service
+from database.models.base_model import QueryParams
+from services.parsers import person_parser
 from services.parsers import bar_parser
 from services.parsers import map_parser
 from services.parsers import pie_parser
@@ -24,8 +23,8 @@ def get_person_by_id(person_id: str) -> Person:
     return person
 
 
-def get_person_plot(person_id: str, query_params: MultiDict):
-    return globals()["plot_" + query_params.get("plot")](person_id, query_params)
+def get_person_plot(person_id: str, query_params: QueryParams):
+    return globals()["plot_" + query_params.plot](person_id, query_params)
 
 
 def plot_year_type(person_id: str, query_params):
@@ -264,3 +263,19 @@ def plot_collaboration_network(person_id: str, query_params):
         return {"plot": {"nodes": nodes, "edges": edges}}
     else:
         return {"plot": None}
+
+
+def search_person(query_params: QueryParams):
+    pipeline_params = {
+        "project": [
+            "_id",
+            "full_name",
+            "affiliations",
+            "external_ids",
+        ]
+    }
+    persons, total_results = person_repository.search_person(
+        query_params, pipeline_params
+    )
+    data = person_parser.parse_search_result(persons)
+    return {"data": data, "total_results": total_results}

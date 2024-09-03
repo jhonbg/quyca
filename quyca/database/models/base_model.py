@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, field_validator, Field, conint
 from bson import ObjectId
 
 
@@ -131,3 +131,10 @@ class Subject(BaseModel):
     provenance: str | None = None
     source: str | None
     subjects: list[SubjectContent] | None = None
+
+
+class QueryParams(BaseModel):
+    limit: conint(ge=10) = Field(default=None, alias="max")
+    page: conint(ge=1) = None
+    keywords: str = ""
+    plot: str = None

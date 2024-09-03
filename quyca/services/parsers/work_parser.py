@@ -4,13 +4,15 @@ import io
 
 def parse_csv(works: list):
     include = [
-        "titles",
+        "title",
+        "language",
         "abstract",
         "authors",
         "institutions",
         "faculties",
         "departments",
         "groups",
+        "countries",
         "groups_ranking",
         "ranking",
         "issue",
@@ -25,7 +27,7 @@ def parse_csv(works: list):
         "openalex_citations_count",
         "scholar_citations_count",
         "subjects",
-        "date_published",
+        "year_published",
         "doi",
         "publisher",
         "openalex_types",

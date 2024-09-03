@@ -112,11 +112,12 @@ class Work(BaseModel):
     source: Source | None = None
     subjects: list[Subject] | str | None = None
     subtitle: str | None = None
-    titles: list[Title] | str | None = None
+    titles: list[Title] | None = None
     types: list[Type] | None = None
     updated: list[Updated] | None = None
     year_published: int | str | None = None
 
+    countries: str | None = None
     source_data: Source | None = None
     affiliations_data: list[Affiliation] | None = None
     openalex_citations_count: str | None = None

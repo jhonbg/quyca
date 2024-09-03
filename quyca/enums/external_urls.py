@@ -1,4 +1,4 @@
-external_urls = {
+external_urls_dict = {
     "doi": "https://doi.org/{id}",
     "lens": "https://www.lens.org/lens/scholar/article/{id}",
     "researchgate": "https://www.researchgate.net/profile/{id}",

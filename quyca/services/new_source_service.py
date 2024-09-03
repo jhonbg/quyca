@@ -15,12 +15,8 @@ def update_csv_work_source(work: Work):
         set_csv_scimago_quartile(work, source_data)
         set_source_urls(work, source_data)
         if source_data.publisher:
-            work.publisher = (
-                str(source_data.publisher.name)
-                + " / "
-                + str(source_data.publisher.country_code)
-            )
-        if source_data.apc:
+            work.publisher = str(source_data.publisher.name)
+        if source_data.apc.charges and source_data.apc.currency:
             work.source_apc = (
                 str(source_data.apc.charges) + " / " + str(source_data.apc.currency)
             )
@@ -30,7 +26,7 @@ def update_csv_work_source(work: Work):
 def set_source_urls(work, source):
     source_urls = []
     for external_url in source.external_urls:
-        source_urls.append(external_url.source + " / " + external_url.url)
+        source_urls.append(str(external_url.url))
     work.source_urls = " | ".join(set(source_urls))
 
 
@@ -39,6 +35,7 @@ def set_scimago_quartile(work: Work, source: Source):
         condition = (
             ranking.source == "scimago Best Quartile"
             and ranking.rank != "-"
+            and work.date_published
             and ranking.from_date <= work.date_published <= ranking.to_date
         )
         if condition:

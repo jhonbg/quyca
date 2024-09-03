@@ -299,6 +299,7 @@ def get_works_csv_by_person(person_id: str) -> Generator:
     cursor = database["works"].aggregate(pipeline)
     return work_generator.get(cursor)
 
+
 def get_works_csv_by_institution(institution_id: str) -> Generator:
     pipeline = [
         {"$match": {"authors.affiliations.id": ObjectId(institution_id)}},

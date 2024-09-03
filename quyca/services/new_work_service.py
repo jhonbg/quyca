@@ -5,8 +5,9 @@ from database.models.base_model import ExternalUrl, ExternalId
 from database.models.work_model import Work, Title, ProductType, Affiliation
 from database.repositories import person_repository, affiliation_repository
 from database.repositories import work_repository
-from enums.external_urls import external_urls
+from enums.external_urls import external_urls_dict
 from enums.institutions import institutions_list
+from enums.openalex_types import openalex_types_dict
 from services import new_source_service
 from services.parsers import work_parser
 
@@ -57,10 +58,9 @@ def get_csv_data(works):
         set_csv_bibliographic_info(work)
         set_csv_citations_count(work)
         set_csv_subjects(work)
-        set_csv_titles(work)
+        set_title_and_language(work)
         set_csv_types(work)
         new_source_service.update_csv_work_source(work)
-        set_csv_date_published(work)
         data.append(work)
     return data
 
@@ -69,15 +69,16 @@ def set_csv_ranking(work):
     if work.ranking:
         rankings = []
         for ranking in work.ranking:
-            (rankings.append(str(ranking.rank) + " / " + str(ranking.source)))
+            if type(ranking.date) == int:
+                date = datetime.fromtimestamp(ranking.date).strftime("%d-%m-%Y")
+                rankings.append(
+                    str(ranking.rank) + " / " + str(ranking.source) + " / " + str(date)
+                )
+            else:
+                rankings.append(str(ranking.rank) + " / " + str(ranking.source))
         work.ranking = " | ".join(set(rankings))
-
-
-def set_csv_date_published(work: Work):
-    if type(work.date_published) == int:
-        work.date_published = datetime.fromtimestamp(work.date_published).strftime(
-            "%d-%m-%Y"
-        )
+    else:
+        work.ranking = None
 
 
 def set_doi(work: Work):
@@ -91,19 +92,15 @@ def set_csv_types(work: Work):
     openalex_types = []
     scienti_types = []
     for work_type in work.types:
-        if work_type.source == "openalex":
-            openalex_types.append(str(work_type.type))
+        if (
+            work_type.source == "openalex"
+            and work_type.type in openalex_types_dict.keys()
+        ):
+            openalex_types.append(openalex_types_dict.get(work_type.type))
         elif work_type.source == "scienti":
-            scienti_types.append(work_type.type)
+            scienti_types.append(str(work_type.type))
     work.openalex_types = " | ".join(set(openalex_types))
     work.scienti_types = " | ".join(set(scienti_types))
-
-
-def set_csv_titles(work: Work):
-    titles = []
-    for title in work.titles:
-        titles.append(str(title.title) + " / " + str(title.lang))
-    work.titles = " | ".join(set(titles))
 
 
 def set_csv_subjects(work: Work):
@@ -141,6 +138,7 @@ def set_csv_authors(work: Work):
 
 
 def set_csv_affiliations(work: Work):
+    countries = []
     institutions = []
     departments = []
     faculties = []
@@ -153,39 +151,35 @@ def set_csv_affiliations(work: Work):
                 Affiliation(),
             )
             if affiliation.types and affiliation.types[0].type in institutions_list:
-                institution = str(affiliation.name)
+                institutions.append(str(affiliation.name))
                 if affiliation_data.addresses:
-                    institution += " / " + str(affiliation_data.addresses[0].country)
-                institutions.append(institution)
+                    countries.append(str(affiliation_data.addresses[0].country))
             elif affiliation.types and affiliation.types[0].type == "department":
-                department = str(affiliation.name)
-                if affiliation_data.addresses:
-                    department += " / " + str(affiliation_data.addresses[0].country)
-                departments.append(department)
+                departments.append(str(affiliation.name))
             elif affiliation.types and affiliation.types[0].type == "faculty":
-                faculty = str(affiliation.name)
-                if affiliation_data.addresses:
-                    faculty += " / " + str(affiliation_data.addresses[0].country)
-                faculties.append(faculty)
+                faculties.append(str(affiliation.name))
             elif affiliation.types and affiliation.types[0].type == "group":
-                group = str(affiliation.name)
-                if affiliation_data.addresses:
-                    group += " / " + str(affiliation_data.addresses[0].country)
-                groups.append(group)
+                groups.append(str(affiliation.name))
                 if affiliation_data.ranking:
                     ranking = affiliation_data.ranking[0]
-                    if type(ranking.date) == int:
+                    if type(ranking.from_date) == int and type(ranking.to_date) == int:
                         groups_ranking.append(
                             str(ranking.rank)
-                            + str(ranking.order)
                             + " / "
-                            + datetime.fromtimestamp(ranking.date).strftime("%d-%m-%Y")
+                            + datetime.fromtimestamp(ranking.from_date).strftime(
+                                "%d-%m-%Y"
+                            )
+                            + " - "
+                            + datetime.fromtimestamp(ranking.to_date).strftime(
+                                "%d-%m-%Y"
+                            )
                         )
     work.institutions = " | ".join(set(institutions))
     work.departments = " | ".join(set(departments))
     work.faculties = " | ".join(set(faculties))
     work.groups = " | ".join(set(groups))
     work.groups_ranking = " | ".join(set(groups_ranking))
+    work.countries = " | ".join(set(countries))
 
 
 def set_title_and_language(work: Work):
@@ -259,10 +253,10 @@ def set_external_urls(work: Work):
         if urlparse(url).scheme and urlparse(url).netloc:
             new_external_urls.append(external_url)
         else:
-            if external_url.source in external_urls.keys() and url != "":
+            if external_url.source in external_urls_dict.keys() and url != "":
                 new_external_urls.append(
                     ExternalUrl(
-                        url=external_urls[external_url.source].format(id=url),
+                        url=external_urls_dict[external_url.source].format(id=url),
                         source=external_url.source,
                     )
                 )

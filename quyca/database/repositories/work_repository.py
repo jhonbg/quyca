@@ -713,3 +713,29 @@ def get_filter_list(filters: dict[str, Any]) -> list[dict[str, Any]]:
         if value:
             filter_list += [filter_translation(value)[key]]
     return filter_list
+
+
+def search_works(
+    query_params: QueryParams, pipeline_params: dict | None = None
+) -> (Generator, int):
+    if pipeline_params is None:
+        pipeline_params = {}
+    pipeline, count_pipeline = base_repository.get_search_pipelines(
+        query_params, pipeline_params
+    )
+    pipeline += [
+        {
+            "$lookup": {
+                "from": "person",
+                "localField": "authors.id",
+                "foreignField": "_id",
+                "as": "authors_data",
+                "pipeline": [{"$project": {"_id": 1, "external_ids": 1}}],
+            }
+        },
+    ]
+    works = database["works"].aggregate(pipeline)
+    total_results = next(
+        database["works"].aggregate(count_pipeline), {"total_results": 0}
+    )["total_results"]
+    return work_generator.get(works), total_results

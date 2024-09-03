@@ -42,3 +42,19 @@ def parse_csv(works: list):
     writer.writeheader()
     writer.writerows(works_dict)
     return output.getvalue()
+
+
+def parse_search_result(works: list):
+    include = [
+        "id",
+        "authors",
+        "is_open_access",
+        "open_access_status",
+        "citations_count",
+        "products_types",
+        "year_published",
+        "title",
+        "subjects",
+        "source",
+    ]
+    return [work.model_dump(include=include, exclude_none=True) for work in works]

@@ -1,8 +1,8 @@
 from datetime import datetime
 from urllib.parse import urlparse
 
-from database.models.base_model import ExternalUrl, ExternalId
-from database.models.work_model import Work, Title, ProductType, Affiliation
+from database.models.base_model import ExternalUrl, ExternalId, QueryParams
+from database.models.work_model import Work, Title, ProductType, Affiliation, Author
 from database.repositories import person_repository, affiliation_repository
 from database.repositories import work_repository
 from enums.external_urls import external_urls_dict
@@ -46,6 +46,33 @@ def get_works_csv_by_person(person_id: str) -> str:
     works = work_repository.get_works_csv_by_person(person_id)
     data = get_csv_data(works)
     return work_parser.parse_csv(data)
+
+
+def search_works(query_params: QueryParams):
+    pipeline_params = {
+        "project": [
+            "_id",
+            "authors",
+            "citations_count",
+            "bibliographic_info",
+            "types",
+            "source",
+            "titles",
+            "subjects",
+            "year_published",
+        ]
+    }
+    works, total_results = work_repository.search_works(query_params, pipeline_params)
+    works_list = []
+    for work in works:
+        limit_authors(work)
+        new_set_authors_external_ids(work)
+        set_title_and_language(work)
+        set_product_types(work)
+        set_bibliographic_info(work)
+        works_list.append(work)
+    data = work_parser.parse_search_result(works_list)
+    return {"data": data, "total_results": total_results}
 
 
 def get_csv_data(works):
@@ -227,6 +254,15 @@ def set_authors_external_ids(work: Work):
             author.external_ids = person_repository.get_person_by_id(
                 str(author.id)
             ).external_ids
+
+
+def new_set_authors_external_ids(work: Work):
+    for author in work.authors:
+        author_data = next(
+            filter(lambda x: x.id == author.id, work.authors_data),
+            Author(),
+        )
+        author.external_ids = author_data.external_ids
 
 
 def limit_authors(work: Work, limit: int = 10):

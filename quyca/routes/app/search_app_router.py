@@ -14,28 +14,30 @@ from services import (
     work_service,
     source_service,
     new_person_service,
+    new_work_service,
 )
 
 search_app_router = Blueprint("search_app_router", __name__)
 
 
 @search_app_router.route("/person", methods=["GET"])
-def search_person():
+def search_persons():
     try:
         query_params = QueryParams(**request.args)
-        data = new_person_service.search_person(query_params)
+        data = new_person_service.search_persons(query_params)
         return Response(json.dumps(data), 200, mimetype="application/json")
     except Exception as e:
         return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
 
 
 @search_app_router.route("/works", methods=["GET"])
-def read_works():
+def search_works():
     try:
-        query_params = WorkQueryParams(**request.args)
-    except ValidationError as e:
-        return jsonify({"error": str(e)}, 400)
-    return work_service.search(params=query_params)
+        query_params = QueryParams(**request.args)
+        data = new_work_service.search_works(query_params)
+        return Response(json.dumps(data), 200, mimetype="application/json")
+    except Exception as e:
+        return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
 
 
 @search_app_router.route("/affiliations/<affiliation_type>", methods=["GET"])

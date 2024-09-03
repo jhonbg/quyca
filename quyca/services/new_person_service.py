@@ -265,7 +265,7 @@ def plot_collaboration_network(person_id: str, query_params):
         return {"plot": None}
 
 
-def search_person(query_params: QueryParams):
+def search_persons(query_params: QueryParams):
     pipeline_params = {
         "project": [
             "_id",

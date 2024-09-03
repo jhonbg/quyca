@@ -33,7 +33,7 @@ class Affiliation(BaseModel):
 class Author(BaseModel):
     id: PyObjectId = None
     affiliations: list[Affiliation] | None = None
-    full_name: str | None
+    full_name: str | None = None
 
     external_ids: list[ExternalId] | None = None
 
@@ -119,6 +119,7 @@ class Work(BaseModel):
 
     countries: str | None = None
     source_data: Source | None = None
+    authors_data: list[Author] | None = None
     affiliations_data: list[Affiliation] | None = None
     openalex_citations_count: str | None = None
     scholar_citations_count: str | None = None

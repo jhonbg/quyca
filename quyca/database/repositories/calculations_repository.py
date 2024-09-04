@@ -33,3 +33,8 @@ def get_affiliation_calculations(affiliation_id: str) -> AffiliationCalculations
 def get_citations_count_by_affiliation(affiliation_id: str) -> list[CitationsCount]:
     affiliation_calculations = get_affiliation_calculations(affiliation_id)
     return affiliation_calculations.citations_count
+
+
+def get_citations_count_by_person(person_id: str) -> list[CitationsCount]:
+    person_calculations = get_person_calculations(person_id)
+    return person_calculations.citations_count

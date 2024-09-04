@@ -117,7 +117,7 @@ def set_products_count(affiliation, affiliation_type):
         )
 
 
-def set_citations_count(affiliation):
+def set_citations_count(affiliation: Affiliation):
     affiliation.citations_count = (
         calculations_repository.get_citations_count_by_affiliation(affiliation.id)
     )

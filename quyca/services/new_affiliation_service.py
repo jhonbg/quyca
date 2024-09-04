@@ -2,8 +2,14 @@ from itertools import chain
 
 from bson import ObjectId
 
-from database.models.base_model import QueryParams
-from services.parsers import bar_parser, pie_parser, map_parser, work_parser
+from database.models.base_model import QueryParams, ExternalUrl
+from enums.institutions import institutions_list
+from services.parsers import (
+    bar_parser,
+    pie_parser,
+    map_parser,
+    affiliation_parser,
+)
 from database.models.affiliation_model import Affiliation
 from database.mongo import calculations_database, database
 from database.repositories import (
@@ -11,6 +17,7 @@ from database.repositories import (
     affiliation_repository,
     plot_repository,
     work_repository,
+    calculations_repository,
 )
 from utils.mapping import get_openalex_scienti
 
@@ -48,6 +55,72 @@ def get_related_affiliations_by_affiliation(
             author.model_dump(include={"id", "full_name"}) for author in authors
         ]
     return data
+
+
+def search_affiliations(affiliation_type, query_params):
+    pipeline_params = {
+        "project": [
+            "_id",
+            "names",
+            "addresses.country_code",
+            "external_ids",
+            "external_urls",
+            "relations",
+            "types",
+        ]
+    }
+    affiliations, total_results = affiliation_repository.search_affiliations(
+        affiliation_type, query_params, pipeline_params
+    )
+    affiliations_list = []
+    for affiliation in affiliations:
+        set_upper_affiliations(affiliation, affiliation_type)
+        set_logo(affiliation)
+        set_citations_count(affiliation)
+        set_products_count(affiliation, affiliation_type)
+        affiliations_list.append(affiliation)
+    data = affiliation_parser.parse_search_result(affiliations_list)
+    return {"data": data, "total_results": total_results}
+
+
+def set_logo(affiliation: Affiliation):
+    affiliation.logo = next(
+        filter(lambda x: x.source == "logo", affiliation.external_urls), ExternalUrl()
+    ).url
+
+
+def set_upper_affiliations(affiliation: Affiliation, affiliation_type: str):
+    if affiliation_type == "institution":
+        pass
+    upper_affiliations = []
+    for relation in affiliation.relations:
+        if (
+            affiliation_type == "faculty"
+            and relation.types[0].type in institutions_list
+        ):
+            upper_affiliations.append(relation)
+        elif affiliation_type == "department" and relation.types[
+            0
+        ].type in institutions_list + ["faculty"]:
+            upper_affiliations.append(relation)
+        elif affiliation_type == "group" and relation.types[
+            0
+        ].type in institutions_list + ["department", "faculty"]:
+            upper_affiliations.append(relation)
+    affiliation.affiliations = upper_affiliations
+
+
+def set_products_count(affiliation, affiliation_type):
+    if affiliation_type in ["department", "faculty"]:
+        affiliation.products_count = (
+            work_repository.get_works_count_by_faculty_or_department(affiliation.id)
+        )
+
+
+def set_citations_count(affiliation):
+    affiliation.citations_count = (
+        calculations_repository.get_citations_count_by_affiliation(affiliation.id)
+    )
 
 
 def get_affiliation_plot(
@@ -217,9 +290,9 @@ def plot_citations_by_affiliations(
     )
     data = {}
     for affiliation in affiliations:
-        data[affiliation.name] = work_repository.get_citations_count_by_affiliation(
-            affiliation.id
-        )
+        data[
+            affiliation.name
+        ] = calculations_repository.get_citations_count_by_affiliation(affiliation.id)
     return pie_parser.get_citations_by_affiliation(data)
 
 

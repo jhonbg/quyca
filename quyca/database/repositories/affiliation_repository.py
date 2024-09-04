@@ -3,10 +3,12 @@ from typing import Generator
 from bson import ObjectId
 
 from core.config import settings
+from database.models.base_model import QueryParams
+from enums.institutions import institutions_list
 from exceptions.affiliation_exception import AffiliationException
 from database.generators import affiliation_generator
 from database.models.affiliation_model import Affiliation
-from database.repositories import calculations_repository
+from database.repositories import calculations_repository, base_repository
 from database.mongo import database
 
 
@@ -151,3 +153,50 @@ def get_related_affiliations_by_type_pipeline(
             }
         }
     ]
+
+
+def search_affiliations(
+    affiliation_type: str,
+    query_params: QueryParams,
+    pipeline_params: dict | None = None,
+) -> (Generator, int):
+    pipeline, count_pipeline = base_repository.get_search_pipelines(
+        query_params, pipeline_params
+    )
+    types = (
+        institutions_list if affiliation_type == "institution" else [affiliation_type]
+    )
+    count_pipeline.insert(1, {"$match": {"types.type": {"$in": types}}})
+    pipeline = (
+        pipeline[:1]
+        + [
+            {
+                "$match": {
+                    "types.type": {"$in": types},
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "works",
+                    "localField": "_id",
+                    "foreignField": "authors.affiliations.id",
+                    "as": "works",
+                    "pipeline": [{"$count": "count"}],
+                }
+            },
+            {
+                "$addFields": {
+                    "products_count": {
+                        "$ifNull": [{"$arrayElemAt": ["$works.count", 0]}, 0]
+                    },
+                },
+            },
+            {"$project": {"works": 0}},
+        ]
+        + pipeline[1:]
+    )
+    affiliations = database["affiliations"].aggregate(pipeline)
+    total_results = next(
+        database["affiliations"].aggregate(count_pipeline), {"total_results": 0}
+    )["total_results"]
+    return affiliation_generator.get(affiliations), total_results

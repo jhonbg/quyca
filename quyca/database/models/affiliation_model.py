@@ -56,13 +56,13 @@ class Affiliation(BaseModel):
     subjects: list[Subject] | None = None
     types: list[Type] | None = None
     updated: list[Updated] | None = None
-    year_established: int | None
+    year_established: int | None = None
 
     name: str | None = None
     citations_count: list[CitationsCount] | None = None
     products_count: int | None = None
     logo: str | None = None
-    affiliations: list | None = None
+    affiliations: list[Relation] | None = None
 
     @model_validator(mode="after")
     def get_name(self):

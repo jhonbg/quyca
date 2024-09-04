@@ -95,13 +95,6 @@ def get_works_count_by_affiliation(
     return works_count
 
 
-def get_citations_count_by_affiliation(affiliation_id: str) -> list[CitationsCount]:
-    affiliation_calculations = calculations_repository.get_affiliation_calculations(
-        affiliation_id
-    )
-    return affiliation_calculations.citations_count
-
-
 def get_sources_by_related_affiliation(
     affiliation_id: str,
     affiliation_type: str,
@@ -739,3 +732,38 @@ def search_works(
         database["works"].aggregate(count_pipeline), {"total_results": 0}
     )["total_results"]
     return work_generator.get(works), total_results
+
+
+def get_works_count_by_faculty_or_department(affiliation_id: str) -> int:
+    institution_id = (
+        database["affiliations"]
+        .aggregate(
+            [
+                {"$match": {"_id": ObjectId(affiliation_id)}},
+                {"$unwind": "$relations"},
+                {"$match": {"relations.types.type": "education"}},
+            ]
+        )
+        .next()
+        .get("relations", [])["id"]
+    )
+
+    pipeline = [
+        {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
+        {"$project": {"_id": 1}},
+        {
+            "$lookup": {
+                "from": "works",
+                "localField": "_id",
+                "foreignField": "authors.id",
+                "as": "works",
+                "pipeline": [
+                    {"$match": {"authors.affiliations.id": institution_id}},
+                    {"$count": "count"},
+                ],
+            }
+        },
+    ]
+    return next(database["person"].aggregate(pipeline), {"works": [{"count": 0}]})[
+        "works"
+    ][0]["count"]

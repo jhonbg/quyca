@@ -87,8 +87,8 @@ class ExternalId(BaseModel):
 
 
 class ExternalUrl(BaseModel):
-    url: str | int | None
-    source: str | None
+    url: str | int | None = None
+    source: str | None = None
     provenance: str | None = None
 
     def __hash__(self):

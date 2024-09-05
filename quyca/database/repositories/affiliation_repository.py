@@ -175,6 +175,9 @@ def search_affiliations(
                     "types.type": {"$in": types},
                 }
             },
+        ]
+        + pipeline[1:2]
+        + [
             {
                 "$lookup": {
                     "from": "works",
@@ -193,7 +196,7 @@ def search_affiliations(
             },
             {"$project": {"works": 0}},
         ]
-        + pipeline[1:]
+        + pipeline[2:]
     )
     affiliations = database["affiliations"].aggregate(pipeline)
     total_results = next(

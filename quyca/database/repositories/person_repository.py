@@ -34,25 +34,29 @@ def search_persons(
     pipeline, count_pipeline = base_repository.get_search_pipelines(
         query_params, pipeline_params
     )
-    pipeline += [
-        {
-            "$lookup": {
-                "from": "works",
-                "localField": "_id",
-                "foreignField": "authors.id",
-                "as": "works",
-                "pipeline": [{"$count": "count"}],
-            }
-        },
-        {
-            "$addFields": {
-                "products_count": {
-                    "$ifNull": [{"$arrayElemAt": ["$works.count", 0]}, 0]
-                },
-            }
-        },
-        {"$project": {"works": 0}},
-    ]
+    pipeline = (
+        pipeline[:2]
+        + [
+            {
+                "$lookup": {
+                    "from": "works",
+                    "localField": "_id",
+                    "foreignField": "authors.id",
+                    "as": "works",
+                    "pipeline": [{"$count": "count"}],
+                }
+            },
+            {
+                "$addFields": {
+                    "products_count": {
+                        "$ifNull": [{"$arrayElemAt": ["$works.count", 0]}, 0]
+                    },
+                }
+            },
+            {"$project": {"works": 0}},
+        ]
+        + pipeline[2:]
+    )
     persons = database["person"].aggregate(pipeline)
     total_results = next(
         database["person"].aggregate(count_pipeline), {"total_results": 0}

@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, request, Response, jsonify
+from flask import Blueprint, request, Response
 
 from database.models.base_model import QueryParams
 from services import new_affiliation_service, new_work_service

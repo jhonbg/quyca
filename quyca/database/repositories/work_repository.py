@@ -716,17 +716,21 @@ def search_works(
     pipeline, count_pipeline = base_repository.get_search_pipelines(
         query_params, pipeline_params
     )
-    pipeline += [
-        {
-            "$lookup": {
-                "from": "person",
-                "localField": "authors.id",
-                "foreignField": "_id",
-                "as": "authors_data",
-                "pipeline": [{"$project": {"_id": 1, "external_ids": 1}}],
-            }
-        },
-    ]
+    pipeline = (
+        pipeline[:2]
+        + [
+            {
+                "$lookup": {
+                    "from": "person",
+                    "localField": "authors.id",
+                    "foreignField": "_id",
+                    "as": "authors_data",
+                    "pipeline": [{"$project": {"_id": 1, "external_ids": 1}}],
+                }
+            },
+        ]
+        + pipeline[2:]
+    )
     works = database["works"].aggregate(pipeline)
     total_results = next(
         database["works"].aggregate(count_pipeline), {"total_results": 0}

@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from database.models.base_model import ExternalUrl, ExternalId, QueryParams
 from database.models.work_model import Work, Title, ProductType, Affiliation, Author
-from database.repositories import person_repository, affiliation_repository
+from database.repositories import person_repository
 from database.repositories import work_repository
 from enums.external_urls import external_urls_dict
 from enums.institutions import institutions_list
@@ -71,7 +71,7 @@ def search_works(query_params: QueryParams):
         set_product_types(work)
         set_bibliographic_info(work)
         works_list.append(work)
-    data = work_parser.parse_search_result(works_list)
+    data = work_parser.parse_search_results(works_list)
     return {"data": data, "total_results": total_results}
 
 

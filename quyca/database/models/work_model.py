@@ -121,7 +121,7 @@ class Work(BaseModel):
     source_data: Source | None = None
     authors_data: list[Author] | None = None
     affiliations_data: list[Affiliation] | None = None
-    openalex_citations_count: str | None = None
+    openalex_citations_count: str | int | None = None
     scholar_citations_count: str | None = None
     institutions: str | None = None
     departments: str | None = None

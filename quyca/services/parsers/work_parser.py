@@ -44,7 +44,7 @@ def parse_csv(works: list):
     return output.getvalue()
 
 
-def parse_search_result(works: list):
+def parse_search_results(works: list):
     include = [
         "id",
         "authors",

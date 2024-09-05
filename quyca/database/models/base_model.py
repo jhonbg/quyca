@@ -160,3 +160,4 @@ class QueryParams(BaseModel):
     page: conint(ge=1) = None
     keywords: str = ""
     plot: str = None
+    sort: str = None

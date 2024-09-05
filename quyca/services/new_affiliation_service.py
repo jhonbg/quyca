@@ -22,8 +22,9 @@ from database.repositories import (
 from utils.mapping import get_openalex_scienti
 
 
-def get_by_id(affiliation_id: str) -> Affiliation:
-    return affiliation_repository.get_affiliation_by_id(affiliation_id)
+def get_affiliation_by_id(affiliation_id: str) -> dict:
+    affiliation = affiliation_repository.get_affiliation_by_id(affiliation_id)
+    return {"data": affiliation.model_dump(by_alias=True), "filters": {}}
 
 
 def get_related_affiliations_by_affiliation(
@@ -54,7 +55,7 @@ def get_related_affiliations_by_affiliation(
         data["authors"] = [
             author.model_dump(include={"id", "full_name"}) for author in authors
         ]
-    return data
+    return {"data": data}
 
 
 def search_affiliations(affiliation_type, query_params):

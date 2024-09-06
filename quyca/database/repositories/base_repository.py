@@ -1,9 +1,9 @@
 from database.models.base_model import QueryParams
 
 
-def get_search_pipelines(
-    query_params: QueryParams, pipeline_params: dict | None = None
-):
+def get_search_pipelines(query_params: QueryParams, pipeline_params: dict = None):
+    if pipeline_params is None:
+        pipeline_params = {}
     pipeline = [
         {"$match": {"$text": {"$search": query_params.keywords}}},
     ]
@@ -12,26 +12,35 @@ def get_search_pipelines(
         {"$count": "total_results"},
     ]
     if sort := query_params.sort:
-        set_sort(sort, pipeline, query_params)
+        set_sort(sort, pipeline)
     else:
         pipeline += [{"$sort": {"score": {"$meta": "textScore"}}}]
-    process_params(pipeline, query_params, pipeline_params)
+    set_project(pipeline, pipeline_params.get("project"))
+    set_pagination(pipeline, query_params)
     return pipeline, count_pipeline
 
 
-def process_params(
-    pipeline, query_params: QueryParams, pipeline_params: dict | None = None
-):
-    if pipeline_params is None:
-        pipeline_params = {}
+def set_pagination(pipeline: list, query_params: QueryParams):
     if (page := query_params.page) and (limit := query_params.limit):
         skip = (page - 1) * limit
         pipeline += [{"$skip": skip}, {"$limit": limit}]
-    if project := pipeline_params.get("project"):
-        pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}]
 
 
-def set_sort(sort: str, pipeline: list, query_params: QueryParams):
+def set_match(pipeline: list, match: dict | None):
+    if not match:
+        return
+    pipeline += [{"$match": match}]
+
+
+def set_project(pipeline: list, project: list | None):
+    if not project:
+        return
+    pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}]
+
+
+def set_sort(sort: str, pipeline: list):
+    if not sort:
+        return
     sort_field, direction = sort.split("_")
     direction = -1 if direction == "desc" else 1
     if sort_field == "citations":

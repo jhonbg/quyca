@@ -30,6 +30,45 @@ def get_work_by_id(work_id: str):
     return work
 
 
+def get_works_by_affiliation(
+    affiliation_id: str, affiliation_type: str, query_params: QueryParams
+):
+    works = None
+    total_results = 0
+    pipeline_params = {
+        "project": [
+            "_id",
+            "authors",
+            "authors_data",
+            "citations_count",
+            "bibliographic_info",
+            "types",
+            "source",
+            "titles",
+            "subjects",
+            "year_published",
+        ]
+    }
+    if affiliation_type in ["institution", "group"]:
+        works, total_results = work_repository.get_works_by_institution_or_group(
+            affiliation_id, query_params, pipeline_params
+        )
+    elif affiliation_type in ["faculty", "department"]:
+        works, total_results = work_repository.get_works_by_faculty_or_department(
+            affiliation_id, query_params, pipeline_params
+        )
+    works_list = []
+    for work in works:
+        limit_authors(work)
+        new_set_authors_external_ids(work)
+        set_title_and_language(work)
+        set_product_types(work)
+        set_bibliographic_info(work)
+        works_list.append(work)
+    data = work_parser.parse_works_by_affiliation(works_list)
+    return {"data": data, "total_results": total_results}
+
+
 def get_works_csv_by_affiliation(affiliation_id: str, affiliation_type: str) -> str:
     works = None
     if affiliation_type == "institution":

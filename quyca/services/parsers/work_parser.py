@@ -58,3 +58,19 @@ def parse_search_results(works: list):
         "source",
     ]
     return [work.model_dump(include=include, exclude_none=True) for work in works]
+
+
+def parse_works_by_affiliation(works: list):
+    include = [
+        "id",
+        "authors",
+        "is_open_access",
+        "open_access_status",
+        "citations_count",
+        "products_types",
+        "year_published",
+        "title",
+        "subjects",
+        "source",
+    ]
+    return [work.model_dump(include=include, exclude_none=True) for work in works]

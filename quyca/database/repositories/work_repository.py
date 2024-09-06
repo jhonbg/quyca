@@ -33,7 +33,7 @@ def get_works_by_affiliation(
     )
     if collection == "affiliations":
         pipeline += [{"$replaceRoot": {"newRoot": "$works"}}]
-    base_repository.process_params(pipeline, query_params, pipeline_params)
+    base_repository.set_pagination(pipeline, query_params)
     cursor = database[collection].aggregate(pipeline)
     return work_generator.get(cursor)
 
@@ -206,7 +206,7 @@ def get_works_by_person(
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
     ]
-    base_repository.process_params(pipeline, query_params, pipeline_params)
+    base_repository.set_pagination(pipeline, query_params)
     cursor = database["works"].aggregate(pipeline)
     return work_generator.get(cursor)
 
@@ -228,7 +228,8 @@ def get_sources_by_person(
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = get_sources_by_person_pipeline(person_id)
-    base_repository.process_params(pipeline, query_params, pipeline_params)
+    base_repository.set_match(pipeline, pipeline_params.get("match"))
+    base_repository.set_project(pipeline, pipeline_params.get("project"))
     cursor = database["works"].aggregate(pipeline)
     return source_generator.get(cursor)
 
@@ -341,6 +342,94 @@ def get_works_csv_by_institution(institution_id: str) -> Generator:
     ]
     cursor = database["works"].aggregate(pipeline)
     return work_generator.get(cursor)
+
+
+def get_works_by_institution_or_group(
+    affiliation_id: str, query_params: QueryParams, pipeline_params: dict
+) -> (Generator, int):
+    pipeline = [
+        {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+    ]
+    if sort := query_params.sort:
+        base_repository.set_sort(sort, pipeline)
+    base_repository.set_pagination(pipeline, query_params)
+    pipeline += [
+        {
+            "$lookup": {
+                "from": "person",
+                "localField": "authors.id",
+                "foreignField": "_id",
+                "as": "authors_data",
+                "pipeline": [{"$project": {"_id": 1, "external_ids": 1}}],
+            }
+        },
+    ]
+    base_repository.set_project(pipeline, pipeline_params.get("project"))
+    cursor = database["works"].aggregate(pipeline)
+    count_pipeline = [
+        {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+        {"$count": "total_results"},
+    ]
+    total_results = next(
+        database["works"].aggregate(count_pipeline), {"total_results": 0}
+    )["total_results"]
+    return work_generator.get(cursor), total_results
+
+
+def get_works_by_faculty_or_department(
+    affiliation_id: str, query_params: QueryParams, pipeline_params: dict
+) -> (Generator, int):
+    institution_id = (
+        database["affiliations"]
+        .aggregate(
+            [
+                {"$match": {"_id": ObjectId(affiliation_id)}},
+                {"$unwind": "$relations"},
+                {"$match": {"relations.types.type": "education"}},
+            ]
+        )
+        .next()
+        .get("relations", [])["id"]
+    )
+    pipeline = [
+        {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
+        {"$project": {"_id": 1}},
+        {
+            "$lookup": {
+                "from": "works",
+                "localField": "_id",
+                "foreignField": "authors.id",
+                "as": "work",
+            }
+        },
+        {"$unwind": "$work"},
+        {"$match": {"work.authors.affiliations.id": institution_id}},
+        {"$replaceRoot": {"newRoot": "$work"}},
+    ]
+    if sort := query_params.sort:
+        base_repository.set_sort(sort, pipeline)
+    base_repository.set_pagination(pipeline, query_params)
+    pipeline += [
+        {
+            "$lookup": {
+                "from": "person",
+                "localField": "authors.id",
+                "foreignField": "_id",
+                "as": "authors_data",
+                "pipeline": [{"$project": {"_id": 1, "external_ids": 1}}],
+            }
+        },
+    ]
+    base_repository.set_project(pipeline, pipeline_params.get("project"))
+    cursor = database["person"].aggregate(pipeline)
+    count_pipeline = [
+        {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+        {"$count": "total_results"},
+    ]
+    total_results = next(
+        database["person"].aggregate(count_pipeline), {"total_results": 0}
+    )["total_results"]
+    return work_generator.get(cursor), total_results
 
 
 def get_works_csv_by_group(group_id: str) -> Generator:
@@ -711,26 +800,20 @@ def get_filter_list(filters: dict[str, Any]) -> list[dict[str, Any]]:
 def search_works(
     query_params: QueryParams, pipeline_params: dict | None = None
 ) -> (Generator, int):
-    if pipeline_params is None:
-        pipeline_params = {}
     pipeline, count_pipeline = base_repository.get_search_pipelines(
         query_params, pipeline_params
     )
-    pipeline = (
-        pipeline[:2]
-        + [
-            {
-                "$lookup": {
-                    "from": "person",
-                    "localField": "authors.id",
-                    "foreignField": "_id",
-                    "as": "authors_data",
-                    "pipeline": [{"$project": {"_id": 1, "external_ids": 1}}],
-                }
-            },
-        ]
-        + pipeline[2:]
-    )
+    pipeline += [
+        {
+            "$lookup": {
+                "from": "person",
+                "localField": "authors.id",
+                "foreignField": "_id",
+                "as": "authors_data",
+                "pipeline": [{"$project": {"_id": 1, "external_ids": 1}}],
+            }
+        },
+    ]
     works = database["works"].aggregate(pipeline)
     total_results = next(
         database["works"].aggregate(count_pipeline), {"total_results": 0}

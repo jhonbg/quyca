@@ -51,8 +51,8 @@ def get_affiliation_section_tab(
                 affiliation_id, affiliation_type, query_params
             )
             return Response(json.dumps(data), 200, mimetype="application/json")
-        data = new_affiliation_service.get_works_by_affiliation(
-            affiliation_id, affiliation_type
+        data = new_work_service.get_works_by_affiliation(
+            affiliation_id, affiliation_type, query_params
         )
         return Response(json.dumps(data), 200, mimetype="application/json")
     return Response(

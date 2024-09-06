@@ -11,6 +11,10 @@ def get_search_pipelines(
         {"$match": {"$text": {"$search": query_params.keywords}}},
         {"$count": "total_results"},
     ]
+    if sort := query_params.sort:
+        set_sort(sort, pipeline, query_params)
+    else:
+        pipeline += [{"$sort": {"score": {"$meta": "textScore"}}}]
     process_params(pipeline, query_params, pipeline_params)
     return pipeline, count_pipeline
 
@@ -20,16 +24,11 @@ def process_params(
 ):
     if pipeline_params is None:
         pipeline_params = {}
-    if match := pipeline_params.get("match"):
-        pipeline += [{"$match": match}]
-    if project := pipeline_params.get("project"):
-        pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}]
-    if sort := query_params.sort:
-        set_sort(sort, pipeline, query_params)
-
     if (page := query_params.page) and (limit := query_params.limit):
         skip = (page - 1) * limit
         pipeline += [{"$skip": skip}, {"$limit": limit}]
+    if project := pipeline_params.get("project"):
+        pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}]
 
 
 def set_sort(sort: str, pipeline: list, query_params: QueryParams):

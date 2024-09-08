@@ -367,3 +367,9 @@ def set_external_urls(work: Work):
                     )
                 )
     work.external_urls = list(set(new_external_urls))
+
+
+def get_work_authors(work_id: str):
+    work = work_repository.get_work_by_id(work_id)
+    set_authors_external_ids(work)
+    return {"data": work.model_dump()["authors"]}

@@ -200,15 +200,36 @@ def get_sources_by_related_affiliation(
 
 def get_works_by_person(
     person_id: str, query_params: QueryParams, pipeline_params: dict = None
-) -> Generator:
+) -> (Generator, int):
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
     ]
+    if sort := query_params.sort:
+        base_repository.set_sort(sort, pipeline)
     base_repository.set_pagination(pipeline, query_params)
+    pipeline += [
+        {
+            "$lookup": {
+                "from": "person",
+                "localField": "authors.id",
+                "foreignField": "_id",
+                "as": "authors_data",
+                "pipeline": [{"$project": {"_id": 1, "external_ids": 1}}],
+            }
+        },
+    ]
+    base_repository.set_project(pipeline, pipeline_params.get("project"))
     cursor = database["works"].aggregate(pipeline)
-    return work_generator.get(cursor)
+    count_pipeline = [
+        {"$match": {"authors.id": ObjectId(person_id)}},
+        {"$count": "total_results"},
+    ]
+    total_results = next(
+        database["works"].aggregate(count_pipeline), {"total_results": 0}
+    )["total_results"]
+    return work_generator.get(cursor), total_results
 
 
 def get_works_count_by_person(person_id) -> Optional[int]:

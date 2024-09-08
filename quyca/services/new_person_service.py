@@ -28,12 +28,12 @@ def get_person_plot(person_id: str, query_params: QueryParams):
 
 
 def plot_year_type(person_id: str, query_params):
-    works = work_repository.get_works_by_person(person_id, query_params)
+    works, _ = work_repository.get_works_by_person(person_id, query_params)
     return {"plot": bar_parser.get_by_work_year_and_work_type(works)}
 
 
 def plot_year_citations(person_id: str, query_params):
-    works = work_repository.get_works_by_person(person_id, query_params)
+    works, _ = work_repository.get_works_by_person(person_id, query_params)
     return {"plot": bar_parser.get_citations_by_year(works)}
 
 
@@ -61,7 +61,7 @@ def plot_year_oa(person_id: str, query_params):
         },
         "project": ["year_published", "bibliographic_info"],
     }
-    works = work_repository.get_works_by_person(
+    works, _ = work_repository.get_works_by_person(
         person_id, query_params, pipeline_params
     )
     return {"plot": bar_parser.oa_by_year(works)}
@@ -83,7 +83,7 @@ def plot_year_h(person_id: str, query_params):
         "match": {"citations_by_year": {"$exists": 1}},
         "project": {"citations_by_year"},
     }
-    works = work_repository.get_works_by_person(
+    works, _ = work_repository.get_works_by_person(
         person_id, query_params, pipeline_params
     )
     return {"plot": bar_parser.h_index_by_year(works)}
@@ -133,7 +133,7 @@ def plot_products_subject(person_id: str, query_params):
         "match": {"subjects": {"$ne": []}},
         "project": ["subjects"],
     }
-    works = work_repository.get_works_by_person(
+    works, _ = work_repository.get_works_by_person(
         person_id, query_params, pipeline_params
     )
     data = chain.from_iterable(
@@ -155,7 +155,7 @@ def plot_products_database(person_id: str, query_params):
         "match": {"updated": {"$ne": []}},
         "project": ["updated"],
     }
-    works = work_repository.get_works_by_person(
+    works, _ = work_repository.get_works_by_person(
         person_id, query_params, pipeline_params
     )
     data = chain.from_iterable(map(lambda x: x.updated, works))
@@ -167,7 +167,7 @@ def plot_products_oa(person_id: str, query_params):
         "match": {"bibliographic_info.open_access_status": {"$exists": 1}},
         "project": ["bibliographic_info"],
     }
-    works = work_repository.get_works_by_person(
+    works, _ = work_repository.get_works_by_person(
         person_id, query_params, pipeline_params
     )
     data = map(lambda x: x.bibliographic_info.open_access_status, works)
@@ -188,7 +188,7 @@ def plot_scienti_rank(person_id: str, query_params):
         "match": {"ranking": {"$ne": []}},
         "project": ["ranking"],
     }
-    works = work_repository.get_works_by_person(
+    works, _ = work_repository.get_works_by_person(
         person_id, query_params, pipeline_params
     )
     data = chain.from_iterable(map(lambda x: x.ranking, works))

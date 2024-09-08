@@ -60,7 +60,7 @@ def parse_search_results(works: list):
     return [work.model_dump(include=include, exclude_none=True) for work in works]
 
 
-def parse_works_by_affiliation(works: list):
+def parse_works_by_entity(works: list):
     include = [
         "id",
         "authors",

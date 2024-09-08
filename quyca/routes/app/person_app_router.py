@@ -35,58 +35,19 @@ def get_person_by_id(person_id: str):
         )
 
 
-def person(
-    request: Request,
-    person_id: str | None,
-    section: str | None = None,
-    tab: str | None = None,
-):
-    data = request.args.get("data")
-    typ = request.args.get("typ", None)
-
-    result = None
-
-    if section == "info":
-        result = person_service.get_info(id=person_id)
-    elif section == "research":
-        if tab == "products":
-            query_params = QueryParams(**request.args)
-            if query_params.plot:
-                return new_person_service.get_person_plot(person_id, query_params)
-
-            params = WorkQueryParams(**request.args)
-            result = work_service.get_research_products_by_author(
-                author_id=person_id,
-                skip=params.skip,
-                limit=params.max,
-                sort=params.sort,
-                filters=params.get_filter(),
-            )
-    else:
-        result = None
-    return result
-
-
-# @person_app_router.route("/<id>", methods=["GET"])
 @person_app_router.route("/<person_id>/<section>/<tab>", methods=["GET"])
-def get_person(
-    person_id: str | None = None, section: str | None = "info", tab: str | None = None
-):
-    result = person(request, person_id=person_id, section=section, tab=tab)
-    if result:
-        response = Response(
-            response=json.dumps(result, cls=JsonEncoder),
-            status=200,
-            mimetype="application/json",
-        )
-
-    else:
-        response = Response(
-            response=json.dumps({}, cls=JsonEncoder),
-            status=204,
-            mimetype="application/json",
-        )
-    return response
+def get_person_section_tab(person_id: str, section: str, tab: str):
+    if section == "research" and tab == "products":
+        query_params = QueryParams(**request.args)
+        if query_params.plot:
+            return new_person_service.get_person_plot(person_id, query_params)
+        data = new_work_service.get_works_by_person(person_id, query_params)
+        return Response(json.dumps(data), 200, mimetype="application/json")
+    return Response(
+        json.dumps({"error": f"There is no {section} section and {tab} tab"}),
+        400,
+        mimetype="application/json",
+    )
 
 
 @person_app_router.route("/<person_id>/csv", methods=["GET"])

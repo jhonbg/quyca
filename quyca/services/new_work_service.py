@@ -65,7 +65,37 @@ def get_works_by_affiliation(
         set_product_types(work)
         set_bibliographic_info(work)
         works_list.append(work)
-    data = work_parser.parse_works_by_affiliation(works_list)
+    data = work_parser.parse_works_by_entity(works_list)
+    return {"data": data, "total_results": total_results}
+
+
+def get_works_by_person(person_id: str, query_params: QueryParams):
+    pipeline_params = {
+        "project": [
+            "_id",
+            "authors",
+            "authors_data",
+            "citations_count",
+            "bibliographic_info",
+            "types",
+            "source",
+            "titles",
+            "subjects",
+            "year_published",
+        ]
+    }
+    works, total_results = work_repository.get_works_by_person(
+        person_id, query_params, pipeline_params
+    )
+    works_list = []
+    for work in works:
+        limit_authors(work)
+        new_set_authors_external_ids(work)
+        set_title_and_language(work)
+        set_product_types(work)
+        set_bibliographic_info(work)
+        works_list.append(work)
+    data = work_parser.parse_works_by_entity(works_list)
     return {"data": data, "total_results": total_results}
 
 

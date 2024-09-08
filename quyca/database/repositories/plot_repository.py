@@ -231,7 +231,7 @@ def get_products_by_author_age_and_person(person_id: str):
     return database["works"].aggregate(pipeline)
 
 
-def get_collaboration_worldmap_by_affiliation(affiliation_id, affiliation_type):
+def get_coauthorship_by_country_map_by_affiliation(affiliation_id, affiliation_type):
     data = []
 
     if affiliation_type in ["group", "department", "faculty"]:
@@ -317,7 +317,7 @@ def get_collaboration_worldmap_by_affiliation(affiliation_id, affiliation_type):
     return data
 
 
-def get_collaboration_worldmap_by_person(person_id):
+def get_coauthorship_by_country_map_by_person(person_id):
     data = []
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
@@ -347,7 +347,9 @@ def get_collaboration_worldmap_by_person(person_id):
     return data
 
 
-def get_collaboration_colombiamap_by_affiliation(affiliation_id, affiliation_type):
+def get_coauthorship_by_colombian_department_map_by_affiliation(
+    affiliation_id, affiliation_type
+):
     data = []
     if affiliation_type in ["group", "department", "faculty"]:
         for author in database["person"].find(
@@ -412,7 +414,7 @@ def get_collaboration_colombiamap_by_affiliation(affiliation_id, affiliation_typ
     return data
 
 
-def get_collaboration_colombiamap_by_person(person_id: str):
+def get_coauthorship_by_colombian_department_map_by_person(person_id: str):
     data = []
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},

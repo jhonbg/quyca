@@ -6,7 +6,7 @@ from typing import Iterable
 from pandas import read_csv
 
 
-def get_collaboration_worldmap(works):
+def get_coauthorship_by_country_map(works):
     countries = {}
     for work in works:
         if not "country_code" in work["affiliation"]["addresses"].keys():
@@ -39,7 +39,7 @@ def get_collaboration_worldmap(works):
     return worldmap
 
 
-def get_collaboration_colombiamap(works: Iterable):
+def get_coauthorship_by_colombian_department_map(works: Iterable):
     states = {}
     with open(
         os.path.join(os.path.dirname(__file__), "concerns/cities_by_state.csv"), "r"

@@ -27,17 +27,17 @@ def get_person_plot(person_id: str, query_params: QueryParams):
     return globals()["plot_" + query_params.plot](person_id, query_params)
 
 
-def plot_year_type(person_id: str, query_params):
+def plot_annual_evolution_by_scienti_classification(person_id: str, query_params):
     works, _ = work_repository.get_works_by_person(person_id, query_params)
     return {"plot": bar_parser.get_by_work_year_and_work_type(works)}
 
 
-def plot_year_citations(person_id: str, query_params):
+def plot_annual_citation_count(person_id: str, query_params):
     works, _ = work_repository.get_works_by_person(person_id, query_params)
     return {"plot": bar_parser.get_citations_by_year(works)}
 
 
-def plot_year_apc(person_id: str, query_params):
+def plot_annual_apc_expenses(person_id: str, query_params):
     pipeline_params = {
         "match": {
             "$and": [
@@ -53,7 +53,7 @@ def plot_year_apc(person_id: str, query_params):
     return {"plot": bar_parser.apc_by_year(sources, 2022)}
 
 
-def plot_year_oa(person_id: str, query_params):
+def plot_annual_articles_open_access(person_id: str, query_params):
     pipeline_params = {
         "match": {
             "bibliographic_info.is_open_access": {"$ne": None},
@@ -67,7 +67,7 @@ def plot_year_oa(person_id: str, query_params):
     return {"plot": bar_parser.oa_by_year(works)}
 
 
-def plot_year_publisher(person_id: str, query_params):
+def plot_annual_articles_by_top_publishers(person_id: str, query_params):
     pipeline_params = {
         "match": {"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
         "project": ["publisher", "apc"],
@@ -98,7 +98,7 @@ def plot_year_researcher(person_id: str, query_params):
         return {"plot": None}
 
 
-def plot_title_words(person_id: str, query_params):
+def plot_most_used_title_words(person_id: str, query_params):
     data = calculations_database["person"].find_one(
         {"_id": ObjectId(person_id)}, {"top_words": 1}
     )
@@ -116,7 +116,7 @@ def plot_title_words(person_id: str, query_params):
         return {"plot": None}
 
 
-def plot_products_publisher(person_id: str, query_params):
+def plot_articles_by_publisher(person_id: str, query_params):
     pipeline_params = {
         "match": {"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
         "project": ["publisher"],
@@ -128,7 +128,7 @@ def plot_products_publisher(person_id: str, query_params):
     return pie_parser.get_products_by_publisher(data)
 
 
-def plot_products_subject(person_id: str, query_params):
+def plot_products_by_subject(person_id: str, query_params):
     pipeline_params = {
         "match": {"subjects": {"$ne": []}},
         "project": ["subjects"],
@@ -150,7 +150,7 @@ def plot_products_subject(person_id: str, query_params):
     return pie_parser.get_products_by_subject(data)
 
 
-def plot_products_database(person_id: str, query_params):
+def plot_products_by_database(person_id: str, query_params):
     pipeline_params = {
         "match": {"updated": {"$ne": []}},
         "project": ["updated"],
@@ -162,7 +162,7 @@ def plot_products_database(person_id: str, query_params):
     return pie_parser.get_products_by_database(data)
 
 
-def plot_products_oa(person_id: str, query_params):
+def plot_articles_by_access_route(person_id: str, query_params):
     pipeline_params = {
         "match": {"bibliographic_info.open_access_status": {"$exists": 1}},
         "project": ["bibliographic_info"],
@@ -174,7 +174,7 @@ def plot_products_oa(person_id: str, query_params):
     return pie_parser.get_products_by_open_access(data)
 
 
-def plot_products_age(person_id: str, query_params):
+def plot_products_by_author_age_range(person_id: str, query_params):
     works = plot_repository.get_products_by_author_age_and_person(person_id)
     result = pie_parser.get_products_by_age(works)
     if result:
@@ -183,7 +183,7 @@ def plot_products_age(person_id: str, query_params):
         return {"plot": None}
 
 
-def plot_scienti_rank(person_id: str, query_params):
+def plot_articles_by_scienti_category(person_id: str, query_params):
     pipeline_params = {
         "match": {"ranking": {"$ne": []}},
         "project": ["ranking"],
@@ -192,10 +192,10 @@ def plot_scienti_rank(person_id: str, query_params):
         person_id, query_params, pipeline_params
     )
     data = chain.from_iterable(map(lambda x: x.ranking, works))
-    return pie_parser.get_products_by_scienti_rank(data)
+    return pie_parser.get_articles_by_scienti_category(data)
 
 
-def plot_scimago_rank(person_id: str, query_params):
+def plot_articles_by_scimago_quartile(person_id: str, query_params):
     pipeline_params = {
         "project": ["ranking"],
     }
@@ -203,10 +203,10 @@ def plot_scimago_rank(person_id: str, query_params):
         person_id, query_params, pipeline_params
     )
     data = chain.from_iterable(map(lambda x: x.ranking, sources))
-    return pie_parser.get_products_by_scimago_rank(data)
+    return pie_parser.get_articles_by_scimago_quartile(data)
 
 
-def plot_published_institution(person_id: str, query_params):
+def plot_articles_by_publishing_institution(person_id: str, query_params):
     person = database["person"].find_one(
         {"_id": ObjectId(person_id)}, {"affiliations": 1}
     )
@@ -232,21 +232,23 @@ def plot_published_institution(person_id: str, query_params):
     return pie_parser.get_products_by_same_institution(sources, institution)
 
 
-def plot_collaboration_worldmap(person_id: str, query_params):
-    data = plot_repository.get_collaboration_worldmap_by_person(person_id)
-    result = map_parser.get_collaboration_worldmap(data)
+def plot_coauthorship_by_country_map(person_id: str, query_params):
+    data = plot_repository.get_coauthorship_by_country_map_by_person(person_id)
+    result = map_parser.get_coauthorship_by_country_map(data)
     if result:
         return {"plot": result}
     else:
         return {"plot": None}
 
 
-def plot_collaboration_colombiamap(person_id: str, query_params):
-    data = plot_repository.get_collaboration_colombiamap_by_person(person_id)
-    return {"plot": map_parser.get_collaboration_colombiamap(data)}
+def plot_coauthorship_by_colombian_department_map(person_id: str, query_params):
+    data = plot_repository.get_coauthorship_by_colombian_department_map_by_person(
+        person_id
+    )
+    return {"plot": map_parser.get_coauthorship_by_colombian_department_map(data)}
 
 
-def plot_collaboration_network(person_id: str, query_params):
+def plot_author_coauthorship_network(person_id: str, query_params):
     data = calculations_database["person"].find_one(
         {"_id": ObjectId(person_id)}, {"coauthorship_network": 1}
     )

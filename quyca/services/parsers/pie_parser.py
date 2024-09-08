@@ -144,14 +144,14 @@ def get_products_by_age(works: Iterable) -> list:
 
 
 @get_percentage
-def get_products_by_scienti_rank(data: Iterable, total_works=0) -> list:
-    scienti_rank = filter(
+def get_articles_by_scienti_category(data: Iterable, total_works=0) -> list:
+    scienti_category = filter(
         lambda x: x.source == "scienti"
         and x.rank
         and x.rank.split("_")[-1] in ["A", "A1", "B", "C", "D"],
         data,
     )
-    results = Counter(map(lambda x: x.rank.split("_")[-1], scienti_rank))
+    results = Counter(map(lambda x: x.rank.split("_")[-1], scienti_category))
     plot = []
     for name, value in results.items():
         plot.append({"name": name, "value": value})
@@ -162,9 +162,9 @@ def get_products_by_scienti_rank(data: Iterable, total_works=0) -> list:
 
 
 @get_percentage
-def get_products_by_scimago_rank(data: Iterable) -> list:
-    scimago_rank = filter(lambda x: x.source == "scimago Best Quartile", data)
-    results = Counter(map(lambda x: x.rank, scimago_rank))
+def get_articles_by_scimago_quartile(data: Iterable) -> list:
+    scimago_quartile = filter(lambda x: x.source == "scimago Best Quartile", data)
+    results = Counter(map(lambda x: x.rank, scimago_quartile))
     plot = []
     for name, value in results.items():
         plot.append({"name": name, "value": value})

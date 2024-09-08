@@ -62,6 +62,7 @@ class Person(BaseModel):
     aliases: list[str] | None = Field(default_factory=list)
     birthdate: int | str | None = None
     birthplace: BirthPlace | None = None
+    citations_count: list[CitationsCount] | None = Field(default_factory=list)
     degrees: list[Degree] | None = Field(default_factory=list)
     external_ids: list[ExternalId] | None = Field(default_factory=list)
     first_names: list[str] | None = Field(default_factory=list)
@@ -76,7 +77,6 @@ class Person(BaseModel):
     subjects: list[Subject] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
 
-    citations_count: list[CitationsCount] | None = Field(default_factory=list)
     products_count: int | None = None
     logo: str | None = None
 

@@ -68,6 +68,7 @@ def search_affiliations(affiliation_type, query_params):
             "external_urls",
             "relations",
             "types",
+            "citations_count",
         ]
     }
     affiliations, total_results = affiliation_repository.search_affiliations(
@@ -77,7 +78,6 @@ def search_affiliations(affiliation_type, query_params):
     for affiliation in affiliations:
         set_upper_affiliations(affiliation, affiliation_type)
         set_logo(affiliation)
-        set_citations_count(affiliation)
         set_products_count(affiliation, affiliation_type)
         affiliations_list.append(affiliation)
     data = affiliation_parser.parse_search_result(affiliations_list)
@@ -116,12 +116,6 @@ def set_products_count(affiliation, affiliation_type):
         affiliation.products_count = (
             work_repository.get_works_count_by_faculty_or_department(affiliation.id)
         )
-
-
-def set_citations_count(affiliation: Affiliation):
-    affiliation.citations_count = (
-        calculations_repository.get_citations_count_by_affiliation(affiliation.id)
-    )
 
 
 def get_affiliation_plot(

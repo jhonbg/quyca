@@ -272,6 +272,7 @@ def search_persons(query_params: QueryParams):
             "full_name",
             "affiliations",
             "external_ids",
+            "citations_count",
         ]
     }
     persons, total_results = person_repository.search_persons(
@@ -279,13 +280,6 @@ def search_persons(query_params: QueryParams):
     )
     persons_list = []
     for person in persons:
-        set_citations_count(person)
         persons_list.append(person)
     data = person_parser.parse_search_result(persons_list)
     return {"data": data, "total_results": total_results}
-
-
-def set_citations_count(person: Person):
-    person.citations_count = calculations_repository.get_citations_count_by_person(
-        person.id
-    )

@@ -46,6 +46,7 @@ class Affiliation(BaseModel):
     addresses: list[Address] | Address | None = None
     aliases: list[str] | None = None
     birthdate: str | int | None = None
+    citations_count: list[CitationsCount] | None = None
     description: list[Description] | None = None
     external_ids: list[ExternalId] | None = None
     external_urls: list[ExternalUrl] | None = None
@@ -59,7 +60,6 @@ class Affiliation(BaseModel):
     year_established: int | None = None
 
     name: str | None = None
-    citations_count: list[CitationsCount] | None = None
     products_count: int | None = None
     logo: str | None = None
     affiliations: list[Relation] | None = None

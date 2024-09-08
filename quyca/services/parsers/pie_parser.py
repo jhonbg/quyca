@@ -44,17 +44,6 @@ def get_citations_by_affiliation(
 
 
 @get_percentage
-def get_products_by_affiliation(
-    data: dict[str, int], total_works=0
-) -> list[dict[str, str | int]]:
-    plot = []
-    for name, value in data.items():
-        plot.append({"name": name, "value": value})
-    plot.append({"name": "Sin información", "value": total_works - sum(data.values())})
-    return plot
-
-
-@get_percentage
 def get_apc_by_sources(sources: Generator, base_year) -> list:
     currency_converter = CurrencyConverter()
     result = {}

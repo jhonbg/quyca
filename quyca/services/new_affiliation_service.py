@@ -130,11 +130,6 @@ def get_affiliation_plot(
         return plot_citations_by_affiliations(
             affiliation_id, affiliation_type, relation_type
         )
-    if plot_type in ["products_faculty", "products_department", "products_group"]:
-        relation_type = plot_type.split("_")[-1]
-        return plot_products_by_affiliation(
-            affiliation_id, affiliation_type, relation_type
-        )
     if plot_type in ["apc_faculty", "apc_department", "apc_group"]:
         relation_type = plot_type.split("_")[-1]
         return plot_apc_by_affiliation(affiliation_id, affiliation_type, relation_type)
@@ -289,23 +284,6 @@ def plot_citations_by_affiliations(
             affiliation.name
         ] = calculations_repository.get_citations_count_by_affiliation(affiliation.id)
     return pie_parser.get_citations_by_affiliation(data)
-
-
-def plot_products_by_affiliation(
-    affiliation_id: str, affiliation_type: str, relation_type: str
-):
-    affiliations = affiliation_repository.get_related_affiliations_by_type(
-        affiliation_id, affiliation_type, relation_type
-    )
-    data = {}
-    for affiliation in affiliations:
-        data[affiliation.name] = work_repository.get_works_count_by_affiliation(
-            affiliation.id, affiliation.types[0].type
-        )
-    total_works = work_repository.get_works_count_by_affiliation(
-        affiliation_id, affiliation_type
-    )
-    return pie_parser.get_products_by_affiliation(data, total_works)
 
 
 def plot_apc_by_affiliation(

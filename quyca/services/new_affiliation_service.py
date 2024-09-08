@@ -238,46 +238,6 @@ def plot_annual_articles_by_top_publishers(
     return {"plot": bar_parser.works_by_publisher_year(sources)}
 
 
-def plot_year_h(affiliation_id: str, affiliation_type: str, query_params):
-    pipeline_params = {
-        "match": {"citations_by_year": {"$exists": 1}},
-        "project": {"citations_by_year"},
-    }
-    works = work_repository.get_works_by_affiliation(
-        affiliation_id, affiliation_type, query_params, pipeline_params
-    )
-    return {"plot": bar_parser.h_index_by_year(works)}
-
-
-def plot_year_researcher(affiliation_id: str, affiliation_type: str, query_params):
-    data = plot_repository.get_bars_data_by_researcher_and_affiliation(
-        affiliation_id, affiliation_type
-    )
-    plot = bar_parser.works_by_researcher_category_and_year(data)
-    if plot:
-        return {"plot": plot}
-    else:
-        return {"plot": None}
-
-
-def plot_year_group(affiliation_id: str, affiliation_type: str, query_params):
-    data = []
-    groups = affiliation_repository.get_groups_by_affiliation(
-        affiliation_id, affiliation_type
-    )
-    for group in groups:
-        pipeline_params = {
-            "match": {"year_published": {"$ne": None}},
-            "project": ["year_published", "date_published"],
-        }
-        works = work_repository.get_works_by_affiliation(
-            str(group.id), "group", query_params, pipeline_params
-        )
-        for work in works:
-            work.ranking = group.ranking
-    return {"plot": bar_parser.products_by_year_by_group_category(data)}
-
-
 def plot_most_used_title_words(
     affiliation_id: str, affiliation_type: str, query_params
 ):

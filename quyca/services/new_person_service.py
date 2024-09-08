@@ -78,26 +78,6 @@ def plot_annual_articles_by_top_publishers(person_id: str, query_params):
     return {"plot": bar_parser.works_by_publisher_year(sources)}
 
 
-def plot_year_h(person_id: str, query_params):
-    pipeline_params = {
-        "match": {"citations_by_year": {"$exists": 1}},
-        "project": {"citations_by_year"},
-    }
-    works, _ = work_repository.get_works_by_person(
-        person_id, query_params, pipeline_params
-    )
-    return {"plot": bar_parser.h_index_by_year(works)}
-
-
-def plot_year_researcher(person_id: str, query_params):
-    data = plot_repository.get_bars_data_by_researcher_and_person(person_id)
-    plot = bar_parser.works_by_researcher_category_and_year(data)
-    if plot:
-        return {"plot": plot}
-    else:
-        return {"plot": None}
-
-
 def plot_most_used_title_words(person_id: str, query_params):
     data = calculations_database["person"].find_one(
         {"_id": ObjectId(person_id)}, {"top_words": 1}

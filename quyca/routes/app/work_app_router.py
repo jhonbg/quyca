@@ -11,24 +11,10 @@ work_app_router = Blueprint("work_app_router", __name__)
 @work_app_router.route("/<work_id>", methods=["GET"])
 def get_work_by_id(work_id: str):
     try:
-        work = new_work_service.get_work_by_id(work_id)
-        exclude_fields = {
-            "subtitle": True,
-            "titles": True,
-            "author_count": True,
-            "citations": True,
-            "citations_by_year": True,
-            "date_published": True,
-            "groups": True,
-            "keywords": True,
-            "ranking": True,
-            "references": True,
-            "types": True,
-            "updated": True,
-            "subjects": {"__all__": {"subjects": {"__all__": {"external_ids"}}}},
-        }
-        return {"data": work.model_dump(exclude=exclude_fields, exclude_none=True)}
-
+        data = new_work_service.get_work_by_id(work_id)
+        return Response(
+            response=json.dumps(data), status=200, mimetype="application/json"
+        )
     except Exception as e:
         return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
 

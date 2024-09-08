@@ -1,15 +1,9 @@
 import json
 
-from bson.errors import InvalidId
 from flask import Blueprint, request, Response, Request
 
 from database.models.base_model import QueryParams
-from exceptions.person_exception import PersonException
-from services.person import person_service
 from services import new_person_service, new_work_service
-from services.work import work_service
-from schemas.work import WorkQueryParams
-from utils.encoder import JsonEncoder
 
 person_app_router = Blueprint("person_app_router", __name__)
 
@@ -17,20 +11,14 @@ person_app_router = Blueprint("person_app_router", __name__)
 @person_app_router.route("/<person_id>", methods=["GET"])
 def get_person_by_id(person_id: str):
     try:
-        person_model = new_person_service.get_person_by_id(person_id)
-
+        data = new_person_service.get_person_by_id(person_id)
         return Response(
-            response=json.dumps(
-                {"data": person_model.model_dump(by_alias=True), "filters": {}}
-            ),
-            status=200,
-            mimetype="application/json",
+            response=json.dumps(data), status=200, mimetype="application/json"
         )
-
-    except (PersonException, InvalidId, ValueError) as e:
+    except Exception as e:
         return Response(
             response=json.dumps({"error": str(e)}),
-            status=404,
+            status=400,
             mimetype="application/json",
         )
 

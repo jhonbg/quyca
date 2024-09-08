@@ -15,12 +15,12 @@ from database.repositories import plot_repository
 from database.repositories import work_repository
 
 
-def get_person_by_id(person_id: str) -> Person:
+def get_person_by_id(person_id: str) -> dict:
     person = person_repository.get_person_by_id(person_id)
     person_calculations = calculations_repository.get_person_calculations(person_id)
     person.citations_count = person_calculations.citations_count
     person.products_count = work_repository.get_works_count_by_person(person_id)
-    return person
+    return {"data": person.model_dump(by_alias=True)}
 
 
 def get_person_plot(person_id: str, query_params: QueryParams):

@@ -1,6 +1,8 @@
 import csv
 import io
 
+from database.models.work_model import Work
+
 
 def parse_csv(works: list):
     include = [
@@ -74,3 +76,22 @@ def parse_works_by_entity(works: list):
         "source",
     ]
     return [work.model_dump(include=include, exclude_none=True) for work in works]
+
+
+def parse_work(work: Work):
+    exclude_fields = {
+        "subtitle": True,
+        "titles": True,
+        "author_count": True,
+        "citations": True,
+        "citations_by_year": True,
+        "date_published": True,
+        "groups": True,
+        "keywords": True,
+        "ranking": True,
+        "references": True,
+        "types": True,
+        "updated": True,
+        "subjects": {"__all__": {"subjects": {"__all__": {"external_ids"}}}},
+    }
+    return work.model_dump(exclude=exclude_fields, exclude_none=True)

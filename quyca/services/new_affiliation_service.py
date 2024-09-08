@@ -24,7 +24,7 @@ from utils.mapping import get_openalex_scienti
 
 def get_affiliation_by_id(affiliation_id: str) -> dict:
     affiliation = affiliation_repository.get_affiliation_by_id(affiliation_id)
-    return {"data": affiliation.model_dump(by_alias=True), "filters": {}}
+    return {"data": affiliation.model_dump(by_alias=True)}
 
 
 def get_related_affiliations_by_affiliation(

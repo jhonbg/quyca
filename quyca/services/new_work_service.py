@@ -27,7 +27,8 @@ def get_work_by_id(work_id: str):
         set_title_and_language(work)
     if work.types:
         set_product_types(work)
-    return work
+    data = work_parser.parse_work(work)
+    return {"data": data}
 
 
 def get_works_by_affiliation(

@@ -20,7 +20,8 @@ def get_person_by_id(person_id: str) -> dict:
     person_calculations = calculations_repository.get_person_calculations(person_id)
     person.citations_count = person_calculations.citations_count
     person.products_count = work_repository.get_works_count_by_person(person_id)
-    return {"data": person.model_dump(by_alias=True)}
+    data = person_parser.parse_person(person)
+    return {"data": data}
 
 
 def get_person_plot(person_id: str, query_params: QueryParams):

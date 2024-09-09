@@ -28,3 +28,8 @@ def get_work(work_id: str, section: str):
             )
     except Exception as e:
         return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
+    return Response(
+        json.dumps({"error": f"There is no {section} section"}),
+        400,
+        mimetype="application/json",
+    )

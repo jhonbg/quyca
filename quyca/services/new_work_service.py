@@ -130,6 +130,9 @@ def search_works(query_params: QueryParams):
             "titles",
             "subjects",
             "year_published",
+            "external_ids",
+            "external_urls",
+            "authors_data",
         ]
     }
     works, total_results = work_repository.search_works(query_params, pipeline_params)

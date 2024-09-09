@@ -58,6 +58,8 @@ def parse_search_results(works: list):
         "title",
         "subjects",
         "source",
+        "external_ids",
+        "external_urls",
     ]
     return [work.model_dump(include=include, exclude_none=True) for work in works]
 

@@ -866,7 +866,6 @@ def get_works_count_by_faculty_or_department(affiliation_id: str) -> int:
         .next()
         .get("relations", [])["id"]
     )
-
     pipeline = [
         {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
         {"$project": {"_id": 1}},
@@ -882,7 +881,13 @@ def get_works_count_by_faculty_or_department(affiliation_id: str) -> int:
                 ],
             }
         },
+        {
+            "$addFields": {
+                "products_count": {
+                    "$ifNull": [{"$arrayElemAt": ["$works.count", 0]}, 0]
+                }
+            }
+        },
     ]
-    return next(database["person"].aggregate(pipeline), {"works": [{"count": 0}]})[
-        "works"
-    ][0]["count"]
+    result = next(database["person"].aggregate(pipeline), {"products_count": 0})
+    return result.get("products_count", 0)

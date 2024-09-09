@@ -1,23 +1,18 @@
 from database.models.base_model import QueryParams
 
 
-def get_search_pipelines(query_params: QueryParams, pipeline_params: dict = None):
+def set_search_end_stages(
+    pipeline: list, query_params: QueryParams, pipeline_params: dict = None
+):
     if pipeline_params is None:
         pipeline_params = {}
-    pipeline = [
-        {"$match": {"$text": {"$search": query_params.keywords}}},
-    ]
-    count_pipeline = [
-        {"$match": {"$text": {"$search": query_params.keywords}}},
-        {"$count": "total_results"},
-    ]
     if sort := query_params.sort:
         set_sort(sort, pipeline)
     else:
         pipeline += [{"$sort": {"score": {"$meta": "textScore"}}}]
     set_project(pipeline, pipeline_params.get("project"))
     set_pagination(pipeline, query_params)
-    return pipeline, count_pipeline
+    return pipeline
 
 
 def set_pagination(pipeline: list, query_params: QueryParams):
@@ -38,7 +33,7 @@ def set_project(pipeline: list, project: list | None):
     pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}]
 
 
-def set_sort(sort: str, pipeline: list):
+def set_sort(sort: str | None, pipeline: list):
     if not sort:
         return
     sort_field, direction = sort.split("_")

@@ -821,8 +821,10 @@ def get_filter_list(filters: dict[str, Any]) -> list[dict[str, Any]]:
 def search_works(
     query_params: QueryParams, pipeline_params: dict | None = None
 ) -> (Generator, int):
-    pipeline, count_pipeline = base_repository.get_search_pipelines(
-        query_params, pipeline_params
+    pipeline = (
+        [{"$match": {"$text": {"$search": query_params.keywords}}}]
+        if query_params.keywords
+        else []
     )
     pipeline += [
         {
@@ -835,7 +837,16 @@ def search_works(
             }
         },
     ]
+    base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     works = database["works"].aggregate(pipeline)
+    count_pipeline = (
+        [{"$match": {"$text": {"$search": query_params.keywords}}}]
+        if query_params.keywords
+        else []
+    )
+    count_pipeline += [
+        {"$count": "total_results"},
+    ]
     total_results = next(
         database["works"].aggregate(count_pipeline), {"total_results": 0}
     )["total_results"]

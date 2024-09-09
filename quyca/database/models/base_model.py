@@ -158,6 +158,6 @@ class APC(BaseModel):
 class QueryParams(BaseModel):
     limit: conint(ge=10) = Field(default=None, alias="max")
     page: conint(ge=1) = None
-    keywords: str = ""
+    keywords: str = None
     plot: str = None
     sort: str = None

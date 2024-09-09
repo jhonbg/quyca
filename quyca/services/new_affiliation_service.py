@@ -43,7 +43,7 @@ def get_related_affiliations_by_affiliation(
             affiliation_id, affiliation_type, "department"
         )
         data["departments"] = [
-            department.modeld_dump(include={"id", "name"}) for department in departments
+            department.model_dump(include={"id", "name"}) for department in departments
         ]
     if affiliation_type in ["department", "faculty", "institution"]:
         groups = affiliation_repository.get_related_affiliations_by_type(
@@ -55,7 +55,7 @@ def get_related_affiliations_by_affiliation(
         data["authors"] = [
             author.model_dump(include={"id", "full_name"}) for author in authors
         ]
-    return {"data": data}
+    return data
 
 
 def search_affiliations(affiliation_type, query_params):

@@ -48,6 +48,7 @@ def get_works_by_affiliation(
             "titles",
             "subjects",
             "year_published",
+            "external_ids",
         ]
     }
     if affiliation_type in ["institution", "group"]:
@@ -83,6 +84,7 @@ def get_works_by_person(person_id: str, query_params: QueryParams):
             "titles",
             "subjects",
             "year_published",
+            "external_ids",
         ]
     }
     works, total_results = work_repository.get_works_by_person(

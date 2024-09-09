@@ -52,7 +52,7 @@ class Affiliation(BaseModel):
     external_urls: list[ExternalUrl] | None = None
     names: list[Name] | None = None
     ranking: list[Ranking] | None = None
-    relations: list[Relation] | Relation | None = None
+    relations: list[Relation] | Relation | dict | None = None
     status: list[str] | list[Status] | None = None
     subjects: list[Subject] | None = None
     types: list[Type] | None = None

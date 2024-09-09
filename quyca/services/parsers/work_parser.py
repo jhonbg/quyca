@@ -76,6 +76,7 @@ def parse_works_by_entity(works: list):
         "title",
         "subjects",
         "source",
+        "external_ids",
     ]
     return [work.model_dump(include=include, exclude_none=True) for work in works]
 

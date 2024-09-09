@@ -20,6 +20,22 @@ class Affiliation(BaseModel):
     end_date: int | str | None
     types: list[Type] | None = Field(default_factory=list)
 
+    @field_validator("start_date")
+    @classmethod
+    def set_start_date(cls, value):
+        if value == "":
+            return -1
+        else:
+            return value
+
+    @field_validator("end_date")
+    @classmethod
+    def set_end_date(cls, value):
+        if value == "":
+            return -1
+        else:
+            return value
+
     class Config:
         json_encoders = {ObjectId: str}
 

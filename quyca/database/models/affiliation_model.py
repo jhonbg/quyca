@@ -1,5 +1,5 @@
 from bson import ObjectId
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, field_validator
 
 from database.models.base_model import (
     Type,
@@ -34,6 +34,13 @@ class Relation(BaseModel):
     name: str | Name | None
     types: list[Type] | None
 
+    @field_validator("name")
+    @classmethod
+    def set_name(cls, value):
+        if isinstance(value, Name):
+            return value.name
+        return value
+
 
 class Status(BaseModel):
     source: str | None
@@ -62,7 +69,7 @@ class Affiliation(BaseModel):
     name: str | None = None
     products_count: int | None = None
     logo: str | None = None
-    affiliations: list[Relation] | None = None
+    affiliations: list[dict | Relation] | None = None
 
     @model_validator(mode="after")
     def get_name(self):

@@ -136,7 +136,11 @@ def get_related_affiliations_by_type(
     pipeline = get_related_affiliations_by_type_pipeline(
         affiliation_id, affiliation_type, relation_type
     )
-    affiliations = database["affiliations"].aggregate(pipeline)
+    if relation_type == "group" and affiliation_type in ["faculty", "department"]:
+        collection = "person"
+    else:
+        collection = "affiliations"
+    affiliations = database[collection].aggregate(pipeline)
     return affiliation_generator.get(affiliations)
 
 

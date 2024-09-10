@@ -209,17 +209,6 @@ def get_works_by_person(
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
     base_repository.set_pagination(pipeline, query_params)
-    pipeline += [
-        {
-            "$lookup": {
-                "from": "person",
-                "localField": "authors.id",
-                "foreignField": "_id",
-                "as": "authors_data",
-                "pipeline": [{"$project": {"_id": 1, "external_ids": 1}}],
-            }
-        },
-    ]
     base_repository.set_project(pipeline, pipeline_params.get("project"))
     cursor = database["works"].aggregate(pipeline)
     count_pipeline = [
@@ -374,17 +363,6 @@ def get_works_by_institution_or_group(
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
     base_repository.set_pagination(pipeline, query_params)
-    pipeline += [
-        {
-            "$lookup": {
-                "from": "person",
-                "localField": "authors.id",
-                "foreignField": "_id",
-                "as": "authors_data",
-                "pipeline": [{"$project": {"_id": 1, "external_ids": 1}}],
-            }
-        },
-    ]
     base_repository.set_project(pipeline, pipeline_params.get("project"))
     cursor = database["works"].aggregate(pipeline)
     count_pipeline = [
@@ -430,17 +408,6 @@ def get_works_by_faculty_or_department(
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
     base_repository.set_pagination(pipeline, query_params)
-    pipeline += [
-        {
-            "$lookup": {
-                "from": "person",
-                "localField": "authors.id",
-                "foreignField": "_id",
-                "as": "authors_data",
-                "pipeline": [{"$project": {"_id": 1, "external_ids": 1}}],
-            }
-        },
-    ]
     base_repository.set_project(pipeline, pipeline_params.get("project"))
     cursor = database["person"].aggregate(pipeline)
     count_pipeline = [
@@ -826,17 +793,6 @@ def search_works(
         if query_params.keywords
         else []
     )
-    pipeline += [
-        {
-            "$lookup": {
-                "from": "person",
-                "localField": "authors.id",
-                "foreignField": "_id",
-                "as": "authors_data",
-                "pipeline": [{"$project": {"_id": 1, "external_ids": 1}}],
-            }
-        },
-    ]
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     works = database["works"].aggregate(pipeline)
     count_pipeline = (

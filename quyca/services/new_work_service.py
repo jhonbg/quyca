@@ -62,7 +62,6 @@ def get_works_by_affiliation(
     works_list = []
     for work in works:
         limit_authors(work)
-        new_set_authors_external_ids(work)
         set_title_and_language(work)
         set_product_types(work)
         set_bibliographic_info(work)
@@ -93,7 +92,6 @@ def get_works_by_person(person_id: str, query_params: QueryParams):
     works_list = []
     for work in works:
         limit_authors(work)
-        new_set_authors_external_ids(work)
         set_title_and_language(work)
         set_product_types(work)
         set_bibliographic_info(work)
@@ -141,7 +139,6 @@ def search_works(query_params: QueryParams):
     works_list = []
     for work in works:
         limit_authors(work)
-        new_set_authors_external_ids(work)
         set_title_and_language(work)
         set_product_types(work)
         set_bibliographic_info(work)
@@ -329,15 +326,6 @@ def set_authors_external_ids(work: Work):
             author.external_ids = person_repository.get_person_by_id(
                 str(author.id)
             ).external_ids
-
-
-def new_set_authors_external_ids(work: Work):
-    for author in work.authors:
-        author_data = next(
-            filter(lambda x: x.id == author.id, work.authors_data),
-            Author(),
-        )
-        author.external_ids = author_data.external_ids
 
 
 def limit_authors(work: Work, limit: int = 10):

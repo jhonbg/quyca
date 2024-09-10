@@ -7,7 +7,7 @@ def test_search_institutions(client):
 
 def test_search_faculties(client):
     response = client.get(
-        f"/app/search/affiliations/faculty?keywords=fisica&max=10&page=1&sort=products_desc"
+        f"/app/search/affiliations/faculty?keywords=facultad&max=10&page=1&sort=products_desc"
     )
     assert response.status_code == 200
 

@@ -31,8 +31,9 @@ class Description(BaseModel):
 
 class Relation(BaseModel):
     id: PyObjectId = None
-    name: str | Name | None
-    types: list[Type] | None
+    name: str | Name | None = None
+    types: list[Type] | None = None
+    external_urls: list[ExternalUrl] | None = None
 
     @field_validator("name")
     @classmethod
@@ -70,6 +71,7 @@ class Affiliation(BaseModel):
     products_count: int | None = None
     logo: str | None = None
     affiliations: list[dict | Relation] | None = None
+    relations_data: list[Relation] | None = None
 
     @model_validator(mode="after")
     def get_name(self):

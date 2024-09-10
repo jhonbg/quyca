@@ -10,7 +10,7 @@ from services.parsers import (
     map_parser,
     affiliation_parser,
 )
-from database.models.affiliation_model import Affiliation
+from database.models.affiliation_model import Affiliation, Relation
 from database.mongo import calculations_database, database
 from database.repositories import (
     person_repository,
@@ -70,6 +70,7 @@ def search_affiliations(affiliation_type, query_params):
             "types",
             "citations_count",
             "products_count",
+            "relations_data",
         ]
     }
     affiliations, total_results = affiliation_repository.search_affiliations(
@@ -77,8 +78,8 @@ def search_affiliations(affiliation_type, query_params):
     )
     affiliations_list = []
     for affiliation in affiliations:
-        set_upper_affiliations(affiliation, affiliation_type)
-        set_logo(affiliation)
+        set_relation_external_urls(affiliation)
+        set_upper_affiliations_and_logo(affiliation, affiliation_type)
         set_citations_count(affiliation)
         set_products_count(affiliation, affiliation_type)
         affiliations_list.append(affiliation)
@@ -92,14 +93,21 @@ def set_citations_count(affiliation: Affiliation):
     )
 
 
-def set_logo(affiliation: Affiliation):
-    affiliation.logo = next(
-        filter(lambda x: x.source == "logo", affiliation.external_urls), ExternalUrl()
-    ).url
+def set_relation_external_urls(affiliation: Affiliation):
+    for relation in affiliation.relations:
+        relation_data = next(
+            filter(lambda x: x.id == relation.id, affiliation.relations_data),
+            Relation(),
+        )
+        relation.external_urls = relation_data.external_urls
 
 
-def set_upper_affiliations(affiliation: Affiliation, affiliation_type: str):
+def set_upper_affiliations_and_logo(affiliation: Affiliation, affiliation_type: str):
     if affiliation_type == "institution":
+        affiliation.logo = next(
+            filter(lambda x: x.source == "logo", affiliation.external_urls),
+            ExternalUrl(),
+        ).url
         pass
     upper_affiliations = []
     for relation in affiliation.relations:
@@ -107,16 +115,26 @@ def set_upper_affiliations(affiliation: Affiliation, affiliation_type: str):
             affiliation_type == "faculty"
             and relation.types[0].type in institutions_list
         ):
+            set_logo(affiliation, relation)
             upper_affiliations.append(relation)
         elif affiliation_type == "department" and relation.types[
             0
         ].type in institutions_list + ["faculty"]:
+            set_logo(affiliation, relation)
             upper_affiliations.append(relation)
         elif affiliation_type == "group" and relation.types[
             0
         ].type in institutions_list + ["department", "faculty"]:
+            set_logo(affiliation, relation)
             upper_affiliations.append(relation)
     affiliation.affiliations = upper_affiliations
+
+
+def set_logo(affiliation: Affiliation, relation: Relation):
+    if relation.types[0].type in institutions_list:
+        affiliation.logo = next(
+            filter(lambda x: x.source == "logo", relation.external_urls), ExternalUrl()
+        ).url
 
 
 def set_products_count(affiliation, affiliation_type):

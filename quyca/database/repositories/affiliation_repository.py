@@ -194,6 +194,15 @@ def search_affiliations(
                 },
             },
         },
+        {
+            "$lookup": {
+                "from": "affiliations",
+                "localField": "relations.id",
+                "foreignField": "_id",
+                "as": "relations_data",
+                "pipeline": [{"$project": {"id": "$_id", "external_urls": 1}}],
+            }
+        },
         {"$project": {"works": 0}},
     ]
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)

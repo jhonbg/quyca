@@ -11,7 +11,6 @@ from infraestructure.mongo.repositories import (
 )
 
 
-
 def init_mongo_infraestructure() -> NoReturn:
     # Affiliation
     affiliation_service.register_repository(repository=affiliation_repository)
@@ -30,4 +29,3 @@ def init_mongo_infraestructure() -> NoReturn:
 
     # Source
     source_service.register_repository(repository=source_repository)
-

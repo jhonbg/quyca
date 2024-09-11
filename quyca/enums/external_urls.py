@@ -1,4 +1,4 @@
-external_urls = {
+external_urls_dict = {
     "doi": "https://doi.org/{id}",
     "lens": "https://www.lens.org/lens/scholar/article/{id}",
     "researchgate": "https://www.researchgate.net/profile/{id}",
@@ -14,5 +14,5 @@ external_urls = {
     "ucas": "https://www.ucas.com/explore/search/providers?query={id}",
     "linkedin": "https://www.linkedin.com/in/{id}",
     "ukprn": "https://www.ukrlp.co.uk/ukrlp/ukrlp_provider.page_pls_provDetails?x=&pv_status=VERIFIED&pv_vis_code=L&pn_p_id={id}",
-    "wos": "https://publons.com/researcher/{id}"
+    "wos": "https://publons.com/researcher/{id}",
 }

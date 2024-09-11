@@ -11,6 +11,7 @@ from infraestructure.mongo.models.general import (
     Name,
 )
 
+
 class Publisher(BaseModel):
     id: ObjectId | str | None = None
     name: str | Any | None = None
@@ -40,6 +41,7 @@ class Licence(BaseModel):
     SA: bool | Any | None = None
     type: str | Any | None = None
     url: str | Any | None = None
+
 
 class SubjectEmbedded(BaseModel):
     id: ObjectId | str | None = None

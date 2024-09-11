@@ -20,4 +20,6 @@ if __name__ == "__main__":
 
     init_mongo_infraestructure()
 
-    app.run(host="0.0.0.0", port=settings.APP_PORT, debug=settings.APP_DEBUG, threaded=True)
+    app.run(
+        host="0.0.0.0", port=settings.APP_PORT, debug=settings.APP_DEBUG, threaded=True
+    )

@@ -15,58 +15,58 @@ from core.config import settings
 
 class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
     def __groups_by_affiliation(
-            self, idx: str, typ: str
-        ) -> tuple[list[dict[str, Any]], Model]:
-            """
-            Retrieve groups by affiliation.
+        self, idx: str, typ: str
+    ) -> tuple[list[dict[str, Any]], Model]:
+        """
+        Retrieve groups by affiliation.
 
-            Args:
-                idx (str): The ID of the affiliation.
-                typ (str): The type of affiliation.
+        Args:
+            idx (str): The ID of the affiliation.
+            typ (str): The type of affiliation.
 
-            Returns:
-                tuple[list[dict[str, Any]], Model]: A tuple containing the aggregation pipeline and the model.
+        Returns:
+            tuple[list[dict[str, Any]], Model]: A tuple containing the aggregation pipeline and the model.
 
-            Raises:
-                None.
+        Raises:
+            None.
 
-            """
-            if typ == "group":
-                return [{"$match": {"_id": ObjectId(idx)}}], Affiliation
-            if typ in ["department", "faculty"]:
-                return [
-                    {"$match": {"affiliations.id": ObjectId(idx)}},
-                    {"$project": {"affiliations": 1}},
-                    {"$unwind": "$affiliations"},
-                    {"$match": {"affiliations.types.type": "group"}},
-                    {"$project": {"aff_id": "$affiliations.id"}},
-                    {
-                        "$lookup": {
-                            "from": "affiliations",
-                            "localField": "aff_id",
-                            "foreignField": "_id",
-                            "as": "affiliation",
-                        }
-                    },
-                    {"$unwind": "$affiliation"},
-                    {
-                        "$group": {
-                            "_id": "$aff_id",
-                            "affiliation": {"$addToSet": "$affiliation"},
-                        }
-                    },
-                    {"$unwind": "$affiliation"},
-                    {"$project": {"_id": 0, "affiliation": 1}},
-                    {"$replaceRoot": {"newRoot": "$affiliation"}},
-                ], Person
+        """
+        if typ == "group":
+            return [{"$match": {"_id": ObjectId(idx)}}], Affiliation
+        if typ in ["department", "faculty"]:
             return [
+                {"$match": {"affiliations.id": ObjectId(idx)}},
+                {"$project": {"affiliations": 1}},
+                {"$unwind": "$affiliations"},
+                {"$match": {"affiliations.types.type": "group"}},
+                {"$project": {"aff_id": "$affiliations.id"}},
                 {
-                    "$match": {
-                        "relations.id": ObjectId(idx),
-                        "types.type": "group",
+                    "$lookup": {
+                        "from": "affiliations",
+                        "localField": "aff_id",
+                        "foreignField": "_id",
+                        "as": "affiliation",
                     }
+                },
+                {"$unwind": "$affiliation"},
+                {
+                    "$group": {
+                        "_id": "$aff_id",
+                        "affiliation": {"$addToSet": "$affiliation"},
+                    }
+                },
+                {"$unwind": "$affiliation"},
+                {"$project": {"_id": 0, "affiliation": 1}},
+                {"$replaceRoot": {"newRoot": "$affiliation"}},
+            ], Person
+        return [
+            {
+                "$match": {
+                    "relations.id": ObjectId(idx),
+                    "types.type": "group",
                 }
-            ], Affiliation
+            }
+        ], Affiliation
 
     def related_affiliations_by_type(
         self, idx: str, relation_type: str, affiliation_type: str
@@ -99,28 +99,28 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
         ], Affiliation
 
     def get_affiliations_related_type(
-            self, idx: str, relation_type: str, affiliation_type: str
-        ) -> Iterable[AffiliationRelated]:
-            """
-            Retrieves affiliations related to a specific type.
+        self, idx: str, relation_type: str, affiliation_type: str
+    ) -> Iterable[AffiliationRelated]:
+        """
+        Retrieves affiliations related to a specific type.
 
-            Args:
-                idx (str): The index of the affiliation.
-                relation_type (str): The relation type of the affiliation.
-                affiliation_type (str): The type of the affiliation.
+        Args:
+            idx (str): The index of the affiliation.
+            relation_type (str): The relation type of the affiliation.
+            affiliation_type (str): The type of the affiliation.
 
-            Returns:
-                Iterable[AffiliationRelated]: An iterable of AffiliationRelated objects.
+        Returns:
+            Iterable[AffiliationRelated]: An iterable of AffiliationRelated objects.
 
-            """
-            pipeline, collection = self.related_affiliations_by_type(
-                idx, relation_type, affiliation_type
-            )
-            results = engine.get_collection(collection).aggregate(pipeline)
-            return map(
-                lambda x: AffiliationRelated.model_validate_json(x.model_dump_json()),
-                AffiliationIterator(results),
-            )
+        """
+        pipeline, collection = self.related_affiliations_by_type(
+            idx, relation_type, affiliation_type
+        )
+        results = engine.get_collection(collection).aggregate(pipeline)
+        return map(
+            lambda x: AffiliationRelated.model_validate_json(x.model_dump_json()),
+            AffiliationIterator(results),
+        )
 
     def get_groups_by_affiliation(self, idx: str, typ: str) -> Iterable[Affiliation]:
         """
@@ -225,7 +225,10 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
         affiliation_type: str,
         skip: int = 0,
         limit: int = 100
-    ): ...
+    ):
+        ...
 
 
-affiliation_repository = AffiliationRepository(Affiliation, iterator=AffiliationIterator)
+affiliation_repository = AffiliationRepository(
+    Affiliation, iterator=AffiliationIterator
+)

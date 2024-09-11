@@ -18,5 +18,7 @@ class AffiliationCalculationsRepository(
 
 
 affiliation_calculations_repository = AffiliationCalculationsRepository(
-    AffiliationCalculations, iterator=AffiliationCalculationsIterator, engine=engine_calculations
+    AffiliationCalculations,
+    iterator=AffiliationCalculationsIterator,
+    engine=engine_calculations,
 )

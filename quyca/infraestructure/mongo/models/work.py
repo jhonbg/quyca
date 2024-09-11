@@ -9,7 +9,7 @@ from infraestructure.mongo.models.general import (
     ExternalId,
     ExternalURL,
     Name,
-    CitationsCount
+    CitationsCount,
 )
 
 
@@ -67,7 +67,6 @@ class Subject(EmbeddedModel):
 class CitationByYear(EmbeddedModel):
     cited_by_count: int | None
     year: int | None
-
 
 
 class SubjectEmbedded(EmbeddedModel):

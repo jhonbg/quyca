@@ -16,17 +16,17 @@ from core.config import settings
 
 class WorkRepository(RepositoryBase[Work, WorkIterator]):
     def get_authors(self, *, id: str) -> Iterable[str]:
-            """
-            Retrieve the authors of a work based on its ID.
+        """
+        Retrieve the authors of a work based on its ID.
 
-            Returns:
-                A list of dictionaries representing the authors of the work.
-            """
-            with self.engine.session() as session:
-                work = session.find_one(self.model, self.model.id == ObjectId(id))
-                authors = work.authors
-            return map(lambda x: x.model_dump_json(), authors)
-    
+        Returns:
+            A list of dictionaries representing the authors of the work.
+        """
+        with self.engine.session() as session:
+            work = session.find_one(self.model, self.model.id == ObjectId(id))
+            authors = work.authors
+        return map(lambda x: x.model_dump_json(), authors)
+
     @classmethod
     def get_pipeline_works_by_affiliation_id(
         cls, affiliation_id: str, affiliation_type: str
@@ -81,7 +81,11 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             {"$unwind": "$work.authors"},
             {"$match": {"$expr": {"$eq": ["$person._id", "$work.authors.id"]}}},
             {"$unwind": "$work.authors.affiliations"},
-            {"$match": {"$expr": {"$eq": ["$relations.id", "$work.authors.affiliations.id"]}}},
+            {
+                "$match": {
+                    "$expr": {"$eq": ["$relations.id", "$work.authors.affiliations.id"]}
+                }
+            },
             {"$group": {"_id": "$work._id", "work": {"$first": "$work"}}},
             {"$project": {"work._id": 1}},
             {
@@ -191,7 +195,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             if affiliation_type in settings.institutions
             else affiliation_type
         )
-        count_papers_pipeline = cls.get_pipeline_works_by_affiliation_id(affiliation_id, affiliation_type)
+        count_papers_pipeline = cls.get_pipeline_works_by_affiliation_id(
+            affiliation_id, affiliation_type
+        )
         collection = (
             Affiliation if affiliation_type not in ["institution", "group"] else Work
         )
@@ -211,9 +217,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
     def count_citations(
         cls, *, affiliation_id: str, affiliation_type: str = None
     ) -> list[general.CitationsCount]:
-        """
-        
-        """
+        """ """
         affiliation_calculations = affiliation_calculations_repository.get_by_id(
             id=affiliation_id
         )
@@ -346,7 +350,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             if affiliation_type in settings.institutions
             else affiliation_type
         )
-        works_pipeline = cls.get_pipeline_works_by_affiliation_id(affiliation_id, affiliation_type)
+        works_pipeline = cls.get_pipeline_works_by_affiliation_id(
+            affiliation_id, affiliation_type
+        )
         collection = (
             Affiliation if affiliation_type not in ["institution", "group"] else Work
         )
@@ -518,7 +524,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             if affiliation_type in settings.institutions
             else affiliation_type
         )
-        works_pipeline = cls.get_pipeline_works_by_affiliation_id(affiliation_id, affiliation_type)
+        works_pipeline = cls.get_pipeline_works_by_affiliation_id(
+            affiliation_id, affiliation_type
+        )
         person = True if affiliation_type not in ["institution", "group"] else False
         works_pipeline += [
             {

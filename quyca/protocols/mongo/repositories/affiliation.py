@@ -45,4 +45,5 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
         affiliation_type: str,
         skip: int = 0,
         limit: int = 100
-    ): ...
+    ):
+        ...

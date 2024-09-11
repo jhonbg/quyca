@@ -77,4 +77,5 @@ class PersonService(
         results.count = len(data)
         return loads(results.model_dump_json(exclude_none=True, by_alias=True))
 
+
 person_service = PersonService(PersonSearch, PersonInfo)

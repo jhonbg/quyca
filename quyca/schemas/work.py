@@ -166,7 +166,6 @@ class WorkListApp(WorkSearch):
             self.num_authors = authors
         return self
 
-
     external_ids: list[ExternalId] | list[dict[str, Any]] = Field(default_factory=list)
 
 

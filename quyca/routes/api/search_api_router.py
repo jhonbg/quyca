@@ -28,7 +28,7 @@ def read_person():
     @apiQuery {Number}    [page=1]          Number of page.
     @apiQuery {Number{1-250}}    [max=10]          Number of results per page.
     # @apiQuery {String}    [sort=alphabetical]          Sort by field.
-    
+
     """
     try:
         query_params = PersonQueryParams(**request.args)
@@ -64,7 +64,7 @@ def read_works():
     @apiQuery {Number}    [page=1]          Number of page.
     @apiQuery {Number{1-250}}    [max=10]          Number of results per page.
     # @apiQuery {String="alphabetical","citations"}    [sort=alphabetical]          Sort by field.
-    
+
     """
     try:
         query_params = WorkQueryParams(**request.args)
@@ -85,7 +85,7 @@ def read_affiliations():
     @apiQuery {Number}    [page=1]          Number of page.
     @apiQuery {Number{1-250}}    [max=10]          Number of results per page.
     # @apiQuery {String}    [sort=alphabetical]          Sort by field.
-    
+
     """
     try:
         query_params = AffiliationQueryParams(**request.args)
@@ -120,7 +120,7 @@ def read_subjects():
     @apiQuery {Number}    [page=1]          Number of page.
     @apiQuery {Number{1-250}}    [max=10]          Number of results per page.
     # @apiQuery {String}    [sort=alphabetical]          Sort by field.
-    
+
 
     """
     try:

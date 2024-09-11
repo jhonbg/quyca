@@ -39,7 +39,7 @@ class Settings(BaseSettings):
             host=self.MONGO_SERVER,
             username=self.MONGO_USERNAME,
             password=self.MONGO_PASSWORD,
-            port=self.MONGO_PORT
+            port=self.MONGO_PORT,
         )
         return self
 
@@ -96,7 +96,7 @@ class Settings(BaseSettings):
         "healthcare",
         "nonprofit",
         "other",
-        "institution"
+        "institution",
     ]
 
 

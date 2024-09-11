@@ -1,13 +1,18 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field, model_validator
 
-from database.models.base_model import Type, Updated, ExternalId, ExternalUrl, Name, PyObjectId, Ranking, Subject
-
-
-class APC(BaseModel):
-    charges: int | None = None
-    currency: str | None = None
-    year_published: int | None = None
+from database.models.base_model import (
+    Type,
+    Updated,
+    ExternalId,
+    ExternalUrl,
+    Name,
+    PyObjectId,
+    Ranking,
+    Subject,
+    Publisher,
+    APC,
+)
 
 
 class Copyright(BaseModel):
@@ -24,19 +29,13 @@ class Licence(BaseModel):
     url: str | None = None
 
 
-class Publisher(BaseModel):
-    id: str | None = None
-    country_code: str | None = None
-    name: str | float | None = None
-
-
 class Waiver(BaseModel):
     has_waiver: bool | None = None
     url: str | None = None
 
 
 class Source(BaseModel):
-    id: PyObjectId = Field(alias='_id')
+    id: PyObjectId = Field(alias="_id")
     abbreviations: list[str] | None = None
     addresses: list | None = None
     apc: APC | None = None

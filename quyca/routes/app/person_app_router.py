@@ -38,7 +38,7 @@ def get_person_section_tab(person_id: str, section: str, tab: str):
     )
 
 
-@person_app_router.route("/<person_id>/csv", methods=["GET"])
+@person_app_router.route("/<person_id>/research/products/csv", methods=["GET"])
 def get_csv_by_person(person_id: str):
     try:
         data = new_work_service.get_works_csv_by_person(person_id)

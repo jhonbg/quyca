@@ -63,7 +63,7 @@ def get_affiliation_section_tab(
 
 
 @affiliation_app_router.route(
-    "/<affiliation_type>/<affiliation_id>/csv", methods=["GET"]
+    "/<affiliation_type>/<affiliation_id>/research/products/csv", methods=["GET"]
 )
 def get_csv_by_affiliation(affiliation_type: str, affiliation_id: str):
     try:

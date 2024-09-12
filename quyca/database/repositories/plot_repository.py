@@ -565,3 +565,31 @@ def get_works_rankings_by_faculty_or_department(affiliation_id):
     )["total_results"]
     works = database["person"].aggregate(pipeline)
     return work_generator.get(works), total_results
+
+
+def get_works_rankings_by_person(person_id: str):
+    pipeline = [
+        {"$match": {"authors.id": ObjectId(person_id)}},
+        {
+            "$lookup": {
+                "from": "sources",
+                "localField": "source.id",
+                "foreignField": "_id",
+                "as": "source_data",
+                "pipeline": [
+                    {"$project": {"_id": 1, "ranking": 1}},
+                ],
+            }
+        },
+        {"$unwind": "$source_data"},
+        {"$project": {"_id": 1, "source_data": 1, "date_published": 1}},
+    ]
+    count_pipeline = [
+        {"$match": {"authors.id": ObjectId(person_id)}},
+        {"$count": "total_results"},
+    ]
+    total_results = next(
+        database["works"].aggregate(count_pipeline), {"total_results": 0}
+    )["total_results"]
+    works = database["works"].aggregate(pipeline)
+    return work_generator.get(works), total_results

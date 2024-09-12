@@ -162,10 +162,9 @@ def get_articles_by_scienti_category(data: Iterable, total_works=0) -> list:
 
 
 @get_percentage
-def get_articles_by_scimago_quartile(data: Iterable) -> list:
-    scimago_quartile = filter(lambda x: x.source == "scimago Best Quartile", data)
-    results = Counter(map(lambda x: x.rank, scimago_quartile))
-    plot = []
+def get_articles_by_scimago_quartile(data: list, total_results: int) -> list:
+    plot = [{"name": "Sin información", "value": total_results - len(data)}]
+    results = Counter(data)
     for name, value in results.items():
         plot.append({"name": name, "value": value})
     return plot

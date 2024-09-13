@@ -154,5 +154,23 @@ def set_sort(sort: str | None, pipeline: list):
     elif sort_field == "products":
         sort_field = "products_count"
     elif sort_field == "year":
-        sort_field = "year_published"
+        pipeline += [
+            {
+                "$addFields": {
+                    "sort_year": {
+                        "$cond": {
+                            "if": {
+                                "$or": [
+                                    {"$eq": ["$year_published", None]},
+                                    {"$eq": ["$year_published", ""]},
+                                ]
+                            },
+                            "then": -1,
+                            "else": {"$toInt": "$year_published"},
+                        }
+                    }
+                }
+            },
+        ]
+        sort_field = "sort_year"
     pipeline += [{"$sort": {sort_field: direction}}]

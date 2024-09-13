@@ -9,13 +9,13 @@ from database.models.base_model import QueryParams
 from database.models.work_model import Work
 from database.repositories import base_repository
 from database.mongo import database
-from exceptions.work_exception import WorkException
+from exceptions.not_entity_exception import NotEntityException
 
 
 def get_work_by_id(work_id: id) -> Work:
     work = database["works"].find_one(ObjectId(work_id))
     if not work:
-        raise WorkException(work_id)
+        raise NotEntityException(f"The work with id {work_id} does not exist.")
     return Work(**work)
 
 

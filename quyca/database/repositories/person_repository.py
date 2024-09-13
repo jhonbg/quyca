@@ -5,7 +5,7 @@ from bson import ObjectId
 from database.generators import person_generator
 from database.models.base_model import QueryParams
 from database.repositories import base_repository
-from exceptions.person_exception import PersonException
+from exceptions.not_entity_exception import NotEntityException
 from database.models.person_model import Person
 from database.mongo import database
 
@@ -13,7 +13,7 @@ from database.mongo import database
 def get_person_by_id(person_id: str) -> Person:
     person_data = database["person"].find_one({"_id": ObjectId(person_id)})
     if not person_data:
-        raise PersonException(person_id)
+        raise NotEntityException(f"The person with id {person_id} does not exist.")
     return Person(**person_data)
 
 

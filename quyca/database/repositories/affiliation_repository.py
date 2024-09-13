@@ -5,11 +5,11 @@ from bson import ObjectId
 from core.config import settings
 from database.models.base_model import QueryParams
 from enums.institutions import institutions_list
-from exceptions.affiliation_exception import AffiliationException
 from database.generators import affiliation_generator
 from database.models.affiliation_model import Affiliation
 from database.repositories import calculations_repository, base_repository
 from database.mongo import database
+from exceptions.not_entity_exception import NotEntityException
 
 
 def get_affiliation_by_id(affiliation_id: str) -> Affiliation:
@@ -17,7 +17,7 @@ def get_affiliation_by_id(affiliation_id: str) -> Affiliation:
 
     affiliation_data = database["affiliations"].find_one({"_id": ObjectId(affiliation_id)})
     if not affiliation_data:
-        raise AffiliationException(affiliation_id)
+        raise NotEntityException(f"The affiliation with id {affiliation_id} does not exist.")
     affiliation = Affiliation(**affiliation_data)
     upper_affiliations, logo = get_upper_affiliations(
         [relation.model_dump() for relation in affiliation.relations],

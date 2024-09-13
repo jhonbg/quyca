@@ -38,6 +38,30 @@ def get_works_by_affiliation(
     return work_generator.get(cursor)
 
 
+def search_works(
+    query_params: QueryParams, pipeline_params: dict | None = None
+) -> (Generator, int):
+    pipeline = (
+        [{"$match": {"$text": {"$search": query_params.keywords}}}]
+        if query_params.keywords
+        else []
+    )
+    base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
+    works = database["works"].aggregate(pipeline)
+    count_pipeline = (
+        [{"$match": {"$text": {"$search": query_params.keywords}}}]
+        if query_params.keywords
+        else []
+    )
+    count_pipeline += [
+        {"$count": "total_results"},
+    ]
+    total_results = next(
+        database["works"].aggregate(count_pipeline), {"total_results": 0}
+    )["total_results"]
+    return work_generator.get(works), total_results
+
+
 def get_sources_by_affiliation(
     affiliation_id: str, affiliation_type: str, pipeline_params: dict | None = None
 ) -> Generator:
@@ -86,8 +110,6 @@ def get_works_count_by_affiliation(
     )
     if collection == "affiliations":
         pipeline += [{"$replaceRoot": {"newRoot": "$works"}}]
-    if filters:
-        pipeline += get_filter_list(filters)
     pipeline += [{"$count": "total"}]
     works_count = next(database[collection].aggregate(pipeline), {"total": 0}).get(
         "total", 0
@@ -684,129 +706,6 @@ def get_sources_by_person_pipeline(person_id):
         {"$replaceRoot": {"newRoot": "$source"}},
     ]
     return pipeline
-
-
-def get_sort(sort: str) -> list[dict]:
-    sort_field, direction = (sort[:-1], -1) if sort.endswith("-") else (sort, 1)
-    sort_translation: dict[str, str] = {
-        "citations": "citations_count.count",
-        "year": "year_published",
-        "title": "titles.0.title",
-        "alphabetical": "titles.0.title",
-    }
-    source_priority = {
-        "openalex": 1,
-        "scholar": 2,
-        "scienti": 3,
-        "minciencias": 4,
-        "ranking": 5,
-    }
-    pipeline = []
-    if sort_field == "year":
-        pipeline += [{"$match": {"year_published": {"$ne": None}}}]
-    if sort_field in ["title", "alphabetical"]:
-        pipeline += [
-            {
-                "$addFields": {
-                    "source_priority": {
-                        "$switch": {
-                            "branches": [
-                                {
-                                    "case": {"$eq": ["$titles.0.source", "openalex"]},
-                                    "then": source_priority["openalex"],
-                                },
-                                {
-                                    "case": {"$eq": ["$titles.0.source", "scholar"]},
-                                    "then": source_priority["scholar"],
-                                },
-                                {
-                                    "case": {"$eq": ["$titles.0.source", "scienti"]},
-                                    "then": source_priority["scienti"],
-                                },
-                                {
-                                    "case": {
-                                        "$eq": ["$titles.0.source", "minciencias"]
-                                    },
-                                    "then": source_priority["minciencias"],
-                                },
-                                {
-                                    "case": {"$eq": ["$titles.0.source", "ranking"]},
-                                    "then": source_priority["ranking"],
-                                },
-                            ],
-                            "default": 6,
-                        }
-                    },
-                    "normalized_titles": {
-                        "$map": {
-                            "input": "$titles",
-                            "as": "title",
-                            "in": {
-                                "title": {"$toLower": "$$title.title"},
-                                "source": "$$title.source",
-                            },
-                        }
-                    },
-                }
-            },
-            {
-                "$sort": {
-                    "source_priority": 1,
-                    "normalized_titles.0.title": direction,
-                    "_id": -1,
-                }
-            },
-        ]
-    else:
-        pipeline += [
-            {
-                "$sort": {
-                    sort_translation.get(sort_field, "titles.0.title"): direction,
-                    "_id": -1,
-                }
-            }
-        ]
-    return pipeline
-
-
-def filter_translation(value: Any) -> dict[str, Any]:
-    return {
-        "type": {"$match": {"types.type": value}},
-        "start_year": {"$match": {"year_published": {"$gte": value}}},
-        "end_year": {"$match": {"year_published": {"$lte": value}}},
-    }
-
-
-def get_filter_list(filters: dict[str, Any]) -> list[dict[str, Any]]:
-    filter_list = []
-    for key, value in filters.items():
-        if value:
-            filter_list += [filter_translation(value)[key]]
-    return filter_list
-
-
-def search_works(
-    query_params: QueryParams, pipeline_params: dict | None = None
-) -> (Generator, int):
-    pipeline = (
-        [{"$match": {"$text": {"$search": query_params.keywords}}}]
-        if query_params.keywords
-        else []
-    )
-    base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
-    works = database["works"].aggregate(pipeline)
-    count_pipeline = (
-        [{"$match": {"$text": {"$search": query_params.keywords}}}]
-        if query_params.keywords
-        else []
-    )
-    count_pipeline += [
-        {"$count": "total_results"},
-    ]
-    total_results = next(
-        database["works"].aggregate(count_pipeline), {"total_results": 0}
-    )["total_results"]
-    return work_generator.get(works), total_results
 
 
 def get_works_count_by_faculty_or_department(affiliation_id: str) -> int:

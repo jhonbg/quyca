@@ -7,9 +7,7 @@ from database.mongo import calculations_database
 
 
 def get_person_calculations(person_id: str) -> PersonCalculations:
-    person_calculations = calculations_database["person"].find_one(
-        {"_id": ObjectId(person_id)}
-    )
+    person_calculations = calculations_database["person"].find_one({"_id": ObjectId(person_id)})
 
     if not person_calculations:
         return PersonCalculations()

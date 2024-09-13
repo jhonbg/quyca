@@ -51,16 +51,14 @@ def get_apc_by_sources(sources: Generator, base_year) -> list:
         apc = source.apc
         if apc.currency == "USD":
             raw_value = apc.charges
-            value = inflate(
-                raw_value, apc.year_published, to=max(base_year, apc.year_published)
-            )
+            value = inflate(raw_value, apc.year_published, to=max(base_year, apc.year_published))
         else:
             try:
                 raw_value = currency_converter.convert(apc.charges, apc.currency, "USD")
                 value = inflate(
                     raw_value, apc.year_published, to=max(base_year, apc.year_published)
                 )
-            except Exception as e:
+            except Exception:
                 value = 0
         if value and (name := source.affiliation_names[0].name):
             if name not in result.keys():
@@ -122,11 +120,7 @@ def get_products_by_age(works: Iterable) -> list:
     ranges = {"14-26": (14, 26), "27-59": (27, 59), "60+": (60, 999)}
     results = {"14-26": 0, "27-59": 0, "60+": 0, "Sin información": 0}
     for work in works:
-        if (
-            not work["birthdate"]
-            or work["birthdate"] == -1
-            or not work["work"]["date_published"]
-        ):
+        if not work["birthdate"] or work["birthdate"] == -1 or not work["work"]["date_published"]:
             results["Sin información"] += 1
             continue
         if work["birthdate"]:
@@ -155,9 +149,7 @@ def get_articles_by_scienti_category(data: Iterable, total_works=0) -> list:
     plot = []
     for name, value in results.items():
         plot.append({"name": name, "value": value})
-    plot.append(
-        {"name": "Sin información", "value": total_works - sum(results.values())}
-    )
+    plot.append({"name": "Sin información", "value": total_works - sum(results.values())})
     return plot
 
 

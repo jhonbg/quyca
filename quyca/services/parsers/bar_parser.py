@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Generator
 
 from currency_converter import CurrencyConverter
@@ -27,11 +26,7 @@ def get_by_work_year_and_work_type(works: Generator) -> list:
     plot = []
     for year in result.keys():
         for work_type in result[year].keys():
-            plot += (
-                [{"x": year, "y": result[year][work_type], "type": work_type}]
-                if year
-                else []
-            )
+            plot += [{"x": year, "y": result[year][work_type], "type": work_type}] if year else []
     plot = sorted(plot, key=lambda x: x.get("x", -99))
     return plot
 
@@ -105,7 +100,7 @@ def apc_by_year(sources: Generator, base_year) -> list:
                     apc.year_published,
                     to=max(base_year, int(apc.year_published)),
                 )
-        except ValueError as e:
+        except ValueError:
             value = 0
         if value:
             if apc.year_published not in result.keys():
@@ -154,16 +149,12 @@ def works_by_publisher_year(data: Generator) -> list:
             top5[source.publisher.name] = 1
         else:
             top5[source.publisher.name] += 1
-    top5 = [top[0] for top in sorted(top5.items(), key=lambda x: x[1], reverse=True)][
-        :5
-    ]
+    top5 = [top[0] for top in sorted(top5.items(), key=lambda x: x[1], reverse=True)][:5]
     plot = []
     for year in result.keys():
         for publisher in top5:
             if publisher in result[year].keys():
-                plot.append(
-                    {"x": year, "y": result[year][publisher], "type": publisher}
-                )
+                plot.append({"x": year, "y": result[year][publisher], "type": publisher})
             else:
                 plot.append({"x": year, "y": 0, "type": publisher})
     plot = sorted(plot, key=lambda x: x["x"])

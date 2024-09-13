@@ -11,9 +11,7 @@ Model = TypeVar("Model", bound=Any)
 
 
 class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
-    def __groups_by_affiliation(
-        self, idx: str, typ: str
-    ) -> tuple[list[dict[str, Any]], Model]:
+    def __groups_by_affiliation(self, idx: str, typ: str) -> tuple[list[dict[str, Any]], Model]:
         ...
 
     def related_affiliations_by_type(
@@ -39,11 +37,6 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
         ...
 
     def get_products(
-        self,
-        *,
-        affiliation_id: int,
-        affiliation_type: str,
-        skip: int = 0,
-        limit: int = 100
+        self, *, affiliation_id: int, affiliation_type: str, skip: int = 0, limit: int = 100
     ):
         ...

@@ -7,7 +7,7 @@ def main():
             "poetry",
             "run",
             "autoflake",
-            "--remove-all-unused-variables",
+            "--remove-unused-variables",
             "--in-place",
             "--recursive",
             ".",

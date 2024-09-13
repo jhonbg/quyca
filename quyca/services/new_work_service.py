@@ -26,9 +26,7 @@ def get_work_by_id(work_id: str):
     return {"data": data}
 
 
-def get_works_by_affiliation(
-    affiliation_id: str, affiliation_type: str, query_params: QueryParams
-):
+def get_works_by_affiliation(affiliation_id: str, affiliation_type: str, query_params: QueryParams):
     works = None
     total_results = 0
     pipeline_params = {
@@ -165,9 +163,7 @@ def set_csv_ranking(work):
         for ranking in work.ranking:
             if type(ranking.date) == int:
                 date = datetime.fromtimestamp(ranking.date).strftime("%d-%m-%Y")
-                rankings.append(
-                    str(ranking.rank) + " / " + str(ranking.source) + " / " + str(date)
-                )
+                rankings.append(str(ranking.rank) + " / " + str(ranking.source) + " / " + str(date))
             else:
                 rankings.append(str(ranking.rank) + " / " + str(ranking.source))
         work.ranking = " | ".join(set(rankings))
@@ -186,10 +182,7 @@ def set_csv_types(work: Work):
     openalex_types = []
     scienti_types = []
     for work_type in work.types:
-        if (
-            work_type.source == "openalex"
-            and work_type.type in openalex_types_dict.keys()
-        ):
+        if work_type.source == "openalex" and work_type.type in openalex_types_dict.keys():
             openalex_types.append(openalex_types_dict.get(work_type.type))
         elif work_type.source == "scienti":
             scienti_types.append(str(work_type.type))
@@ -260,13 +253,9 @@ def set_csv_affiliations(work: Work):
                         groups_ranking.append(
                             str(ranking.rank)
                             + " / "
-                            + datetime.fromtimestamp(ranking.from_date).strftime(
-                                "%d-%m-%Y"
-                            )
+                            + datetime.fromtimestamp(ranking.from_date).strftime("%d-%m-%Y")
                             + " - "
-                            + datetime.fromtimestamp(ranking.to_date).strftime(
-                                "%d-%m-%Y"
-                            )
+                            + datetime.fromtimestamp(ranking.to_date).strftime("%d-%m-%Y")
                         )
     work.institutions = " | ".join(set(institutions))
     work.departments = " | ".join(set(departments))
@@ -279,9 +268,7 @@ def set_csv_affiliations(work: Work):
 def set_title_and_language(work: Work):
     def order(title: Title):
         hierarchy = ["openalex", "scholar", "scienti", "minciencias", "ranking"]
-        return (
-            hierarchy.index(title.source) if title.source in hierarchy else float("inf")
-        )
+        return hierarchy.index(title.source) if title.source in hierarchy else float("inf")
 
     first_title = sorted(work.titles, key=order)[0]
     work.language = first_title.lang
@@ -299,9 +286,7 @@ def set_product_types(work: Work):
 
     product_types = list(
         map(
-            lambda product_type: ProductType(
-                name=product_type.type, source=product_type.source
-            ),
+            lambda product_type: ProductType(name=product_type.type, source=product_type.source),
             work.types,
         )
     )
@@ -322,9 +307,7 @@ def set_authors_external_ids(work: Work):
         return
     for author in work.authors:
         if author.id:
-            author.external_ids = person_repository.get_person_by_id(
-                str(author.id)
-            ).external_ids
+            author.external_ids = person_repository.get_person_by_id(str(author.id)).external_ids
 
 
 def limit_authors(work: Work, limit: int = 10):
@@ -342,9 +325,7 @@ def set_external_ids(work: Work):
         if external_id.source in ["minciencias", "scienti"]:
             new_external_ids.append(external_id)
         else:
-            work.external_urls.append(
-                ExternalUrl(url=external_id.id, source=external_id.source)
-            )
+            work.external_urls.append(ExternalUrl(url=external_id.id, source=external_id.source))
     work.external_ids = list(set(new_external_ids))
 
 

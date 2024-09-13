@@ -18,9 +18,7 @@ def update_csv_work_source(work: Work):
         if source_data.publisher:
             work.publisher = str(source_data.publisher.name)
         if source_data.apc.charges and source_data.apc.currency:
-            work.source_apc = (
-                str(source_data.apc.charges) + " / " + str(source_data.apc.currency)
-            )
+            work.source_apc = str(source_data.apc.charges) + " / " + str(source_data.apc.currency)
         work.source_name = work.source.name
 
 

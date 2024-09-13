@@ -133,8 +133,6 @@ class AffiliationQueryParams(QueryBase):
     def get_search(self) -> dict[str, Any]:
         return {
             "types.type": (
-                {"$in": settings.institutions}
-                if self.type.lower() == "institution"
-                else self.type
+                {"$in": settings.institutions} if self.type.lower() == "institution" else self.type
             )
         }

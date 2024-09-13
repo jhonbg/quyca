@@ -10,9 +10,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         ...
 
     @classmethod
-    def wrap_pipeline(
-        cls, affiliation_id: str, affiliation_type: str
-    ) -> list[dict[str, Any]]:
+    def wrap_pipeline(cls, affiliation_id: str, affiliation_type: str) -> list[dict[str, Any]]:
         ...
 
     @classmethod
@@ -20,9 +18,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         ...
 
     @classmethod
-    def count_papers_by_author(
-        cls, *, author_id: str, filters: dict[str, Any] = {}
-    ) -> int:
+    def count_papers_by_author(cls, *, author_id: str, filters: dict[str, Any] = {}) -> int:
         ...
 
     @classmethod

@@ -101,10 +101,7 @@ class RepositoryBase(Generic[ModelType, IteratorType]):
         #     )
         session = self.engine.get_collection(self.model)
         results = (
-            session.find(filter_criteria, projection)
-            .sort(sort_expresion)
-            .skip(skip)
-            .limit(limit)
+            session.find(filter_criteria, projection).sort(sort_expresion).skip(skip).limit(limit)
         )
         count = session.count_documents(filter_criteria)
         return self.iterator(results), count

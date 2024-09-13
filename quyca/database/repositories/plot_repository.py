@@ -4,9 +4,7 @@ from database.generators import work_generator
 from database.mongo import database, calculations_database
 
 
-def get_bars_data_by_affiliation_type(
-    affiliation_id: str, affiliation_type: str
-) -> dict:
+def get_bars_data_by_affiliation_type(affiliation_id: str, affiliation_type: str) -> dict:
     pipeline = [
         {
             "$match": {
@@ -42,9 +40,7 @@ def get_bars_data_by_affiliation_type(
     return data
 
 
-def get_bars_data_by_researcher_and_affiliation(
-    affiliation_id, affiliation_type: str
-) -> list:
+def get_bars_data_by_researcher_and_affiliation(affiliation_id, affiliation_type: str) -> list:
     data = []
     if affiliation_type in ["group", "department", "faculty"]:
         for author in database["person"].find(
@@ -358,9 +354,7 @@ def get_coauthorship_by_country_map_by_person(person_id):
     return data
 
 
-def get_coauthorship_by_colombian_department_map_by_affiliation(
-    affiliation_id, affiliation_type
-):
+def get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id, affiliation_type):
     data = []
     if affiliation_type in ["group", "department", "faculty"]:
         for author in database["person"].find(
@@ -506,9 +500,9 @@ def get_works_rankings_by_institution_or_group(affiliation_id: str):
         {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
         {"$count": "total_results"},
     ]
-    total_results = next(
-        database["works"].aggregate(count_pipeline), {"total_results": 0}
-    )["total_results"]
+    total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0})[
+        "total_results"
+    ]
     works = database["works"].aggregate(pipeline)
     return work_generator.get(works), total_results
 
@@ -570,9 +564,9 @@ def get_works_rankings_by_faculty_or_department(affiliation_id):
         {"$replaceRoot": {"newRoot": "$work"}},
         {"$count": "total_results"},
     ]
-    total_results = next(
-        database["person"].aggregate(count_pipeline), {"total_results": 0}
-    )["total_results"]
+    total_results = next(database["person"].aggregate(count_pipeline), {"total_results": 0})[
+        "total_results"
+    ]
     works = database["person"].aggregate(pipeline)
     return work_generator.get(works), total_results
 
@@ -598,8 +592,8 @@ def get_works_rankings_by_person(person_id: str):
         {"$match": {"authors.id": ObjectId(person_id)}},
         {"$count": "total_results"},
     ]
-    total_results = next(
-        database["works"].aggregate(count_pipeline), {"total_results": 0}
-    )["total_results"]
+    total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0})[
+        "total_results"
+    ]
     works = database["works"].aggregate(pipeline)
     return work_generator.get(works), total_results

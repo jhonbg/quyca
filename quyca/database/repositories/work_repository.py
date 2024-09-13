@@ -1,4 +1,4 @@
-from typing import Optional, Any, Generator
+from typing import Optional, Generator
 
 from bson import ObjectId
 
@@ -28,9 +28,7 @@ def get_works_by_affiliation(
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = get_works_by_affiliation_pipeline(affiliation_id, affiliation_type)
-    collection = (
-        "affiliations" if affiliation_type in ["faculty", "department"] else "works"
-    )
+    collection = "affiliations" if affiliation_type in ["faculty", "department"] else "works"
     if collection == "affiliations":
         pipeline += [{"$replaceRoot": {"newRoot": "$works"}}]
     base_repository.set_pagination(pipeline, query_params)
@@ -42,23 +40,19 @@ def search_works(
     query_params: QueryParams, pipeline_params: dict | None = None
 ) -> (Generator, int):
     pipeline = (
-        [{"$match": {"$text": {"$search": query_params.keywords}}}]
-        if query_params.keywords
-        else []
+        [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     )
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     works = database["works"].aggregate(pipeline)
     count_pipeline = (
-        [{"$match": {"$text": {"$search": query_params.keywords}}}]
-        if query_params.keywords
-        else []
+        [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     )
     count_pipeline += [
         {"$count": "total_results"},
     ]
-    total_results = next(
-        database["works"].aggregate(count_pipeline), {"total_results": 0}
-    )["total_results"]
+    total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0})[
+        "total_results"
+    ]
     return work_generator.get(works), total_results
 
 
@@ -67,9 +61,7 @@ def get_sources_by_affiliation(
 ) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
-    collection = (
-        "affiliations" if affiliation_type in ["faculty", "department"] else "works"
-    )
+    collection = "affiliations" if affiliation_type in ["faculty", "department"] else "works"
     pipeline = get_sources_by_affiliation_pipeline(affiliation_id, affiliation_type)
     if match_param := pipeline_params.get("match"):
         pipeline += [{"$match": match_param}]
@@ -105,15 +97,11 @@ def get_works_count_by_affiliation(
         "institution" if affiliation_type in settings.institutions else affiliation_type
     )
     pipeline = get_works_by_affiliation_pipeline(affiliation_id, affiliation_type)
-    collection = (
-        "affiliations" if affiliation_type in ["department", "faculty"] else "works"
-    )
+    collection = "affiliations" if affiliation_type in ["department", "faculty"] else "works"
     if collection == "affiliations":
         pipeline += [{"$replaceRoot": {"newRoot": "$works"}}]
     pipeline += [{"$count": "total"}]
-    works_count = next(database[collection].aggregate(pipeline), {"total": 0}).get(
-        "total", 0
-    )
+    works_count = next(database[collection].aggregate(pipeline), {"total": 0}).get("total", 0)
     return works_count
 
 
@@ -237,18 +225,16 @@ def get_works_by_person(
         {"$match": {"authors.id": ObjectId(person_id)}},
         {"$count": "total_results"},
     ]
-    total_results = next(
-        database["works"].aggregate(count_pipeline), {"total_results": 0}
-    )["total_results"]
+    total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0})[
+        "total_results"
+    ]
     return work_generator.get(cursor), total_results
 
 
 def get_works_count_by_person(person_id) -> Optional[int]:
     return (
         database["works"]
-        .aggregate(
-            [{"$match": {"authors.id": ObjectId(person_id)}}, {"$count": "total"}]
-        )
+        .aggregate([{"$match": {"authors.id": ObjectId(person_id)}}, {"$count": "total"}])
         .next()
         .get("total", 0)
     )
@@ -275,9 +261,7 @@ def get_works_csv_by_person(person_id: str) -> Generator:
                 "localField": "authors.affiliations.id",
                 "foreignField": "_id",
                 "as": "affiliations_data",
-                "pipeline": [
-                    {"$project": {"id": "$_id", "addresses.country": 1, "ranking": 1}}
-                ],
+                "pipeline": [{"$project": {"id": "$_id", "addresses.country": 1, "ranking": 1}}],
             }
         },
         {
@@ -330,9 +314,7 @@ def get_works_csv_by_institution(institution_id: str) -> Generator:
                 "localField": "authors.affiliations.id",
                 "foreignField": "_id",
                 "as": "affiliations_data",
-                "pipeline": [
-                    {"$project": {"id": "$_id", "addresses.country": 1, "ranking": 1}}
-                ],
+                "pipeline": [{"$project": {"id": "$_id", "addresses.country": 1, "ranking": 1}}],
             }
         },
         {
@@ -391,9 +373,9 @@ def get_works_by_institution_or_group(
         {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
         {"$count": "total_results"},
     ]
-    total_results = next(
-        database["works"].aggregate(count_pipeline), {"total_results": 0}
-    )["total_results"]
+    total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0})[
+        "total_results"
+    ]
     return work_generator.get(cursor), total_results
 
 
@@ -436,9 +418,9 @@ def get_works_by_faculty_or_department(
         {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
         {"$count": "total_results"},
     ]
-    total_results = next(
-        database["person"].aggregate(count_pipeline), {"total_results": 0}
-    )["total_results"]
+    total_results = next(database["person"].aggregate(count_pipeline), {"total_results": 0})[
+        "total_results"
+    ]
     return work_generator.get(cursor), total_results
 
 
@@ -451,9 +433,7 @@ def get_works_csv_by_group(group_id: str) -> Generator:
                 "localField": "authors.affiliations.id",
                 "foreignField": "_id",
                 "as": "affiliations_data",
-                "pipeline": [
-                    {"$project": {"id": "$_id", "addresses.country": 1, "ranking": 1}}
-                ],
+                "pipeline": [{"$project": {"id": "$_id", "addresses.country": 1, "ranking": 1}}],
             }
         },
         {
@@ -544,9 +524,7 @@ def get_works_csv_by_faculty_or_department(affiliation_id: str):
                 "localField": "work.authors.affiliations.id",
                 "foreignField": "_id",
                 "as": "affiliations_data",
-                "pipeline": [
-                    {"$project": {"id": "$_id", "addresses.country": 1, "ranking": 1}}
-                ],
+                "pipeline": [{"$project": {"id": "$_id", "addresses.country": 1, "ranking": 1}}],
             }
         },
         {
@@ -637,11 +615,7 @@ def get_works_by_affiliation_pipeline(affiliation_id: str, affiliation_type: str
         {"$unwind": "$work.authors"},
         {"$match": {"$expr": {"$eq": ["$person._id", "$work.authors.id"]}}},
         {"$unwind": "$work.authors.affiliations"},
-        {
-            "$match": {
-                "$expr": {"$eq": ["$relations.id", "$work.authors.affiliations.id"]}
-            }
-        },
+        {"$match": {"$expr": {"$eq": ["$relations.id", "$work.authors.affiliations.id"]}}},
         {"$group": {"_id": "$work._id", "work": {"$first": "$work"}}},
         {"$project": {"work._id": 1}},
         {
@@ -736,13 +710,7 @@ def get_works_count_by_faculty_or_department(affiliation_id: str) -> int:
                 ],
             }
         },
-        {
-            "$addFields": {
-                "products_count": {
-                    "$ifNull": [{"$arrayElemAt": ["$works.count", 0]}, 0]
-                }
-            }
-        },
+        {"$addFields": {"products_count": {"$ifNull": [{"$arrayElemAt": ["$works.count", 0]}, 0]}}},
     ]
     result = next(database["person"].aggregate(pipeline), {"products_count": 0})
     return result.get("products_count", 0)

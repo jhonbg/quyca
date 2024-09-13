@@ -15,9 +15,7 @@ def get_affiliation_by_id(affiliation_type: str, affiliation_id: str):
         return jsonify({"error": str(e)}), 400
 
 
-@affiliation_app_router.route(
-    "/<affiliation_type>/<affiliation_id>/affiliations", methods=["GET"]
-)
+@affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/affiliations", methods=["GET"])
 def get_affiliation_affiliations(affiliation_type: str, affiliation_id: str):
     try:
         data = new_affiliation_service.get_related_affiliations_by_affiliation(
@@ -52,9 +50,7 @@ def get_affiliation_research_products(affiliation_id: str, affiliation_type: str
 )
 def get_works_csv_by_affiliation(affiliation_type: str, affiliation_id: str):
     try:
-        data = new_work_service.get_works_csv_by_affiliation(
-            affiliation_id, affiliation_type
-        )
+        data = new_work_service.get_works_csv_by_affiliation(affiliation_id, affiliation_type)
         response = Response(data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response

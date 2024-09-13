@@ -27,17 +27,13 @@ def get_affiliation_by_id(affiliation_id: str) -> dict:
     return {"data": affiliation.model_dump(by_alias=True)}
 
 
-def get_related_affiliations_by_affiliation(
-    affiliation_id: str, affiliation_type: str
-) -> dict:
+def get_related_affiliations_by_affiliation(affiliation_id: str, affiliation_type: str) -> dict:
     data = {}
     if affiliation_type == "institution":
         faculties = affiliation_repository.get_related_affiliations_by_type(
             affiliation_id, affiliation_type, "faculty"
         )
-        data["faculties"] = [
-            faculty.model_dump(include={"id", "name"}) for faculty in faculties
-        ]
+        data["faculties"] = [faculty.model_dump(include={"id", "name"}) for faculty in faculties]
     if affiliation_type in ["faculty", "institution"]:
         departments = affiliation_repository.get_related_affiliations_by_type(
             affiliation_id, affiliation_type, "department"
@@ -52,9 +48,7 @@ def get_related_affiliations_by_affiliation(
         data["groups"] = [group.model_dump(include={"id", "name"}) for group in groups]
     if affiliation_type in ["group", "department", "faculty"]:
         authors = person_repository.get_persons_by_affiliation(affiliation_id)
-        data["authors"] = [
-            author.model_dump(include={"id", "full_name"}) for author in authors
-        ]
+        data["authors"] = [author.model_dump(include={"id", "full_name"}) for author in authors]
     return data
 
 
@@ -88,8 +82,8 @@ def search_affiliations(affiliation_type, query_params):
 
 
 def set_citations_count(affiliation: Affiliation):
-    affiliation.citations_count = (
-        calculations_repository.get_citations_count_by_affiliation(affiliation.id)
+    affiliation.citations_count = calculations_repository.get_citations_count_by_affiliation(
+        affiliation.id
     )
 
 
@@ -108,23 +102,20 @@ def set_upper_affiliations_and_logo(affiliation: Affiliation, affiliation_type: 
             filter(lambda x: x.source == "logo", affiliation.external_urls),
             ExternalUrl(),
         ).url
-        pass
     upper_affiliations = []
     for relation in affiliation.relations:
-        if (
-            affiliation_type == "faculty"
-            and relation.types[0].type in institutions_list
-        ):
+        if affiliation_type == "faculty" and relation.types[0].type in institutions_list:
             set_logo(affiliation, relation)
             upper_affiliations.append(relation)
-        elif affiliation_type == "department" and relation.types[
-            0
-        ].type in institutions_list + ["faculty"]:
+        elif affiliation_type == "department" and relation.types[0].type in institutions_list + [
+            "faculty"
+        ]:
             set_logo(affiliation, relation)
             upper_affiliations.append(relation)
-        elif affiliation_type == "group" and relation.types[
-            0
-        ].type in institutions_list + ["department", "faculty"]:
+        elif affiliation_type == "group" and relation.types[0].type in institutions_list + [
+            "department",
+            "faculty",
+        ]:
             set_logo(affiliation, relation)
             upper_affiliations.append(relation)
     affiliation.affiliations = upper_affiliations
@@ -139,14 +130,12 @@ def set_logo(affiliation: Affiliation, relation: Relation):
 
 def set_products_count(affiliation, affiliation_type):
     if affiliation_type in ["department", "faculty"]:
-        affiliation.products_count = (
-            work_repository.get_works_count_by_faculty_or_department(affiliation.id)
+        affiliation.products_count = work_repository.get_works_count_by_faculty_or_department(
+            affiliation.id
         )
 
 
-def get_affiliation_plot(
-    affiliation_id: str, affiliation_type: str, query_params: QueryParams
-):
+def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_params: QueryParams):
     plot_type = query_params.plot
     if plot_type in [
         "faculties_by_product_type",
@@ -161,9 +150,7 @@ def get_affiliation_plot(
         "citations_by_research_group",
     ]:
         relation_type = plot_type.split("_")[-1]
-        return plot_citations_by_affiliations(
-            affiliation_id, affiliation_type, relation_type
-        )
+        return plot_citations_by_affiliations(affiliation_id, affiliation_type, relation_type)
     if plot_type in [
         "apc_expenses_by_faculty",
         "apc_expenses_by_department",
@@ -177,12 +164,8 @@ def get_affiliation_plot(
         "h_index_by_research_group",
     ]:
         relation_type = plot_type.split("_")[-1]
-        return plot_h_by_affiliation(
-            affiliation_id, affiliation_type, relation_type, query_params
-        )
-    return globals()["plot_" + plot_type](
-        affiliation_id, affiliation_type, query_params
-    )
+        return plot_h_by_affiliation(affiliation_id, affiliation_type, relation_type, query_params)
+    return globals()["plot_" + plot_type](affiliation_id, affiliation_type, query_params)
 
 
 def plot_annual_evolution_by_scienti_classification(
@@ -201,18 +184,12 @@ def plot_affiliation_type(
 ):
     if affiliation_plot_type not in ["group", "department", "faculty"]:
         return None
-    data = plot_repository.get_bars_data_by_affiliation_type(
-        affiliation_id, affiliation_plot_type
-    )
+    data = plot_repository.get_bars_data_by_affiliation_type(affiliation_id, affiliation_plot_type)
     return {"plot": bar_parser.get_by_affiliation_type(data)}
 
 
-def plot_annual_citation_count(
-    affiliation_id: str, affiliation_type: str, query_params
-):
-    works = work_repository.get_works_by_affiliation(
-        affiliation_id, affiliation_type, query_params
-    )
+def plot_annual_citation_count(affiliation_id: str, affiliation_type: str, query_params):
+    works = work_repository.get_works_by_affiliation(affiliation_id, affiliation_type, query_params)
     return {"plot": bar_parser.get_citations_by_year(works)}
 
 
@@ -232,9 +209,7 @@ def plot_annual_apc_expenses(affiliation_id: str, affiliation_type: str, query_p
     return {"plot": bar_parser.apc_by_year(sources, 2022)}
 
 
-def plot_annual_articles_open_access(
-    affiliation_id: str, affiliation_type: str, query_params
-):
+def plot_annual_articles_open_access(affiliation_id: str, affiliation_type: str, query_params):
     pipeline_params = {
         "match": {
             "bibliographic_info.is_open_access": {"$ne": None},
@@ -264,9 +239,7 @@ def plot_annual_articles_by_top_publishers(
     return {"plot": bar_parser.works_by_publisher_year(sources)}
 
 
-def plot_most_used_title_words(
-    affiliation_id: str, affiliation_type: str, query_params
-):
+def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query_params):
     data = calculations_database["affiliations"].find_one(
         {"_id": ObjectId(affiliation_id)}, {"top_words": 1}
     )
@@ -284,23 +257,19 @@ def plot_most_used_title_words(
         return {"plot": None}
 
 
-def plot_citations_by_affiliations(
-    affiliation_id: str, affiliation_type: str, relation_type: str
-):
+def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, relation_type: str):
     affiliations = affiliation_repository.get_related_affiliations_by_type(
         affiliation_id, affiliation_type, relation_type
     )
     data = {}
     for affiliation in affiliations:
-        data[
-            affiliation.name
-        ] = calculations_repository.get_citations_count_by_affiliation(affiliation.id)
+        data[affiliation.name] = calculations_repository.get_citations_count_by_affiliation(
+            affiliation.id
+        )
     return pie_parser.get_citations_by_affiliation(data)
 
 
-def plot_apc_by_affiliation(
-    affiliation_id: str, affiliation_type: str, relation_type: str
-):
+def plot_apc_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str):
     pipeline_params = {
         "match": {
             "$and": [
@@ -335,9 +304,7 @@ def plot_h_by_affiliation(
     return pie_parser.get_h_by_affiliation(data)
 
 
-def plot_articles_by_publisher(
-    affiliation_id: str, affiliation_type: str, query_params
-):
+def plot_articles_by_publisher(affiliation_id: str, affiliation_type: str, query_params):
     pipeline_params = {
         "project": ["publisher"],
     }
@@ -389,9 +356,7 @@ def plot_products_by_database(affiliation_id: str, affiliation_type: str, query_
     return pie_parser.get_products_by_database(data)
 
 
-def plot_articles_by_access_route(
-    affiliation_id: str, affiliation_type: str, query_params
-):
+def plot_articles_by_access_route(affiliation_id: str, affiliation_type: str, query_params):
     pipeline_params = {
         "project": ["bibliographic_info"],
     }
@@ -410,15 +375,11 @@ def plot_articles_by_access_route(
 
 
 @pie_parser.get_percentage
-def plot_products_by_author_sex(
-    affiliation_id: str, affiliation_type: str, query_params
-):
+def plot_products_by_author_sex(affiliation_id: str, affiliation_type: str, query_params):
     return plot_repository.get_products_by_author_sex(affiliation_id)
 
 
-def plot_products_by_author_age_range(
-    affiliation_id: str, affiliation_type: str, query_params
-):
+def plot_products_by_author_age_range(affiliation_id: str, affiliation_type: str, query_params):
     works = plot_repository.get_products_by_author_age_and_affiliation(affiliation_id)
     result = pie_parser.get_products_by_age(works)
     if result:
@@ -427,9 +388,7 @@ def plot_products_by_author_age_range(
         return {"plot": None}
 
 
-def plot_articles_by_scienti_category(
-    affiliation_id: str, affiliation_type: str, query_params
-):
+def plot_articles_by_scienti_category(affiliation_id: str, affiliation_type: str, query_params):
     pipeline_params = {
         "match": {"ranking": {"$ne": []}},
         "project": ["ranking"],
@@ -437,16 +396,12 @@ def plot_articles_by_scienti_category(
     works = work_repository.get_works_by_affiliation(
         affiliation_id, affiliation_type, query_params, pipeline_params
     )
-    total_works = work_repository.get_works_count_by_affiliation(
-        affiliation_id, affiliation_type
-    )
+    total_works = work_repository.get_works_count_by_affiliation(affiliation_id, affiliation_type)
     data = chain.from_iterable(map(lambda x: x.ranking, works))
     return pie_parser.get_articles_by_scienti_category(data, total_works)
 
 
-def plot_articles_by_scimago_quartile(
-    affiliation_id: str, affiliation_type: str, query_params
-):
+def plot_articles_by_scimago_quartile(affiliation_id: str, affiliation_type: str, query_params):
     works = None
     total_results = 0
     if affiliation_type in ["institution", "group"]:
@@ -479,9 +434,7 @@ def plot_articles_by_scimago_quartile(
 def plot_articles_by_publishing_institution(
     affiliation_id: str, affiliation_type: str, query_params
 ):
-    institution = database["affiliations"].find_one(
-        {"_id": ObjectId(affiliation_id)}, {"names": 1}
-    )
+    institution = database["affiliations"].find_one({"_id": ObjectId(affiliation_id)}, {"names": 1})
     pipeline_params = {
         "project": ["publisher"],
     }
@@ -491,9 +444,7 @@ def plot_articles_by_publishing_institution(
     return pie_parser.get_products_by_same_institution(sources, institution)
 
 
-def plot_coauthorship_by_country_map(
-    affiliation_id: str, affiliation_type: str, query_params
-):
+def plot_coauthorship_by_country_map(affiliation_id: str, affiliation_type: str, query_params):
     data = plot_repository.get_coauthorship_by_country_map_by_affiliation(
         affiliation_id, affiliation_type
     )

@@ -1,9 +1,7 @@
 from database.models.base_model import QueryParams
 
 
-def set_search_end_stages(
-    pipeline: list, query_params: QueryParams, pipeline_params: dict = None
-):
+def set_search_end_stages(pipeline: list, query_params: QueryParams, pipeline_params: dict = None):
     if pipeline_params is None:
         pipeline_params = {}
     if sort := query_params.sort:
@@ -98,15 +96,11 @@ def set_sort(sort: str | None, pipeline: list):
                                                 "then": 0,
                                             },
                                             {
-                                                "case": {
-                                                    "$eq": ["$$title.source", "scholar"]
-                                                },
+                                                "case": {"$eq": ["$$title.source", "scholar"]},
                                                 "then": 1,
                                             },
                                             {
-                                                "case": {
-                                                    "$eq": ["$$title.source", "scienti"]
-                                                },
+                                                "case": {"$eq": ["$$title.source", "scienti"]},
                                                 "then": 2,
                                             },
                                             {
@@ -119,9 +113,7 @@ def set_sort(sort: str | None, pipeline: list):
                                                 "then": 3,
                                             },
                                             {
-                                                "case": {
-                                                    "$eq": ["$$title.source", "ranking"]
-                                                },
+                                                "case": {"$eq": ["$$title.source", "ranking"]},
                                                 "then": 4,
                                             },
                                         ]

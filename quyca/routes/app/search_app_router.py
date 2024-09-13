@@ -34,9 +34,7 @@ def search_works():
 def search_affiliations(affiliation_type: str):
     try:
         query_params = QueryParams(**request.args)
-        data = new_affiliation_service.search_affiliations(
-            affiliation_type, query_params
-        )
+        data = new_affiliation_service.search_affiliations(affiliation_type, query_params)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400

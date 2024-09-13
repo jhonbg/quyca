@@ -15,9 +15,7 @@ from database.mongo import database
 def get_affiliation_by_id(affiliation_id: str) -> Affiliation:
     from database.repositories import work_repository
 
-    affiliation_data = database["affiliations"].find_one(
-        {"_id": ObjectId(affiliation_id)}
-    )
+    affiliation_data = database["affiliations"].find_one({"_id": ObjectId(affiliation_id)})
     if not affiliation_data:
         raise AffiliationException(affiliation_id)
     affiliation = Affiliation(**affiliation_data)
@@ -25,9 +23,7 @@ def get_affiliation_by_id(affiliation_id: str) -> Affiliation:
         [relation.model_dump() for relation in affiliation.relations],
         affiliation.types[0].type,
     )
-    affiliation_calculations = calculations_repository.get_affiliation_calculations(
-        affiliation_id
-    )
+    affiliation_calculations = calculations_repository.get_affiliation_calculations(affiliation_id)
     affiliation.citations_count = affiliation_calculations.citations_count
     affiliation.products_count = work_repository.get_works_count_by_affiliation(
         affiliation_id, affiliation.types[0].type
@@ -38,16 +34,13 @@ def get_affiliation_by_id(affiliation_id: str) -> Affiliation:
     return affiliation
 
 
-def get_upper_affiliations(
-    affiliations: list, affiliation_type: str
-) -> tuple[list, str]:
+def get_upper_affiliations(affiliations: list, affiliation_type: str) -> tuple[list, str]:
     affiliations_hierarchy = ["group", "department", "faculty"] + settings.institutions
     affiliation_position = affiliations_hierarchy.index(affiliation_type)
     affiliations = list(
         filter(
             lambda x: x["types"][0]["type"] in affiliations_hierarchy
-            and affiliations_hierarchy.index(x["types"][0]["type"])
-            > affiliation_position,
+            and affiliations_hierarchy.index(x["types"][0]["type"]) > affiliation_position,
             affiliations,
         )
     )
@@ -82,16 +75,12 @@ def get_upper_affiliations(
 
 def get_groups_by_affiliation(affiliation_id: str, affiliation_type: str):
     pipeline = get_groups_by_affiliation_pipeline(affiliation_id, affiliation_type)
-    collection = (
-        "person" if affiliation_type in ["faculty", "department"] else "affiliations"
-    )
+    collection = "person" if affiliation_type in ["faculty", "department"] else "affiliations"
     groups = database[collection].aggregate(pipeline)
     return affiliation_generator.get(groups)
 
 
-def get_groups_by_affiliation_pipeline(
-    affiliation_id: str, affiliation_type: str
-) -> list:
+def get_groups_by_affiliation_pipeline(affiliation_id: str, affiliation_type: str) -> list:
     if affiliation_type == "group":
         return [{"$match": {"_id": ObjectId(affiliation_id)}}]
     if affiliation_type in ["department", "faculty"]:
@@ -164,13 +153,9 @@ def search_affiliations(
     query_params: QueryParams,
     pipeline_params: dict | None = None,
 ) -> (Generator, int):
-    types = (
-        institutions_list if affiliation_type == "institution" else [affiliation_type]
-    )
+    types = institutions_list if affiliation_type == "institution" else [affiliation_type]
     pipeline = (
-        [{"$match": {"$text": {"$search": query_params.keywords}}}]
-        if query_params.keywords
-        else []
+        [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     )
     pipeline += [
         {
@@ -189,9 +174,7 @@ def search_affiliations(
         },
         {
             "$addFields": {
-                "products_count": {
-                    "$ifNull": [{"$arrayElemAt": ["$works.count", 0]}, 0]
-                },
+                "products_count": {"$ifNull": [{"$arrayElemAt": ["$works.count", 0]}, 0]},
             },
         },
         {
@@ -208,15 +191,13 @@ def search_affiliations(
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     affiliations = database["affiliations"].aggregate(pipeline)
     count_pipeline = (
-        [{"$match": {"$text": {"$search": query_params.keywords}}}]
-        if query_params.keywords
-        else []
+        [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     )
     count_pipeline += [
         {"$match": {"types.type": {"$in": types}}},
         {"$count": "total_results"},
     ]
-    total_results = next(
-        database["affiliations"].aggregate(count_pipeline), {"total_results": 0}
-    )["total_results"]
+    total_results = next(database["affiliations"].aggregate(count_pipeline), {"total_results": 0})[
+        "total_results"
+    ]
     return affiliation_generator.get(affiliations), total_results

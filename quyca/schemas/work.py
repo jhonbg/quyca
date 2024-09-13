@@ -121,9 +121,7 @@ class WorkSearch(WorkBase):
 
     @model_validator(mode="after")
     def get_types(self):
-        types = list(
-            map(lambda x: ProductType(name=x.type, source=x.source), self.types)
-        )
+        types = list(map(lambda x: ProductType(name=x.type, source=x.source), self.types))
         hierarchy = ["openalex", "scienti", "minciencias", "scholar"]
         v = sorted(types, key=lambda x: hierarchy.index(x.source))
         self.product_type = v[0] if v else None
@@ -205,13 +203,9 @@ class WorkProccessed(WorkListApp):
     @model_validator(mode="before")
     @classmethod
     def get_openalex_url(cls, data: dict[str, Any]):
-        openalex = next(
-            filter(lambda x: x["source"] == "openalex", data["external_ids"]), None
-        )
+        openalex = next(filter(lambda x: x["source"] == "openalex", data["external_ids"]), None)
         if openalex:
-            data["external_urls"] += [
-                ExternalURL(url=openalex["id"], source="openalex")
-            ]
+            data["external_urls"] += [ExternalURL(url=openalex["id"], source="openalex")]
         return data
 
     @field_validator("external_ids")
@@ -223,9 +217,7 @@ class WorkProccessed(WorkListApp):
                     {
                         "id": x.id,
                         "source": x.source,
-                        "url": settings.EXTERNAL_IDS_MAP.get(x.source, "").format(
-                            id=x.id
-                        ),
+                        "url": settings.EXTERNAL_IDS_MAP.get(x.source, "").format(id=x.id),
                     }
                 ),
                 filter(lambda x: x.source in settings.EXTERNAL_IDS_MAP, v),
@@ -274,9 +266,7 @@ class WorkCsv(WorkProccessed):
                     {
                         "id": x.id,
                         "source": x.source,
-                        "url": settings.EXTERNAL_IDS_MAP.get(x.source, "").format(
-                            id=x.id
-                        ),
+                        "url": settings.EXTERNAL_IDS_MAP.get(x.source, "").format(id=x.id),
                     }
                 ),
                 filter(lambda x: x.source in settings.EXTERNAL_IDS_MAP, v),
@@ -294,9 +284,7 @@ class WorkCsv(WorkProccessed):
         self.subject_names = " | ".join(
             chain.from_iterable(
                 map(
-                    lambda x: [
-                        sub.name for sub in x.subjects if x.source == "openalex"
-                    ],
+                    lambda x: [sub.name for sub in x.subjects if x.source == "openalex"],
                     self.subjects,
                 )
             )

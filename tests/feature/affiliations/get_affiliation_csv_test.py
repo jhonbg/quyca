@@ -19,9 +19,7 @@ def test_get_csv_works_by_faculty(client):
         .aggregate([{"$match": {"types.type": "faculty"}}, {"$sample": {"size": 1}}])
         .next()["_id"]
     )
-    response = client.get(
-        f"/app/affiliation/faculty/{random_faculty_id}/research/products/csv"
-    )
+    response = client.get(f"/app/affiliation/faculty/{random_faculty_id}/research/products/csv")
     assert response.status_code == 200
 
 
@@ -43,7 +41,5 @@ def test_get_csv_works_by_group(client):
         .aggregate([{"$match": {"types.type": "group"}}, {"$sample": {"size": 1}}])
         .next()["_id"]
     )
-    response = client.get(
-        f"/app/affiliation/group/{random_group_id}/research/products/csv"
-    )
+    response = client.get(f"/app/affiliation/group/{random_group_id}/research/products/csv")
     assert response.status_code == 200

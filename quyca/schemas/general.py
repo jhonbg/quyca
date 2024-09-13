@@ -39,11 +39,7 @@ class ExternalId(BaseModel):
         if isinstance(v, dict):
             id = []
             id += [v.get("COD_RH")] if isinstance(v.get("COD_RH", None), str) else []
-            id += (
-                [v.get("COD_PRODUCTO")]
-                if isinstance(v.get("COD_PRODUCTO", None), str)
-                else []
-            )
+            id += [v.get("COD_PRODUCTO")] if isinstance(v.get("COD_PRODUCTO", None), str) else []
             return "-".join(id)
         if isinstance(v, Identifier):
             id = []
@@ -90,16 +86,10 @@ class QueryBase(BaseModel):
         return {}
 
     def next_query(self) -> str:
-        return (
-            f"max={self.max}&page={self.page + 1}&"
-            f"sort={self.sort}&keywords={self.keywords}"
-        )
+        return f"max={self.max}&page={self.page + 1}&" f"sort={self.sort}&keywords={self.keywords}"
 
     def previous_query(self) -> str | None:
-        return (
-            f"max={self.max}&page={self.page - 1}&"
-            f"sort={self.sort}&keywords={self.keywords}"
-        )
+        return f"max={self.max}&page={self.page - 1}&" f"sort={self.sort}&keywords={self.keywords}"
 
     def get_cursor(self, path: str, total: int = 0) -> dict[str, str]:
         """
@@ -112,9 +102,7 @@ class QueryBase(BaseModel):
                 else None
             ),
             "previous": (
-                f"{settings.APP_DOMAIN}{path}?{self.previous_query()}"
-                if self.page > 1
-                else None
+                f"{settings.APP_DOMAIN}{path}?{self.previous_query()}" if self.page > 1 else None
             ),
         }
 

@@ -30,12 +30,10 @@ def get_coauthorship_by_country_map(works):
     for item, feat in enumerate(worldmap["features"]):
         if feat["properties"]["country_code"] in countries.keys():
             country_code = feat["properties"]["country_code"]
-            worldmap["features"][item]["properties"]["count"] = countries[country_code][
-                "count"
+            worldmap["features"][item]["properties"]["count"] = countries[country_code]["count"]
+            worldmap["features"][item]["properties"]["log_count"] = countries[country_code][
+                "log_count"
             ]
-            worldmap["features"][item]["properties"]["log_count"] = countries[
-                country_code
-            ]["log_count"]
     return worldmap
 
 
@@ -53,9 +51,7 @@ def get_coauthorship_by_colombian_department_map(works: Iterable):
             and work["affiliation"]["addresses"]["city"]
         ):
             city = work["affiliation"]["addresses"]["city"]
-            state = cities_by_state[cities_by_state["MUNICIPIO"] == city][
-                "DEPARTAMENTO"
-            ]
+            state = cities_by_state[cities_by_state["MUNICIPIO"] == city]["DEPARTAMENTO"]
             if len(state) == 0:
                 continue
             state = state.iloc[0]
@@ -76,12 +72,8 @@ def get_coauthorship_by_colombian_department_map(works: Iterable):
             else "Bogotá D.C."
         )
         if dep_name in states.keys():
-            colombiamap["features"][item]["properties"]["count"] = states[dep_name][
-                "count"
-            ]
-            colombiamap["features"][item]["properties"]["log_count"] = states[dep_name][
-                "log_count"
-            ]
+            colombiamap["features"][item]["properties"]["count"] = states[dep_name]["count"]
+            colombiamap["features"][item]["properties"]["log_count"] = states[dep_name]["log_count"]
         else:
             colombiamap["features"][item]["properties"]["count"] = 0
             colombiamap["features"][item]["properties"]["log_count"] = 0

@@ -1,5 +1,5 @@
 from json import loads
-from typing import Any, Callable
+from typing import Any
 
 from schemas.general import GeneralMultiResponse
 from schemas.affiliation import (
@@ -47,9 +47,7 @@ class AffiliationService(
         log.info("Registering work repository")
         self.work_repository = repository
 
-    def register_calculations_repository(
-        self, *, repository: AffiliationCalculationsRepository
-    ):
+    def register_calculations_repository(self, *, repository: AffiliationCalculationsRepository):
         log.info("Registering affiliation calculations repository")
         self.affiliation_calculations_repository = repository
 
@@ -116,17 +114,13 @@ class AffiliationService(
     def get_affiliations(self, *, id: str, typ: str = None) -> dict[str, list[Any]]:
         data = {}
         if typ == "institution":
-            data["faculties"] = self.repository.get_affiliations_related_type(
-                id, "faculty", typ
-            )
+            data["faculties"] = self.repository.get_affiliations_related_type(id, "faculty", typ)
         if typ in ["faculty", "institution"]:
             data["departments"] = self.repository.get_affiliations_related_type(
                 id, "department", typ
             )
         if typ in ["department", "faculty", "institution"]:
-            data["groups"] = self.repository.get_affiliations_related_type(
-                id, "group", typ
-            )
+            data["groups"] = self.repository.get_affiliations_related_type(id, "group", typ)
         if typ in ["group", "department", "faculty"]:
             data["authors"] = self.repository.get_authors_by_affiliation(id, typ)
 
@@ -150,9 +144,7 @@ class AffiliationService(
             ).model_dump()
             for work in works
         ]
-        count = self.work_repository.count_papers(
-            affiliation_id=id, affiliation_type=typ
-        )
+        count = self.work_repository.count_papers(affiliation_id=id, affiliation_type=typ)
         return {
             "data": data,
             "info": {

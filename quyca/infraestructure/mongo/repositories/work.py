@@ -81,11 +81,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
             {"$unwind": "$work.authors"},
             {"$match": {"$expr": {"$eq": ["$person._id", "$work.authors.id"]}}},
             {"$unwind": "$work.authors.affiliations"},
-            {
-                "$match": {
-                    "$expr": {"$eq": ["$relations.id", "$work.authors.affiliations.id"]}
-                }
-            },
+            {"$match": {"$expr": {"$eq": ["$relations.id", "$work.authors.affiliations.id"]}}},
             {"$group": {"_id": "$work._id", "work": {"$first": "$work"}}},
             {"$project": {"work._id": 1}},
             {
@@ -146,9 +142,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         return sorted(citations_count, key=lambda x: x["count"], reverse=True)
 
     @classmethod
-    def count_papers_by_author(
-        cls, *, author_id: str, filters: dict[str, Any] = {}
-    ) -> int:
+    def count_papers_by_author(cls, *, author_id: str, filters: dict[str, Any] = {}) -> int:
         """
         Count the number of papers written by a specific author.
 
@@ -191,16 +185,12 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
 
         """
         affiliation_type = (
-            "institution"
-            if affiliation_type in settings.institutions
-            else affiliation_type
+            "institution" if affiliation_type in settings.institutions else affiliation_type
         )
         count_papers_pipeline = cls.get_pipeline_works_by_affiliation_id(
             affiliation_id, affiliation_type
         )
-        collection = (
-            Affiliation if affiliation_type not in ["institution", "group"] else Work
-        )
+        collection = Affiliation if affiliation_type not in ["institution", "group"] else Work
         count_papers_pipeline += (
             [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
         )
@@ -218,9 +208,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         cls, *, affiliation_id: str, affiliation_type: str = None
     ) -> list[general.CitationsCount]:
         """ """
-        affiliation_calculations = affiliation_calculations_repository.get_by_id(
-            id=affiliation_id
-        )
+        affiliation_calculations = affiliation_calculations_repository.get_by_id(id=affiliation_id)
         return affiliation_calculations.citations_count
 
     @staticmethod
@@ -252,33 +240,23 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
                             "$switch": {
                                 "branches": [
                                     {
-                                        "case": {
-                                            "$eq": ["$titles.0.source", "openalex"]
-                                        },
+                                        "case": {"$eq": ["$titles.0.source", "openalex"]},
                                         "then": source_priority["openalex"],
                                     },
                                     {
-                                        "case": {
-                                            "$eq": ["$titles.0.source", "scholar"]
-                                        },
+                                        "case": {"$eq": ["$titles.0.source", "scholar"]},
                                         "then": source_priority["scholar"],
                                     },
                                     {
-                                        "case": {
-                                            "$eq": ["$titles.0.source", "scienti"]
-                                        },
+                                        "case": {"$eq": ["$titles.0.source", "scienti"]},
                                         "then": source_priority["scienti"],
                                     },
                                     {
-                                        "case": {
-                                            "$eq": ["$titles.0.source", "minciencias"]
-                                        },
+                                        "case": {"$eq": ["$titles.0.source", "minciencias"]},
                                         "then": source_priority["minciencias"],
                                     },
                                     {
-                                        "case": {
-                                            "$eq": ["$titles.0.source", "ranking"]
-                                        },
+                                        "case": {"$eq": ["$titles.0.source", "ranking"]},
                                         "then": source_priority["ranking"],
                                     },
                                 ],
@@ -346,19 +324,11 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         project: list[str] = [],
     ) -> tuple[Iterable[dict[str, Any]], dict[str, Any]]:
         affiliation_type = (
-            "institution"
-            if affiliation_type in settings.institutions
-            else affiliation_type
+            "institution" if affiliation_type in settings.institutions else affiliation_type
         )
-        works_pipeline = cls.get_pipeline_works_by_affiliation_id(
-            affiliation_id, affiliation_type
-        )
-        collection = (
-            Affiliation if affiliation_type not in ["institution", "group"] else Work
-        )
-        works_pipeline += (
-            [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
-        )
+        works_pipeline = cls.get_pipeline_works_by_affiliation_id(affiliation_id, affiliation_type)
+        collection = Affiliation if affiliation_type not in ["institution", "group"] else Work
+        works_pipeline += [{"$replaceRoot": {"newRoot": "$works"}}] if collection != Work else []
         # filtering
         works_pipeline += cls.get_filters(filters)
         available_filters = (
@@ -371,9 +341,7 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         # navigation
         if match:
             works_pipeline += [{"$match": match}]
-        works_pipeline += (
-            [{"$project": {"_id": 1, **{p: 1 for p in project}}}] if project else []
-        )
+        works_pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}] if project else []
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
         results = engine.get_collection(collection).aggregate(
@@ -520,13 +488,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         cls, affiliation_id: str, affiliation_type: str
     ) -> list[dict[str, Any]]:
         affiliation_type = (
-            "institution"
-            if affiliation_type in settings.institutions
-            else affiliation_type
+            "institution" if affiliation_type in settings.institutions else affiliation_type
         )
-        works_pipeline = cls.get_pipeline_works_by_affiliation_id(
-            affiliation_id, affiliation_type
-        )
+        works_pipeline = cls.get_pipeline_works_by_affiliation_id(affiliation_id, affiliation_type)
         person = True if affiliation_type not in ["institution", "group"] else False
         works_pipeline += [
             {
@@ -562,13 +526,9 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         project: list[str] = [],
     ) -> SourceIterator:
         affiliation_type = (
-            "institution"
-            if affiliation_type in settings.institutions
-            else affiliation_type
+            "institution" if affiliation_type in settings.institutions else affiliation_type
         )
-        collection = (
-            Affiliation if affiliation_type not in ["institution", "group"] else Work
-        )
+        collection = Affiliation if affiliation_type not in ["institution", "group"] else Work
         pipeline = cls.__get_sources_by_affiliation(affiliation_id, affiliation_type)
 
         if match:
@@ -677,15 +637,11 @@ class WorkRepository(RepositoryBase[Work, WorkIterator]):
         )
         works_pipeline += cls.get_sort_direction(sort)
         works_pipeline += [{"$match": match}] if match else []
-        works_pipeline += (
-            [{"$project": {"_id": 1, **{p: 1 for p in project}}}] if project else []
-        )
+        works_pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}] if project else []
         works_pipeline += [{"$skip": skip}] if skip else []
         works_pipeline += [{"$limit": limit}] if limit else []
         return (
-            engine.get_collection(Work).aggregate(
-                works_pipeline, collation=Collation(locale="es")
-            ),
+            engine.get_collection(Work).aggregate(works_pipeline, collation=Collation(locale="es")),
             available_filters,
         )
 

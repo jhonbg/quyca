@@ -14,13 +14,7 @@ def set_person_products_count():
                 "pipeline": [{"$count": "count"}],
             }
         },
-        {
-            "$addFields": {
-                "products_count": {
-                    "$ifNull": [{"$arrayElemAt": ["$works.count", 0]}, 0]
-                }
-            }
-        },
+        {"$addFields": {"products_count": {"$ifNull": [{"$arrayElemAt": ["$works.count", 0]}, 0]}}},
         {
             "$merge": {
                 "into": "person",

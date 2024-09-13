@@ -48,9 +48,7 @@ def plot_annual_apc_expenses(person_id: str, query_params):
         },
         "project": ["apc"],
     }
-    sources = work_repository.get_sources_by_person(
-        person_id, query_params, pipeline_params
-    )
+    sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
     return {"plot": bar_parser.apc_by_year(sources, 2022)}
 
 
@@ -62,9 +60,7 @@ def plot_annual_articles_open_access(person_id: str, query_params):
         },
         "project": ["year_published", "bibliographic_info"],
     }
-    works, _ = work_repository.get_works_by_person(
-        person_id, query_params, pipeline_params
-    )
+    works, _ = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     return {"plot": bar_parser.oa_by_year(works)}
 
 
@@ -73,16 +69,12 @@ def plot_annual_articles_by_top_publishers(person_id: str, query_params):
         "match": {"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
         "project": ["publisher", "apc"],
     }
-    sources = work_repository.get_sources_by_person(
-        person_id, query_params, pipeline_params
-    )
+    sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
     return {"plot": bar_parser.works_by_publisher_year(sources)}
 
 
 def plot_most_used_title_words(person_id: str, query_params):
-    data = calculations_database["person"].find_one(
-        {"_id": ObjectId(person_id)}, {"top_words": 1}
-    )
+    data = calculations_database["person"].find_one({"_id": ObjectId(person_id)}, {"top_words": 1})
     if data:
         if not "top_words" in data.keys():
             return {"plot": None}
@@ -102,9 +94,7 @@ def plot_articles_by_publisher(person_id: str, query_params):
         "match": {"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
         "project": ["publisher"],
     }
-    sources = work_repository.get_sources_by_person(
-        person_id, query_params, pipeline_params
-    )
+    sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
     data = map(lambda x: x.publisher.name, sources)
     return pie_parser.get_products_by_publisher(data)
 
@@ -114,9 +104,7 @@ def plot_products_by_subject(person_id: str, query_params):
         "match": {"subjects": {"$ne": []}},
         "project": ["subjects"],
     }
-    works, _ = work_repository.get_works_by_person(
-        person_id, query_params, pipeline_params
-    )
+    works, _ = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     data = chain.from_iterable(
         map(
             lambda x: [
@@ -136,9 +124,7 @@ def plot_products_by_database(person_id: str, query_params):
         "match": {"updated": {"$ne": []}},
         "project": ["updated"],
     }
-    works, _ = work_repository.get_works_by_person(
-        person_id, query_params, pipeline_params
-    )
+    works, _ = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     data = chain.from_iterable(map(lambda x: x.updated, works))
     return pie_parser.get_products_by_database(data)
 
@@ -148,9 +134,7 @@ def plot_articles_by_access_route(person_id: str, query_params):
         "match": {"bibliographic_info.open_access_status": {"$exists": 1}},
         "project": ["bibliographic_info"],
     }
-    works, _ = work_repository.get_works_by_person(
-        person_id, query_params, pipeline_params
-    )
+    works, _ = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     data = map(lambda x: x.bibliographic_info.open_access_status, works)
     return pie_parser.get_products_by_open_access(data)
 
@@ -169,9 +153,7 @@ def plot_articles_by_scienti_category(person_id: str, query_params):
         "match": {"ranking": {"$ne": []}},
         "project": ["ranking"],
     }
-    works, _ = work_repository.get_works_by_person(
-        person_id, query_params, pipeline_params
-    )
+    works, _ = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     data = chain.from_iterable(map(lambda x: x.ranking, works))
     return pie_parser.get_articles_by_scienti_category(data)
 
@@ -196,9 +178,7 @@ def plot_articles_by_scimago_quartile(person_id: str, query_params):
 
 
 def plot_articles_by_publishing_institution(person_id: str, query_params):
-    person = database["person"].find_one(
-        {"_id": ObjectId(person_id)}, {"affiliations": 1}
-    )
+    person = database["person"].find_one({"_id": ObjectId(person_id)}, {"affiliations": 1})
     institution_id = None
     found = False
     for affiliation in person["affiliations"]:
@@ -209,15 +189,11 @@ def plot_articles_by_publishing_institution(person_id: str, query_params):
                 institution_id = affiliation["id"]
                 found = True
                 break
-    institution = database["affiliations"].find_one(
-        {"_id": ObjectId(institution_id)}, {"names": 1}
-    )
+    institution = database["affiliations"].find_one({"_id": ObjectId(institution_id)}, {"names": 1})
     pipeline_params = {
         "project": ["publisher"],
     }
-    sources = work_repository.get_sources_by_person(
-        person_id, query_params, pipeline_params
-    )
+    sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
     return pie_parser.get_products_by_same_institution(sources, institution)
 
 
@@ -231,9 +207,7 @@ def plot_coauthorship_by_country_map(person_id: str, query_params):
 
 
 def plot_coauthorship_by_colombian_department_map(person_id: str, query_params):
-    data = plot_repository.get_coauthorship_by_colombian_department_map_by_person(
-        person_id
-    )
+    data = plot_repository.get_coauthorship_by_colombian_department_map_by_person(person_id)
     return {"plot": map_parser.get_coauthorship_by_colombian_department_map(data)}
 
 
@@ -267,9 +241,7 @@ def search_persons(query_params: QueryParams):
             "products_count",
         ]
     }
-    persons, total_results = person_repository.search_persons(
-        query_params, pipeline_params
-    )
+    persons, total_results = person_repository.search_persons(query_params, pipeline_params)
     persons_list = []
     for person in persons:
         persons_list.append(person)
@@ -279,6 +251,4 @@ def search_persons(query_params: QueryParams):
 
 
 def set_citations_count(person: Person):
-    person.citations_count = calculations_repository.get_citations_count_by_person(
-        person.id
-    )
+    person.citations_count = calculations_repository.get_citations_count_by_person(person.id)

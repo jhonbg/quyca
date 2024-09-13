@@ -14,9 +14,7 @@ from core.config import settings
 
 
 class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
-    def __groups_by_affiliation(
-        self, idx: str, typ: str
-    ) -> tuple[list[dict[str, Any]], Model]:
+    def __groups_by_affiliation(self, idx: str, typ: str) -> tuple[list[dict[str, Any]], Model]:
         """
         Retrieve groups by affiliation.
 
@@ -159,8 +157,7 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
         ]
         authors = engine.get_collection(Person).aggregate(pipeline)
         return [
-            PersonList(id=str(author["_id"]), full_name=author["full_name"])
-            for author in authors
+            PersonList(id=str(author["_id"]), full_name=author["full_name"]) for author in authors
         ]
 
     @classmethod
@@ -219,16 +216,9 @@ class AffiliationRepository(RepositoryBase[Affiliation, AffiliationIterator]):
         return affiliations_result, logo
 
     def get_products(
-        self,
-        *,
-        affiliation_id: int,
-        affiliation_type: str,
-        skip: int = 0,
-        limit: int = 100
+        self, *, affiliation_id: int, affiliation_type: str, skip: int = 0, limit: int = 100
     ):
         ...
 
 
-affiliation_repository = AffiliationRepository(
-    Affiliation, iterator=AffiliationIterator
-)
+affiliation_repository = AffiliationRepository(Affiliation, iterator=AffiliationIterator)

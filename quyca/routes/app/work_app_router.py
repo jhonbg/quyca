@@ -1,5 +1,3 @@
-import json
-
 from flask import Blueprint, jsonify
 
 from services import new_work_service

@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any
 from json import loads
 
 from schemas.general import GeneralMultiResponse
@@ -27,9 +27,7 @@ class PersonService(
         self.update_author_search(person)
         # get high affiliation on hierarchy
         institution = next(
-            filter(
-                lambda x: x.types[0].type in settings.institutions, person.affiliations
-            ),
+            filter(lambda x: x.types[0].type in settings.institutions, person.affiliations),
             None,
         )
         if institution:
@@ -39,24 +37,16 @@ class PersonService(
         return {"data": person.model_dump(by_alias=True), "filters": {}}
 
     def update_author_search(self, author: PersonSearch) -> PersonSearch:
-        author.citations_count = self.work_repository.count_citations_by_author(
-            author_id=author.id
-        )
-        author.products_count = self.work_repository.count_papers_by_author(
-            author_id=author.id
-        )
+        author.citations_count = self.work_repository.count_citations_by_author(author_id=author.id)
+        author.products_count = self.work_repository.count_papers_by_author(author_id=author.id)
         return author
 
     def update_search(
         self, response: GeneralMultiResponse[type[PersonSearch]]
     ) -> GeneralMultiResponse[type[PersonSearch]]:
-        response.data = [
-            self.update_author_search(PersonSearch(**obj)) for obj in response.data
-        ]
+        response.data = [self.update_author_search(PersonSearch(**obj)) for obj in response.data]
 
-    def search(
-        self, *, params: PersonQueryParams
-    ) -> GeneralMultiResponse[type[PersonSearch]]:
+    def search(self, *, params: PersonQueryParams) -> GeneralMultiResponse[type[PersonSearch]]:
         db_objs, count = self.repository.search(
             keywords=params.keywords,
             skip=params.skip,
@@ -64,13 +54,9 @@ class PersonService(
             sort=params.sort,
             search=params.get_search,
         )
-        results = GeneralMultiResponse[type[PersonSearch]](
-            total_results=count, page=params.page
-        )
+        results = GeneralMultiResponse[type[PersonSearch]](total_results=count, page=params.page)
         data = [
-            self.update_author_search(
-                self.search_class.model_validate_json(obj.model_dump_json())
-            )
+            self.update_author_search(self.search_class.model_validate_json(obj.model_dump_json()))
             for obj in db_objs
         ]
         results.data = data

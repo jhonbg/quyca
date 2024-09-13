@@ -17,23 +17,15 @@ from services.source import source_service
 from schemas.general import GeneralMultiResponse
 
 
-class WorkService(
-    ServiceBase[Work, WorkRepository, WorkQueryParams, WorkListApp, WorkProccessed]
-):
+class WorkService(ServiceBase[Work, WorkRepository, WorkQueryParams, WorkListApp, WorkProccessed]):
     def get_authors(self, *, id: str) -> list[dict[str, Any]]:
         authors = self.repository.get_authors(id=id)
-        return {
-            "data": [
-                Author.model_validate_json(author).model_dump() for author in authors
-            ]
-        }
+        return {"data": [Author.model_validate_json(author).model_dump() for author in authors]}
 
     @staticmethod
     def update_authors_external_ids(work: WorkProccessed):
         for author in work.authors:
-            ext_ids = (
-                person_service.get_by_id(id=author.id).external_ids if author.id else []
-            )
+            ext_ids = person_service.get_by_id(id=author.id).external_ids if author.id else []
             author.external_ids = [ext_id.model_dump() for ext_id in ext_ids]
         return work
 
@@ -91,9 +83,7 @@ class WorkService(
         works, available_filters = self.repository.get_research_products_by_author(
             author_id=author_id, skip=skip, limit=limit, sort=sort, filters=filters
         )
-        total_works = self.repository.count_papers_by_author(
-            author_id=author_id, filters=filters
-        )
+        total_works = self.repository.count_papers_by_author(author_id=author_id, filters=filters)
         data = [
             self.update_authors_external_ids(
                 WorkListApp.model_validate_json(work.model_dump_json())
@@ -118,10 +108,7 @@ class WorkService(
         works, _ = self.repository.get_research_products_by_author(
             author_id=author_id, sort=sort, skip=skip, limit=limit
         )
-        return [
-            WorkCsv.model_validate_json(work.model_dump_json()).model_dump()
-            for work in works
-        ]
+        return [WorkCsv.model_validate_json(work.model_dump_json()).model_dump() for work in works]
 
     def get_research_products_by_author_json(
         self,
@@ -135,8 +122,7 @@ class WorkService(
             author_id=author_id, sort=sort, skip=skip, limit=limit
         )
         return [
-            WorkSchema.model_validate_json(work.model_dump_json()).model_dump()
-            for work in works
+            WorkSchema.model_validate_json(work.model_dump_json()).model_dump() for work in works
         ]
 
     def search_api(self, *, params: WorkQueryParams) -> dict[str, Any]:
@@ -147,12 +133,8 @@ class WorkService(
             sort=params.sort,
             search=params.get_search,
         )
-        results = GeneralMultiResponse[WorkSchema](
-            total_results=count, page=params.page
-        )
-        data = [
-            WorkSchema.model_validate_json(work.model_dump_json()) for work in works
-        ]
+        results = GeneralMultiResponse[WorkSchema](total_results=count, page=params.page)
+        data = [WorkSchema.model_validate_json(work.model_dump_json()) for work in works]
         results.data = data
         results.count = len(data)
         return loads(results.model_dump_json(exclude_none=True))

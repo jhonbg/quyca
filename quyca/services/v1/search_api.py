@@ -21,9 +21,7 @@ class SearchApiService:
         if keywords:
             search_dict["$text"] = {"$search": keywords}
 
-        cursor = self.colav_db["subjects"].find(
-            search_dict, {"score": {"$meta": "textScore"}}
-        )
+        cursor = self.colav_db["subjects"].find(search_dict, {"score": {"$meta": "textScore"}})
 
         total = self.colav_db["subjects"].count_documents(search_dict)
         if not page:
@@ -162,8 +160,6 @@ class SearchApiService:
         if cursor:
             author_list = []
             keywords = []
-            group_name = ""
-            group_id = ""
             for author in cursor:
                 del author["birthdate"]
                 del author["birthplace"]

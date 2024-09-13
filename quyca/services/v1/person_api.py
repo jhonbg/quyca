@@ -95,9 +95,7 @@ class PersonApiService:
                     subjects.append(sub_entry)
                 source = None
                 if "id" in paper["source"].keys():
-                    source = self.colav_db["sources"].find_one(
-                        {"_id": paper["source"]["id"]}
-                    )
+                    source = self.colav_db["sources"].find_one({"_id": paper["source"]["id"]})
                 if source:
                     entry["source"] = {
                         "id": source["_id"],
@@ -118,9 +116,7 @@ class PersonApiService:
                         au_entry["affiliations"] = []
                     author_db = None
                     if "id" in author.keys():
-                        author_db = self.colav_db["person"].find_one(
-                            {"_id": author["id"]}
-                        )
+                        author_db = self.colav_db["person"].find_one({"_id": author["id"]})
                     if author_db:
                         au_entry = {
                             "id": author_db["_id"],
@@ -146,9 +142,7 @@ class PersonApiService:
                     for aff in author["affiliations"]:
                         if "id" in aff.keys():
                             if aff["id"]:
-                                aff_db = self.colav_db["affiliations"].find_one(
-                                    {"_id": aff["id"]}
-                                )
+                                aff_db = self.colav_db["affiliations"].find_one({"_id": aff["id"]})
                                 if aff_db:
                                     aff_ids.append(aff["id"])
                                     aff_entry = {
@@ -164,25 +158,20 @@ class PersonApiService:
                                         for aff_au in author_db["affiliations"]:
                                             if aff_au["id"] == aff["id"]:
                                                 if "start_date" in aff_au.keys():
-                                                    aff_entry["start_date"] = aff_au[
-                                                        "start_date"
-                                                    ]
+                                                    aff_entry["start_date"] = aff_au["start_date"]
                                                 if "end_date" in aff_au.keys():
-                                                    aff_entry["end_date"] = aff_au[
-                                                        "end_date"
-                                                    ]
+                                                    aff_entry["end_date"] = aff_au["end_date"]
                                                 break
                                     name = aff_db["names"][0]["name"]
-                                    lang = ""
                                     for n in aff_db["names"]:
                                         if "lang" in n.keys():
                                             if n["lang"] == "es":
                                                 name = n["name"]
-                                                lang = n["lang"]
+                                                n["lang"]
                                                 break
                                             elif n["lang"] == "en":
                                                 name = n["name"]
-                                                lang = n["lang"]
+                                                n["lang"]
                                     aff["name"] = name
                                     if "types" in aff.keys():
                                         for typ in aff["types"]:
@@ -195,9 +184,7 @@ class PersonApiService:
                             if aff["id"] in aff_ids:
                                 continue
                             if aff["id"]:
-                                aff_db = self.colav_db["affiliations"].find_one(
-                                    {"_id": aff["id"]}
-                                )
+                                aff_db = self.colav_db["affiliations"].find_one({"_id": aff["id"]})
                                 inst_already = False
                                 if aff_db:
                                     if "types" in aff_db.keys():
@@ -221,25 +208,20 @@ class PersonApiService:
                                         for aff_au in author_db["affiliations"]:
                                             if aff_au["id"] == aff["id"]:
                                                 if "start_date" in aff_au.keys():
-                                                    aff_entry["start_date"] = aff_au[
-                                                        "start_date"
-                                                    ]
+                                                    aff_entry["start_date"] = aff_au["start_date"]
                                                 if "end_date" in aff_au.keys():
-                                                    aff_entry["end_date"] = aff_au[
-                                                        "end_date"
-                                                    ]
+                                                    aff_entry["end_date"] = aff_au["end_date"]
                                                 break
                                     name = aff_db["names"][0]["name"]
-                                    lang = ""
                                     for n in aff_db["names"]:
                                         if "lang" in n.keys():
                                             if n["lang"] == "es":
                                                 name = n["name"]
-                                                lang = n["lang"]
+                                                n["lang"]
                                                 break
                                             elif n["lang"] == "en":
                                                 name = n["name"]
-                                                lang = n["lang"]
+                                                n["lang"]
                                     aff["name"] = name
                                     affiliations.append(aff)
                     au_entry["affiliations"] = affiliations

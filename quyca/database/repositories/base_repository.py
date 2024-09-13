@@ -42,7 +42,7 @@ def set_sort(sort: str | None, pipeline: list):
         pipeline += [
             {
                 "$addFields": {
-                    "openalex_citations_count": {
+                    "scholar_citations_count": {
                         "$ifNull": [
                             {
                                 "$arrayElemAt": [
@@ -55,7 +55,7 @@ def set_sort(sort: str | None, pipeline: list):
                                                     "cond": {
                                                         "$eq": [
                                                             "$$citation.source",
-                                                            "openalex",
+                                                            "scholar",
                                                         ]
                                                     },
                                                 }
@@ -73,7 +73,7 @@ def set_sort(sort: str | None, pipeline: list):
                 }
             }
         ]
-        sort_field = "openalex_citations_count"
+        sort_field = "scholar_citations_count"
     elif sort_field == "alphabetical":
         pipeline += [
             {

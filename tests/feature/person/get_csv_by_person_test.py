@@ -6,6 +6,6 @@ random_person_id = (
 
 
 def test_get_works_csv_by_person(client):
-    response = client.get(f"/app/person/{random_person_id}/csv")
+    response = client.get(f"/app/person/{random_person_id}/research/products/csv")
 
     assert response.status_code == 200

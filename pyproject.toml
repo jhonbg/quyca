@@ -17,11 +17,15 @@ pydantic-settings = "^2.2.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
+autoflake = "^2.3.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.1"
 pytest-cov = "^4.0.0"
 pytest-asyncio = "^0.20.3"
+
+[tool.poetry.scripts]
+format = "format:main"
 
 [build-system]
 requires = ["poetry-core"]

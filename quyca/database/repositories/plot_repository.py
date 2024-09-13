@@ -185,26 +185,36 @@ def get_products_by_author_sex(affiliation_id: str):
 
 def get_products_by_author_age_and_affiliation(affiliation_id: str):
     pipeline = [
-        {"$project": {"affiliations": 1, "birthdate": 1}},
-        {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
+        {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
         {
             "$lookup": {
-                "from": "works",
-                "localField": "_id",
-                "foreignField": "authors.id",
-                "as": "work",
+                "from": "person",
+                "localField": "authors.id",
+                "foreignField": "_id",
+                "as": "person",
+                "pipeline": [
+                    {
+                        "$project": {
+                            "birthdate": 1,
+                            "affiliations": 1,
+                        }
+                    }
+                ],
             }
         },
-        {"$unwind": "$work"},
+        {"$unwind": "$person"},
+        {"$match": {"person.affiliations.id": ObjectId(affiliation_id)}},
+        # {"$group": {"_id": "$_id", "document": {"$first": "$$ROOT"}}},
+        # {"$replaceRoot": {"newRoot": "$document"}},
         {
             "$project": {
-                "birthdate": 1,
-                "work.date_published": 1,
-                "work.year_published": 1,
+                "birthdate": "$person.birthdate",
+                "work.date_published": "$date_published",
+                "work.year_published": "$year_published",
             }
         },
     ]
-    return database["person"].aggregate(pipeline)
+    return database["works"].aggregate(pipeline)
 
 
 def get_products_by_author_age_and_person(person_id: str):

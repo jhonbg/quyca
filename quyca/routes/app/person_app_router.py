@@ -1,7 +1,7 @@
 from flask import Blueprint, request, Response, jsonify
 
 from database.models.base_model import QueryParams
-from services import new_person_service, new_work_service
+from services import new_person_service, new_work_service, csv_service
 
 person_app_router = Blueprint("person_app_router", __name__)
 
@@ -31,7 +31,7 @@ def get_person_research_products(person_id: str):
 @person_app_router.route("/<person_id>/research/products/csv", methods=["GET"])
 def get_works_csv_by_person(person_id: str):
     try:
-        data = new_work_service.get_works_csv_by_person(person_id)
+        data = csv_service.get_works_csv_by_person(person_id)
         response = Response(data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response

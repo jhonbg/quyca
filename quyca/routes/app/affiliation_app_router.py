@@ -1,7 +1,7 @@
 from flask import Blueprint, request, Response, jsonify
 
 from database.models.base_model import QueryParams
-from services import new_affiliation_service, new_work_service
+from services import new_affiliation_service, new_work_service, csv_service
 
 affiliation_app_router = Blueprint("affiliation_app_router", __name__)
 
@@ -50,7 +50,7 @@ def get_affiliation_research_products(affiliation_id: str, affiliation_type: str
 )
 def get_works_csv_by_affiliation(affiliation_type: str, affiliation_id: str):
     try:
-        data = new_work_service.get_works_csv_by_affiliation(affiliation_id, affiliation_type)
+        data = csv_service.get_works_csv_by_affiliation(affiliation_id, affiliation_type)
         response = Response(data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response

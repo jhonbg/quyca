@@ -3,7 +3,6 @@ from typing import Generator
 from currency_converter import CurrencyConverter
 
 from utils.cpi import inflate
-from utils.hindex import hindex
 
 
 def get_by_work_year_and_work_type(works: Generator) -> list:

@@ -2,7 +2,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 from database.models.base_model import ExternalUrl, ExternalId, QueryParams
-from database.models.work_model import Work, Title, ProductType, Affiliation, Author
+from database.models.work_model import Work, Title, ProductType, Affiliation
 from database.repositories import person_repository
 from database.repositories import work_repository
 from enums.external_urls import external_urls_dict

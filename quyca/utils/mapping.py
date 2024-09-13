@@ -1,4 +1,3 @@
-from protocols.mongo.models.general import CitationsCount
 from protocols.mongo.models.work import Work
 
 

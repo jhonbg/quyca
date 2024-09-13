@@ -5,9 +5,9 @@ from bson import ObjectId
 from core.config import settings
 from database.generators import source_generator
 from database.generators import work_generator
-from database.models.base_model import CitationsCount, QueryParams
+from database.models.base_model import QueryParams
 from database.models.work_model import Work
-from database.repositories import calculations_repository, base_repository
+from database.repositories import base_repository
 from database.mongo import database
 from exceptions.work_exception import WorkException
 

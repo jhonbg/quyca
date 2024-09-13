@@ -1,8 +1,8 @@
 from typing import Any
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator
 
-from schemas.general import QueryBase, ExternalId, ExternalURL
+from schemas.general import QueryBase, ExternalId
 
 
 class Type(BaseModel):

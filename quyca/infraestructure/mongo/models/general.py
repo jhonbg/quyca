@@ -1,4 +1,4 @@
-from odmantic import EmbeddedModel, ObjectId
+from odmantic import EmbeddedModel
 from odmantic.bson import BaseBSONModel
 from pydantic import BaseModel
 

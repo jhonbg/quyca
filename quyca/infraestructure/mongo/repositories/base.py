@@ -3,7 +3,6 @@ from json import loads
 
 from odmantic import Model, ObjectId
 from odmantic.engine import SyncEngine
-from odmantic.query import desc, asc
 
 from infraestructure.mongo.utils.session import engine
 from infraestructure.mongo.utils.iterators import CollectionIterator

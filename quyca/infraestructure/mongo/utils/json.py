@@ -1,6 +1,5 @@
 import json
 from bson import ObjectId
-from odmantic import Model
 
 
 class CustomJSONEncoder(json.JSONEncoder):

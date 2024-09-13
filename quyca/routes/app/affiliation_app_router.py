@@ -1,6 +1,4 @@
-import json
-
-from flask import Blueprint, request, Response
+from flask import Blueprint, request, Response, jsonify
 
 from database.models.base_model import QueryParams
 from services import new_affiliation_service, new_work_service
@@ -12,60 +10,47 @@ affiliation_app_router = Blueprint("affiliation_app_router", __name__)
 def get_affiliation_by_id(affiliation_type: str, affiliation_id: str):
     try:
         data = new_affiliation_service.get_affiliation_by_id(affiliation_id)
-        return Response(json.dumps(data), 200, mimetype="application/json")
+        return jsonify(data)
     except Exception as e:
-        return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
+        return jsonify({"error": str(e)}), 400
 
 
 @affiliation_app_router.route(
-    "/<affiliation_type>/<affiliation_id>/<section>", methods=["GET"]
+    "/<affiliation_type>/<affiliation_id>/affiliations", methods=["GET"]
 )
-def get_affiliation_section(affiliation_type: str, affiliation_id: str, section: str):
-    if section == "affiliations":
-        try:
-            data = new_affiliation_service.get_related_affiliations_by_affiliation(
-                affiliation_id, affiliation_type
-            )
-            return Response(json.dumps(data), 200, mimetype="application/json")
-        except Exception as e:
-            return Response(
-                json.dumps({"error": str(e)}), 400, mimetype="application/json"
-            )
-    return Response(
-        json.dumps({"error": f"There is no {section} section"}),
-        400,
-        mimetype="application/json",
-    )
+def get_affiliation_affiliations(affiliation_type: str, affiliation_id: str):
+    try:
+        data = new_affiliation_service.get_related_affiliations_by_affiliation(
+            affiliation_id, affiliation_type
+        )
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 
 @affiliation_app_router.route(
-    "/<affiliation_type>/<affiliation_id>/<section>/<tab>", methods=["GET"]
+    "/<affiliation_type>/<affiliation_id>/research/products", methods=["GET"]
 )
-def get_affiliation_section_tab(
-    affiliation_id: str, affiliation_type: str, section: str, tab: str
-):
-    if section == "research" and tab == "products":
+def get_affiliation_research_products(affiliation_id: str, affiliation_type: str):
+    try:
         query_params = QueryParams(**request.args)
         if query_params.plot:
             data = new_affiliation_service.get_affiliation_plot(
                 affiliation_id, affiliation_type, query_params
             )
-            return Response(json.dumps(data), 200, mimetype="application/json")
+            return jsonify(data)
         data = new_work_service.get_works_by_affiliation(
             affiliation_id, affiliation_type, query_params
         )
-        return Response(json.dumps(data), 200, mimetype="application/json")
-    return Response(
-        json.dumps({"error": f"There is no {section} section and {tab} tab"}),
-        400,
-        mimetype="application/json",
-    )
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 
 @affiliation_app_router.route(
     "/<affiliation_type>/<affiliation_id>/research/products/csv", methods=["GET"]
 )
-def get_csv_by_affiliation(affiliation_type: str, affiliation_id: str):
+def get_works_csv_by_affiliation(affiliation_type: str, affiliation_id: str):
     try:
         data = new_work_service.get_works_csv_by_affiliation(
             affiliation_id, affiliation_type
@@ -74,4 +59,4 @@ def get_csv_by_affiliation(affiliation_type: str, affiliation_id: str):
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response
     except Exception as e:
-        return Response(json.dumps({"error": str(e)}), 400, mimetype="application/json")
+        return jsonify({"error": str(e)}), 400

@@ -16,17 +16,12 @@ def get_work_by_id(work_id: str):
     work = work_repository.get_work_by_id(work_id)
     set_external_ids(work)
     set_external_urls(work)
-    if work.authors:
-        limit_authors(work)
-        set_authors_external_ids(work)
-    if work.bibliographic_info:
-        set_bibliographic_info(work)
-    if work.source.id:
-        new_source_service.update_work_source(work)
-    if work.titles:
-        set_title_and_language(work)
-    if work.types:
-        set_product_types(work)
+    limit_authors(work)
+    set_authors_external_ids(work)
+    set_bibliographic_info(work)
+    new_source_service.update_work_source(work)
+    set_title_and_language(work)
+    set_product_types(work)
     data = work_parser.parse_work(work)
     return {"data": data}
 
@@ -314,6 +309,8 @@ def set_product_types(work: Work):
 
 
 def set_bibliographic_info(work: Work):
+    if not work.bibliographic_info:
+        return
     work.issue = work.bibliographic_info.issue
     work.open_access_status = work.bibliographic_info.open_access_status
     work.volume = work.bibliographic_info.volume
@@ -321,6 +318,8 @@ def set_bibliographic_info(work: Work):
 
 
 def set_authors_external_ids(work: Work):
+    if not work.authors:
+        return
     for author in work.authors:
         if author.id:
             author.external_ids = person_repository.get_person_by_id(
@@ -329,11 +328,15 @@ def set_authors_external_ids(work: Work):
 
 
 def limit_authors(work: Work, limit: int = 10):
+    if not work.authors:
+        return
     if len(work.authors) > limit:
         work.authors = work.authors[:limit]
 
 
 def set_external_ids(work: Work):
+    if not work.external_ids:
+        return
     new_external_ids = []
     for external_id in work.external_ids:
         if external_id.source in ["minciencias", "scienti"]:
@@ -346,6 +349,8 @@ def set_external_ids(work: Work):
 
 
 def set_external_urls(work: Work):
+    if not work.external_urls:
+        return
     new_external_urls = []
     for external_url in work.external_urls:
         url = str(external_url.url)

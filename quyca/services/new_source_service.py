@@ -4,9 +4,10 @@ from database.repositories import source_repository
 
 
 def update_work_source(work: Work):
-    source = source_repository.get_source_by_id(work.source.id)
-    set_serials(work, source)
-    set_scimago_quartile(work, source)
+    if work.source.id:
+        source = source_repository.get_source_by_id(work.source.id)
+        set_serials(work, source)
+        set_scimago_quartile(work, source)
 
 
 def update_csv_work_source(work: Work):
@@ -31,16 +32,17 @@ def set_source_urls(work, source):
 
 
 def set_scimago_quartile(work: Work, source: Source):
-    for ranking in source.ranking:
-        condition = (
-            ranking.source == "scimago Best Quartile"
-            and ranking.rank != "-"
-            and work.date_published
-            and ranking.from_date <= work.date_published <= ranking.to_date
-        )
-        if condition:
-            work.source.scimago_quartile = ranking.rank
-            break
+    if source.ranking:
+        for ranking in source.ranking:
+            condition = (
+                ranking.source == "scimago Best Quartile"
+                and ranking.rank != "-"
+                and work.date_published
+                and ranking.from_date <= work.date_published <= ranking.to_date
+            )
+            if condition:
+                work.source.scimago_quartile = ranking.rank
+                break
 
 
 def set_csv_scimago_quartile(work: Work, source: Source):
@@ -57,7 +59,8 @@ def set_csv_scimago_quartile(work: Work, source: Source):
 
 
 def set_serials(work: Work, source: Source):
-    serials = {}
-    for external_id in source.external_ids:
-        serials[external_id.source] = external_id.id
-    work.source.serials = serials
+    if source.external_ids:
+        serials = {}
+        for external_id in source.external_ids:
+            serials[external_id.source] = external_id.id
+        work.source.serials = serials

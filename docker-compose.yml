@@ -17,6 +17,8 @@ services:
       - gunicorn
       - --bind
       - 0.0.0.0:${APP_PORT}
+      - --workers
+      - "2"
       - app:create_app()
 
   prod:
@@ -37,6 +39,8 @@ services:
       - gunicorn
       - --bind
       - 0.0.0.0:${APP_PORT}
+      - --workers
+      - "4"
       - app:create_app()
 
   local:

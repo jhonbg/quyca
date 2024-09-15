@@ -2,7 +2,6 @@ from typing import Generator
 
 from bson import ObjectId
 
-from core.config import settings
 from database.models.base_model import QueryParams
 from enums.institutions import institutions_list
 from database.generators import affiliation_generator
@@ -33,7 +32,7 @@ def get_affiliation_by_id(affiliation_id: str) -> Affiliation:
 
 
 def get_upper_affiliations(affiliations: list, affiliation_type: str) -> tuple[list, str]:
-    affiliations_hierarchy = ["group", "department", "faculty"] + settings.institutions
+    affiliations_hierarchy = ["group", "department", "faculty"] + institutions_list
     affiliation_position = affiliations_hierarchy.index(affiliation_type)
     affiliations = list(
         filter(
@@ -54,7 +53,7 @@ def get_upper_affiliations(affiliations: list, affiliation_type: str) -> tuple[l
             {"_id": affiliation_id}, {"names": 1, "types": 1, "external_urls": 1}
         )
         if affiliation:
-            if affiliation["types"][0]["type"] in settings.institutions:
+            if affiliation["types"][0]["type"] in institutions_list:
                 for external_url in affiliation["external_urls"]:
                     if external_url["source"] == "logo":
                         logo = external_url["url"]

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, Response, jsonify
 
 from database.models.base_model import QueryParams
-from services import new_person_service, new_work_service, csv_service
+from services import person_service, work_service, csv_service
 
 person_app_router = Blueprint("person_app_router", __name__)
 
@@ -9,7 +9,7 @@ person_app_router = Blueprint("person_app_router", __name__)
 @person_app_router.route("/<person_id>", methods=["GET"])
 def get_person_by_id(person_id: str):
     try:
-        data = new_person_service.get_person_by_id(person_id)
+        data = person_service.get_person_by_id(person_id)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400
@@ -20,9 +20,9 @@ def get_person_research_products(person_id: str):
     try:
         query_params = QueryParams(**request.args)
         if query_params.plot:
-            data = new_person_service.get_person_plot(person_id, query_params)
+            data = person_service.get_person_plot(person_id, query_params)
             return jsonify(data)
-        data = new_work_service.get_works_by_person(person_id, query_params)
+        data = work_service.get_works_by_person(person_id, query_params)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400

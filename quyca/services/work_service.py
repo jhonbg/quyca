@@ -5,7 +5,7 @@ from database.models.work_model import Work, Title, ProductType
 from database.repositories import person_repository
 from database.repositories import work_repository
 from enums.external_urls import external_urls_dict
-from services import new_source_service
+from services import source_service
 from services.parsers import work_parser
 
 
@@ -16,7 +16,7 @@ def get_work_by_id(work_id: str):
     limit_authors(work)
     set_authors_external_ids(work)
     set_bibliographic_info(work)
-    new_source_service.update_work_source(work)
+    source_service.update_work_source(work)
     set_title_and_language(work)
     set_product_types(work)
     data = work_parser.parse_work(work)

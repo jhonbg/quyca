@@ -1,7 +1,7 @@
 from flask import Blueprint, request, Response, jsonify
 
 from database.models.base_model import QueryParams
-from services import new_affiliation_service, new_work_service, csv_service
+from services import affiliation_service, work_service, csv_service
 
 affiliation_app_router = Blueprint("affiliation_app_router", __name__)
 
@@ -9,7 +9,7 @@ affiliation_app_router = Blueprint("affiliation_app_router", __name__)
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>", methods=["GET"])
 def get_affiliation_by_id(affiliation_type: str, affiliation_id: str):
     try:
-        data = new_affiliation_service.get_affiliation_by_id(affiliation_id)
+        data = affiliation_service.get_affiliation_by_id(affiliation_id)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400
@@ -18,7 +18,7 @@ def get_affiliation_by_id(affiliation_type: str, affiliation_id: str):
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/affiliations", methods=["GET"])
 def get_affiliation_affiliations(affiliation_type: str, affiliation_id: str):
     try:
-        data = new_affiliation_service.get_related_affiliations_by_affiliation(
+        data = affiliation_service.get_related_affiliations_by_affiliation(
             affiliation_id, affiliation_type
         )
         return jsonify(data)
@@ -33,11 +33,11 @@ def get_affiliation_research_products(affiliation_id: str, affiliation_type: str
     try:
         query_params = QueryParams(**request.args)
         if query_params.plot:
-            data = new_affiliation_service.get_affiliation_plot(
+            data = affiliation_service.get_affiliation_plot(
                 affiliation_id, affiliation_type, query_params
             )
             return jsonify(data)
-        data = new_work_service.get_works_by_affiliation(affiliation_id, query_params)
+        data = work_service.get_works_by_affiliation(affiliation_id, query_params)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400

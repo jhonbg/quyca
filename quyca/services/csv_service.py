@@ -5,8 +5,8 @@ from database.models.work_model import Work, Affiliation
 from database.repositories import csv_repository
 from enums.institutions import institutions_list
 from enums.openalex_types import openalex_types_dict
-from services import new_source_service
-from services.new_work_service import set_title_and_language
+from services import source_service
+from services.work_service import set_title_and_language
 from services.parsers import work_parser
 
 
@@ -34,7 +34,7 @@ def get_csv_data(works):
         set_csv_subjects(work)
         set_title_and_language(work)
         set_csv_types(work)
-        new_source_service.update_csv_work_source(work)
+        source_service.update_csv_work_source(work)
         data.append(work)
     return data
 

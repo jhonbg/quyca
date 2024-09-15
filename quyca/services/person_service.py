@@ -1,15 +1,10 @@
 from database.models.base_model import QueryParams
 from services.parsers import person_parser
-from database.repositories import calculations_repository
 from database.repositories import person_repository
-from database.repositories import work_repository
 
 
 def get_person_by_id(person_id: str) -> dict:
     person = person_repository.get_person_by_id(person_id)
-    person_calculations = calculations_repository.get_person_calculations(person_id)
-    person.citations_count = person_calculations.citations_count
-    person.products_count = work_repository.get_works_count_by_person(person_id)
     data = person_parser.parse_person(person)
     return {"data": data}
 

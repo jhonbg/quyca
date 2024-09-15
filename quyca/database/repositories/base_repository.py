@@ -1,15 +1,10 @@
 from database.models.base_model import QueryParams
 
 
-def set_search_end_stages(
-    pipeline: list, query_params: QueryParams, pipeline_params: dict = None
-):
+def set_search_end_stages(pipeline: list, query_params: QueryParams, pipeline_params: dict = None):
     if pipeline_params is None:
         pipeline_params = {}
-    if sort := query_params.sort:
-        set_sort(sort, pipeline)
-    else:
-        pipeline += [{"$sort": {"score": {"$meta": "textScore"}}}]
+    set_sort(query_params.sort, pipeline)
     set_project(pipeline, pipeline_params.get("project"))
     set_pagination(pipeline, query_params)
     return pipeline
@@ -42,7 +37,7 @@ def set_sort(sort: str | None, pipeline: list):
         pipeline += [
             {
                 "$addFields": {
-                    "openalex_citations_count": {
+                    "scholar_citations_count": {
                         "$ifNull": [
                             {
                                 "$arrayElemAt": [
@@ -55,7 +50,7 @@ def set_sort(sort: str | None, pipeline: list):
                                                     "cond": {
                                                         "$eq": [
                                                             "$$citation.source",
-                                                            "openalex",
+                                                            "scholar",
                                                         ]
                                                     },
                                                 }
@@ -73,7 +68,7 @@ def set_sort(sort: str | None, pipeline: list):
                 }
             }
         ]
-        sort_field = "openalex_citations_count"
+        sort_field = "scholar_citations_count"
     elif sort_field == "alphabetical":
         pipeline += [
             {
@@ -98,15 +93,11 @@ def set_sort(sort: str | None, pipeline: list):
                                                 "then": 0,
                                             },
                                             {
-                                                "case": {
-                                                    "$eq": ["$$title.source", "scholar"]
-                                                },
+                                                "case": {"$eq": ["$$title.source", "scholar"]},
                                                 "then": 1,
                                             },
                                             {
-                                                "case": {
-                                                    "$eq": ["$$title.source", "scienti"]
-                                                },
+                                                "case": {"$eq": ["$$title.source", "scienti"]},
                                                 "then": 2,
                                             },
                                             {
@@ -119,9 +110,7 @@ def set_sort(sort: str | None, pipeline: list):
                                                 "then": 3,
                                             },
                                             {
-                                                "case": {
-                                                    "$eq": ["$$title.source", "ranking"]
-                                                },
+                                                "case": {"$eq": ["$$title.source", "ranking"]},
                                                 "then": 4,
                                             },
                                         ]
@@ -154,5 +143,23 @@ def set_sort(sort: str | None, pipeline: list):
     elif sort_field == "products":
         sort_field = "products_count"
     elif sort_field == "year":
-        sort_field = "year_published"
+        pipeline += [
+            {
+                "$addFields": {
+                    "sort_year": {
+                        "$cond": {
+                            "if": {
+                                "$or": [
+                                    {"$eq": ["$year_published", None]},
+                                    {"$eq": ["$year_published", ""]},
+                                ]
+                            },
+                            "then": -1,
+                            "else": {"$toInt": "$year_published"},
+                        }
+                    }
+                }
+            },
+        ]
+        sort_field = "sort_year"
     pipeline += [{"$sort": {sort_field: direction}}]

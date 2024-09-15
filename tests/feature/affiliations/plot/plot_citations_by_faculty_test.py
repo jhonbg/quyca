@@ -1,8 +1,6 @@
 from database.mongo import database
 
-random_affiliation_id = (
-    database["affiliations"].aggregate([{"$sample": {"size": 1}}]).next()["_id"]
-)
+random_affiliation_id = database["affiliations"].aggregate([{"$sample": {"size": 1}}]).next()["_id"]
 
 
 def test_it_can_plot_citations_by_faculty_by_institution(client):
@@ -30,8 +28,6 @@ def test_it_can_plot_citations_by_faculty_by_department(client):
 
 
 def test_it_can_plot_citations_by_faculty_by_group(client):
-    response = client.get(
-        f"/app/affiliation/group/{random_affiliation_id}/research/products?plot=citations_by_faculty"
-    )
+    response = client.get(f"/app/affiliation/group/{random_affiliation_id}/research/products?plot=citations_by_faculty")
 
     assert response.status_code == 200

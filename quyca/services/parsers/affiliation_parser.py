@@ -12,7 +12,4 @@ def parse_search_result(affiliations: list) -> list:
         "types",
         "products_count",
     ]
-    return [
-        affiliation.model_dump(include=include, exclude_none=True)
-        for affiliation in affiliations
-    ]
+    return [affiliation.model_dump(include=include, exclude_none=True) for affiliation in affiliations]

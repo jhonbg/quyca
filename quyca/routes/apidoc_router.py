@@ -2,9 +2,7 @@ import os
 
 from flask import Blueprint, send_from_directory, redirect, url_for
 
-router = Blueprint(
-    "apidoc", __name__, static_folder=os.path.abspath("./quyca/core/docs/apidoc")
-)
+router = Blueprint("apidoc", __name__, static_folder=os.path.abspath("./quyca/core/docs/apidoc"))
 
 
 @router.route("/apidoc/<path:path>")

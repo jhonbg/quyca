@@ -59,6 +59,7 @@ class Affiliation(BaseModel):
     external_ids: list[ExternalId] | None = None
     external_urls: list[ExternalUrl] | None = None
     names: list[Name] | None = None
+    products_count: int | None = None
     ranking: list[Ranking] | None = None
     relations: list[Relation] | Relation | dict | None = None
     status: list[str] | list[Status] | None = None
@@ -68,7 +69,6 @@ class Affiliation(BaseModel):
     year_established: int | None = None
 
     name: str | None = None
-    products_count: int | None = None
     logo: str | None = None
     affiliations: list[dict | Relation] | None = None
     relations_data: list[Relation] | None = None

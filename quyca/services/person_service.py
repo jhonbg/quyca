@@ -3,7 +3,6 @@ from itertools import chain
 from bson import ObjectId
 
 from database.models.base_model import QueryParams
-from database.models.person_model import Person
 from services.parsers import person_parser
 from services.parsers import bar_parser
 from services.parsers import map_parser
@@ -22,6 +21,25 @@ def get_person_by_id(person_id: str) -> dict:
     person.products_count = work_repository.get_works_count_by_person(person_id)
     data = person_parser.parse_person(person)
     return {"data": data}
+
+
+def search_persons(query_params: QueryParams):
+    pipeline_params = {
+        "project": [
+            "_id",
+            "full_name",
+            "affiliations",
+            "external_ids",
+            "citations_count",
+            "products_count",
+        ]
+    }
+    persons, total_results = person_repository.search_persons(query_params, pipeline_params)
+    persons_list = []
+    for person in persons:
+        persons_list.append(person)
+    data = person_parser.parse_search_result(persons_list)
+    return {"data": data, "total_results": total_results}
 
 
 def get_person_plot(person_id: str, query_params: QueryParams):
@@ -221,27 +239,3 @@ def plot_author_coauthorship_network(person_id: str, query_params):
         return {"plot": {"nodes": nodes, "edges": edges}}
     else:
         return {"plot": None}
-
-
-def search_persons(query_params: QueryParams):
-    pipeline_params = {
-        "project": [
-            "_id",
-            "full_name",
-            "affiliations",
-            "external_ids",
-            "citations_count",
-            "products_count",
-        ]
-    }
-    persons, total_results = person_repository.search_persons(query_params, pipeline_params)
-    persons_list = []
-    for person in persons:
-        persons_list.append(person)
-        set_citations_count(person)
-    data = person_parser.parse_search_result(persons_list)
-    return {"data": data, "total_results": total_results}
-
-
-def set_citations_count(person: Person):
-    person.citations_count = calculations_repository.get_citations_count_by_person(person.id)

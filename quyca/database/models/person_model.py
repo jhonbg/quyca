@@ -87,13 +87,13 @@ class Person(BaseModel):
     keywords: list | None = Field(default_factory=list)
     last_names: list[str] | None = Field(default_factory=list)
     marital_status: str | None = None
+    products_count: int | None = None
     ranking: list[Ranking] | None = Field(default_factory=list)
     related_works: list[RelatedWork] | None = Field(default_factory=list)
     sex: str | None = None
     subjects: list[Subject] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
 
-    products_count: int | None = None
     logo: str | None = None
 
     @field_validator("external_ids")

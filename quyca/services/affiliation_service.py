@@ -17,9 +17,7 @@ from database.repositories import (
     affiliation_repository,
     plot_repository,
     work_repository,
-    calculations_repository,
 )
-from utils.mapping import get_openalex_scienti
 
 
 def get_affiliation_by_id(affiliation_id: str, affiliation_type: str) -> dict:
@@ -78,14 +76,9 @@ def search_affiliations(affiliation_type, query_params):
     for affiliation in affiliations:
         set_relation_external_urls(affiliation)
         set_upper_affiliations_and_logo(affiliation, affiliation_type)
-        set_citations_count(affiliation)
         affiliations_list.append(affiliation)
     data = affiliation_parser.parse_search_result(affiliations_list)
     return {"data": data, "total_results": total_results}
-
-
-def set_citations_count(affiliation: Affiliation):
-    affiliation.citations_count = calculations_repository.get_citations_count_by_affiliation(affiliation.id)
 
 
 def set_relation_external_urls(affiliation: Affiliation):
@@ -235,12 +228,7 @@ def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query
 
 
 def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, relation_type: str):
-    affiliations = affiliation_repository.get_related_affiliations_by_type(
-        affiliation_id, affiliation_type, relation_type
-    )
     data = {}
-    for affiliation in affiliations:
-        data[affiliation.name] = calculations_repository.get_citations_count_by_affiliation(affiliation.id)
     return pie_parser.get_citations_by_affiliation(data)
 
 
@@ -254,22 +242,16 @@ def plot_apc_by_affiliation(affiliation_id: str, affiliation_type: str, relation
         },
         "project": ["apc", "affiliation_names"],
     }
-    sources = work_repository.get_sources_by_related_affiliation(affiliation_id, relation_type, pipeline_params)
+    sources = {}
     return pie_parser.get_apc_by_sources(sources, 2022)
 
 
 def plot_h_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str, query_params):
-    affiliations = affiliation_repository.get_related_affiliations_by_type(
-        affiliation_id, affiliation_type, relation_type
-    )
     data = {}
     pipeline_params = {
         "match": {"citations_count": {"$ne": []}},
         "project": ["citations_count"],
     }
-    for affiliation in affiliations:
-        works = work_repository.get_works_by_affiliation(affiliation.id, query_params, pipeline_params)
-        data[affiliation.name] = map(get_openalex_scienti, works)
     return pie_parser.get_h_by_affiliation(data)
 
 

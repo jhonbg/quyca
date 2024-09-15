@@ -1,108 +1,16 @@
-import json
+from flask import Blueprint, request, jsonify
 
-from flask import Blueprint, request, Response
-
-from services.v1.person_api import person_api_service
-from services.work import work_service
-from utils.encoder import JsonEncoder
-from schemas.general import QueryBase
-from core.config import settings
+from database.models.base_model import QueryParams
+from services import api_expert_service
 
 person_api_router = Blueprint("person_api_router", __name__)
 
 
-@person_api_router.route("/<id>/<section>/<tab>", methods=["GET"])
-def get_person(id: str | None, section: str | None, tab: str | None):
-    """
-    @api {get} /person/:id/:section/:tab get info of a person
-    @apiVersion 1.0.0
-    @apiName get_person
-    @apiGroup Person
-
-    @apiParam {String}    id              The person id.
-    @apiParam {String}    [section]         The section to get info.
-    # use section=info to get general info
-    # use section=research and tab=products to get research products
-    @apiParam {String}    [tab]             The tab to get info.
-    @apiQuery {Number}    [page=1]        Number of page.
-    @apiQuery {Number{1-250}}    [max=10]        Number of records to return.
-    @apiQuery {String="alphabetical","citations","year"}    [sort=alphabetical]          Sort by field.
-
-    @apiSuccessExample {json} Success-Response:
-        HTTP/1.1 200 OK
-        {
-            "data": [{
-                "title": "\"DEPOSITION OF HYPERPHOSPHORYLATED TAU IN CEREBELLUM OF PS1 E280A ALZHEIMER´S DISEASE\"",
-                "authors": [],
-                "source": {
-                    "id": "664b7c85017e10d85a7657b4",
-                    "name": "Brain Pathology",
-                    "serials": null
-                },
-                "citations_count": 83,
-                "subjects": [
-
-                ],
-                "product_type": {
-                    "name": "Publicado en revista especializada",
-                    "source": "scienti"
-                },
-                "year_published": 2011,
-                "open_access_status": null,
-                "external_ids": [
-                ],
-                "abstract": "",
-                "language": "",
-                "volume": "21",
-                "issue": null,
-                "external_urls": [
-                ],
-                "date_published": null,
-                "start_page": "452",
-                "end_page": "463",
-                "id": "664bf2274847080c5a79959b"
-                }],
-            "info": {
-                "total_products": 1,
-                "count": 1,
-                "cursor": {
-                    "next": "string",
-                    "previous": "string"
-            }
-        }
-    """
-    if section == "info":
-        result = person_api_service.get_info(id)
-    elif section == "research" and tab == "products":
-        params = QueryBase(**request.args)
-        works = work_service.get_research_products_by_author_json(
-            author_id=id, sort=params.sort, skip=params.skip, limit=params.max
-        )
-        total = work_service.count_papers(author_id=id)
-        result = {
-            "data": works,
-            "info": {
-                "total_products": total,
-                "count": len(works),
-                "cursor": params.get_cursor(
-                    path=f"{settings.API_URL_PREFIX}/person/{id}/research/products",
-                    total=total,
-                ),
-            },
-        }
-    else:
-        result = None
-
-    if result:
-        response = Response(
-            response=json.dumps(result, cls=JsonEncoder),
-            status=200,
-            mimetype="application/json",
-        )
-    else:
-        response = Response(
-            response=json.dumps({}, cls=JsonEncoder),
-            status=204,
-            mimetype="application/json",
-        )
-    return response
+@person_api_router.route("/<person_id>/research/products", methods=["GET"])
+def get_works_by_person_api_expert(person_id: str):
+    try:
+        query_params = QueryParams(**request.args)
+        data = api_expert_service.get_works_by_person(person_id, query_params)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400

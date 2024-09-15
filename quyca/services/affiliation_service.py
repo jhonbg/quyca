@@ -22,8 +22,9 @@ from database.repositories import (
 from utils.mapping import get_openalex_scienti
 
 
-def get_affiliation_by_id(affiliation_id: str) -> dict:
+def get_affiliation_by_id(affiliation_id: str, affiliation_type: str) -> dict:
     affiliation = affiliation_repository.get_affiliation_by_id(affiliation_id)
+    set_upper_affiliations_and_logo(affiliation, affiliation_type)
     return {"data": affiliation.model_dump(by_alias=True)}
 
 

@@ -9,7 +9,7 @@ affiliation_app_router = Blueprint("affiliation_app_router", __name__)
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>", methods=["GET"])
 def get_affiliation_by_id(affiliation_type: str, affiliation_id: str):
     try:
-        data = affiliation_service.get_affiliation_by_id(affiliation_id)
+        data = affiliation_service.get_affiliation_by_id(affiliation_id, affiliation_type)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400

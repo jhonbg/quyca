@@ -6,68 +6,16 @@ from database.models.base_model import QueryParams
 from constants.institutions import institutions_list
 from database.generators import affiliation_generator
 from database.models.affiliation_model import Affiliation
-from database.repositories import calculations_repository, base_repository
+from database.repositories import base_repository
 from database.mongo import database
 from exceptions.not_entity_exception import NotEntityException
 
 
 def get_affiliation_by_id(affiliation_id: str) -> Affiliation:
-    from database.repositories import work_repository
-
     affiliation_data = database["affiliations"].find_one({"_id": ObjectId(affiliation_id)})
     if not affiliation_data:
         raise NotEntityException(f"The affiliation with id {affiliation_id} does not exist.")
-    affiliation = Affiliation(**affiliation_data)
-    upper_affiliations, logo = get_upper_affiliations(
-        [relation.model_dump() for relation in affiliation.relations],
-        affiliation.types[0].type,
-    )
-    affiliation_calculations = calculations_repository.get_affiliation_calculations(affiliation_id)
-    affiliation.citations_count = affiliation_calculations.citations_count
-    affiliation.products_count = work_repository.get_works_count_by_affiliation(affiliation_id)
-    affiliation.affiliations = upper_affiliations
-    if logo:
-        affiliation.logo = logo
-    return affiliation
-
-
-def get_upper_affiliations(affiliations: list, affiliation_type: str) -> tuple[list, str]:
-    affiliations_hierarchy = ["group", "department", "faculty"] + institutions_list
-    affiliation_position = affiliations_hierarchy.index(affiliation_type)
-    affiliations = list(
-        filter(
-            lambda x: x["types"][0]["type"] in affiliations_hierarchy
-            and affiliations_hierarchy.index(x["types"][0]["type"]) > affiliation_position,
-            affiliations,
-        )
-    )
-    logo = ""
-    upper_affiliations = []
-    for affiliation in affiliations:
-        affiliation_id = (
-            affiliation["id"]
-            if isinstance(affiliation["id"], ObjectId)
-            else ObjectId(affiliation["id"])
-        )
-        affiliation = database["affiliations"].find_one(
-            {"_id": affiliation_id}, {"names": 1, "types": 1, "external_urls": 1}
-        )
-        if affiliation:
-            if affiliation["types"][0]["type"] in institutions_list:
-                for external_url in affiliation["external_urls"]:
-                    if external_url["source"] == "logo":
-                        logo = external_url["url"]
-            upper_affiliations.append(
-                {
-                    "id": str(affiliation["_id"]),
-                    "name": next(
-                        filter(lambda name: name["lang"] == "es", affiliation["names"]),
-                        affiliation["names"][0],
-                    )["name"],
-                    "types": affiliation["types"],
-                }
-            )
-    return upper_affiliations, logo
+    return Affiliation(**affiliation_data)
 
 
 def get_groups_by_affiliation(affiliation_id: str, affiliation_type: str):

@@ -21,18 +21,21 @@ def get_work_by_id(work_id: id) -> Work:
 
 def get_works_by_affiliation(
     affiliation_id: str,
-    affiliation_type: str,
     query_params: QueryParams,
-    pipeline_params: dict | None = None,
+    pipeline_params: dict = None,
 ) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
-    pipeline = get_works_by_affiliation_pipeline(affiliation_id, affiliation_type)
-    collection = "affiliations" if affiliation_type in ["faculty", "department"] else "works"
-    if collection == "affiliations":
-        pipeline += [{"$replaceRoot": {"newRoot": "$works"}}]
+    pipeline = [
+        {
+            "$match": {
+                "authors.affiliations.id": ObjectId(affiliation_id),
+            },
+        },
+    ]
+    base_repository.set_project(pipeline, pipeline_params.get("project"))
     base_repository.set_pagination(pipeline, query_params)
-    cursor = database[collection].aggregate(pipeline)
+    cursor = database["works"].aggregate(pipeline)
     return work_generator.get(cursor)
 
 

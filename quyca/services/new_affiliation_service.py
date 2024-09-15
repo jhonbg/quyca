@@ -172,9 +172,7 @@ def plot_annual_evolution_by_scienti_classification(
     affiliation_id: str, affiliation_type: str, query_params
 ):
     pipeline_params = {"project": ["year_published", "types"]}
-    works = work_repository.get_works_by_affiliation(
-        affiliation_id, affiliation_type, query_params, pipeline_params
-    )
+    works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     return {"plot": bar_parser.get_by_work_year_and_work_type(works)}
 
 
@@ -189,7 +187,7 @@ def plot_affiliation_type(
 
 
 def plot_annual_citation_count(affiliation_id: str, affiliation_type: str, query_params):
-    works = work_repository.get_works_by_affiliation(affiliation_id, affiliation_type, query_params)
+    works = work_repository.get_works_by_affiliation(affiliation_id, query_params)
     return {"plot": bar_parser.get_citations_by_year(works)}
 
 
@@ -219,7 +217,6 @@ def plot_annual_articles_open_access(affiliation_id: str, affiliation_type: str,
     }
     works = work_repository.get_works_by_affiliation(
         affiliation_id,
-        affiliation_type,
         query_params,
         pipeline_params,
     )
@@ -298,7 +295,7 @@ def plot_h_by_affiliation(
     }
     for affiliation in affiliations:
         works = work_repository.get_works_by_affiliation(
-            affiliation.id, affiliation.types[0].type, query_params, pipeline_params
+            affiliation.id, query_params, pipeline_params
         )
         data[affiliation.name] = map(get_openalex_scienti, works)
     return pie_parser.get_h_by_affiliation(data)
@@ -327,9 +324,7 @@ def plot_products_by_subject(affiliation_id: str, affiliation_type: str, query_p
         "match": {"subjects": {"$ne": []}},
         "project": ["subjects"],
     }
-    works = work_repository.get_works_by_affiliation(
-        affiliation_id, affiliation_type, query_params, pipeline_params
-    )
+    works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     data = chain.from_iterable(
         map(
             lambda x: [
@@ -349,9 +344,7 @@ def plot_products_by_database(affiliation_id: str, affiliation_type: str, query_
         "match": {"updated": {"$ne": []}},
         "project": ["updated"],
     }
-    works = work_repository.get_works_by_affiliation(
-        affiliation_id, affiliation_type, query_params, pipeline_params
-    )
+    works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     data = chain.from_iterable(map(lambda x: x.updated, works))
     return pie_parser.get_products_by_database(data)
 
@@ -360,9 +353,7 @@ def plot_articles_by_access_route(affiliation_id: str, affiliation_type: str, qu
     pipeline_params = {
         "project": ["bibliographic_info"],
     }
-    works = work_repository.get_works_by_affiliation(
-        affiliation_id, affiliation_type, query_params, pipeline_params
-    )
+    works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     data = map(
         lambda x: (
             x.bibliographic_info.open_access_status
@@ -393,9 +384,7 @@ def plot_articles_by_scienti_category(affiliation_id: str, affiliation_type: str
         "match": {"ranking": {"$ne": []}},
         "project": ["ranking"],
     }
-    works = work_repository.get_works_by_affiliation(
-        affiliation_id, affiliation_type, query_params, pipeline_params
-    )
+    works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     total_works = work_repository.get_works_count_by_affiliation(affiliation_id, affiliation_type)
     data = chain.from_iterable(map(lambda x: x.ranking, works))
     return pie_parser.get_articles_by_scienti_category(data, total_works)

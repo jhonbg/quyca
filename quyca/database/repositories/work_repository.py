@@ -156,8 +156,8 @@ def get_sources_by_affiliation_pipeline(affiliation_id):
         {"$unwind": "$source"},
         {
             "$addFields": {
-                "source.apc.year_published": ("$year_published"),
-                "source.date_published": ("$date_published"),
+                "source.apc.year_published": "$year_published",
+                "source.date_published": "$date_published",
             }
         },
         {"$replaceRoot": {"newRoot": "$source"}},
@@ -186,40 +186,6 @@ def get_sources_by_person_pipeline(person_id):
         {"$replaceRoot": {"newRoot": "$source"}},
     ]
     return pipeline
-
-
-def get_works_count_by_faculty_or_department(affiliation_id: str) -> int:
-    institution_id = (
-        database["affiliations"]
-        .aggregate(
-            [
-                {"$match": {"_id": ObjectId(affiliation_id)}},
-                {"$unwind": "$relations"},
-                {"$match": {"relations.types.type": "education"}},
-            ]
-        )
-        .next()
-        .get("relations", [])["id"]
-    )
-    pipeline = [
-        {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
-        {"$project": {"_id": 1}},
-        {
-            "$lookup": {
-                "from": "works",
-                "localField": "_id",
-                "foreignField": "authors.id",
-                "as": "works",
-                "pipeline": [
-                    {"$match": {"authors.affiliations.id": institution_id}},
-                    {"$count": "count"},
-                ],
-            }
-        },
-        {"$addFields": {"products_count": {"$ifNull": [{"$arrayElemAt": ["$works.count", 0]}, 0]}}},
-    ]
-    result = next(database["person"].aggregate(pipeline), {"products_count": 0})
-    return result.get("products_count", 0)
 
 
 def get_sources_by_related_affiliation(

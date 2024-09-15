@@ -75,7 +75,6 @@ def search_affiliations(affiliation_type, query_params):
         set_relation_external_urls(affiliation)
         set_upper_affiliations_and_logo(affiliation, affiliation_type)
         set_citations_count(affiliation)
-        set_products_count(affiliation, affiliation_type)
         affiliations_list.append(affiliation)
     data = affiliation_parser.parse_search_result(affiliations_list)
     return {"data": data, "total_results": total_results}
@@ -126,13 +125,6 @@ def set_logo(affiliation: Affiliation, relation: Relation):
         affiliation.logo = next(
             filter(lambda x: x.source == "logo", relation.external_urls), ExternalUrl()
         ).url
-
-
-def set_products_count(affiliation, affiliation_type):
-    if affiliation_type in ["department", "faculty"]:
-        affiliation.products_count = work_repository.get_works_count_by_faculty_or_department(
-            affiliation.id
-        )
 
 
 def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_params: QueryParams):

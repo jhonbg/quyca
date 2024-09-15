@@ -4,10 +4,7 @@ from database.models.base_model import QueryParams
 def set_search_end_stages(pipeline: list, query_params: QueryParams, pipeline_params: dict = None):
     if pipeline_params is None:
         pipeline_params = {}
-    if sort := query_params.sort:
-        set_sort(sort, pipeline)
-    else:
-        pipeline += [{"$sort": {"score": {"$meta": "textScore"}}}]
+    set_sort(query_params.sort, pipeline)
     set_project(pipeline, pipeline_params.get("project"))
     set_pagination(pipeline, query_params)
     return pipeline

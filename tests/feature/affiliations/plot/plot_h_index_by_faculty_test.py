@@ -12,9 +12,7 @@ def test_it_can_plot_h_index_by_faculty_by_institution(client):
 
 
 def test_it_can_plot_h_index_by_faculty_by_faculty(client):
-    response = client.get(
-        f"/app/affiliation/faculty/{random_affiliation_id}/research/products?plot=h_index_by_faculty"
-    )
+    response = client.get(f"/app/affiliation/faculty/{random_affiliation_id}/research/products?plot=h_index_by_faculty")
 
     assert response.status_code == 200
 
@@ -28,8 +26,6 @@ def test_it_can_plot_h_index_by_faculty_by_department(client):
 
 
 def test_it_can_plot_h_index_by_faculty_by_group(client):
-    response = client.get(
-        f"/app/affiliation/group/{random_affiliation_id}/research/products?plot=h_index_by_faculty"
-    )
+    response = client.get(f"/app/affiliation/group/{random_affiliation_id}/research/products?plot=h_index_by_faculty")
 
     assert response.status_code == 200

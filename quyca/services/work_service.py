@@ -99,11 +99,7 @@ def set_title_and_language(work: Work):
 def set_product_types(work: Work):
     def order(product_type: ProductType):
         hierarchy = ["openalex", "scienti", "minciencias", "scholar"]
-        return (
-            hierarchy.index(product_type.source)
-            if product_type.source in hierarchy
-            else float("inf")
-        )
+        return hierarchy.index(product_type.source) if product_type.source in hierarchy else float("inf")
 
     product_types = list(
         map(

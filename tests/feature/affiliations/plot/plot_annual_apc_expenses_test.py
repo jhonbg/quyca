@@ -28,8 +28,6 @@ def test_it_can_plot_annual_apc_expenses_by_department(client):
 
 
 def test_it_can_plot_annual_apc_expenses_by_group(client):
-    response = client.get(
-        f"/app/affiliation/group/{random_affiliation_id}/research/products?plot=annual_apc_expenses"
-    )
+    response = client.get(f"/app/affiliation/group/{random_affiliation_id}/research/products?plot=annual_apc_expenses")
 
     assert response.status_code == 200

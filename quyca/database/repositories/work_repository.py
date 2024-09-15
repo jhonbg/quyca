@@ -45,9 +45,7 @@ def get_works_count_by_affiliation(affiliation_id: str) -> int:
     return works_count
 
 
-def get_works_by_person(
-    person_id: str, query_params: QueryParams, pipeline_params: dict = None
-) -> (Generator, int):
+def get_works_by_person(person_id: str, query_params: QueryParams, pipeline_params: dict = None) -> (Generator, int):
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = [
@@ -70,23 +68,15 @@ def get_works_count_by_person(person_id) -> Optional[int]:
     )
 
 
-def search_works(
-    query_params: QueryParams, pipeline_params: dict | None = None
-) -> (Generator, int):
-    pipeline = (
-        [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
-    )
+def search_works(query_params: QueryParams, pipeline_params: dict | None = None) -> (Generator, int):
+    pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     works = database["works"].aggregate(pipeline)
-    count_pipeline = (
-        [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
-    )
+    count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     count_pipeline += [
         {"$count": "total_results"},
     ]
-    total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0})[
-        "total_results"
-    ]
+    total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
     return work_generator.get(works), total_results
 
 
@@ -120,9 +110,7 @@ def get_sources_by_affiliation(affiliation_id: str, pipeline_params: dict = None
     return source_generator.get(cursor)
 
 
-def get_sources_by_person(
-    person_id: str, query_params, pipeline_params: dict | None = None
-) -> Generator:
+def get_sources_by_person(person_id: str, query_params, pipeline_params: dict | None = None) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = get_sources_by_person_pipeline(person_id)
@@ -197,9 +185,7 @@ def get_sources_by_related_affiliation(
 
     if pipeline_params is None:
         pipeline_params = {}
-    pipeline = affiliation_repository.get_related_affiliations_by_type_pipeline(
-        affiliation_id, relation_type
-    )
+    pipeline = affiliation_repository.get_related_affiliations_by_type_pipeline(affiliation_id, relation_type)
     pipeline += [{"$project": {"id": 1, "names": 1}}]
     if relation_type == "group":
         pipeline += [

@@ -6,9 +6,7 @@ from services import api_expert_service
 affiliation_api_router = Blueprint("affiliation_api_router", __name__)
 
 
-@affiliation_api_router.route(
-    "/<affiliation_type>/<affiliation_id>/research/products", methods=["GET"]
-)
+@affiliation_api_router.route("/<affiliation_type>/<affiliation_id>/research/products", methods=["GET"])
 def get_works_by_affiliation_api_expert(affiliation_id: str, affiliation_type: str):
     try:
         query_params = QueryParams(**request.args)

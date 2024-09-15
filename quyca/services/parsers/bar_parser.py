@@ -14,10 +14,7 @@ def get_by_work_year_and_work_type(works: Generator) -> list:
         if work_year not in result.keys():
             result[work_year] = {}
         for work_type in work.types:
-            if (
-                work_type.source == "scienti"
-                and work_type.type == "Publicado en revista especializada"
-            ):
+            if work_type.source == "scienti" and work_type.type == "Publicado en revista especializada":
                 if work_type.type not in result[work_year].keys():
                     result[work_year][work_type.type] = 1
                 else:
@@ -44,10 +41,7 @@ def get_by_affiliation_type(data) -> list:
                 result[name] = {}
 
             for work_type in work["types"]:
-                if (
-                    work_type["source"] == "scienti"
-                    and work_type["type"] == "Publicado en revista especializada"
-                ):
+                if work_type["source"] == "scienti" and work_type["type"] == "Publicado en revista especializada":
                     # if typ["level"] == 2:
                     if work_type["type"] not in result[name].keys():
                         result[name][work_type["type"]] = 1

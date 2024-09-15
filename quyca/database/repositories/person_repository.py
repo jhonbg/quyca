@@ -26,14 +26,10 @@ def get_persons_by_affiliation(affiliation_id: str) -> list:
     return person_generator.get(cursor)
 
 
-def search_persons(
-    query_params: QueryParams, pipeline_params: dict | None = None
-) -> (Generator, int):
+def search_persons(query_params: QueryParams, pipeline_params: dict | None = None) -> (Generator, int):
     if pipeline_params is None:
         pipeline_params = {}
-    pipeline = (
-        [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
-    )
+    pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     pipeline += [
         {
             "$lookup": {
@@ -53,13 +49,9 @@ def search_persons(
     ]
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     persons = database["person"].aggregate(pipeline)
-    count_pipeline = (
-        [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
-    )
+    count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     count_pipeline += [
         {"$count": "total_results"},
     ]
-    total_results = next(database["person"].aggregate(count_pipeline), {"total_results": 0})[
-        "total_results"
-    ]
+    total_results = next(database["person"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
     return person_generator.get(persons), total_results

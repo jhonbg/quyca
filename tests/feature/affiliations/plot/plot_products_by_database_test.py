@@ -28,8 +28,6 @@ def test_it_can_plot_products_by_database_by_department(client):
 
 
 def test_it_can_plot_products_by_database_by_group(client):
-    response = client.get(
-        f"/app/affiliation/group/{random_affiliation_id}/research/products?plot=products_by_database"
-    )
+    response = client.get(f"/app/affiliation/group/{random_affiliation_id}/research/products?plot=products_by_database")
 
     assert response.status_code == 200

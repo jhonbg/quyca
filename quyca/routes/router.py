@@ -20,12 +20,8 @@ router.register_blueprint(apidoc_router)
 router.register_blueprint(search_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/search")
 router.register_blueprint(search_api_router, url_prefix=f"{settings.API_URL_PREFIX}/search")
 
-router.register_blueprint(
-    affiliation_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/affiliation"
-)
-router.register_blueprint(
-    affiliation_api_router, url_prefix=f"{settings.API_URL_PREFIX}/affiliation"
-)
+router.register_blueprint(affiliation_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/affiliation")
+router.register_blueprint(affiliation_api_router, url_prefix=f"{settings.API_URL_PREFIX}/affiliation")
 
 router.register_blueprint(person_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/person")
 router.register_blueprint(person_api_router, url_prefix=f"{settings.API_URL_PREFIX}/person")

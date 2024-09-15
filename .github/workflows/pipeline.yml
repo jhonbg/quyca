@@ -26,7 +26,7 @@ jobs:
 
       - name: Run linter
         run: |
-          poetry run black --line-length 100 --check . && \
+          poetry run black --line-length 120 --check . && \
           poetry run autoflake --in-place --recursive \
           --remove-unused-variables --remove-all-unused-imports \
           --remove-duplicate-keys --ignore-init-module-import --check .

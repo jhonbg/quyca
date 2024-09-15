@@ -22,9 +22,7 @@ def get_percentage(func: Callable[..., list[dict[str, str | int]]]):
 
 
 @get_percentage
-def get_citations_by_affiliation(
-    data: dict[str, list[CitationsCount]]
-) -> list[dict[str, str | int]]:
+def get_citations_by_affiliation(data: dict[str, list[CitationsCount]]) -> list[dict[str, str | int]]:
     counter = 0
     results = {}
     for name, citations in data.items():
@@ -55,9 +53,7 @@ def get_apc_by_sources(sources: Generator, base_year) -> list:
         else:
             try:
                 raw_value = currency_converter.convert(apc.charges, apc.currency, "USD")
-                value = inflate(
-                    raw_value, apc.year_published, to=max(base_year, apc.year_published)
-                )
+                value = inflate(raw_value, apc.year_published, to=max(base_year, apc.year_published))
             except Exception:
                 value = 0
         if value and (name := source.affiliation_names[0].name):
@@ -140,9 +136,7 @@ def get_products_by_age(works: Iterable) -> list:
 @get_percentage
 def get_articles_by_scienti_category(data: Iterable, total_works=0) -> list:
     scienti_category = filter(
-        lambda x: x.source == "scienti"
-        and x.rank
-        and x.rank.split("_")[-1] in ["A", "A1", "B", "C", "D"],
+        lambda x: x.source == "scienti" and x.rank and x.rank.split("_")[-1] in ["A", "A1", "B", "C", "D"],
         data,
     )
     results = Counter(map(lambda x: x.rank.split("_")[-1], scienti_category))
@@ -169,11 +163,7 @@ def get_products_by_same_institution(sources: Iterable, institution) -> list:
     if institution:
         names = list(set([name["name"].lower() for name in institution["names"]]))
     for source in sources:
-        if (
-            not source.publisher
-            or not source.publisher.name
-            or not isinstance(source.publisher.name, str)
-        ):
+        if not source.publisher or not source.publisher.name or not isinstance(source.publisher.name, str):
             results["Sin información"] += 1
             continue
 

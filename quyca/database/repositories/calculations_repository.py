@@ -17,9 +17,7 @@ def get_person_calculations(person_id: str) -> PersonCalculations:
 
 
 def get_affiliation_calculations(affiliation_id: str) -> AffiliationCalculations:
-    affiliation_calculations = calculations_database["affiliations"].find_one(
-        {"_id": ObjectId(affiliation_id)}
-    )
+    affiliation_calculations = calculations_database["affiliations"].find_one({"_id": ObjectId(affiliation_id)})
 
     if not affiliation_calculations:
         return AffiliationCalculations()

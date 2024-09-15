@@ -107,12 +107,7 @@ def plot_products_by_subject(person_id: str, query_params):
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     data = chain.from_iterable(
         map(
-            lambda x: [
-                sub
-                for subject in x.subjects
-                for sub in subject.subjects
-                if subject.source == "openalex"
-            ],
+            lambda x: [sub for subject in x.subjects for sub in subject.subjects if subject.source == "openalex"],
             works,
         )
     )
@@ -212,9 +207,7 @@ def plot_coauthorship_by_colombian_department_map(person_id: str, query_params):
 
 
 def plot_author_coauthorship_network(person_id: str, query_params):
-    data = calculations_database["person"].find_one(
-        {"_id": ObjectId(person_id)}, {"coauthorship_network": 1}
-    )
+    data = calculations_database["person"].find_one({"_id": ObjectId(person_id)}, {"coauthorship_network": 1})
     if data:
         if "coauthorship_network" not in data.keys():
             return {"plot": None}

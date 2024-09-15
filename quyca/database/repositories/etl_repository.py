@@ -30,9 +30,7 @@ def set_person_products_count():
     total_results = 1
     while total_results > 0:
         database["person"].aggregate(pipeline)
-        total_results = next(
-            database["person"].aggregate(count_pipeline), {"total_results": 0}
-        ).get("total_results", 0)
+        total_results = next(database["person"].aggregate(count_pipeline), {"total_results": 0}).get("total_results", 0)
 
 
 def set_person_citations_count():
@@ -122,6 +120,4 @@ def set_person_citations_count():
     total_results = 1
     while total_results > 0:
         database["person"].aggregate(pipeline)
-        total_results = next(
-            database["person"].aggregate(count_pipeline), {"total_results": 0}
-        ).get("total_results", 0)
+        total_results = next(database["person"].aggregate(count_pipeline), {"total_results": 0}).get("total_results", 0)

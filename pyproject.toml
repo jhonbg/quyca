@@ -7,13 +7,13 @@ authors = ["colav <colav@udea.edu.co>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pydantic = {version = "^2.6.2", extras = ["email"]}
 flask = "^3.0.0"
 flask-cors = "^4.0.0"
 cpi = "^1.0.22"
 currencyconverter = "^0.17.13"
 pydantic-settings = "^2.2.1"
 pymongo = "^4.8.0"
+pydantic = "^2.9.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"

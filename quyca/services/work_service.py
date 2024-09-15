@@ -4,7 +4,7 @@ from database.models.base_model import ExternalUrl, QueryParams
 from database.models.work_model import Work, Title, ProductType
 from database.repositories import person_repository
 from database.repositories import work_repository
-from enums.external_urls import external_urls_dict
+from constants.external_urls import external_urls_dict
 from services import source_service
 from services.parsers import work_parser
 

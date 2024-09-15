@@ -3,8 +3,8 @@ from datetime import datetime
 from database.models.base_model import ExternalId
 from database.models.work_model import Work, Affiliation
 from database.repositories import csv_repository
-from enums.institutions import institutions_list
-from enums.openalex_types import openalex_types_dict
+from constants.institutions import institutions_list
+from constants.openalex_types import openalex_types_dict
 from services import source_service
 from services.work_service import set_title_and_language
 from services.parsers import work_parser

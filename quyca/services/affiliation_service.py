@@ -3,7 +3,7 @@ from itertools import chain
 from bson import ObjectId
 
 from database.models.base_model import QueryParams, ExternalUrl
-from enums.institutions import institutions_list
+from constants.institutions import institutions_list
 from services.parsers import (
     bar_parser,
     pie_parser,

@@ -3,7 +3,7 @@ from typing import Generator
 from bson import ObjectId
 
 from database.models.base_model import QueryParams
-from enums.institutions import institutions_list
+from constants.institutions import institutions_list
 from database.generators import affiliation_generator
 from database.models.affiliation_model import Affiliation
 from database.repositories import calculations_repository, base_repository

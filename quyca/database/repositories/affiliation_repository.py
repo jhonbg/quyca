@@ -93,29 +93,6 @@ def get_groups_by_faculty_or_department(affiliation_id: str) -> Generator:
     return affiliation_generator.get(groups)
 
 
-def get_related_affiliations_by_type(affiliation_id: str, affiliation_type: str, relation_type: str) -> Generator:
-    pipeline = get_related_affiliations_by_type_pipeline(affiliation_id, affiliation_type, relation_type)
-    if relation_type == "group" and affiliation_type in ["faculty", "department"]:
-        collection = "person"
-    else:
-        collection = "affiliations"
-    affiliations = database[collection].aggregate(pipeline)
-    return affiliation_generator.get(affiliations)
-
-
-def get_related_affiliations_by_type_pipeline(affiliation_id: str, affiliation_type: str, relation_type: str) -> list:
-    if relation_type == "group":
-        return get_groups_by_affiliation_pipeline(affiliation_id, affiliation_type)
-    return [
-        {
-            "$match": {
-                "relations.id": ObjectId(affiliation_id),
-                "types.type": relation_type,
-            }
-        }
-    ]
-
-
 def search_affiliations(
     affiliation_type: str,
     query_params: QueryParams,
@@ -128,20 +105,6 @@ def search_affiliations(
             "$match": {
                 "types.type": {"$in": types},
             }
-        },
-        {
-            "$lookup": {
-                "from": "works",
-                "localField": "_id",
-                "foreignField": "authors.affiliations.id",
-                "as": "works",
-                "pipeline": [{"$count": "count"}],
-            }
-        },
-        {
-            "$addFields": {
-                "products_count": {"$ifNull": [{"$arrayElemAt": ["$works.count", 0]}, 0]},
-            },
         },
         {
             "$lookup": {

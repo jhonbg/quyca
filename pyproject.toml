@@ -7,27 +7,26 @@ authors = ["colav <colav@udea.edu.co>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pydantic = {version = "^2.6.2", extras = ["email"]}
 flask = "^3.0.0"
-odmantic = "^1.0.0"
 flask-cors = "^4.0.0"
 cpi = "^1.0.22"
 currencyconverter = "^0.17.13"
 pydantic-settings = "^2.2.1"
 gunicorn = "^23.0.0"
-
+pymongo = "^4.8.0"
+pydantic = "^2.9.1"
 
 [tool.poetry.group.dev.dependencies]
-autopep8 = "^2.0.1"
 black = "^23.1.0"
-flake8 = "^6.0.0"
-debugpy = "^1.8.0"
-
+autoflake = "^2.3.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.1"
 pytest-cov = "^4.0.0"
 pytest-asyncio = "^0.20.3"
+
+[tool.poetry.scripts]
+format = "format:main"
 
 [build-system]
 requires = ["poetry-core"]

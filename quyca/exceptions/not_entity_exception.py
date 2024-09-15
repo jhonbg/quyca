@@ -1,0 +1,2 @@
+class NotEntityException(Exception):
+    pass

@@ -1,18 +1,18 @@
 from bson import ObjectId
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, field_validator
 
-from database.models.base_model import Type, Updated, ExternalUrl, CitationsCount, Name, PyObjectId, ExternalId, \
-    Subject, Ranking
-
-
-class Address(BaseModel):
-    city: str | None
-    country: str | None
-    country_code: str | None
-    lat: float | str | None
-    lng: float | str | None
-    postcode: str | None
-    state: str | None
+from database.models.base_model import (
+    Type,
+    Updated,
+    ExternalUrl,
+    CitationsCount,
+    Name,
+    PyObjectId,
+    ExternalId,
+    Subject,
+    Ranking,
+    Address,
+)
 
 
 class DescriptionText(BaseModel):
@@ -31,8 +31,16 @@ class Description(BaseModel):
 
 class Relation(BaseModel):
     id: PyObjectId = None
-    name: str | Name | None
-    types: list[Type] | None
+    name: str | Name | None = None
+    types: list[Type] | None = None
+    external_urls: list[ExternalUrl] | None = None
+
+    @field_validator("name")
+    @classmethod
+    def set_name(cls, value):
+        if isinstance(value, Name):
+            return value.name
+        return value
 
 
 class Status(BaseModel):
@@ -41,28 +49,29 @@ class Status(BaseModel):
 
 
 class Affiliation(BaseModel):
-    id: PyObjectId = Field(alias='_id')
+    id: PyObjectId = Field(alias="_id")
     abbreviations: list[str] | None = None
     addresses: list[Address] | Address | None = None
     aliases: list[str] | None = None
     birthdate: str | int | None = None
+    citations_count: list[CitationsCount] | None = None
     description: list[Description] | None = None
     external_ids: list[ExternalId] | None = None
     external_urls: list[ExternalUrl] | None = None
     names: list[Name] | None = None
+    products_count: int | None = None
     ranking: list[Ranking] | None = None
-    relations: list[Relation] | Relation | None = None
+    relations: list[Relation] | Relation | dict | None = None
     status: list[str] | list[Status] | None = None
     subjects: list[Subject] | None = None
     types: list[Type] | None = None
     updated: list[Updated] | None = None
-    year_established: int | None
+    year_established: int | None = None
 
     name: str | None = None
-    citations_count: list[CitationsCount] | None = None
-    products_count: int | None = None
     logo: str | None = None
-    affiliations: list | None = None
+    affiliations: list[dict | Relation] | None = None
+    relations_data: list[Relation] | None = None
 
     @model_validator(mode="after")
     def get_name(self):

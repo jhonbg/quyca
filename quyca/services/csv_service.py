@@ -2,7 +2,7 @@ from datetime import datetime
 
 from database.models.base_model import ExternalId
 from database.models.work_model import Work, Affiliation
-from database.repositories import work_repository
+from database.repositories import csv_repository
 from enums.institutions import institutions_list
 from enums.openalex_types import openalex_types_dict
 from services import new_source_service
@@ -10,20 +10,14 @@ from services.new_work_service import set_title_and_language
 from services.parsers import work_parser
 
 
-def get_works_csv_by_affiliation(affiliation_id: str, affiliation_type: str) -> str:
-    works = None
-    if affiliation_type == "institution":
-        works = work_repository.get_works_csv_by_institution(affiliation_id)
-    elif affiliation_type == "group":
-        works = work_repository.get_works_csv_by_group(affiliation_id)
-    elif affiliation_type in ["faculty", "department"]:
-        works = work_repository.get_works_csv_by_faculty_or_department(affiliation_id)
+def get_works_csv_by_affiliation(affiliation_id: str) -> str:
+    works = csv_repository.get_works_csv_by_affiliation(affiliation_id)
     data = get_csv_data(works)
     return work_parser.parse_csv(data)
 
 
 def get_works_csv_by_person(person_id: str) -> str:
-    works = work_repository.get_works_csv_by_person(person_id)
+    works = csv_repository.get_works_csv_by_person(person_id)
     data = get_csv_data(works)
     return work_parser.parse_csv(data)
 

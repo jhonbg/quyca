@@ -1,5 +1,6 @@
 import csv
 import io
+from typing import Generator
 
 from database.models.work_model import Work
 
@@ -99,3 +100,7 @@ def parse_work(work: Work):
         "subjects": {"__all__": {"subjects": {"__all__": {"external_ids"}}}},
     }
     return work.model_dump(exclude=exclude_fields, exclude_none=True)
+
+
+def parse_api_expert(works: Generator):
+    return [work.model_dump(exclude_none=True) for work in works]

@@ -201,9 +201,7 @@ def plot_annual_apc_expenses(affiliation_id: str, affiliation_type: str, query_p
         },
         "project": ["apc"],
     }
-    sources = work_repository.get_sources_by_affiliation(
-        affiliation_id, affiliation_type, pipeline_params
-    )
+    sources = work_repository.get_sources_by_affiliation(affiliation_id, pipeline_params)
     return {"plot": bar_parser.apc_by_year(sources, 2022)}
 
 
@@ -230,9 +228,7 @@ def plot_annual_articles_by_top_publishers(
         "match": {"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
         "project": ["publisher", "apc"],
     }
-    sources = work_repository.get_sources_by_affiliation(
-        affiliation_id, affiliation_type, pipeline_params
-    )
+    sources = work_repository.get_sources_by_affiliation(affiliation_id, pipeline_params)
     return {"plot": bar_parser.works_by_publisher_year(sources)}
 
 
@@ -277,7 +273,7 @@ def plot_apc_by_affiliation(affiliation_id: str, affiliation_type: str, relation
         "project": ["apc", "affiliation_names"],
     }
     sources = work_repository.get_sources_by_related_affiliation(
-        affiliation_id, affiliation_type, relation_type, pipeline_params
+        affiliation_id, relation_type, pipeline_params
     )
     return pie_parser.get_apc_by_sources(sources, 2022)
 
@@ -305,9 +301,7 @@ def plot_articles_by_publisher(affiliation_id: str, affiliation_type: str, query
     pipeline_params = {
         "project": ["publisher"],
     }
-    sources = work_repository.get_sources_by_affiliation(
-        affiliation_id, affiliation_type, pipeline_params
-    )
+    sources = work_repository.get_sources_by_affiliation(affiliation_id, pipeline_params)
     data = map(
         lambda x: (
             x.publisher.name
@@ -385,7 +379,7 @@ def plot_articles_by_scienti_category(affiliation_id: str, affiliation_type: str
         "project": ["ranking"],
     }
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
-    total_works = work_repository.get_works_count_by_affiliation(affiliation_id, affiliation_type)
+    total_works = work_repository.get_works_count_by_affiliation(affiliation_id)
     data = chain.from_iterable(map(lambda x: x.ranking, works))
     return pie_parser.get_articles_by_scienti_category(data, total_works)
 
@@ -427,9 +421,7 @@ def plot_articles_by_publishing_institution(
     pipeline_params = {
         "project": ["publisher"],
     }
-    sources = work_repository.get_sources_by_affiliation(
-        affiliation_id, affiliation_type, pipeline_params
-    )
+    sources = work_repository.get_sources_by_affiliation(affiliation_id, pipeline_params)
     return pie_parser.get_products_by_same_institution(sources, institution)
 
 

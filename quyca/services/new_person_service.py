@@ -29,12 +29,12 @@ def get_person_plot(person_id: str, query_params: QueryParams):
 
 
 def plot_annual_evolution_by_scienti_classification(person_id: str, query_params):
-    works, _ = work_repository.get_works_by_person(person_id, query_params)
+    works = work_repository.get_works_by_person(person_id, query_params)
     return {"plot": bar_parser.get_by_work_year_and_work_type(works)}
 
 
 def plot_annual_citation_count(person_id: str, query_params):
-    works, _ = work_repository.get_works_by_person(person_id, query_params)
+    works = work_repository.get_works_by_person(person_id, query_params)
     return {"plot": bar_parser.get_citations_by_year(works)}
 
 
@@ -60,7 +60,7 @@ def plot_annual_articles_open_access(person_id: str, query_params):
         },
         "project": ["year_published", "bibliographic_info"],
     }
-    works, _ = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
+    works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     return {"plot": bar_parser.oa_by_year(works)}
 
 
@@ -104,7 +104,7 @@ def plot_products_by_subject(person_id: str, query_params):
         "match": {"subjects": {"$ne": []}},
         "project": ["subjects"],
     }
-    works, _ = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
+    works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     data = chain.from_iterable(
         map(
             lambda x: [
@@ -124,7 +124,7 @@ def plot_products_by_database(person_id: str, query_params):
         "match": {"updated": {"$ne": []}},
         "project": ["updated"],
     }
-    works, _ = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
+    works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     data = chain.from_iterable(map(lambda x: x.updated, works))
     return pie_parser.get_products_by_database(data)
 
@@ -134,7 +134,7 @@ def plot_articles_by_access_route(person_id: str, query_params):
         "match": {"bibliographic_info.open_access_status": {"$exists": 1}},
         "project": ["bibliographic_info"],
     }
-    works, _ = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
+    works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     data = map(lambda x: x.bibliographic_info.open_access_status, works)
     return pie_parser.get_products_by_open_access(data)
 
@@ -153,7 +153,7 @@ def plot_articles_by_scienti_category(person_id: str, query_params):
         "match": {"ranking": {"$ne": []}},
         "project": ["ranking"],
     }
-    works, _ = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
+    works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     data = chain.from_iterable(map(lambda x: x.ranking, works))
     return pie_parser.get_articles_by_scienti_category(data)
 

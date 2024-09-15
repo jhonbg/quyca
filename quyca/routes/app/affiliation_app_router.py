@@ -37,9 +37,7 @@ def get_affiliation_research_products(affiliation_id: str, affiliation_type: str
                 affiliation_id, affiliation_type, query_params
             )
             return jsonify(data)
-        data = new_work_service.get_works_by_affiliation(
-            affiliation_id, affiliation_type, query_params
-        )
+        data = new_work_service.get_works_by_affiliation(affiliation_id, query_params)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400

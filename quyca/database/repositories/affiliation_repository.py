@@ -25,9 +25,7 @@ def get_affiliation_by_id(affiliation_id: str) -> Affiliation:
     )
     affiliation_calculations = calculations_repository.get_affiliation_calculations(affiliation_id)
     affiliation.citations_count = affiliation_calculations.citations_count
-    affiliation.products_count = work_repository.get_works_count_by_affiliation(
-        affiliation_id, affiliation.types[0].type
-    )
+    affiliation.products_count = work_repository.get_works_count_by_affiliation(affiliation_id)
     affiliation.affiliations = upper_affiliations
     if logo:
         affiliation.logo = logo

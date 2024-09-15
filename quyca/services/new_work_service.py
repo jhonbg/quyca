@@ -37,30 +37,21 @@ def search_works(query_params: QueryParams):
     return {"data": data, "total_results": total_results}
 
 
-def get_works_by_affiliation(affiliation_id: str, affiliation_type: str, query_params: QueryParams):
-    works = None
-    total_results = 0
+def get_works_by_affiliation(affiliation_id: str, query_params: QueryParams):
     pipeline_params = get_works_by_entity_pipeline_params()
-    if affiliation_type in ["institution", "group"]:
-        works, total_results = work_repository.get_works_by_institution_or_group(
-            affiliation_id, query_params, pipeline_params
-        )
-    elif affiliation_type in ["faculty", "department"]:
-        works, total_results = work_repository.get_works_by_faculty_or_department(
-            affiliation_id, query_params, pipeline_params
-        )
+    works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     works_data = get_work_by_entity_data(works)
     data = work_parser.parse_works_by_entity(works_data)
+    total_results = work_repository.get_works_count_by_affiliation(affiliation_id)
     return {"data": data, "total_results": total_results}
 
 
 def get_works_by_person(person_id: str, query_params: QueryParams):
     pipeline_params = get_works_by_entity_pipeline_params()
-    works, total_results = work_repository.get_works_by_person(
-        person_id, query_params, pipeline_params
-    )
+    works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     works_data = get_work_by_entity_data(works)
     data = work_parser.parse_works_by_entity(works_data)
+    total_results = work_repository.get_works_count_by_person(person_id)
     return {"data": data, "total_results": total_results}
 
 

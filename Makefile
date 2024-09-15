@@ -14,7 +14,7 @@ down-prod:
 shell-prod:
 	docker compose exec prod bash
 build-prod:
-	docker build --file Dockerfile -t colav/quyca-prod:latest --target development .
+	docker build --file Dockerfile -t colav/quyca-prod:latest --target production .
 
 up-local:
 	docker compose up --build local

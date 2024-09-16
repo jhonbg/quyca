@@ -118,7 +118,7 @@ def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query
 
 
 def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, relation_type: str):
-    data = {}
+    data: dict = {}
     return pie_parser.get_citations_by_affiliation(data)
 
 
@@ -132,12 +132,12 @@ def plot_apc_by_affiliation(affiliation_id: str, affiliation_type: str, relation
         },
         "project": ["apc", "affiliation_names"],
     }
-    sources = {}
+    sources: dict = {}
     return pie_parser.get_apc_by_sources(sources, 2022)
 
 
 def plot_h_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str, query_params):
-    data = {}
+    data: dict = {}
     pipeline_params = {
         "match": {"citations_count": {"$ne": []}},
         "project": ["citations_count"],
@@ -236,6 +236,8 @@ def plot_articles_by_scimago_quartile(affiliation_id: str, affiliation_type: str
         ) = plot_repository.get_works_rankings_by_faculty_or_department(affiliation_id)
     data = []
     works_data = []
+    if not works:
+        return
     for work in works:
         for ranking in work.source_data.ranking:
             condition = (

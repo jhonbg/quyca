@@ -32,7 +32,7 @@ def get_bars_data_by_affiliation_type(affiliation_id: str, affiliation_type: str
             }
         },
     ]
-    data = {}
+    data: dict = {}
     for _data in database["person"].aggregate(pipeline):
         if not data.get(_data["name"], False):
             data[_data["name"]] = []

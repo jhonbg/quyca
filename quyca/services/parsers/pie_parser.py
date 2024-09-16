@@ -4,14 +4,13 @@ from typing import Callable, Generator, Iterable
 from collections import Counter
 from currency_converter import CurrencyConverter
 
-from database.models.base_model import CitationsCount
 from utils.cpi import inflate
 from utils.hindex import hindex
 
 
-def get_percentage(func: Callable[..., list[dict[str, str | int]]]):
+def get_percentage(func: Callable[..., list]):
     @wraps(func)
-    def wrapper(*args, **kwargs) -> dict[str, list[dict[str, str | int | float]] | int]:
+    def wrapper(*args, **kwargs) -> dict:
         data = func(*args, **kwargs)
         total = sum(item["value"] for item in data)
         for item in data:
@@ -22,7 +21,7 @@ def get_percentage(func: Callable[..., list[dict[str, str | int]]]):
 
 
 @get_percentage
-def get_citations_by_affiliation(data: dict[str, list[CitationsCount]]) -> list[dict[str, str | int]]:
+def get_citations_by_affiliation(data: dict) -> list:
     counter = 0
     results = {}
     for name, citations in data.items():
@@ -44,7 +43,7 @@ def get_citations_by_affiliation(data: dict[str, list[CitationsCount]]) -> list[
 @get_percentage
 def get_apc_by_sources(sources: Generator, base_year) -> list:
     currency_converter = CurrencyConverter()
-    result = {}
+    result: dict = {}
     for source in sources:
         apc = source.apc
         if apc.currency == "USD":

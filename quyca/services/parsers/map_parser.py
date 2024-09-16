@@ -31,7 +31,7 @@ def get_coauthorship_by_country_map(works):
 
 
 def get_coauthorship_by_colombian_department_map(works: Iterable):
-    states = {}
+    states: dict = {}
     with open(os.path.join(os.path.dirname(__file__), "concerns/cities_by_state.csv"), "r") as cities_by_state_file:
         cities_by_state = read_csv(cities_by_state_file)
     for work in works:

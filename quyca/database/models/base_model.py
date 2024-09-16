@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator, Field, conint
+from pydantic import BaseModel, field_validator, Field
 from bson import ObjectId
 
 
@@ -74,9 +74,9 @@ class ExternalId(BaseModel):
 
     @field_validator("id", mode="after")
     @classmethod
-    def id_validator(cls, value: str | int | list[str] | Identifier | None) -> str:
+    def id_validator(cls, value: str | int | list[str] | Identifier | None) -> str | int | list[str] | None:
         if isinstance(value, Identifier):
-            if value.COD_PRODUCTO:
+            if value.COD_PRODUCTO and value.COD_RH:
                 value = value.COD_RH + "-" + value.COD_PRODUCTO
             else:
                 value = value.COD_RH
@@ -118,7 +118,7 @@ class Status(BaseModel):
 
 
 class SubjectContent(BaseModel):
-    id: PyObjectId = None
+    id: PyObjectId | None = None
     external_ids: list[ExternalId] | None = None
     level: int | None = None
     name: str | None
@@ -156,8 +156,8 @@ class APC(BaseModel):
 
 
 class QueryParams(BaseModel):
-    limit: conint(ge=1) = Field(default=None, alias="max")
-    page: conint(ge=1) = None
-    keywords: str = None
-    plot: str = None
-    sort: str = None
+    limit: int | None = Field(default=None, alias="max")
+    page: int | None = None
+    keywords: str | None = None
+    plot: str | None = None
+    sort: str | None = None

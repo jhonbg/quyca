@@ -1,4 +1,4 @@
-from database.mongo import database
+from quyca.database.mongo import database
 
 
 def test_get_works_by_institution(client):

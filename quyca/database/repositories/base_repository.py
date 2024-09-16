@@ -1,7 +1,7 @@
 from database.models.base_model import QueryParams
 
 
-def set_search_end_stages(pipeline: list, query_params: QueryParams, pipeline_params: dict = None):
+def set_search_end_stages(pipeline: list, query_params: QueryParams, pipeline_params: dict | None = None):
     if pipeline_params is None:
         pipeline_params = {}
     set_sort(query_params.sort, pipeline)
@@ -31,8 +31,8 @@ def set_project(pipeline: list, project: list | None):
 def set_sort(sort: str | None, pipeline: list):
     if not sort:
         return
-    sort_field, direction = sort.split("_")
-    direction = -1 if direction == "desc" else 1
+    sort_field, direction_str = sort.split("_")
+    direction = -1 if direction_str == "desc" else 1
     if sort_field == "citations":
         pipeline += [
             {

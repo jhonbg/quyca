@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Tuple
 
 from bson import ObjectId
 
@@ -97,7 +97,7 @@ def search_affiliations(
     affiliation_type: str,
     query_params: QueryParams,
     pipeline_params: dict | None = None,
-) -> (Generator, int):
+) -> Tuple[Generator, int]:
     types = institutions_list if affiliation_type == "institution" else [affiliation_type]
     pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     pipeline += [
@@ -108,21 +108,21 @@ def search_affiliations(
         },
         {
             "$lookup": {
-                "from": "affiliations",
-                "localField": "relations.id",
-                "foreignField": "_id",
-                "as": "relations_data",
-                "pipeline": [{"$project": {"id": "$_id", "external_urls": 1}}],
+                "from": "affiliations",  # type: ignore
+                "localField": "relations.id",  # type: ignore
+                "foreignField": "_id",  # type: ignore
+                "as": "relations_data",  # type: ignore
+                "pipeline": [{"$project": {"id": "$_id", "external_urls": 1}}],  # type: ignore
             }
         },
-        {"$project": {"works": 0}},
+        {"$project": {"works": 0}},  # type: ignore
     ]
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     affiliations = database["affiliations"].aggregate(pipeline)
     count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     count_pipeline += [
         {"$match": {"types.type": {"$in": types}}},
-        {"$count": "total_results"},
+        {"$count": "total_results"},  # type: ignore
     ]
     total_results = next(database["affiliations"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
     return affiliation_generator.get(affiliations), total_results

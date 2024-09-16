@@ -5,7 +5,7 @@ from routes.router import router
 from core.config import Settings
 
 
-def create_app():
+def create_app() -> Flask:
     app_factory = Flask(__name__)
     CORS(app_factory)
     app_factory.register_blueprint(router)

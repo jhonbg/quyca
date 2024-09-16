@@ -5,7 +5,7 @@ from typing import Generator
 from database.models.work_model import Work
 
 
-def parse_csv(works: list):
+def parse_csv(works: list) -> str:
     include = [
         "title",
         "language",
@@ -47,7 +47,7 @@ def parse_csv(works: list):
     return output.getvalue()
 
 
-def parse_search_results(works: list):
+def parse_search_results(works: list) -> list:
     include = [
         "id",
         "authors",
@@ -65,7 +65,7 @@ def parse_search_results(works: list):
     return [work.model_dump(include=include, exclude_none=True) for work in works]
 
 
-def parse_works_by_entity(works: list):
+def parse_works_by_entity(works: list) -> list:
     include = [
         "id",
         "authors",
@@ -82,7 +82,7 @@ def parse_works_by_entity(works: list):
     return [work.model_dump(include=include, exclude_none=True) for work in works]
 
 
-def parse_work(work: Work):
+def parse_work(work: Work) -> dict:
     exclude_fields = {
         "subtitle": True,
         "titles": True,
@@ -102,5 +102,5 @@ def parse_work(work: Work):
     return work.model_dump(exclude=exclude_fields, exclude_none=True)
 
 
-def parse_api_expert(works: Generator):
+def parse_api_expert(works: Generator) -> list:
     return [work.model_dump(exclude_none=True) for work in works]

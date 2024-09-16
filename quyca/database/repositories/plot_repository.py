@@ -1,4 +1,7 @@
+from typing import Generator, Tuple
+
 from bson import ObjectId
+from pymongo.command_cursor import CommandCursor
 
 from database.generators import work_generator
 from database.mongo import database, calculations_database
@@ -40,7 +43,7 @@ def get_bars_data_by_affiliation_type(affiliation_id: str, affiliation_type: str
     return data
 
 
-def get_bars_data_by_researcher_and_affiliation(affiliation_id, affiliation_type: str) -> list:
+def get_bars_data_by_researcher_and_affiliation(affiliation_id: str, affiliation_type: str) -> list:
     data = []
     if affiliation_type in ["group", "department", "faculty"]:
         for author in database["person"].find({"affiliations.id": ObjectId(affiliation_id)}, {"affiliations": 1}):
@@ -115,7 +118,7 @@ def get_bars_data_by_researcher_and_affiliation(affiliation_id, affiliation_type
     return data
 
 
-def get_bars_data_by_researcher_and_person(person_id: str):
+def get_bars_data_by_researcher_and_person(person_id: str) -> list:
     data = []
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
@@ -146,7 +149,7 @@ def get_bars_data_by_researcher_and_person(person_id: str):
     return data
 
 
-def get_products_by_author_sex(affiliation_id: str):
+def get_products_by_author_sex(affiliation_id: str) -> list:
     pipeline = [
         {"$project": {"affiliations": 1, "sex": 1}},
         {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
@@ -177,7 +180,7 @@ def get_products_by_author_sex(affiliation_id: str):
     return list(database["person"].aggregate(pipeline))
 
 
-def get_products_by_author_age_and_affiliation(affiliation_id: str):
+def get_products_by_author_age_and_affiliation(affiliation_id: str) -> CommandCursor:
     pipeline = [
         {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
         {
@@ -211,7 +214,7 @@ def get_products_by_author_age_and_affiliation(affiliation_id: str):
     return database["works"].aggregate(pipeline)
 
 
-def get_products_by_author_age_and_person(person_id: str):
+def get_products_by_author_age_and_person(person_id: str) -> CommandCursor:
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
         {"$project": {"authors": 1, "date_published": 1, "year_published": 1}},
@@ -236,7 +239,7 @@ def get_products_by_author_age_and_person(person_id: str):
     return database["works"].aggregate(pipeline)
 
 
-def get_coauthorship_by_country_map_by_affiliation(affiliation_id, affiliation_type):
+def get_coauthorship_by_country_map_by_affiliation(affiliation_id: str, affiliation_type: str) -> list:
     data = []
 
     if affiliation_type in ["group", "department", "faculty"]:
@@ -322,7 +325,7 @@ def get_coauthorship_by_country_map_by_affiliation(affiliation_id, affiliation_t
     return data
 
 
-def get_coauthorship_by_country_map_by_person(person_id):
+def get_coauthorship_by_country_map_by_person(person_id: str) -> list:
     data = []
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
@@ -352,7 +355,7 @@ def get_coauthorship_by_country_map_by_person(person_id):
     return data
 
 
-def get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id, affiliation_type):
+def get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id: str, affiliation_type: str) -> list:
     data = []
     if affiliation_type in ["group", "department", "faculty"]:
         for author in database["person"].find({"affiliations.id": ObjectId(affiliation_id)}, {"affiliations": 1}):
@@ -415,7 +418,7 @@ def get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id, 
     return data
 
 
-def get_coauthorship_by_colombian_department_map_by_person(person_id: str):
+def get_coauthorship_by_colombian_department_map_by_person(person_id: str) -> list:
     data = []
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
@@ -445,7 +448,7 @@ def get_coauthorship_by_colombian_department_map_by_person(person_id: str):
     return data
 
 
-def get_collaboration_network(affiliation_id):
+def get_collaboration_network(affiliation_id: str) -> CommandCursor:
     pipeline = [
         {"$match": {"_id": ObjectId(affiliation_id)}},
         {"$project": {"coauthorship_network": 1}},
@@ -475,7 +478,7 @@ def get_collaboration_network(affiliation_id):
     return calculations_database["affiliations"].aggregate(pipeline)
 
 
-def get_works_rankings_by_institution_or_group(affiliation_id: str):
+def get_works_rankings_by_institution_or_group(affiliation_id: str) -> Tuple[Generator, int]:
     pipeline = [
         {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
         {
@@ -501,7 +504,7 @@ def get_works_rankings_by_institution_or_group(affiliation_id: str):
     return work_generator.get(works), total_results
 
 
-def get_works_rankings_by_faculty_or_department(affiliation_id):
+def get_works_rankings_by_faculty_or_department(affiliation_id: str) -> Tuple[Generator, int]:
     institution_id = (
         database["affiliations"]
         .aggregate(
@@ -563,7 +566,7 @@ def get_works_rankings_by_faculty_or_department(affiliation_id):
     return work_generator.get(works), total_results
 
 
-def get_works_rankings_by_person(person_id: str):
+def get_works_rankings_by_person(person_id: str) -> Tuple[Generator, int]:
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
         {

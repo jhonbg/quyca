@@ -1,4 +1,6 @@
-from flask import Blueprint, request, jsonify
+from typing import Tuple
+
+from flask import Blueprint, request, jsonify, Response
 
 from database.models.base_model import QueryParams
 from services import api_expert_service
@@ -7,7 +9,7 @@ person_api_router = Blueprint("person_api_router", __name__)
 
 
 @person_api_router.route("/<person_id>/research/products", methods=["GET"])
-def get_works_by_person_api_expert(person_id: str):
+def get_works_by_person_api_expert(person_id: str) -> Response | Tuple[Response, int]:
     try:
         query_params = QueryParams(**request.args)
         data = api_expert_service.get_works_by_person(person_id, query_params)

@@ -1,4 +1,4 @@
-from database.models.base_model import ExternalUrl
+from database.models.base_model import ExternalUrl, QueryParams
 from constants.institutions import institutions_list
 from services.parsers import (
     affiliation_parser,
@@ -44,7 +44,7 @@ def get_related_affiliations_by_affiliation(affiliation_id: str, affiliation_typ
     return data
 
 
-def search_affiliations(affiliation_type, query_params):
+def search_affiliations(affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "project": [
             "_id",
@@ -71,7 +71,7 @@ def search_affiliations(affiliation_type, query_params):
     return {"data": data, "total_results": total_results}
 
 
-def set_relation_external_urls(affiliation: Affiliation):
+def set_relation_external_urls(affiliation: Affiliation) -> None:
     for relation in affiliation.relations:
         relation_data = next(
             filter(lambda x: x.id == relation.id, affiliation.relations_data),
@@ -80,7 +80,7 @@ def set_relation_external_urls(affiliation: Affiliation):
         relation.external_urls = relation_data.external_urls
 
 
-def set_upper_affiliations_and_logo(affiliation: Affiliation, affiliation_type: str):
+def set_upper_affiliations_and_logo(affiliation: Affiliation, affiliation_type: str) -> None:
     if affiliation_type == "institution":
         affiliation.logo = next(
             filter(lambda x: x.source == "logo", affiliation.external_urls),
@@ -103,6 +103,6 @@ def set_upper_affiliations_and_logo(affiliation: Affiliation, affiliation_type: 
     affiliation.affiliations = upper_affiliations
 
 
-def set_logo(affiliation: Affiliation, relation: Relation):
+def set_logo(affiliation: Affiliation, relation: Relation) -> None:
     if relation.types[0].type in institutions_list:
         affiliation.logo = next(filter(lambda x: x.source == "logo", relation.external_urls), ExternalUrl()).url

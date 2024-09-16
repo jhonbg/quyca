@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from flask import Blueprint, request, Response, jsonify
 
 from database.models.base_model import QueryParams
@@ -7,7 +9,7 @@ affiliation_app_router = Blueprint("affiliation_app_router", __name__)
 
 
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>", methods=["GET"])
-def get_affiliation_by_id(affiliation_type: str, affiliation_id: str):
+def get_affiliation_by_id(affiliation_type: str, affiliation_id: str) -> Response | Tuple[Response, int]:
     try:
         data = affiliation_service.get_affiliation_by_id(affiliation_id, affiliation_type)
         return jsonify(data)
@@ -16,7 +18,7 @@ def get_affiliation_by_id(affiliation_type: str, affiliation_id: str):
 
 
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/affiliations", methods=["GET"])
-def get_affiliation_affiliations(affiliation_type: str, affiliation_id: str):
+def get_affiliation_affiliations(affiliation_type: str, affiliation_id: str) -> Response | Tuple[Response, int]:
     try:
         data = affiliation_service.get_related_affiliations_by_affiliation(affiliation_id, affiliation_type)
         return jsonify(data)
@@ -25,7 +27,7 @@ def get_affiliation_affiliations(affiliation_type: str, affiliation_id: str):
 
 
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/research/products", methods=["GET"])
-def get_affiliation_research_products(affiliation_id: str, affiliation_type: str):
+def get_affiliation_research_products(affiliation_id: str, affiliation_type: str) -> Response | Tuple[Response, int]:
     try:
         query_params = QueryParams(**request.args)
         if query_params.plot:
@@ -38,7 +40,7 @@ def get_affiliation_research_products(affiliation_id: str, affiliation_type: str
 
 
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/research/products/csv", methods=["GET"])
-def get_works_csv_by_affiliation(affiliation_type: str, affiliation_id: str):
+def get_works_csv_by_affiliation(affiliation_type: str, affiliation_id: str) -> Response | Tuple[Response, int]:
     try:
         data = csv_service.get_works_csv_by_affiliation(affiliation_id)
         response = Response(data, content_type="text/csv")

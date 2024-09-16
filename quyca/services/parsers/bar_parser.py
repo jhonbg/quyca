@@ -27,7 +27,7 @@ def get_by_work_year_and_work_type(works: Generator) -> list:
     return plot
 
 
-def get_by_affiliation_type(data) -> list | None:
+def get_by_affiliation_type(data: dict) -> list | None:
     if not isinstance(data, dict):
         print(type(data))
         return None
@@ -73,7 +73,7 @@ def get_citations_by_year(works: Generator) -> list:
     return plot
 
 
-def apc_by_year(sources: Generator, base_year) -> list:
+def apc_by_year(sources: Generator, base_year: int) -> list:
     data = map(lambda x: x.apc, sources)
     currency = CurrencyConverter()
     result: dict = {}

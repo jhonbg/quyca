@@ -1,3 +1,4 @@
+from typing import Generator
 from urllib.parse import urlparse
 
 from database.models.base_model import ExternalUrl, QueryParams
@@ -9,7 +10,7 @@ from services import source_service
 from services.parsers import work_parser
 
 
-def get_work_by_id(work_id: str):
+def get_work_by_id(work_id: str) -> dict:
     work = work_repository.get_work_by_id(work_id)
     set_external_ids(work)
     set_external_urls(work)
@@ -23,13 +24,13 @@ def get_work_by_id(work_id: str):
     return {"data": data}
 
 
-def get_work_authors(work_id: str):
+def get_work_authors(work_id: str) -> dict:
     work = work_repository.get_work_by_id(work_id)
     set_authors_external_ids(work)
     return {"data": work.model_dump()["authors"]}
 
 
-def search_works(query_params: QueryParams):
+def search_works(query_params: QueryParams) -> dict:
     pipeline_params = get_works_by_entity_pipeline_params()
     works, total_results = work_repository.search_works(query_params, pipeline_params)
     works_data = get_work_by_entity_data(works)
@@ -37,7 +38,7 @@ def search_works(query_params: QueryParams):
     return {"data": data, "total_results": total_results}
 
 
-def get_works_by_affiliation(affiliation_id: str, query_params: QueryParams):
+def get_works_by_affiliation(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = get_works_by_entity_pipeline_params()
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     works_data = get_work_by_entity_data(works)
@@ -46,7 +47,7 @@ def get_works_by_affiliation(affiliation_id: str, query_params: QueryParams):
     return {"data": data, "total_results": total_results}
 
 
-def get_works_by_person(person_id: str, query_params: QueryParams):
+def get_works_by_person(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = get_works_by_entity_pipeline_params()
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     works_data = get_work_by_entity_data(works)
@@ -55,7 +56,7 @@ def get_works_by_person(person_id: str, query_params: QueryParams):
     return {"data": data, "total_results": total_results}
 
 
-def get_work_by_entity_data(works):
+def get_work_by_entity_data(works: Generator) -> list:
     works_data = []
     for work in works:
         limit_authors(work)
@@ -66,7 +67,7 @@ def get_work_by_entity_data(works):
     return works_data
 
 
-def get_works_by_entity_pipeline_params():
+def get_works_by_entity_pipeline_params() -> dict:
     pipeline_params = {
         "project": [
             "_id",
@@ -86,8 +87,8 @@ def get_works_by_entity_pipeline_params():
     return pipeline_params
 
 
-def set_title_and_language(work: Work):
-    def order(title: Title):
+def set_title_and_language(work: Work) -> None:
+    def order(title: Title) -> float:
         hierarchy = ["openalex", "scholar", "scienti", "minciencias", "ranking"]
         return hierarchy.index(title.source) if title.source in hierarchy else float("inf")
 
@@ -96,8 +97,8 @@ def set_title_and_language(work: Work):
     work.title = first_title.title
 
 
-def set_product_types(work: Work):
-    def order(product_type: ProductType):
+def set_product_types(work: Work) -> None:
+    def order(product_type: ProductType) -> float:
         hierarchy = ["openalex", "scienti", "minciencias", "scholar"]
         return hierarchy.index(product_type.source) if product_type.source in hierarchy else float("inf")
 
@@ -110,7 +111,7 @@ def set_product_types(work: Work):
     work.product_types = sorted(product_types, key=order)
 
 
-def set_bibliographic_info(work: Work):
+def set_bibliographic_info(work: Work) -> None:
     if not work.bibliographic_info:
         return
     work.issue = work.bibliographic_info.issue
@@ -119,7 +120,7 @@ def set_bibliographic_info(work: Work):
     work.bibliographic_info = None
 
 
-def set_authors_external_ids(work: Work):
+def set_authors_external_ids(work: Work) -> None:
     if not work.authors:
         return
     for author in work.authors:
@@ -127,14 +128,14 @@ def set_authors_external_ids(work: Work):
             author.external_ids = person_repository.get_person_by_id(str(author.id)).external_ids
 
 
-def limit_authors(work: Work, limit: int = 10):
+def limit_authors(work: Work, limit: int = 10) -> None:
     if not work.authors:
         return
     if len(work.authors) > limit:
         work.authors = work.authors[:limit]
 
 
-def set_external_ids(work: Work):
+def set_external_ids(work: Work) -> None:
     if not work.external_ids:
         return
     new_external_ids = []
@@ -146,7 +147,7 @@ def set_external_ids(work: Work):
     work.external_ids = list(set(new_external_ids))
 
 
-def set_external_urls(work: Work):
+def set_external_urls(work: Work) -> None:
     if not work.external_urls:
         return
     new_external_urls = []

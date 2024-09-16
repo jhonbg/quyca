@@ -8,7 +8,7 @@ etl_router = Blueprint("etl_router", __name__)
 
 
 @etl_router.route("/set_person_products_count", methods=["GET"])
-def set_person_products_count():
+def set_person_products_count() -> Response:
     try:
         etl_service.set_person_products_count()
         return Response(json.dumps("The etl is done"), 200, mimetype="application/json")
@@ -17,7 +17,7 @@ def set_person_products_count():
 
 
 @etl_router.route("/set_person_citations_count", methods=["GET"])
-def set_person_citations_count():
+def set_person_citations_count() -> Response:
     try:
         etl_service.set_person_citations_count()
         return Response(json.dumps("The etl is done"), 200, mimetype="application/json")

@@ -59,7 +59,7 @@ def get_works_by_person(person_id: str, query_params: QueryParams, pipeline_para
     return work_generator.get(cursor)
 
 
-def get_works_count_by_person(person_id) -> Optional[int]:
+def get_works_count_by_person(person_id: str) -> Optional[int]:
     return (
         database["works"]
         .aggregate([{"$match": {"authors.id": ObjectId(person_id)}}, {"$count": "total"}])
@@ -110,7 +110,7 @@ def get_sources_by_affiliation(affiliation_id: str, pipeline_params: dict | None
     return source_generator.get(cursor)
 
 
-def get_sources_by_person(person_id: str, query_params, pipeline_params: dict | None = None) -> Generator:
+def get_sources_by_person(person_id: str, query_params: QueryParams, pipeline_params: dict | None = None) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = get_sources_by_person_pipeline(person_id)
@@ -120,7 +120,7 @@ def get_sources_by_person(person_id: str, query_params, pipeline_params: dict | 
     return source_generator.get(cursor)
 
 
-def get_works_by_affiliation_pipeline(affiliation_id: str):
+def get_works_by_affiliation_pipeline(affiliation_id: str) -> list:
     return [
         {
             "$match": {
@@ -130,7 +130,7 @@ def get_works_by_affiliation_pipeline(affiliation_id: str):
     ]
 
 
-def get_sources_by_affiliation_pipeline(affiliation_id):
+def get_sources_by_affiliation_pipeline(affiliation_id: str) -> list:
     pipeline = get_works_by_affiliation_pipeline(affiliation_id)
     pipeline += [
         {
@@ -153,7 +153,7 @@ def get_sources_by_affiliation_pipeline(affiliation_id):
     return pipeline
 
 
-def get_sources_by_person_pipeline(person_id):
+def get_sources_by_person_pipeline(person_id: str) -> list:
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
         {

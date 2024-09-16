@@ -1,20 +1,20 @@
+from typing import Generator
+
 from pydantic import BaseModel, field_validator, Field
 from bson import ObjectId
 
 
 class PyObjectId(ObjectId):
     @classmethod
-    def __get_validators__(cls):
+    def __get_validators__(cls) -> Generator:
         yield cls.validate
 
     @classmethod
-    def validate(cls, value, other):
+    def validate(cls, value: str | ObjectId, other: None) -> str:
         if value == "":
-            return value
-
+            return str(value)
         if not ObjectId.is_valid(value):
             raise ValueError(f"Invalid ObjectId '{str(value)}'")
-
         return str(value)
 
 
@@ -82,7 +82,7 @@ class ExternalId(BaseModel):
                 value = value.COD_RH
         return value
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(str(self.id) + str(self.source))
 
 
@@ -91,7 +91,7 @@ class ExternalUrl(BaseModel):
     source: str | None = None
     provenance: str | None = None
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(str(self.url) + str(self.source))
 
 

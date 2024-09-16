@@ -8,7 +8,7 @@ from database.repositories import work_repository, plot_repository
 from services.parsers import bar_parser, pie_parser, map_parser
 
 
-def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_params: QueryParams):
+def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict | None:
     plot_type = query_params.plot
     if plot_type in [
         "faculties_by_product_type",
@@ -41,7 +41,9 @@ def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_param
     return globals()["plot_" + plot_type](affiliation_id, affiliation_type, query_params)
 
 
-def plot_annual_evolution_by_scienti_classification(affiliation_id: str, affiliation_type: str, query_params):
+def plot_annual_evolution_by_scienti_classification(
+    affiliation_id: str, affiliation_type: str, query_params: QueryParams
+) -> dict:
     pipeline_params = {"project": ["year_published", "types"]}
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     return {"plot": bar_parser.get_by_work_year_and_work_type(works)}
@@ -50,19 +52,19 @@ def plot_annual_evolution_by_scienti_classification(affiliation_id: str, affilia
 def plot_affiliation_type(
     affiliation_id: str,
     affiliation_plot_type: str,
-):
+) -> dict | None:
     if affiliation_plot_type not in ["group", "department", "faculty"]:
         return None
     data = plot_repository.get_bars_data_by_affiliation_type(affiliation_id, affiliation_plot_type)
     return {"plot": bar_parser.get_by_affiliation_type(data)}
 
 
-def plot_annual_citation_count(affiliation_id: str, affiliation_type: str, query_params):
+def plot_annual_citation_count(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params)
     return {"plot": bar_parser.get_citations_by_year(works)}
 
 
-def plot_annual_apc_expenses(affiliation_id: str, affiliation_type: str, query_params):
+def plot_annual_apc_expenses(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "match": {
             "$and": [
@@ -76,7 +78,7 @@ def plot_annual_apc_expenses(affiliation_id: str, affiliation_type: str, query_p
     return {"plot": bar_parser.apc_by_year(sources, 2022)}
 
 
-def plot_annual_articles_open_access(affiliation_id: str, affiliation_type: str, query_params):
+def plot_annual_articles_open_access(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "match": {
             "bibliographic_info.is_open_access": {"$ne": None},
@@ -92,7 +94,9 @@ def plot_annual_articles_open_access(affiliation_id: str, affiliation_type: str,
     return {"plot": bar_parser.oa_by_year(works)}
 
 
-def plot_annual_articles_by_top_publishers(affiliation_id: str, affiliation_type: str, query_params):
+def plot_annual_articles_by_top_publishers(
+    affiliation_id: str, affiliation_type: str, query_params: QueryParams
+) -> dict:
     pipeline_params = {
         "match": {"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
         "project": ["publisher", "apc"],
@@ -101,7 +105,7 @@ def plot_annual_articles_by_top_publishers(affiliation_id: str, affiliation_type
     return {"plot": bar_parser.works_by_publisher_year(sources)}
 
 
-def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query_params):
+def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     data = calculations_database["affiliations"].find_one({"_id": ObjectId(affiliation_id)}, {"top_words": 1})
     if data:
         if not "top_words" in data.keys():
@@ -117,12 +121,12 @@ def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query
         return {"plot": None}
 
 
-def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, relation_type: str):
+def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
     data: dict = {}
     return pie_parser.get_citations_by_affiliation(data)
 
 
-def plot_apc_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str):
+def plot_apc_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
     pipeline_params = {
         "match": {
             "$and": [
@@ -136,7 +140,9 @@ def plot_apc_by_affiliation(affiliation_id: str, affiliation_type: str, relation
     return pie_parser.get_apc_by_sources(sources, 2022)
 
 
-def plot_h_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str, query_params):
+def plot_h_by_affiliation(
+    affiliation_id: str, affiliation_type: str, relation_type: str, query_params: QueryParams
+) -> dict:
     data: dict = {}
     pipeline_params = {
         "match": {"citations_count": {"$ne": []}},
@@ -145,7 +151,7 @@ def plot_h_by_affiliation(affiliation_id: str, affiliation_type: str, relation_t
     return pie_parser.get_h_by_affiliation(data)
 
 
-def plot_articles_by_publisher(affiliation_id: str, affiliation_type: str, query_params):
+def plot_articles_by_publisher(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "project": ["publisher"],
     }
@@ -157,7 +163,7 @@ def plot_articles_by_publisher(affiliation_id: str, affiliation_type: str, query
     return pie_parser.get_products_by_publisher(data)
 
 
-def plot_products_by_subject(affiliation_id: str, affiliation_type: str, query_params):
+def plot_products_by_subject(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "match": {"subjects": {"$ne": []}},
         "project": ["subjects"],
@@ -172,7 +178,7 @@ def plot_products_by_subject(affiliation_id: str, affiliation_type: str, query_p
     return pie_parser.get_products_by_subject(data)
 
 
-def plot_products_by_database(affiliation_id: str, affiliation_type: str, query_params):
+def plot_products_by_database(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "match": {"updated": {"$ne": []}},
         "project": ["updated"],
@@ -182,7 +188,7 @@ def plot_products_by_database(affiliation_id: str, affiliation_type: str, query_
     return pie_parser.get_products_by_database(data)
 
 
-def plot_articles_by_access_route(affiliation_id: str, affiliation_type: str, query_params):
+def plot_articles_by_access_route(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "project": ["bibliographic_info"],
     }
@@ -197,11 +203,11 @@ def plot_articles_by_access_route(affiliation_id: str, affiliation_type: str, qu
 
 
 @pie_parser.get_percentage
-def plot_products_by_author_sex(affiliation_id: str, affiliation_type: str, query_params):
+def plot_products_by_author_sex(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> list:
     return plot_repository.get_products_by_author_sex(affiliation_id)
 
 
-def plot_products_by_author_age_range(affiliation_id: str, affiliation_type: str, query_params):
+def plot_products_by_author_age_range(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     works = plot_repository.get_products_by_author_age_and_affiliation(affiliation_id)
     result = pie_parser.get_products_by_age(works)
     if result:
@@ -210,7 +216,7 @@ def plot_products_by_author_age_range(affiliation_id: str, affiliation_type: str
         return {"plot": None}
 
 
-def plot_articles_by_scienti_category(affiliation_id: str, affiliation_type: str, query_params):
+def plot_articles_by_scienti_category(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "match": {"ranking": {"$ne": []}},
         "project": ["ranking"],
@@ -221,7 +227,9 @@ def plot_articles_by_scienti_category(affiliation_id: str, affiliation_type: str
     return pie_parser.get_articles_by_scienti_category(data, total_works)
 
 
-def plot_articles_by_scimago_quartile(affiliation_id: str, affiliation_type: str, query_params):
+def plot_articles_by_scimago_quartile(
+    affiliation_id: str, affiliation_type: str, query_params: QueryParams
+) -> dict | None:
     works = None
     total_results = 0
     if affiliation_type in ["institution", "group"]:
@@ -237,7 +245,7 @@ def plot_articles_by_scimago_quartile(affiliation_id: str, affiliation_type: str
     data = []
     works_data = []
     if not works:
-        return
+        return None
     for work in works:
         for ranking in work.source_data.ranking:
             condition = (
@@ -253,7 +261,9 @@ def plot_articles_by_scimago_quartile(affiliation_id: str, affiliation_type: str
     return pie_parser.get_articles_by_scimago_quartile(data, total_results)
 
 
-def plot_articles_by_publishing_institution(affiliation_id: str, affiliation_type: str, query_params):
+def plot_articles_by_publishing_institution(
+    affiliation_id: str, affiliation_type: str, query_params: QueryParams
+) -> dict:
     institution = database["affiliations"].find_one({"_id": ObjectId(affiliation_id)}, {"names": 1})
     pipeline_params = {
         "project": ["publisher"],
@@ -262,7 +272,7 @@ def plot_articles_by_publishing_institution(affiliation_id: str, affiliation_typ
     return pie_parser.get_products_by_same_institution(sources, institution)
 
 
-def plot_coauthorship_by_country_map(affiliation_id: str, affiliation_type: str, query_params):
+def plot_coauthorship_by_country_map(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     data = plot_repository.get_coauthorship_by_country_map_by_affiliation(affiliation_id, affiliation_type)
     result = map_parser.get_coauthorship_by_country_map(data)
     if result:
@@ -271,12 +281,16 @@ def plot_coauthorship_by_country_map(affiliation_id: str, affiliation_type: str,
         return {"plot": None}
 
 
-def plot_coauthorship_by_colombian_department_map(affiliation_id: str, affiliation_type: str, query_params):
+def plot_coauthorship_by_colombian_department_map(
+    affiliation_id: str, affiliation_type: str, query_params: QueryParams
+) -> dict:
     data = plot_repository.get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id, affiliation_type)
     return {"plot": map_parser.get_coauthorship_by_colombian_department_map(data)}
 
 
-def plot_institutional_coauthorship_network(affiliation_id: str, affiliation_type: str, query_params):
+def plot_institutional_coauthorship_network(
+    affiliation_id: str, affiliation_type: str, query_params: QueryParams
+) -> dict:
     if affiliation_type in ["group", "department", "faculty"]:
         return {"plot": None}
     data = calculations_database["affiliations"].find_one(

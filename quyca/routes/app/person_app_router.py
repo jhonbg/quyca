@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from flask import Blueprint, request, Response, jsonify
 
 from database.models.base_model import QueryParams
@@ -7,7 +9,7 @@ person_app_router = Blueprint("person_app_router", __name__)
 
 
 @person_app_router.route("/<person_id>", methods=["GET"])
-def get_person_by_id(person_id: str):
+def get_person_by_id(person_id: str) -> Response | Tuple[Response, int]:
     try:
         data = person_service.get_person_by_id(person_id)
         return jsonify(data)
@@ -16,7 +18,7 @@ def get_person_by_id(person_id: str):
 
 
 @person_app_router.route("/<person_id>/research/products", methods=["GET"])
-def get_person_research_products(person_id: str):
+def get_person_research_products(person_id: str) -> Response | Tuple[Response, int]:
     try:
         query_params = QueryParams(**request.args)
         if query_params.plot:
@@ -29,7 +31,7 @@ def get_person_research_products(person_id: str):
 
 
 @person_app_router.route("/<person_id>/research/products/csv", methods=["GET"])
-def get_works_csv_by_person(person_id: str):
+def get_works_csv_by_person(person_id: str) -> Response | Tuple[Response, int]:
     try:
         data = csv_service.get_works_csv_by_person(person_id)
         response = Response(data, content_type="text/csv")

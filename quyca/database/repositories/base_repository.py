@@ -1,7 +1,7 @@
 from database.models.base_model import QueryParams
 
 
-def set_search_end_stages(pipeline: list, query_params: QueryParams, pipeline_params: dict | None = None):
+def set_search_end_stages(pipeline: list, query_params: QueryParams, pipeline_params: dict | None = None) -> list:
     if pipeline_params is None:
         pipeline_params = {}
     set_sort(query_params.sort, pipeline)
@@ -10,25 +10,25 @@ def set_search_end_stages(pipeline: list, query_params: QueryParams, pipeline_pa
     return pipeline
 
 
-def set_pagination(pipeline: list, query_params: QueryParams):
+def set_pagination(pipeline: list, query_params: QueryParams) -> None:
     if (page := query_params.page) and (limit := query_params.limit):
         skip = (page - 1) * limit
         pipeline += [{"$skip": skip}, {"$limit": limit}]
 
 
-def set_match(pipeline: list, match: dict | None):
+def set_match(pipeline: list, match: dict | None) -> None:
     if not match:
         return
     pipeline += [{"$match": match}]
 
 
-def set_project(pipeline: list, project: list | None):
+def set_project(pipeline: list, project: list | None) -> None:
     if not project:
         return
     pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}]
 
 
-def set_sort(sort: str | None, pipeline: list):
+def set_sort(sort: str | None, pipeline: list) -> None:
     if not sort:
         return
     sort_field, direction_str = sort.split("_")

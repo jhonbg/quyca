@@ -22,7 +22,7 @@ class Affiliation(BaseModel):
 
     @field_validator("start_date")
     @classmethod
-    def set_start_date(cls, value):
+    def set_start_date(cls, value: int | str) -> int | str:
         if value == "":
             return -1
         else:
@@ -30,7 +30,7 @@ class Affiliation(BaseModel):
 
     @field_validator("end_date")
     @classmethod
-    def set_end_date(cls, value):
+    def set_end_date(cls, value: int | str) -> int | str:
         if value == "":
             return -1
         else:
@@ -87,18 +87,18 @@ class Person(BaseModel):
     keywords: list | None = Field(default_factory=list)
     last_names: list[str] | None = Field(default_factory=list)
     marital_status: str | None = None
+    products_count: int | None = None
     ranking: list[Ranking] | None = Field(default_factory=list)
     related_works: list[RelatedWork] | None = Field(default_factory=list)
     sex: str | None = None
     subjects: list[Subject] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
 
-    products_count: int | None = None
     logo: str | None = None
 
     @field_validator("external_ids")
     @classmethod
-    def delete_sensitive_external_ids(cls, value):
+    def delete_sensitive_external_ids(cls, value: list) -> list:
         return list(
             filter(
                 lambda external_id: external_id.source

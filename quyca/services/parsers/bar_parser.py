@@ -1,14 +1,12 @@
-from datetime import datetime
 from typing import Generator
 
 from currency_converter import CurrencyConverter
 
 from utils.cpi import inflate
-from utils.hindex import hindex
 
 
 def get_by_work_year_and_work_type(works: Generator) -> list:
-    result = {}
+    result: dict = {}
     for work in works:
         if not work.year_published:
             continue
@@ -16,10 +14,7 @@ def get_by_work_year_and_work_type(works: Generator) -> list:
         if work_year not in result.keys():
             result[work_year] = {}
         for work_type in work.types:
-            if (
-                work_type.source == "scienti"
-                and work_type.type == "Publicado en revista especializada"
-            ):
+            if work_type.source == "scienti" and work_type.type == "Publicado en revista especializada":
                 if work_type.type not in result[work_year].keys():
                     result[work_year][work_type.type] = 1
                 else:
@@ -27,33 +22,26 @@ def get_by_work_year_and_work_type(works: Generator) -> list:
     plot = []
     for year in result.keys():
         for work_type in result[year].keys():
-            plot += (
-                [{"x": year, "y": result[year][work_type], "type": work_type}]
-                if year
-                else []
-            )
+            plot += [{"x": year, "y": result[year][work_type], "type": work_type}] if year else []
     plot = sorted(plot, key=lambda x: x.get("x", -99))
     return plot
 
 
-def get_by_affiliation_type(data) -> list:
+def get_by_affiliation_type(data: dict) -> list | None:
     if not isinstance(data, dict):
         print(type(data))
         return None
     if len(data) == 0:
         print(len(data))
         return None
-    result = {}
+    result: dict = {}
     for name, works in data.items():
         for work in works:
             if name not in result.keys():
                 result[name] = {}
 
             for work_type in work["types"]:
-                if (
-                    work_type["source"] == "scienti"
-                    and work_type["type"] == "Publicado en revista especializada"
-                ):
+                if work_type["source"] == "scienti" and work_type["type"] == "Publicado en revista especializada":
                     # if typ["level"] == 2:
                     if work_type["type"] not in result[name].keys():
                         result[name][work_type["type"]] = 1
@@ -68,7 +56,7 @@ def get_by_affiliation_type(data) -> list:
 
 
 def get_citations_by_year(works: Generator) -> list:
-    result = {}
+    result: dict = {}
     no_info = 0
     for work in works:
         if not work.citations_by_year:
@@ -79,16 +67,16 @@ def get_citations_by_year(works: Generator) -> list:
                 result[yearly.year] += yearly.cited_by_count
             else:
                 result[yearly.year] = yearly.cited_by_count
-    plot = sorted(result.items(), key=lambda x: x[0])
-    plot = [{"x": x[0], "y": x[1]} for x in plot]
+    plot_data = sorted(result.items(), key=lambda x: x[0])
+    plot = [{"x": x[0], "y": x[1]} for x in plot_data]
     plot += [{"x": "Sin información", "y": no_info}]
     return plot
 
 
-def apc_by_year(sources: Generator, base_year) -> list:
+def apc_by_year(sources: Generator, base_year: int) -> list:
     data = map(lambda x: x.apc, sources)
     currency = CurrencyConverter()
-    result = {}
+    result: dict = {}
     for apc in data:
         try:
             if apc.currency == "USD":
@@ -105,7 +93,7 @@ def apc_by_year(sources: Generator, base_year) -> list:
                     apc.year_published,
                     to=max(base_year, int(apc.year_published)),
                 )
-        except ValueError as e:
+        except ValueError:
             value = 0
         if value:
             if apc.year_published not in result.keys():
@@ -118,7 +106,7 @@ def apc_by_year(sources: Generator, base_year) -> list:
 
 
 def oa_by_year(works: Generator) -> list:
-    result = {}
+    result: dict = {}
     for work in works:
         year = work.year_published
         if year in result.keys():
@@ -139,8 +127,8 @@ def oa_by_year(works: Generator) -> list:
 
 
 def works_by_publisher_year(data: Generator) -> list:
-    result = {}
-    top5 = {}
+    result: dict = {}
+    top5: dict = {}
     for source in data:
         year = int(source.apc.year_published or 0)
         if year in result.keys():
@@ -154,16 +142,12 @@ def works_by_publisher_year(data: Generator) -> list:
             top5[source.publisher.name] = 1
         else:
             top5[source.publisher.name] += 1
-    top5 = [top[0] for top in sorted(top5.items(), key=lambda x: x[1], reverse=True)][
-        :5
-    ]
+    top = [top[0] for top in sorted(top5.items(), key=lambda x: x[1], reverse=True)][:5]
     plot = []
     for year in result.keys():
-        for publisher in top5:
+        for publisher in top:
             if publisher in result[year].keys():
-                plot.append(
-                    {"x": year, "y": result[year][publisher], "type": publisher}
-                )
+                plot.append({"x": year, "y": result[year][publisher], "type": publisher})
             else:
                 plot.append({"x": year, "y": 0, "type": publisher})
     plot = sorted(plot, key=lambda x: x["x"])

@@ -1,20 +1,20 @@
-from pydantic import BaseModel, field_validator, Field, conint
+from typing import Generator
+
+from pydantic import BaseModel, field_validator, Field
 from bson import ObjectId
 
 
 class PyObjectId(ObjectId):
     @classmethod
-    def __get_validators__(cls):
+    def __get_validators__(cls) -> Generator:
         yield cls.validate
 
     @classmethod
-    def validate(cls, value, other):
+    def validate(cls, value: str | ObjectId, other: None) -> str:
         if value == "":
-            return value
-
+            return str(value)
         if not ObjectId.is_valid(value):
             raise ValueError(f"Invalid ObjectId '{str(value)}'")
-
         return str(value)
 
 
@@ -74,15 +74,15 @@ class ExternalId(BaseModel):
 
     @field_validator("id", mode="after")
     @classmethod
-    def id_validator(cls, value: str | int | list[str] | Identifier | None) -> str:
+    def id_validator(cls, value: str | int | list[str] | Identifier | None) -> str | int | list[str] | None:
         if isinstance(value, Identifier):
-            if value.COD_PRODUCTO:
+            if value.COD_PRODUCTO and value.COD_RH:
                 value = value.COD_RH + "-" + value.COD_PRODUCTO
             else:
                 value = value.COD_RH
         return value
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(str(self.id) + str(self.source))
 
 
@@ -91,7 +91,7 @@ class ExternalUrl(BaseModel):
     source: str | None = None
     provenance: str | None = None
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(str(self.url) + str(self.source))
 
 
@@ -118,7 +118,7 @@ class Status(BaseModel):
 
 
 class SubjectContent(BaseModel):
-    id: PyObjectId = None
+    id: PyObjectId | None = None
     external_ids: list[ExternalId] | None = None
     level: int | None = None
     name: str | None
@@ -156,8 +156,8 @@ class APC(BaseModel):
 
 
 class QueryParams(BaseModel):
-    limit: conint(ge=1) = Field(default=None, alias="max")
-    page: conint(ge=1) = None
-    keywords: str = None
-    plot: str = None
-    sort: str = None
+    limit: int | None = Field(default=None, alias="max")
+    page: int | None = None
+    keywords: str | None = None
+    plot: str | None = None
+    sort: str | None = None

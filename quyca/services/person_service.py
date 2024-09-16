@@ -9,7 +9,7 @@ def get_person_by_id(person_id: str) -> dict:
     return {"data": data}
 
 
-def search_persons(query_params: QueryParams):
+def search_persons(query_params: QueryParams) -> dict:
     pipeline_params = {
         "project": [
             "_id",

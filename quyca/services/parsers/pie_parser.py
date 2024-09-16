@@ -4,14 +4,13 @@ from typing import Callable, Generator, Iterable
 from collections import Counter
 from currency_converter import CurrencyConverter
 
-from database.models.base_model import CitationsCount
 from utils.cpi import inflate
 from utils.hindex import hindex
 
 
-def get_percentage(func: Callable[..., list[dict[str, str | int]]]):
+def get_percentage(func: Callable[..., list]) -> Callable[..., dict]:
     @wraps(func)
-    def wrapper(*args, **kwargs) -> dict[str, list[dict[str, str | int | float]] | int]:
+    def wrapper(*args: Iterable, **kwargs: dict) -> dict:
         data = func(*args, **kwargs)
         total = sum(item["value"] for item in data)
         for item in data:
@@ -22,7 +21,7 @@ def get_percentage(func: Callable[..., list[dict[str, str | int]]]):
 
 
 @get_percentage
-def get_citations_by_affiliation(data: dict[str, list[CitationsCount]]) -> list[dict[str, str | int]]:
+def get_citations_by_affiliation(data: dict) -> list:
     counter = 0
     results = {}
     for name, citations in data.items():
@@ -42,9 +41,9 @@ def get_citations_by_affiliation(data: dict[str, list[CitationsCount]]) -> list[
 
 
 @get_percentage
-def get_apc_by_sources(sources: Generator, base_year) -> list:
+def get_apc_by_sources(sources: Generator, base_year: int) -> list:
     currency_converter = CurrencyConverter()
-    result = {}
+    result: dict = {}
     for source in sources:
         apc = source.apc
         if apc.currency == "USD":
@@ -134,7 +133,7 @@ def get_products_by_age(works: Iterable) -> list:
 
 
 @get_percentage
-def get_articles_by_scienti_category(data: Iterable, total_works=0) -> list:
+def get_articles_by_scienti_category(data: Iterable, total_works: int = 0) -> list:
     scienti_category = filter(
         lambda x: x.source == "scienti" and x.rank and x.rank.split("_")[-1] in ["A", "A1", "B", "C", "D"],
         data,
@@ -157,7 +156,7 @@ def get_articles_by_scimago_quartile(data: list, total_results: int) -> list:
 
 
 @get_percentage
-def get_products_by_same_institution(sources: Iterable, institution) -> list:
+def get_products_by_same_institution(sources: Iterable, institution: dict) -> list:
     results = {"same": 0, "different": 0, "Sin información": 0}
     names = []
     if institution:

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Generator
 
 from database.models.base_model import ExternalId
 from database.models.work_model import Work, Affiliation
@@ -22,7 +23,7 @@ def get_works_csv_by_person(person_id: str) -> str:
     return work_parser.parse_csv(data)
 
 
-def get_csv_data(works):
+def get_csv_data(works: Generator) -> list:
     data = []
     for work in works:
         set_doi(work)
@@ -39,7 +40,7 @@ def get_csv_data(works):
     return data
 
 
-def set_csv_ranking(work):
+def set_csv_ranking(work: Work) -> None:
     if work.ranking:
         rankings = []
         for ranking in work.ranking:
@@ -53,14 +54,14 @@ def set_csv_ranking(work):
         work.ranking = None
 
 
-def set_doi(work: Work):
+def set_doi(work: Work) -> None:
     work.doi = next(
         filter(lambda external_id: external_id.source == "doi", work.external_ids),
         ExternalId(),
     ).id
 
 
-def set_csv_types(work: Work):
+def set_csv_types(work: Work) -> None:
     openalex_types = []
     scienti_types = []
     for work_type in work.types:
@@ -72,7 +73,7 @@ def set_csv_types(work: Work):
     work.scienti_types = " | ".join(set(scienti_types))
 
 
-def set_csv_subjects(work: Work):
+def set_csv_subjects(work: Work) -> None:
     if work.subjects:
         subjects = []
         for subject in work.subjects[0].subjects:
@@ -80,7 +81,7 @@ def set_csv_subjects(work: Work):
         work.subjects = " | ".join(set(subjects))
 
 
-def set_csv_citations_count(work: Work):
+def set_csv_citations_count(work: Work) -> None:
     for citation_count in work.citations_count:
         if citation_count.source == "openalex":
             work.openalex_citations_count = str(citation_count.count)
@@ -88,7 +89,7 @@ def set_csv_citations_count(work: Work):
             work.scholar_citations_count = str(citation_count.count)
 
 
-def set_csv_bibliographic_info(work: Work):
+def set_csv_bibliographic_info(work: Work) -> None:
     work.bibtex = work.bibliographic_info.bibtex
     work.pages = work.bibliographic_info.pages
     work.issue = work.bibliographic_info.issue
@@ -99,14 +100,14 @@ def set_csv_bibliographic_info(work: Work):
     work.volume = work.bibliographic_info.volume
 
 
-def set_csv_authors(work: Work):
+def set_csv_authors(work: Work) -> None:
     authors = []
     for author in work.authors:
         authors.append(str(author.full_name))
     work.authors = " | ".join(set(authors))
 
 
-def set_csv_affiliations(work: Work):
+def set_csv_affiliations(work: Work) -> None:
     countries = []
     institutions = []
     departments = []

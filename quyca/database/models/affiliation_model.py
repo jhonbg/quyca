@@ -37,7 +37,7 @@ class Relation(BaseModel):
 
     @field_validator("name")
     @classmethod
-    def set_name(cls, value):
+    def set_name(cls, value: str) -> str:
         if isinstance(value, Name):
             return value.name
         return value
@@ -74,11 +74,9 @@ class Affiliation(BaseModel):
     relations_data: list[Relation] | None = None
 
     @model_validator(mode="after")
-    def get_name(self):
+    def get_name(self):  # type: ignore
         es_name = next(filter(lambda x: x.lang == "es", self.names), None)
-
         self.name = es_name.name if es_name else self.names[0].name
-
         return self
 
     class Config:

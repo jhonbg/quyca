@@ -1,4 +1,4 @@
-from database.mongo import database
+from quyca.database.mongo import database
 
 random_affiliation_id = database["affiliations"].aggregate([{"$sample": {"size": 1}}]).next()["_id"]
 

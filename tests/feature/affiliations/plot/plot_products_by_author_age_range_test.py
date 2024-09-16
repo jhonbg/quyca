@@ -1,4 +1,4 @@
-from database.mongo import database
+from quyca.database.mongo import database
 
 
 def test_it_can_plot_products_by_author_age_range_by_institution(client):

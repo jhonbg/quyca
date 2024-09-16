@@ -1,7 +1,7 @@
 import subprocess
 
 
-def main():
+def main() -> None:
     subprocess.run(
         [
             "poetry",

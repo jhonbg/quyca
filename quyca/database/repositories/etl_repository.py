@@ -1,7 +1,7 @@
 from database.mongo import database
 
 
-def set_person_products_count():
+def set_person_products_count() -> None:
     pipeline = [
         {"$match": {"products_count": {"$exists": False}}},
         {"$limit": 1000},
@@ -33,7 +33,7 @@ def set_person_products_count():
         total_results = next(database["person"].aggregate(count_pipeline), {"total_results": 0}).get("total_results", 0)
 
 
-def set_person_citations_count():
+def set_person_citations_count() -> None:
     pipeline = [
         {"$match": {"citations_count": {"$exists": False}}},
         {"$limit": 1000},

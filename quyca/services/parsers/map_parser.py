@@ -6,8 +6,8 @@ from typing import Iterable
 from pandas import read_csv
 
 
-def get_coauthorship_by_country_map(works):
-    countries = {}
+def get_coauthorship_by_country_map(works: Iterable) -> dict:
+    countries: dict = {}
     for work in works:
         if not "country_code" in work["affiliation"]["addresses"].keys():
             continue
@@ -30,8 +30,8 @@ def get_coauthorship_by_country_map(works):
     return worldmap
 
 
-def get_coauthorship_by_colombian_department_map(works: Iterable):
-    states = {}
+def get_coauthorship_by_colombian_department_map(works: Iterable) -> dict:
+    states: dict = {}
     with open(os.path.join(os.path.dirname(__file__), "concerns/cities_by_state.csv"), "r") as cities_by_state_file:
         cities_by_state = read_csv(cities_by_state_file)
     for work in works:

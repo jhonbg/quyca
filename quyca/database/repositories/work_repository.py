@@ -1,4 +1,4 @@
-from typing import Optional, Generator
+from typing import Optional, Generator, Tuple
 
 from bson import ObjectId
 
@@ -11,7 +11,7 @@ from database.mongo import database
 from exceptions.not_entity_exception import NotEntityException
 
 
-def get_work_by_id(work_id: id) -> Work:
+def get_work_by_id(work_id: str) -> Work:
     work = database["works"].find_one(ObjectId(work_id))
     if not work:
         raise NotEntityException(f"The work with id {work_id} does not exist.")
@@ -21,7 +21,7 @@ def get_work_by_id(work_id: id) -> Work:
 def get_works_by_affiliation(
     affiliation_id: str,
     query_params: QueryParams,
-    pipeline_params: dict = None,
+    pipeline_params: dict | None = None,
 ) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
@@ -45,7 +45,7 @@ def get_works_count_by_affiliation(affiliation_id: str) -> int:
     return works_count
 
 
-def get_works_by_person(person_id: str, query_params: QueryParams, pipeline_params: dict = None) -> (Generator, int):
+def get_works_by_person(person_id: str, query_params: QueryParams, pipeline_params: dict | None = None) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = [
@@ -59,7 +59,7 @@ def get_works_by_person(person_id: str, query_params: QueryParams, pipeline_para
     return work_generator.get(cursor)
 
 
-def get_works_count_by_person(person_id) -> Optional[int]:
+def get_works_count_by_person(person_id: str) -> Optional[int]:
     return (
         database["works"]
         .aggregate([{"$match": {"authors.id": ObjectId(person_id)}}, {"$count": "total"}])
@@ -68,25 +68,25 @@ def get_works_count_by_person(person_id) -> Optional[int]:
     )
 
 
-def search_works(query_params: QueryParams, pipeline_params: dict | None = None) -> (Generator, int):
+def search_works(query_params: QueryParams, pipeline_params: dict | None = None) -> Tuple[Generator, int]:
     pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     works = database["works"].aggregate(pipeline)
     count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     count_pipeline += [
-        {"$count": "total_results"},
+        {"$count": "total_results"},  # type: ignore
     ]
-    total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
+    total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0}).get("total_results", 0)
     return work_generator.get(works), total_results
 
 
-def get_sources_by_affiliation(affiliation_id: str, pipeline_params: dict = None) -> Generator:
+def get_sources_by_affiliation(affiliation_id: str, pipeline_params: dict | None = None) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = get_sources_by_affiliation_pipeline(affiliation_id)
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     project = pipeline_params.get("project")
-    if "ranking" in project:
+    if project and "ranking" in project:
         pipeline += [
             {
                 "$addFields": {
@@ -110,7 +110,7 @@ def get_sources_by_affiliation(affiliation_id: str, pipeline_params: dict = None
     return source_generator.get(cursor)
 
 
-def get_sources_by_person(person_id: str, query_params, pipeline_params: dict | None = None) -> Generator:
+def get_sources_by_person(person_id: str, query_params: QueryParams, pipeline_params: dict | None = None) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = get_sources_by_person_pipeline(person_id)
@@ -120,7 +120,7 @@ def get_sources_by_person(person_id: str, query_params, pipeline_params: dict | 
     return source_generator.get(cursor)
 
 
-def get_works_by_affiliation_pipeline(affiliation_id: str):
+def get_works_by_affiliation_pipeline(affiliation_id: str) -> list:
     return [
         {
             "$match": {
@@ -130,7 +130,7 @@ def get_works_by_affiliation_pipeline(affiliation_id: str):
     ]
 
 
-def get_sources_by_affiliation_pipeline(affiliation_id):
+def get_sources_by_affiliation_pipeline(affiliation_id: str) -> list:
     pipeline = get_works_by_affiliation_pipeline(affiliation_id)
     pipeline += [
         {
@@ -153,7 +153,7 @@ def get_sources_by_affiliation_pipeline(affiliation_id):
     return pipeline
 
 
-def get_sources_by_person_pipeline(person_id):
+def get_sources_by_person_pipeline(person_id: str) -> list:
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
         {

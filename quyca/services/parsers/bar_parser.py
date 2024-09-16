@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Generator
 
 from currency_converter import CurrencyConverter
@@ -5,26 +6,20 @@ from currency_converter import CurrencyConverter
 from utils.cpi import inflate
 
 
-def get_by_work_year_and_work_type(works: Generator) -> list:
-    result: dict = {}
+def parse_annual_evolution_by_scienti_classification(works: Generator) -> list:
+    result: defaultdict = defaultdict(lambda: defaultdict(int))
     for work in works:
         if not work.year_published:
             continue
-        work_year = work.year_published
-        if work_year not in result.keys():
-            result[work_year] = {}
         for work_type in work.types:
-            if work_type.source == "scienti" and work_type.type == "Publicado en revista especializada":
-                if work_type.type not in result[work_year].keys():
-                    result[work_year][work_type.type] = 1
-                else:
-                    result[work_year][work_type.type] += 1
-    plot = []
-    for year in result.keys():
-        for work_type in result[year].keys():
-            plot += [{"x": year, "y": result[year][work_type], "type": work_type}] if year else []
-    plot = sorted(plot, key=lambda x: x.get("x", -99))
-    return plot
+            if work_type.source == "scienti" and work_type.level == 2:
+                result[work.year_published][work_type.type] += 1
+    plot = [
+        {"x": year, "y": count, "type": work_type}
+        for year, work_types in result.items()
+        for work_type, count in work_types.items()
+    ]
+    return sorted(plot, key=lambda x: x.get("x"))
 
 
 def get_by_affiliation_type(data: dict) -> list | None:

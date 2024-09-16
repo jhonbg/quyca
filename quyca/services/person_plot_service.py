@@ -14,7 +14,7 @@ def get_person_plot(person_id: str, query_params: QueryParams) -> dict:
 
 def plot_annual_evolution_by_scienti_classification(person_id: str, query_params: QueryParams) -> dict:
     works = work_repository.get_works_by_person(person_id, query_params)
-    return {"plot": bar_parser.get_by_work_year_and_work_type(works)}
+    return {"plot": bar_parser.parse_annual_evolution_by_scienti_classification(works)}
 
 
 def plot_annual_citation_count(person_id: str, query_params: QueryParams) -> dict:

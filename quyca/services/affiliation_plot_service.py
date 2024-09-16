@@ -16,7 +16,7 @@ def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_param
         "research_groups_by_product_type",
     ]:
         affiliation_plot_type = plot_type.split("_")[-1]
-        return plot_affiliation_type(affiliation_id, affiliation_plot_type)
+        return plot_affiliations_by_product_type(affiliation_id, affiliation_plot_type)
     if plot_type in [
         "citations_by_faculty",
         "citations_by_department",
@@ -46,10 +46,10 @@ def plot_annual_evolution_by_scienti_classification(
 ) -> dict:
     pipeline_params = {"project": ["year_published", "types"]}
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
-    return {"plot": bar_parser.get_by_work_year_and_work_type(works)}
+    return {"plot": bar_parser.parse_annual_evolution_by_scienti_classification(works)}
 
 
-def plot_affiliation_type(
+def plot_affiliations_by_product_type(
     affiliation_id: str,
     affiliation_plot_type: str,
 ) -> dict | None:

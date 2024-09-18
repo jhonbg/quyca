@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Callable, Generator, Iterable
 from collections import Counter
 from currency_converter import CurrencyConverter
+from pymongo.command_cursor import CommandCursor
 
 from utils.cpi import inflate
 from utils.hindex import hindex
@@ -21,22 +22,12 @@ def get_percentage(func: Callable[..., list]) -> Callable[..., dict]:
 
 
 @get_percentage
-def get_citations_by_affiliation(data: dict) -> list:
-    counter = 0
-    results = {}
-    for name, citations in data.items():
-        for count in citations:
-            counter = 0
-            if count.source == "scholar":
-                counter = count.count
-                break
-            elif count.source == "openalex":
-                counter = count.count
-                break
-        results[name] = counter
-    plot = []
-    for name, value in results.items():
-        plot.append({"name": name, "value": value})
+def parse_citations_by_affiliations(data: CommandCursor) -> list:
+    plot: list = []
+    for item in data:
+        citations_count = item.get("citations_count", {})
+        openalex_citations_count: dict = next(filter(lambda x: x["source"] == "openalex", citations_count), {})
+        plot.append({"name": item.get("name", "No name"), "value": openalex_citations_count.get("count", 0)})
     return plot
 
 

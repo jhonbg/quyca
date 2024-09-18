@@ -61,7 +61,8 @@ def get_groups_by_faculty_or_department(affiliation_id: str) -> Generator:
             ]
         )
         .next()
-        .get("relations", [])["id"]
+        .get("relations", {})
+        .get("id", None)
     )
     pipeline = [
         {

@@ -87,6 +87,61 @@ def get_groups_scienti_works_count_by_faculty_or_department(affiliation_id: str)
     return database["works"].aggregate(pipeline)
 
 
+def get_affiliations_citations_count_by_institution(institution_id: str, relation_type: str) -> CommandCursor:
+    pipeline = [
+        {"$match": {"relations.id": ObjectId(institution_id), "types.type": relation_type}},
+        {"$project": {"_id": 0, "citations_count": 1, "name": {"$first": "$names.name"}}},
+    ]
+    return database["affiliations"].aggregate(pipeline)
+
+
+def get_departments_citations_count_by_faculty(affiliation_id: str) -> CommandCursor:
+    return get_affiliations_citations_count_by_institution(affiliation_id, "department")
+
+
+def get_groups_citations_count_by_faculty_or_department(affiliation_id: str) -> CommandCursor:
+    institution_id = (
+        database["affiliations"]
+        .aggregate(
+            [
+                {"$match": {"_id": ObjectId(affiliation_id)}},
+                {"$unwind": "$relations"},
+                {"$match": {"relations.types.type": "education"}},
+            ]
+        )
+        .next()
+        .get("relations", {})
+        .get("id", None)
+    )
+    pipeline = [
+        {
+            "$match": {
+                "authors.affiliations.id": ObjectId(affiliation_id),
+            }
+        },
+        {"$unwind": "$groups"},
+        {
+            "$lookup": {
+                "from": "affiliations",
+                "localField": "groups.id",
+                "foreignField": "_id",
+                "as": "group",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "relations.id": ObjectId(institution_id),
+                            "types.type": "group",
+                        },
+                    },
+                    {"$project": {"_id": 0, "name": {"$first": "$names.name"}, "citations_count": 1}},
+                ],
+            }
+        },
+        {"$replaceRoot": {"newRoot": "$group"}},
+    ]
+    return database["works"].aggregate(pipeline)
+
+
 def get_bars_data_by_researcher_and_affiliation(affiliation_id: str, affiliation_type: str) -> list:
     data = []
     if affiliation_type in ["group", "department", "faculty"]:

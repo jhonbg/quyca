@@ -1,6 +1,7 @@
 from itertools import chain
 
 from bson import ObjectId
+from pymongo.command_cursor import CommandCursor
 
 from database.models.base_model import QueryParams
 from database.mongo import calculations_database, database
@@ -16,8 +17,8 @@ def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_param
         "research_groups_by_product_type": "group",
     }
     if plot_type in plot_type_dict.keys():
-        affiliation_plot_type = plot_type_dict[plot_type]
-        return plot_affiliations_by_product_type(affiliation_id, affiliation_type, affiliation_plot_type)
+        relation_type = plot_type_dict[plot_type]
+        return plot_affiliations_by_product_type(affiliation_id, affiliation_type, relation_type)
     if plot_type in [
         "citations_by_faculty",
         "citations_by_department",
@@ -42,31 +43,40 @@ def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_param
     return globals()["plot_" + plot_type](affiliation_id, affiliation_type, query_params)
 
 
+def plot_affiliations_by_product_type(
+    affiliation_id: str,
+    affiliation_type: str,
+    relation_type: str,
+) -> dict | None:
+    if relation_type not in ["group", "department", "faculty"]:
+        return None
+    data: CommandCursor | None = None
+    if affiliation_type == "institution":
+        data = plot_repository.get_affiliations_scienti_works_count_by_institution(affiliation_id, relation_type)
+    elif affiliation_type == "faculty" and relation_type == "department":
+        data = plot_repository.get_departments_scienti_works_count_by_faculty(affiliation_id)
+    elif affiliation_type in ["faculty", "department"] and relation_type == "group":
+        data = plot_repository.get_groups_scienti_works_count_by_faculty_or_department(affiliation_id)
+    return {"plot": bar_parser.parse_affiliations_by_product_type(data)}
+
+
+def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
+    data: CommandCursor | None = None
+    if affiliation_type == "institution":
+        data = plot_repository.get_affiliations_citations_count_by_institution(affiliation_id, relation_type)
+    elif affiliation_type == "faculty" and relation_type == "department":
+        data = plot_repository.get_departments_citations_count_by_faculty(affiliation_id)
+    elif affiliation_type in ["faculty", "department"] and relation_type == "group":
+        data = plot_repository.get_groups_citations_count_by_faculty_or_department(affiliation_id)
+    return pie_parser.parse_citations_by_affiliations(data)
+
+
 def plot_annual_evolution_by_scienti_classification(
     affiliation_id: str, affiliation_type: str, query_params: QueryParams
 ) -> dict:
     pipeline_params = {"project": ["year_published", "types"]}
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     return {"plot": bar_parser.parse_annual_evolution_by_scienti_classification(works)}
-
-
-def plot_affiliations_by_product_type(
-    affiliation_id: str,
-    affiliation_type: str,
-    affiliation_plot_type: str,
-) -> dict | None:
-    if affiliation_plot_type not in ["group", "department", "faculty"]:
-        return None
-    data = []
-    if affiliation_type == "institution":
-        data = plot_repository.get_affiliations_scienti_works_count_by_institution(
-            affiliation_id, affiliation_plot_type
-        )
-    elif affiliation_type == "faculty" and affiliation_plot_type == "department":
-        data = plot_repository.get_departments_scienti_works_count_by_faculty(affiliation_id)
-    elif affiliation_type in ["faculty", "department"] and affiliation_plot_type == "group":
-        data = plot_repository.get_groups_scienti_works_count_by_faculty_or_department(affiliation_id)
-    return {"plot": bar_parser.parse_affiliations_by_product_type(data)}
 
 
 def plot_annual_citation_count(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
@@ -129,11 +139,6 @@ def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query
         return {"plot": data}
     else:
         return {"plot": None}
-
-
-def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
-    data: dict = {}
-    return pie_parser.get_citations_by_affiliation(data)
 
 
 def plot_apc_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:

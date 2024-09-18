@@ -142,110 +142,31 @@ def get_groups_citations_count_by_faculty_or_department(affiliation_id: str) -> 
     return database["works"].aggregate(pipeline)
 
 
-def get_bars_data_by_researcher_and_affiliation(affiliation_id: str, affiliation_type: str) -> list:
-    data = []
-    if affiliation_type in ["group", "department", "faculty"]:
-        for author in database["person"].find({"affiliations.id": ObjectId(affiliation_id)}, {"affiliations": 1}):
-            pipeline = [
-                {
-                    "$match": {
-                        "authors.id": author["_id"],
-                        "year_published": {"$ne": None},
-                    }
-                },
-                {"$project": {"year_published": 1, "authors": 1}},
-                {"$unwind": "$authors"},
-                {
-                    "$lookup": {
-                        "from": "person",
-                        "localField": "authors.id",
-                        "foreignField": "_id",
-                        "as": "researcher",
-                    }
-                },
-                {
-                    "$project": {
-                        "year_published": 1,
-                        "researcher.ranking": 1,
-                        "researcher._id": 1,
-                    }
-                },
-                {"$match": {"researcher.ranking.source": "scienti"}},
-            ]
-            for work in database["works"].aggregate(pipeline):
-                for researcher in work["researcher"]:
-                    for rank in researcher["ranking"]:
-                        if rank["source"] == "scienti":
-                            data.append(
-                                {
-                                    "year_published": work["year_published"],
-                                    "rank": rank["rank"],
-                                }
-                            )
-    else:
-        pipeline = [
-            {
-                "$match": {
-                    "authors.affiliations.id": ObjectId(affiliation_id),
-                    "year_published": {"$ne": None},
-                }
-            },
-            {"$project": {"year_published": 1, "authors": 1}},
-            {"$unwind": "$authors"},
-            {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
-            {
-                "$lookup": {
-                    "from": "person",
-                    "localField": "authors.id",
-                    "foreignField": "_id",
-                    "as": "researcher",
-                }
-            },
-            {"$project": {"year_published": 1, "researcher.ranking": 1}},
-            {"$match": {"researcher.ranking.source": "scienti"}},
-        ]
-        for work in database["works"].aggregate(pipeline):
-            for researcher in work["researcher"]:
-                for rank in researcher["ranking"]:
-                    if rank["source"] == "scienti":
-                        data.append(
-                            {
-                                "year_published": work["year_published"],
-                                "rank": rank["rank"],
-                            }
-                        )
-    return data
-
-
-def get_bars_data_by_researcher_and_person(person_id: str) -> list:
-    data = []
+def get_affiliations_apc_expenses_by_institution(institution_id: str, relation_type: str) -> CommandCursor:
     pipeline = [
-        {"$match": {"authors.id": ObjectId(person_id)}},
-        {"$project": {"year_published": 1, "authors": 1}},
-        {"$unwind": "$authors"},
-        {"$match": {"authors.id": ObjectId(person_id)}},
+        {"$match": {"relations.id": ObjectId(institution_id), "types.type": relation_type}},
         {
             "$lookup": {
-                "from": "person",
-                "localField": "authors.id",
-                "foreignField": "_id",
-                "as": "researcher",
+                "from": "works",
+                "localField": "_id",
+                "foreignField": "authors.affiliations.id",
+                "as": "work",
+                "pipeline": [{"$project": {"types": 1}}],
             }
         },
-        {"$project": {"year_published": 1, "researcher.ranking": 1}},
-        {"$match": {"researcher.ranking.source": "scienti"}},
+        {"$unwind": "$work"},
+        {
+            "$lookup": {
+                "from": "sources",
+                "localField": "work.source.id",
+                "foreignField": "_id",
+                "as": "source_data",
+                "pipeline": [{"$project": {"_id": 0, "apc": 1}}],
+            }
+        },
+        {"$unwind": "$source_data"},
     ]
-    for work in database["works"].aggregate(pipeline):
-        for researcher in work["researcher"]:
-            for rank in researcher["ranking"]:
-                if rank["source"] == "scienti":
-                    data.append(
-                        {
-                            "year_published": work["year_published"],
-                            "rank": rank["rank"],
-                        }
-                    )
-    return data
+    return database["works"].aggregate(pipeline)
 
 
 def get_products_by_author_sex(affiliation_id: str) -> list:

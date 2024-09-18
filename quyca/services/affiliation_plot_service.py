@@ -32,7 +32,7 @@ def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_param
         "apc_expenses_by_group",
     ]:
         relation_type = plot_type.split("_")[-1]
-        return plot_apc_by_affiliation(affiliation_id, affiliation_type, relation_type)
+        return plot_apc_expenses_by_affiliation(affiliation_id, affiliation_type, relation_type)
     if plot_type in [
         "h_index_by_faculty",
         "h_index_by_department",
@@ -69,6 +69,11 @@ def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, r
     elif affiliation_type in ["faculty", "department"] and relation_type == "group":
         data = plot_repository.get_groups_citations_count_by_faculty_or_department(affiliation_id)
     return pie_parser.parse_citations_by_affiliations(data)
+
+
+def plot_apc_expenses_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
+    data = plot_repository.get_affiliations_apc_expenses_by_institution(affiliation_id, relation_type)
+    return pie_parser.parse_apc_expenses_by_affiliations(data, 2022)
 
 
 def plot_annual_evolution_by_scienti_classification(
@@ -139,20 +144,6 @@ def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query
         return {"plot": data}
     else:
         return {"plot": None}
-
-
-def plot_apc_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
-    pipeline_params = {
-        "match": {
-            "$and": [
-                {"apc.charges": {"$exists": 1}},
-                {"apc.currency": {"$exists": 1}},
-            ]
-        },
-        "project": ["apc", "affiliation_names"],
-    }
-    sources: dict = {}
-    return pie_parser.get_apc_by_sources(sources, 2022)
 
 
 def plot_h_by_affiliation(

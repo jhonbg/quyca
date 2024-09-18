@@ -1,11 +1,10 @@
 from functools import wraps
 from datetime import datetime
-from typing import Callable, Generator, Iterable
+from typing import Callable, Iterable
 from collections import Counter
 from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
 
-from utils.cpi import inflate
 from utils.hindex import hindex
 
 
@@ -32,25 +31,9 @@ def parse_citations_by_affiliations(data: CommandCursor) -> list:
 
 
 @get_percentage
-def get_apc_by_sources(sources: Generator, base_year: int) -> list:
-    currency_converter = CurrencyConverter()
+def parse_apc_expenses_by_affiliations(data: CommandCursor) -> list:
+    CurrencyConverter()
     result: dict = {}
-    for source in sources:
-        apc = source.apc
-        if apc.currency == "USD":
-            raw_value = apc.charges
-            value = inflate(raw_value, apc.year_published, to=max(base_year, apc.year_published))
-        else:
-            try:
-                raw_value = currency_converter.convert(apc.charges, apc.currency, "USD")
-                value = inflate(raw_value, apc.year_published, to=max(base_year, apc.year_published))
-            except Exception:
-                value = 0
-        if value and (name := source.affiliation_names[0].name):
-            if name not in result.keys():
-                result[name] = value
-            else:
-                result[name] += value
     plot = []
     for name, value in result.items():
         plot.append({"name": name, "value": int(value)})

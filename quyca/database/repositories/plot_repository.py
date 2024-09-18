@@ -7,40 +7,84 @@ from database.generators import work_generator
 from database.mongo import database, calculations_database
 
 
-def get_bars_data_by_affiliation_type(affiliation_id: str, affiliation_type: str) -> dict:
+def get_affiliations_scienti_works_count_by_institution(institution_id: str, relation_type: str) -> CommandCursor:
     pipeline = [
-        {
-            "$match": {
-                "affiliations.types.type": affiliation_type,
-                "affiliations.id": ObjectId(affiliation_id),
-            }
-        },
-        {"$unwind": "$affiliations"},
-        {"$match": {"affiliations.types.type": affiliation_type}},
-        {"$project": {"authorIds": "$_id", "_id": 0, "affiliations": 1}},
+        {"$match": {"relations.id": ObjectId(institution_id), "types.type": relation_type}},
         {
             "$lookup": {
                 "from": "works",
-                "localField": "authorIds",
-                "foreignField": "authors.id",
+                "localField": "_id",
+                "foreignField": "authors.affiliations.id",
                 "as": "works",
+                "pipeline": [{"$project": {"types": 1}}],
             }
         },
         {"$unwind": "$works"},
-        {"$match": {"works.types": {"$ne": []}}},
+        {"$unwind": "$works.types"},
+        {"$match": {"works.types.source": "scienti", "works.types.level": 2}},
         {
-            "$project": {
-                "name": "$affiliations.name",
-                "work": {"types": "$works.types"},
+            "$group": {
+                "_id": {"id": "$_id", "type": "$works.types.type", "name": "$names.name"},
+                "works_count": {"$sum": 1},
             }
         },
+        {"$project": {"_id": 0, "type": "$_id.type", "works_count": 1, "name": {"$first": "$_id.name"}}},
     ]
-    data: dict = {}
-    for _data in database["person"].aggregate(pipeline):
-        if not data.get(_data["name"], False):
-            data[_data["name"]] = []
-        data[_data["name"]].append(_data["work"])
-    return data
+    return database["affiliations"].aggregate(pipeline)
+
+
+def get_departments_scienti_works_count_by_faculty(affiliation_id: str) -> CommandCursor:
+    return get_affiliations_scienti_works_count_by_institution(affiliation_id, "department")
+
+
+def get_groups_scienti_works_count_by_faculty_or_department(affiliation_id: str) -> CommandCursor:
+    institution_id = (
+        database["affiliations"]
+        .aggregate(
+            [
+                {"$match": {"_id": ObjectId(affiliation_id)}},
+                {"$unwind": "$relations"},
+                {"$match": {"relations.types.type": "education"}},
+            ]
+        )
+        .next()
+        .get("relations", {})
+        .get("id", None)
+    )
+    pipeline = [
+        {
+            "$match": {
+                "relations.id": institution_id,
+                "types.type": "group",
+            }
+        },
+        {
+            "$lookup": {
+                "from": "works",
+                "localField": "_id",
+                "foreignField": "authors.affiliations.id",
+                "as": "works",
+                "pipeline": [{"$project": {"types": 1}}],
+            }
+        },
+        {"$unwind": "$works"},
+        {"$unwind": "$works.types"},
+        {
+            "$match": {
+                "works.authors.affiliations.id": ObjectId(affiliation_id),
+                "works.types.source": "scienti",
+                "works.types.level": 2,
+            }
+        },
+        {
+            "$group": {
+                "_id": {"id": "$_id", "type": "$works.types.type", "name": "$names.name"},
+                "works_count": {"$sum": 1},
+            }
+        },
+        {"$project": {"_id": 0, "type": "$_id.type", "works_count": 1, "name": {"$first": "$_id.name"}}},
+    ]
+    return database["works"].aggregate(pipeline)
 
 
 def get_bars_data_by_researcher_and_affiliation(affiliation_id: str, affiliation_type: str) -> list:
@@ -253,7 +297,7 @@ def get_coauthorship_by_country_map_by_affiliation(affiliation_id: str, affiliat
                 ]
             )
             .next()
-            .get("relations", [])["id"]
+            .get("relations", {})["id"]
         )
 
         pipeline = [

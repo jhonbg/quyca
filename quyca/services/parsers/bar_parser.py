@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import Generator
 
 from currency_converter import CurrencyConverter
+from pymongo.command_cursor import CommandCursor
 
 from utils.cpi import inflate
 
@@ -22,32 +23,9 @@ def parse_annual_evolution_by_scienti_classification(works: Generator) -> list:
     return sorted(plot, key=lambda x: x.get("x"))
 
 
-def get_by_affiliation_type(data: dict) -> list | None:
-    if not isinstance(data, dict):
-        print(type(data))
-        return None
-    if len(data) == 0:
-        print(len(data))
-        return None
-    result: dict = {}
-    for name, works in data.items():
-        for work in works:
-            if name not in result.keys():
-                result[name] = {}
-
-            for work_type in work["types"]:
-                if work_type["source"] == "scienti" and work_type["type"] == "Publicado en revista especializada":
-                    # if typ["level"] == 2:
-                    if work_type["type"] not in result[name].keys():
-                        result[name][work_type["type"]] = 1
-                    else:
-                        result[name][work_type["type"]] += 1
-    plot = []
-    for name in result.keys():
-        for work_type in result[name].keys():
-            plot.append({"x": name, "y": result[name][work_type], "type": work_type})
-    plot = sorted(plot, key=lambda x: x["y"], reverse=True)
-    return plot
+def parse_affiliations_by_product_type(data: CommandCursor) -> list:
+    plot = [{"x": item["name"], "y": item["works_count"], "type": item["type"]} for item in data]
+    return sorted(plot, key=lambda x: x.get("y"), reverse=True)
 
 
 def get_citations_by_year(works: Generator) -> list:

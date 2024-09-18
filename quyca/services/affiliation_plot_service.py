@@ -10,13 +10,14 @@ from services.parsers import bar_parser, pie_parser, map_parser
 
 def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict | None:
     plot_type = query_params.plot
-    if plot_type in [
-        "faculties_by_product_type",
-        "departments_by_product_type",
-        "research_groups_by_product_type",
-    ]:
-        affiliation_plot_type = plot_type.split("_")[-1]
-        return plot_affiliations_by_product_type(affiliation_id, affiliation_plot_type)
+    plot_type_dict = {
+        "faculties_by_product_type": "faculty",
+        "departments_by_product_type": "department",
+        "research_groups_by_product_type": "group",
+    }
+    if plot_type in plot_type_dict.keys():
+        affiliation_plot_type = plot_type_dict[plot_type]
+        return plot_affiliations_by_product_type(affiliation_id, affiliation_type, affiliation_plot_type)
     if plot_type in [
         "citations_by_faculty",
         "citations_by_department",
@@ -51,12 +52,21 @@ def plot_annual_evolution_by_scienti_classification(
 
 def plot_affiliations_by_product_type(
     affiliation_id: str,
+    affiliation_type: str,
     affiliation_plot_type: str,
 ) -> dict | None:
     if affiliation_plot_type not in ["group", "department", "faculty"]:
         return None
-    data = plot_repository.get_bars_data_by_affiliation_type(affiliation_id, affiliation_plot_type)
-    return {"plot": bar_parser.get_by_affiliation_type(data)}
+    data = []
+    if affiliation_type == "institution":
+        data = plot_repository.get_affiliations_scienti_works_count_by_institution(
+            affiliation_id, affiliation_plot_type
+        )
+    elif affiliation_type == "faculty" and affiliation_plot_type == "department":
+        data = plot_repository.get_departments_scienti_works_count_by_faculty(affiliation_id)
+    elif affiliation_type in ["faculty", "department"] and affiliation_plot_type == "group":
+        data = plot_repository.get_groups_scienti_works_count_by_faculty_or_department(affiliation_id)
+    return {"plot": bar_parser.parse_affiliations_by_product_type(data)}
 
 
 def plot_annual_citation_count(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:

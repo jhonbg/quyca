@@ -169,6 +169,131 @@ def get_affiliations_apc_expenses_by_institution(institution_id: str, relation_t
     return database["works"].aggregate(pipeline)
 
 
+def get_affiliations_works_citations_count_by_institution(institution_id: str, relation_type: str) -> CommandCursor:
+    pipeline = [
+        {"$match": {"relations.id": ObjectId(institution_id), "types.type": relation_type}},
+        {
+            "$lookup": {
+                "from": "works",
+                "localField": "_id",
+                "foreignField": "authors.affiliations.id",
+                "as": "works",
+                "pipeline": [
+                    {
+                        "$addFields": {
+                            "scholar_citations_count": {
+                                "$ifNull": [
+                                    {
+                                        "$arrayElemAt": [
+                                            {
+                                                "$map": {
+                                                    "input": {
+                                                        "$filter": {
+                                                            "input": "$citations_count",
+                                                            "as": "citation",
+                                                            "cond": {
+                                                                "$eq": [
+                                                                    "$$citation.source",
+                                                                    "scholar",
+                                                                ]
+                                                            },
+                                                        }
+                                                    },
+                                                    "as": "filtered",
+                                                    "in": "$$filtered.count",
+                                                }
+                                            },
+                                            0,
+                                        ]
+                                    },
+                                    0,
+                                ]
+                            }
+                        }
+                    },
+                    {"$project": {"scholar_citations_count": 1}},
+                ],
+            }
+        },
+        {"$project": {"_id": 0, "works": 1, "name": {"$first": "$names.name"}}},
+    ]
+    return database["affiliations"].aggregate(pipeline)
+
+
+def get_departments_works_citations_count_by_faculty(affiliation_id: str) -> CommandCursor:
+    return get_affiliations_works_citations_count_by_institution(affiliation_id, "department")
+
+
+def get_groups_works_citations_count_by_faculty_or_department(affiliation_id: str) -> CommandCursor:
+    institution_id = (
+        database["affiliations"]
+        .aggregate(
+            [
+                {"$match": {"_id": ObjectId(affiliation_id)}},
+                {"$unwind": "$relations"},
+                {"$match": {"relations.types.type": "education"}},
+            ]
+        )
+        .next()
+        .get("relations", {})
+        .get("id", None)
+    )
+    pipeline = [
+        {
+            "$match": {
+                "relations.id": institution_id,
+                "types.type": "group",
+            }
+        },
+        {
+            "$lookup": {
+                "from": "works",
+                "localField": "_id",
+                "foreignField": "authors.affiliations.id",
+                "as": "works",
+                "pipeline": [
+                    {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+                    {
+                        "$addFields": {
+                            "scholar_citations_count": {
+                                "$ifNull": [
+                                    {
+                                        "$arrayElemAt": [
+                                            {
+                                                "$map": {
+                                                    "input": {
+                                                        "$filter": {
+                                                            "input": "$citations_count",
+                                                            "as": "citation",
+                                                            "cond": {
+                                                                "$eq": [
+                                                                    "$$citation.source",
+                                                                    "scholar",
+                                                                ]
+                                                            },
+                                                        }
+                                                    },
+                                                    "as": "filtered",
+                                                    "in": "$$filtered.count",
+                                                }
+                                            },
+                                            0,
+                                        ]
+                                    },
+                                    0,
+                                ]
+                            }
+                        }
+                    },
+                    {"$project": {"scholar_citations_count": 1}},
+                ],
+            }
+        },
+        {"$project": {"_id": 0, "works": 1, "name": {"$first": "$names.name"}}},
+    ]
+    return database["affiliations"].aggregate(pipeline)
+
+
 def get_products_by_author_sex(affiliation_id: str) -> list:
     pipeline = [
         {"$project": {"affiliations": 1, "sex": 1}},

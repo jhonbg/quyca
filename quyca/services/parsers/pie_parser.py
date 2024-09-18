@@ -5,7 +5,7 @@ from collections import Counter
 from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
 
-from utils.hindex import hindex
+from utils.hindex import get_works_h_index_by_scholar_citations
 
 
 def get_percentage(func: Callable[..., list]) -> Callable[..., dict]:
@@ -41,10 +41,10 @@ def parse_apc_expenses_by_affiliations(data: CommandCursor) -> list:
 
 
 @get_percentage
-def get_h_by_affiliation(data: dict) -> list:
+def parse_h_index_by_affiliation(data: CommandCursor) -> list:
     plot = []
-    for idx, value in data.items():
-        plot.append({"name": idx, "value": hindex(value)})
+    for item in data:
+        plot.append({"name": item.get("name"), "value": get_works_h_index_by_scholar_citations(item.get("works"))})
     return plot
 
 

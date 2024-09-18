@@ -39,7 +39,7 @@ def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_param
         "h_index_by_research_group",
     ]:
         relation_type = plot_type.split("_")[-1]
-        return plot_h_by_affiliation(affiliation_id, affiliation_type, relation_type, query_params)
+        return plot_h_index_by_affiliation(affiliation_id, affiliation_type, relation_type, query_params)
     return globals()["plot_" + plot_type](affiliation_id, affiliation_type, query_params)
 
 
@@ -48,8 +48,6 @@ def plot_affiliations_by_product_type(
     affiliation_type: str,
     relation_type: str,
 ) -> dict | None:
-    if relation_type not in ["group", "department", "faculty"]:
-        return None
     data: CommandCursor | None = None
     if affiliation_type == "institution":
         data = plot_repository.get_affiliations_scienti_works_count_by_institution(affiliation_id, relation_type)
@@ -74,6 +72,19 @@ def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, r
 def plot_apc_expenses_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
     data = plot_repository.get_affiliations_apc_expenses_by_institution(affiliation_id, relation_type)
     return pie_parser.parse_apc_expenses_by_affiliations(data, 2022)
+
+
+def plot_h_index_by_affiliation(
+    affiliation_id: str, affiliation_type: str, relation_type: str, query_params: QueryParams
+) -> dict:
+    data: CommandCursor | None = None
+    if affiliation_type == "institution":
+        data = plot_repository.get_affiliations_works_citations_count_by_institution(affiliation_id, relation_type)
+    elif affiliation_type == "faculty" and relation_type == "department":
+        data = plot_repository.get_departments_works_citations_count_by_faculty(affiliation_id)
+    elif affiliation_type in ["faculty", "department"] and relation_type == "group":
+        data = plot_repository.get_groups_works_citations_count_by_faculty_or_department(affiliation_id)
+    return pie_parser.parse_h_index_by_affiliation(data)
 
 
 def plot_annual_evolution_by_scienti_classification(
@@ -144,17 +155,6 @@ def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query
         return {"plot": data}
     else:
         return {"plot": None}
-
-
-def plot_h_by_affiliation(
-    affiliation_id: str, affiliation_type: str, relation_type: str, query_params: QueryParams
-) -> dict:
-    data: dict = {}
-    pipeline_params = {
-        "match": {"citations_count": {"$ne": []}},
-        "project": ["citations_count"],
-    }
-    return pie_parser.get_h_by_affiliation(data)
 
 
 def plot_articles_by_publisher(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:

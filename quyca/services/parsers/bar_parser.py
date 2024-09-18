@@ -28,22 +28,21 @@ def parse_affiliations_by_product_type(data: CommandCursor) -> list:
     return sorted(plot, key=lambda x: x.get("y"), reverse=True)
 
 
-def get_citations_by_year(works: Generator) -> list:
-    result: dict = {}
+def parse_annual_citation_count(works: Generator) -> dict:
+    data: dict = {}
     no_info = 0
     for work in works:
         if not work.citations_by_year:
             no_info += 1
             continue
-        for yearly in work.citations_by_year:
-            if yearly.year in result.keys():
-                result[yearly.year] += yearly.cited_by_count
+        for citation in work.citations_by_year:
+            if citation.year in data.keys():
+                data[citation.year] += citation.cited_by_count
             else:
-                result[yearly.year] = yearly.cited_by_count
-    plot_data = sorted(result.items(), key=lambda x: x[0])
-    plot = [{"x": x[0], "y": x[1]} for x in plot_data]
+                data[citation.year] = citation.cited_by_count
+    plot = [{"x": year, "y": count} for year, count in sorted(data.items())]
     plot += [{"x": "Sin información", "y": no_info}]
-    return plot
+    return {"plot": plot}
 
 
 def apc_by_year(sources: Generator, base_year: int) -> list:

@@ -69,11 +69,6 @@ def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, r
     return pie_parser.parse_citations_by_affiliations(data)
 
 
-def plot_apc_expenses_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
-    data = plot_repository.get_affiliations_apc_expenses_by_institution(affiliation_id, relation_type)
-    return pie_parser.parse_apc_expenses_by_affiliations(data, 2022)
-
-
 def plot_h_index_by_affiliation(
     affiliation_id: str, affiliation_type: str, relation_type: str, query_params: QueryParams
 ) -> dict:
@@ -96,22 +91,11 @@ def plot_annual_evolution_by_scienti_classification(
 
 
 def plot_annual_citation_count(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
-    works = work_repository.get_works_by_affiliation(affiliation_id, query_params)
-    return {"plot": bar_parser.get_citations_by_year(works)}
-
-
-def plot_annual_apc_expenses(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {
-            "$and": [
-                {"apc.charges": {"$exists": 1}},
-                {"apc.currency": {"$exists": 1}},
-            ]
-        },
-        "project": ["apc"],
+        "project": ["citations_by_year"],
     }
-    sources = work_repository.get_sources_by_affiliation(affiliation_id, pipeline_params)
-    return {"plot": bar_parser.apc_by_year(sources, 2022)}
+    works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
+    return bar_parser.parse_annual_citation_count(works)
 
 
 def plot_annual_articles_open_access(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
@@ -315,3 +299,22 @@ def plot_institutional_coauthorship_network(
         return {"plot": {"nodes": nodes, "edges": edges}}
     else:
         return {"plot": None}
+
+
+def plot_annual_apc_expenses(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
+    pipeline_params = {
+        "match": {
+            "$and": [
+                {"apc.charges": {"$exists": 1}},
+                {"apc.currency": {"$exists": 1}},
+            ]
+        },
+        "project": ["apc"],
+    }
+    sources = work_repository.get_sources_by_affiliation(affiliation_id, pipeline_params)
+    return {"plot": bar_parser.apc_by_year(sources, 2022)}
+
+
+def plot_apc_expenses_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
+    data = plot_repository.get_affiliations_apc_expenses_by_institution(affiliation_id, relation_type)
+    return pie_parser.parse_apc_expenses_by_affiliations(data, 2022)

@@ -45,6 +45,56 @@ def parse_annual_citation_count(works: Generator) -> dict:
     return {"plot": plot}
 
 
+def parse_annual_articles_open_access(works: Generator) -> dict:
+    data: defaultdict = defaultdict(lambda: {"Abierto": 0, "Cerrado": 0, "Sin información": 0})
+    for work in works:
+        access_type = "Abierto" if work.bibliographic_info.is_open_access else "Cerrado"
+        if work.bibliographic_info.is_open_access is None and not work.year_published:
+            data["Sin año"]["Sin información"] += 1
+            continue
+        if work.bibliographic_info.is_open_access is None:
+            data[work.year_published]["Sin información"] += 1
+            continue
+        if work.year_published is None:
+            data["Sin año"][access_type] += 1
+            continue
+        data[work.year_published][access_type] += 1
+    plot = [
+        {"x": year, "y": count, "type": access_type}
+        for year, counts in data.items()
+        for access_type, count in counts.items()
+    ]
+    return {"plot": sorted(plot, key=lambda x: x.get("x"))}
+
+
+def works_by_publisher_year(data: Generator) -> list:
+    result: dict = {}
+    top5: dict = {}
+    for source in data:
+        year = int(source.apc.year_published or 0)
+        if year in result.keys():
+            if source.publisher.name not in result[year].keys():
+                result[year][source.publisher.name] = 1
+            else:
+                result[year][source.publisher.name] += 1
+        else:
+            result[year] = {source.publisher.name: 1}
+        if source.publisher.name not in top5.keys():
+            top5[source.publisher.name] = 1
+        else:
+            top5[source.publisher.name] += 1
+    top = [top[0] for top in sorted(top5.items(), key=lambda x: x[1], reverse=True)][:5]
+    plot = []
+    for year in result.keys():
+        for publisher in top:
+            if publisher in result[year].keys():
+                plot.append({"x": year, "y": result[year][publisher], "type": publisher})
+            else:
+                plot.append({"x": year, "y": 0, "type": publisher})
+    plot = sorted(plot, key=lambda x: x["x"])
+    return plot
+
+
 def apc_by_year(sources: Generator, base_year: int) -> list:
     data = map(lambda x: x.apc, sources)
     currency = CurrencyConverter()
@@ -74,53 +124,4 @@ def apc_by_year(sources: Generator, base_year: int) -> list:
                 result[apc.year_published] += value
     sorted_result = sorted(result.items(), key=lambda x: x[0])
     plot = [{"x": x[0], "y": int(x[1])} for x in sorted_result]
-    return plot
-
-
-def oa_by_year(works: Generator) -> list:
-    result: dict = {}
-    for work in works:
-        year = work.year_published
-        if year in result.keys():
-            if work.bibliographic_info.is_open_access:
-                result[year]["open"] += 1
-            else:
-                result[year]["closed"] += 1
-        else:
-            if work.bibliographic_info.is_open_access:
-                result[year] = {"open": 1, "closed": 0}
-            else:
-                result[year] = {"open": 0, "closed": 1}
-    result_list = []
-    for year in result.keys():
-        for typ in result[year].keys():
-            result_list.append({"x": year, "y": result[year][typ], "type": typ})
-    return sorted(result_list, key=lambda x: x["x"])
-
-
-def works_by_publisher_year(data: Generator) -> list:
-    result: dict = {}
-    top5: dict = {}
-    for source in data:
-        year = int(source.apc.year_published or 0)
-        if year in result.keys():
-            if source.publisher.name not in result[year].keys():
-                result[year][source.publisher.name] = 1
-            else:
-                result[year][source.publisher.name] += 1
-        else:
-            result[year] = {source.publisher.name: 1}
-        if source.publisher.name not in top5.keys():
-            top5[source.publisher.name] = 1
-        else:
-            top5[source.publisher.name] += 1
-    top = [top[0] for top in sorted(top5.items(), key=lambda x: x[1], reverse=True)][:5]
-    plot = []
-    for year in result.keys():
-        for publisher in top:
-            if publisher in result[year].keys():
-                plot.append({"x": year, "y": result[year][publisher], "type": publisher})
-            else:
-                plot.append({"x": year, "y": 0, "type": publisher})
-    plot = sorted(plot, key=lambda x: x["x"])
     return plot

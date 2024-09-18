@@ -100,18 +100,10 @@ def plot_annual_citation_count(affiliation_id: str, affiliation_type: str, query
 
 def plot_annual_articles_open_access(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {
-            "bibliographic_info.is_open_access": {"$ne": None},
-            "year_published": {"$ne": None},
-        },
-        "project": ["year_published", "bibliographic_info"],
+        "project": ["year_published", "bibliographic_info.is_open_access"],
     }
-    works = work_repository.get_works_by_affiliation(
-        affiliation_id,
-        query_params,
-        pipeline_params,
-    )
-    return {"plot": bar_parser.oa_by_year(works)}
+    works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
+    return bar_parser.parse_annual_articles_open_access(works)
 
 
 def plot_annual_articles_by_top_publishers(

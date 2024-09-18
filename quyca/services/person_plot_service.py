@@ -45,7 +45,7 @@ def plot_annual_articles_open_access(person_id: str, query_params: QueryParams) 
         "project": ["year_published", "bibliographic_info"],
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
-    return {"plot": bar_parser.oa_by_year(works)}
+    return {"plot": bar_parser.parse_annual_articles_open_access(works)}
 
 
 def plot_annual_articles_by_top_publishers(person_id: str, query_params: QueryParams) -> dict:

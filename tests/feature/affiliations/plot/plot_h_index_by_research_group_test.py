@@ -8,7 +8,7 @@ def test_it_can_plot_h_index_by_research_group_by_institution(client):
         .next()["_id"]
     )
     response = client.get(
-        f"/app/affiliation/institution/66b582ad7102ee7e0fcc02c7/research/products?plot=h_index_by_research_group"
+        f"/app/affiliation/institution/{random_institution_id}/research/products?plot=h_index_by_research_group"
     )
     assert response.status_code == 200
 

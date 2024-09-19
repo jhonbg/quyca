@@ -101,6 +101,7 @@ def plot_annual_citation_count(affiliation_id: str, affiliation_type: str, query
 def plot_annual_articles_open_access(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "project": ["year_published", "bibliographic_info.is_open_access"],
+        "match": {"types.source": "scienti", "types.level": 2},
     }
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     return bar_parser.parse_annual_articles_open_access(works)
@@ -120,23 +121,21 @@ def plot_annual_articles_by_top_publishers(
 
 def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     data = calculations_database["affiliations"].find_one({"_id": ObjectId(affiliation_id)}, {"top_words": 1})
-    if data:
-        if not "top_words" in data.keys():
-            return {"plot": None}
-        data = data["top_words"]
-        if not data:
-            return {
-                "plot": [{"name": "Sin información", "value": 1, "percentage": 100}],
-                "sum": 1,
-            }
-        return {"plot": data}
-    else:
+    if not data or "top_words" not in data:
         return {"plot": None}
+    top_words = data["top_words"]
+    if not top_words:
+        return {
+            "plot": [{"name": "Sin información", "value": 1, "percentage": 100}],
+            "sum": 1,
+        }
+    return {"plot": top_words}
 
 
 def plot_articles_by_publisher(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "project": ["publisher"],
+        "match": {"types.source": "scienti", "types.level": 2},
     }
     sources = work_repository.get_works_with_sources_by_affiliation(affiliation_id, pipeline_params)
     data = map(

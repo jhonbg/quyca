@@ -33,6 +33,7 @@ def get_works_by_affiliation(
             },
         },
     ]
+    base_repository.set_match(pipeline, pipeline_params.get("match"))
     base_repository.set_project(pipeline, pipeline_params.get("project"))
     base_repository.set_pagination(pipeline, query_params)
     cursor = database["works"].aggregate(pipeline)

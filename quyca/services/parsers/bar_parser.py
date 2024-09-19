@@ -64,7 +64,7 @@ def parse_annual_articles_open_access(works: Generator) -> dict:
         for year, counts in data.items()
         for access_type, count in counts.items()
     ]
-    return {"plot": sorted(plot, key=lambda x: x.get("x"))}
+    return {"plot": sorted(plot, key=lambda x: float("inf") if x.get("x") == "Sin año" else x.get("x"))}
 
 
 def parse_annual_articles_by_top_publishers(works: Generator) -> dict:
@@ -85,7 +85,7 @@ def parse_annual_articles_by_top_publishers(works: Generator) -> dict:
         for year, publishers in data.items()
         for publisher, count in publishers.items()
     ]
-    return {"plot": sorted(plot, key=lambda x: x.get("x"))}
+    return {"plot": sorted(plot, key=lambda x: float("inf") if x.get("x") == "Sin año" else x.get("x"))}
 
 
 def apc_by_year(sources: Generator, base_year: int) -> list:

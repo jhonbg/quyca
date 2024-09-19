@@ -8,6 +8,7 @@ from database.models.base_model import QueryParams
 from database.models.work_model import Work
 from database.repositories import base_repository
 from database.mongo import database
+from database.repositories.base_repository import set_project, set_match
 from exceptions.not_entity_exception import NotEntityException
 
 
@@ -80,34 +81,27 @@ def search_works(query_params: QueryParams, pipeline_params: dict | None = None)
     return work_generator.get(works), total_results
 
 
-def get_sources_by_affiliation(affiliation_id: str, pipeline_params: dict | None = None) -> Generator:
+def get_works_with_sources_by_affiliation(affiliation_id: str, pipeline_params: dict | None = None) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
-    pipeline = get_sources_by_affiliation_pipeline(affiliation_id)
-    base_repository.set_match(pipeline, pipeline_params.get("match"))
-    project = pipeline_params.get("project")
-    if project and "ranking" in project:
-        pipeline += [
-            {
-                "$addFields": {
-                    "ranking": {
-                        "$filter": {
-                            "input": "$ranking",
-                            "as": "rank",
-                            "cond": {
-                                "$and": [
-                                    {"$lte": ["$$rank.from_date", "$date_published"]},
-                                    {"$gte": ["$$rank.to_date", "$date_published"]},
-                                ]
-                            },
-                        }
-                    }
-                }
-            },
-        ]
-    base_repository.set_project(pipeline, project)
+    source_project = pipeline_params.get("source_project", [])
+    pipeline = [
+        {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+        {
+            "$lookup": {
+                "from": "sources",
+                "localField": "source.id",
+                "foreignField": "_id",
+                "as": "source",
+                "pipeline": [{"$project": {"_id": 1, **{p: 1 for p in source_project}}}],
+            }
+        },
+        {"$unwind": "$source"},
+    ]
+    set_match(pipeline, pipeline_params.get("match"))
+    set_project(pipeline, pipeline_params.get("work_project"))
     cursor = database["works"].aggregate(pipeline)
-    return source_generator.get(cursor)
+    return work_generator.get(cursor)
 
 
 def get_sources_by_person(person_id: str, query_params: QueryParams, pipeline_params: dict | None = None) -> Generator:

@@ -54,7 +54,7 @@ def plot_annual_articles_by_top_publishers(person_id: str, query_params: QueryPa
         "project": ["publisher", "apc"],
     }
     sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
-    return {"plot": bar_parser.works_by_publisher_year(sources)}
+    return {"plot": bar_parser.parse_annual_articles_by_top_publishers(sources)}
 
 
 def plot_most_used_title_words(person_id: str, query_params: QueryParams) -> dict:

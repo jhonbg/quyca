@@ -110,11 +110,12 @@ def plot_annual_articles_by_top_publishers(
     affiliation_id: str, affiliation_type: str, query_params: QueryParams
 ) -> dict:
     pipeline_params = {
-        "match": {"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
-        "project": ["publisher", "apc"],
+        "source_project": ["publisher", "apc"],
+        "work_project": ["source", "year_published", "types"],
+        "match": {"types.source": "scienti", "types.level": 2, "source.publisher.name": {"$ne": float("nan")}},
     }
-    sources = work_repository.get_sources_by_affiliation(affiliation_id, pipeline_params)
-    return {"plot": bar_parser.works_by_publisher_year(sources)}
+    sources = work_repository.get_works_with_sources_by_affiliation(affiliation_id, pipeline_params)
+    return bar_parser.parse_annual_articles_by_top_publishers(sources)
 
 
 def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
@@ -137,7 +138,7 @@ def plot_articles_by_publisher(affiliation_id: str, affiliation_type: str, query
     pipeline_params = {
         "project": ["publisher"],
     }
-    sources = work_repository.get_sources_by_affiliation(affiliation_id, pipeline_params)
+    sources = work_repository.get_works_with_sources_by_affiliation(affiliation_id, pipeline_params)
     data = map(
         lambda x: (x.publisher.name if x.publisher and isinstance(x.publisher.name, str) else "Sin información"),
         sources,
@@ -250,7 +251,7 @@ def plot_articles_by_publishing_institution(
     pipeline_params = {
         "project": ["publisher"],
     }
-    sources = work_repository.get_sources_by_affiliation(affiliation_id, pipeline_params)
+    sources = work_repository.get_works_with_sources_by_affiliation(affiliation_id, pipeline_params)
     return pie_parser.get_products_by_same_institution(sources, institution)
 
 
@@ -303,7 +304,7 @@ def plot_annual_apc_expenses(affiliation_id: str, affiliation_type: str, query_p
         },
         "project": ["apc"],
     }
-    sources = work_repository.get_sources_by_affiliation(affiliation_id, pipeline_params)
+    sources = work_repository.get_works_with_sources_by_affiliation(affiliation_id, pipeline_params)
     return {"plot": bar_parser.apc_by_year(sources, 2022)}
 
 

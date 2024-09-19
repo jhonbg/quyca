@@ -8,16 +8,16 @@ from utils.cpi import inflate
 
 
 def parse_annual_evolution_by_scienti_classification(works: Generator) -> list:
-    result: defaultdict = defaultdict(lambda: defaultdict(int))
+    data: defaultdict = defaultdict(lambda: defaultdict(int))
     for work in works:
         if not work.year_published:
             continue
         for work_type in work.types:
             if work_type.source == "scienti" and work_type.level == 2:
-                result[work.year_published][work_type.type] += 1
+                data[work.year_published][work_type.type] += 1
     plot = [
         {"x": year, "y": count, "type": work_type}
-        for year, work_types in result.items()
+        for year, work_types in data.items()
         for work_type, count in work_types.items()
     ]
     return sorted(plot, key=lambda x: x.get("x"))
@@ -67,32 +67,25 @@ def parse_annual_articles_open_access(works: Generator) -> dict:
     return {"plot": sorted(plot, key=lambda x: x.get("x"))}
 
 
-def works_by_publisher_year(data: Generator) -> list:
-    result: dict = {}
-    top5: dict = {}
-    for source in data:
-        year = int(source.apc.year_published or 0)
-        if year in result.keys():
-            if source.publisher.name not in result[year].keys():
-                result[year][source.publisher.name] = 1
-            else:
-                result[year][source.publisher.name] += 1
-        else:
-            result[year] = {source.publisher.name: 1}
-        if source.publisher.name not in top5.keys():
-            top5[source.publisher.name] = 1
-        else:
-            top5[source.publisher.name] += 1
-    top = [top[0] for top in sorted(top5.items(), key=lambda x: x[1], reverse=True)][:5]
-    plot = []
-    for year in result.keys():
-        for publisher in top:
-            if publisher in result[year].keys():
-                plot.append({"x": year, "y": result[year][publisher], "type": publisher})
-            else:
-                plot.append({"x": year, "y": 0, "type": publisher})
-    plot = sorted(plot, key=lambda x: x["x"])
-    return plot
+def parse_annual_articles_by_top_publishers(works: Generator) -> dict:
+    data: defaultdict = defaultdict(lambda: defaultdict(int))
+    for work in works:
+        if not work.source.publisher and not work.year_published:
+            data["Sin año"]["Sin información"] += 1
+            continue
+        if not work.source.publisher:
+            data[work.year_published]["Sin información"] += 1
+            continue
+        if not work.year_published:
+            data["Sin año"][work.source.publisher.name] += 1
+            continue
+        data[work.year_published][work.source.publisher.name] += 1
+    plot = [
+        {"x": year, "y": count, "type": publisher}
+        for year, publishers in data.items()
+        for publisher, count in publishers.items()
+    ]
+    return {"plot": sorted(plot, key=lambda x: x.get("x"))}
 
 
 def apc_by_year(sources: Generator, base_year: int) -> list:

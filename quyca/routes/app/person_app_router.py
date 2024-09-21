@@ -3,7 +3,7 @@ from typing import Tuple
 from flask import Blueprint, request, Response, jsonify
 
 from database.models.base_model import QueryParams
-from services import person_service, work_service, csv_service, person_plot_service
+from services import person_service, work_service, csv_service, person_plot_service, other_work_service
 
 person_app_router = Blueprint("person_app_router", __name__)
 
@@ -37,5 +37,15 @@ def get_works_csv_by_person(person_id: str) -> Response | Tuple[Response, int]:
         response = Response(data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@person_app_router.route("/<person_id>/research/other_works", methods=["GET"])
+def get_person_research_other_works(person_id: str) -> Response | Tuple[Response, int]:
+    try:
+        query_params = QueryParams(**request.args)
+        data = other_work_service.get_other_works_by_person(person_id, query_params)
+        return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400

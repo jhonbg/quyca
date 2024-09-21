@@ -7,6 +7,7 @@ from services import (
     person_service,
     work_service,
     affiliation_service,
+    other_work_service,
 )
 
 search_app_router = Blueprint("search_app_router", __name__)
@@ -37,6 +38,16 @@ def search_affiliations(affiliation_type: str) -> Response | Tuple[Response, int
     try:
         query_params = QueryParams(**request.args)
         data = affiliation_service.search_affiliations(affiliation_type, query_params)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@search_app_router.route("/other_works", methods=["GET"])
+def search_other_works() -> Response | Tuple[Response, int]:
+    try:
+        query_params = QueryParams(**request.args)
+        data = other_work_service.search_other_works(query_params)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400

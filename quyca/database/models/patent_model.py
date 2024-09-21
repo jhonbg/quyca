@@ -26,7 +26,6 @@ class Patent(BaseModel):
     titles: list[Title] | None = None
     types: list[Type] | None = None
     updated: list[Updated] | None = None
-    year_published: int | str | None = None
 
     authors_data: list[Author] | None = None
     language: str | None = None

@@ -26,7 +26,6 @@ class OtherWork(BaseModel):
     groups: list[Group] | str | None = None
     keywords: list | None = None
     ranking: list[Ranking] | str | None = None
-    subtitle: str | None = None
     titles: list[Title] | None = None
     types: list[Type] | None = None
     updated: list[Updated] | None = None

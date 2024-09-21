@@ -3,11 +3,12 @@ from urllib.parse import urlparse
 from constants.external_urls import external_urls_dict
 from database.models.base_model import Title, ProductType, ExternalUrl
 from database.models.other_work_model import OtherWork
+from database.models.patent_model import Patent
 from database.models.work_model import Work
 from database.repositories import person_repository
 
 
-def set_title_and_language(workable: OtherWork | Work) -> None:
+def set_title_and_language(workable: Work | OtherWork | Patent) -> None:
     def order(title: Title) -> float:
         hierarchy = ["openalex", "scholar", "scienti", "minciencias", "ranking"]
         return hierarchy.index(title.source) if title.source in hierarchy else float("inf")
@@ -17,7 +18,7 @@ def set_title_and_language(workable: OtherWork | Work) -> None:
     workable.title = first_title.title
 
 
-def set_product_types(workable: OtherWork | Work) -> None:
+def set_product_types(workable: Work | OtherWork | Patent) -> None:
     def order(product_type: ProductType) -> float:
         hierarchy = ["openalex", "scienti", "minciencias", "scholar"]
         return hierarchy.index(product_type.source) if product_type.source in hierarchy else float("inf")
@@ -31,7 +32,7 @@ def set_product_types(workable: OtherWork | Work) -> None:
     workable.product_types = sorted(product_types, key=order)
 
 
-def set_authors_external_ids(workable: OtherWork | Work) -> None:
+def set_authors_external_ids(workable: Work | OtherWork | Patent) -> None:
     if not workable.authors:
         return
     for author in workable.authors:
@@ -39,14 +40,14 @@ def set_authors_external_ids(workable: OtherWork | Work) -> None:
             author.external_ids = person_repository.get_person_by_id(str(author.id)).external_ids
 
 
-def limit_authors(workable: OtherWork | Work, limit: int = 10) -> None:
+def limit_authors(workable: Work | OtherWork | Patent, limit: int = 10) -> None:
     if not workable.authors:
         return
     if len(workable.authors) > limit:
         workable.authors = workable.authors[:limit]
 
 
-def set_external_ids(workable: OtherWork | Work) -> None:
+def set_external_ids(workable: Work | OtherWork | Patent) -> None:
     if not workable.external_ids:
         return
     new_external_ids = []
@@ -58,7 +59,7 @@ def set_external_ids(workable: OtherWork | Work) -> None:
     workable.external_ids = list(set(new_external_ids))
 
 
-def set_external_urls(workable: OtherWork | Work) -> None:
+def set_external_urls(workable: Work | OtherWork | Patent) -> None:
     if not workable.external_urls:
         return
     new_external_urls = []

@@ -187,7 +187,7 @@ class Author(BaseModel):
 
 
 class Group(BaseModel):
-    id: PyObjectId | None= None
+    id: PyObjectId | None = None
     name: str | None
 
     class Config:

@@ -95,7 +95,7 @@ def plot_products_by_subject(person_id: str, query_params: QueryParams) -> dict:
             works,
         )
     )
-    return pie_parser.get_products_by_subject(data)
+    return pie_parser.parse_products_by_subject(data)
 
 
 def plot_products_by_database(person_id: str, query_params: QueryParams) -> dict:

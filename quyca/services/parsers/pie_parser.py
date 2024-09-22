@@ -1,5 +1,6 @@
 from functools import wraps
 from datetime import datetime
+from itertools import chain
 from typing import Callable, Iterable, Generator
 from collections import Counter
 from currency_converter import CurrencyConverter
@@ -66,8 +67,14 @@ def parse_articles_by_publisher(works: Generator) -> list:
 
 
 @get_percentage
-def get_products_by_subject(data: Iterable) -> list:
-    results = Counter(sub.name for sub in data)
+def parse_products_by_subject(works: Generator) -> list:
+    data = chain.from_iterable(
+        map(
+            lambda x: [sub for subject in x.subjects for sub in subject.subjects if subject.source == "openalex"],
+            works,
+        )
+    )
+    results = Counter(subject.name for subject in data)
     plot = []
     for name, value in results.items():
         plot.append({"name": name, "value": value})

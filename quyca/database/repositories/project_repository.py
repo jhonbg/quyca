@@ -1,0 +1,89 @@
+from typing import Optional, Generator, Tuple
+
+from bson import ObjectId
+
+from database.generators import project_generator
+from database.models.base_model import QueryParams
+from database.models.project_model import Project
+from database.repositories import base_repository
+from database.mongo import database
+from exceptions.not_entity_exception import NotEntityException
+
+
+def get_project_by_id(project_id: str) -> Project:
+    project = database["projects"].find_one(ObjectId(project_id))
+    if not project:
+        raise NotEntityException(f"The project with id {project_id} does not exist.")
+    return Project(**project)
+
+
+def get_projects_by_affiliation(
+    affiliation_id: str,
+    query_params: QueryParams,
+    pipeline_params: dict | None = None,
+) -> Generator:
+    if pipeline_params is None:
+        pipeline_params = {}
+    pipeline = [
+        {
+            "$match": {
+                "authors.affiliations.id": ObjectId(affiliation_id),
+            },
+        },
+    ]
+    base_repository.set_project(pipeline, pipeline_params.get("project"))
+    base_repository.set_pagination(pipeline, query_params)
+    cursor = database["projects"].aggregate(pipeline)
+    return project_generator.get(cursor)
+
+
+def get_projects_count_by_affiliation(affiliation_id: str) -> int:
+    pipeline = get_projects_by_affiliation_pipeline(affiliation_id)
+    pipeline += [{"$count": "total"}]
+    projects_count = next(database["projects"].aggregate(pipeline), {"total": 0}).get("total", 0)
+    return projects_count
+
+
+def get_projects_by_person(person_id: str, query_params: QueryParams, pipeline_params: dict | None = None) -> Generator:
+    if pipeline_params is None:
+        pipeline_params = {}
+    pipeline = [
+        {"$match": {"authors.id": ObjectId(person_id)}},
+    ]
+    if sort := query_params.sort:
+        base_repository.set_sort(sort, pipeline)
+    base_repository.set_pagination(pipeline, query_params)
+    base_repository.set_project(pipeline, pipeline_params.get("project"))
+    cursor = database["projects"].aggregate(pipeline)
+    return project_generator.get(cursor)
+
+
+def get_projects_count_by_person(person_id: str) -> Optional[int]:
+    return (
+        database["projects"]
+        .aggregate([{"$match": {"authors.id": ObjectId(person_id)}}, {"$count": "total"}])
+        .next()
+        .get("total", 0)
+    )
+
+
+def search_projects(query_params: QueryParams, pipeline_params: dict | None = None) -> Tuple[Generator, int]:
+    pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
+    projects = database["projects"].aggregate(pipeline)
+    count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    count_pipeline += [
+        {"$count": "total_results"},  # type: ignore
+    ]
+    total_results = next(database["projects"].aggregate(count_pipeline), {"total_results": 0}).get("total_results", 0)
+    return project_generator.get(projects), total_results
+
+
+def get_projects_by_affiliation_pipeline(affiliation_id: str) -> list:
+    return [
+        {
+            "$match": {
+                "authors.affiliations.id": ObjectId(affiliation_id),
+            },
+        },
+    ]

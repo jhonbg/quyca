@@ -1,6 +1,6 @@
 from functools import wraps
 from datetime import datetime
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Generator
 from collections import Counter
 from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
@@ -49,10 +49,18 @@ def parse_h_index_by_affiliation(data: CommandCursor) -> list:
 
 
 @get_percentage
-def get_products_by_publisher(data: Iterable[str]) -> list:
-    results = Counter(data)
+def parse_articles_by_publisher(works: Generator) -> list:
+    data = map(
+        lambda x: (
+            x.source.publisher.name
+            if x.source.publisher and isinstance(x.source.publisher.name, str)
+            else "Sin información"
+        ),
+        works,
+    )
+    counter = Counter(data)
     plot = []
-    for name, value in results.items():
+    for name, value in counter.items():
         plot += [{"name": name, "value": value}]
     return plot
 

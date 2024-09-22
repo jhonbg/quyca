@@ -134,15 +134,12 @@ def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query
 
 def plot_articles_by_publisher(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "project": ["publisher"],
-        "match": {"types.source": "scienti", "types.level": 2},
+        "source_project": ["publisher"],
+        "work_project": ["source"],
+        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
     }
-    sources = work_repository.get_works_with_sources_by_affiliation(affiliation_id, pipeline_params)
-    data = map(
-        lambda x: (x.publisher.name if x.publisher and isinstance(x.publisher.name, str) else "Sin información"),
-        sources,
-    )
-    return pie_parser.get_products_by_publisher(data)
+    works = work_repository.get_works_with_sources_by_affiliation(affiliation_id, pipeline_params)
+    return pie_parser.parse_articles_by_publisher(works)
 
 
 def plot_products_by_subject(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:

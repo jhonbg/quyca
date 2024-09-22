@@ -80,7 +80,7 @@ def plot_articles_by_publisher(person_id: str, query_params: QueryParams) -> dic
     }
     sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
     data = map(lambda x: x.publisher.name, sources)
-    return pie_parser.get_products_by_publisher(data)
+    return pie_parser.parse_articles_by_publisher(data)
 
 
 def plot_products_by_subject(person_id: str, query_params: QueryParams) -> dict:

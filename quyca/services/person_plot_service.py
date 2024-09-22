@@ -120,7 +120,7 @@ def plot_articles_by_access_route(person_id: str, query_params: QueryParams) -> 
 
 def plot_products_by_author_age_range(person_id: str, query_params: QueryParams) -> dict:
     works = plot_repository.get_products_by_author_age_and_person(person_id)
-    result = pie_parser.get_products_by_age(works)
+    result = pie_parser.parse_products_by_age_range(works)
     if result:
         return result
     else:

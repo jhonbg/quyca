@@ -314,36 +314,20 @@ def get_products_by_author_sex(affiliation_id: str) -> CommandCursor:
 
 def get_products_by_author_age_and_affiliation(affiliation_id: str) -> CommandCursor:
     pipeline = [
-        {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+        {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
         {
             "$lookup": {
-                "from": "person",
-                "localField": "authors.id",
-                "foreignField": "_id",
-                "as": "person",
-                "pipeline": [
-                    {
-                        "$project": {
-                            "birthdate": 1,
-                            "affiliations": 1,
-                        }
-                    }
-                ],
+                "from": "works",
+                "localField": "_id",
+                "foreignField": "authors.id",
+                "as": "works",
+                "pipeline": [{"$count": "count"}],
             }
         },
-        {"$unwind": "$person"},
-        {"$match": {"person.affiliations.id": ObjectId(affiliation_id)}},
-        # {"$group": {"_id": "$_id", "document": {"$first": "$$ROOT"}}},
-        # {"$replaceRoot": {"newRoot": "$document"}},
-        {
-            "$project": {
-                "birthdate": "$person.birthdate",
-                "work.date_published": "$date_published",
-                "work.year_published": "$year_published",
-            }
-        },
+        {"$unwind": "$works"},
+        {"$project": {"_id": 0, "birthdate": "$birthdate", "works_count": "$works.count"}},
     ]
-    return database["works"].aggregate(pipeline)
+    return database["person"].aggregate(pipeline)
 
 
 def get_products_by_author_age_and_person(person_id: str) -> CommandCursor:

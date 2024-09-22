@@ -174,11 +174,7 @@ def plot_products_by_author_sex(affiliation_id: str, affiliation_type: str, quer
 
 def plot_products_by_author_age_range(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     works = plot_repository.get_products_by_author_age_and_affiliation(affiliation_id)
-    result = pie_parser.get_products_by_age(works)
-    if result:
-        return result
-    else:
-        return {"plot": None}
+    return pie_parser.parse_products_by_age_range(works)
 
 
 def plot_articles_by_scienti_category(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:

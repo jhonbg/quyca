@@ -115,7 +115,7 @@ def plot_articles_by_access_route(person_id: str, query_params: QueryParams) -> 
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     data = map(lambda x: x.bibliographic_info.open_access_status, works)
-    return pie_parser.get_products_by_open_access(data)
+    return pie_parser.parse_products_by_access_route(data)
 
 
 def plot_products_by_author_age_range(person_id: str, query_params: QueryParams) -> dict:

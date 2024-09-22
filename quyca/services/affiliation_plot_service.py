@@ -160,16 +160,11 @@ def plot_products_by_database(affiliation_id: str, affiliation_type: str, query_
 
 def plot_articles_by_access_route(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
+        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
         "project": ["bibliographic_info"],
     }
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
-    data = map(
-        lambda x: (
-            x.bibliographic_info.open_access_status if x.bibliographic_info.open_access_status else "Sin información"
-        ),
-        works,
-    )
-    return pie_parser.get_products_by_open_access(data)
+    return pie_parser.parse_products_by_access_route(works)
 
 
 @pie_parser.get_percentage

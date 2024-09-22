@@ -92,10 +92,16 @@ def parse_products_by_database(works: Generator) -> list:
 
 
 @get_percentage
-def get_products_by_open_access(data: Iterable) -> list:
-    results = Counter(data)
+def parse_products_by_access_route(works: Generator) -> list:
+    data = map(
+        lambda x: (
+            x.bibliographic_info.open_access_status if x.bibliographic_info.open_access_status else "Sin información"
+        ),
+        works,
+    )
+    counter = Counter(data)
     plot = []
-    for name, value in results.items():
+    for name, value in counter.items():
         plot.append({"name": name, "value": value})
     return plot
 

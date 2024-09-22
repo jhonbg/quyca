@@ -107,6 +107,17 @@ def parse_products_by_access_route(works: Generator) -> list:
 
 
 @get_percentage
+def parse_products_by_author_sex(data: CommandCursor) -> list:
+    plot = []
+    for item in data:
+        if item.get("_id", "") == "":
+            plot.append({"name": "Sin información", "value": item.get("works_count", 0)})
+            continue
+        plot.append({"name": item.get("_id"), "value": item.get("works_count", 0)})
+    return plot
+
+
+@get_percentage
 def get_products_by_age(works: Iterable) -> list:
     ranges = {"14-26": (14, 26), "27-59": (27, 59), "60+": (60, 999)}
     results = {"14-26": 0, "27-59": 0, "60+": 0, "Sin información": 0}

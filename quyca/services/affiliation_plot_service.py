@@ -167,9 +167,9 @@ def plot_articles_by_access_route(affiliation_id: str, affiliation_type: str, qu
     return pie_parser.parse_products_by_access_route(works)
 
 
-@pie_parser.get_percentage
-def plot_products_by_author_sex(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> list:
-    return plot_repository.get_products_by_author_sex(affiliation_id)
+def plot_products_by_author_sex(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
+    data = plot_repository.get_products_by_author_sex(affiliation_id)
+    return pie_parser.parse_products_by_author_sex(data)
 
 
 def plot_products_by_author_age_range(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:

@@ -82,10 +82,11 @@ def parse_products_by_subject(works: Generator) -> list:
 
 
 @get_percentage
-def get_products_by_database(data: Iterable) -> list:
-    results = Counter(up.source for up in data)
+def parse_products_by_database(works: Generator) -> list:
+    data = chain.from_iterable(map(lambda x: x.updated, works))
+    counter = Counter(up.source for up in data)
     plot = []
-    for name, value in results.items():
+    for name, value in counter.items():
         plot.append({"name": name, "value": value})
     return plot
 

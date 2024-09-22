@@ -105,7 +105,7 @@ def plot_products_by_database(person_id: str, query_params: QueryParams) -> dict
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     data = chain.from_iterable(map(lambda x: x.updated, works))
-    return pie_parser.get_products_by_database(data)
+    return pie_parser.parse_products_by_database(data)
 
 
 def plot_articles_by_access_route(person_id: str, query_params: QueryParams) -> dict:

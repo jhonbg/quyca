@@ -146,7 +146,6 @@ def plot_products_by_subject(affiliation_id: str, affiliation_type: str, query_p
         "project": ["subjects"],
     }
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
-
     return pie_parser.parse_products_by_subject(works)
 
 
@@ -156,8 +155,7 @@ def plot_products_by_database(affiliation_id: str, affiliation_type: str, query_
         "project": ["updated"],
     }
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
-    data = chain.from_iterable(map(lambda x: x.updated, works))
-    return pie_parser.get_products_by_database(data)
+    return pie_parser.parse_products_by_database(works)
 
 
 def plot_articles_by_access_route(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:

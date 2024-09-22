@@ -3,6 +3,7 @@ from flask import Blueprint
 from core.config import settings
 from routes.app.other_work_app_router import other_work_app_router
 from routes.app.patent_app_router import patent_app_router
+from routes.app.project_app_router import project_app_router
 from routes.app.search_app_router import search_app_router
 from routes.api.search_api_router import search_api_router
 from routes.app.affiliation_app_router import affiliation_app_router
@@ -33,5 +34,7 @@ router.register_blueprint(work_app_router, url_prefix=f"{settings.APP_URL_PREFIX
 router.register_blueprint(other_work_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/other_work")
 
 router.register_blueprint(patent_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/patent")
+
+router.register_blueprint(project_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/project")
 
 router.register_blueprint(etl_router, url_prefix=f"{settings.APP_URL_PREFIX}/etl")

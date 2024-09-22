@@ -10,6 +10,7 @@ from services import (
     affiliation_plot_service,
     other_work_service,
     patent_service,
+    project_service,
 )
 
 affiliation_app_router = Blueprint("affiliation_app_router", __name__)
@@ -72,6 +73,16 @@ def get_affiliation_research_patents(affiliation_id: str, affiliation_type: str)
     try:
         query_params = QueryParams(**request.args)
         data = patent_service.get_patents_by_affiliation(affiliation_id, query_params)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/research/projects", methods=["GET"])
+def get_affiliation_research_projects(affiliation_id: str, affiliation_type: str) -> Response | Tuple[Response, int]:
+    try:
+        query_params = QueryParams(**request.args)
+        data = project_service.get_projects_by_affiliation(affiliation_id, query_params)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400

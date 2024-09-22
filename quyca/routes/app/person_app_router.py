@@ -3,7 +3,15 @@ from typing import Tuple
 from flask import Blueprint, request, Response, jsonify
 
 from database.models.base_model import QueryParams
-from services import person_service, work_service, csv_service, person_plot_service, other_work_service, patent_service
+from services import (
+    person_service,
+    work_service,
+    csv_service,
+    person_plot_service,
+    other_work_service,
+    patent_service,
+    project_service,
+)
 
 person_app_router = Blueprint("person_app_router", __name__)
 
@@ -56,6 +64,16 @@ def get_person_research_patents(person_id: str) -> Response | Tuple[Response, in
     try:
         query_params = QueryParams(**request.args)
         data = patent_service.get_patents_by_person(person_id, query_params)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@person_app_router.route("/<person_id>/research/projects", methods=["GET"])
+def get_person_research_projects(person_id: str) -> Response | Tuple[Response, int]:
+    try:
+        query_params = QueryParams(**request.args)
+        data = project_service.get_projects_by_person(person_id, query_params)
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400

@@ -8,7 +8,7 @@ def test_it_can_plot_most_used_title_words_by_institution(client):
         .next()["_id"]
     )
     response = client.get(
-        f"/app/affiliation/institution/{random_institution_id}/research/products?plot=most_used_title_words"
+        f"/app/affiliation/institution/66b582ad7102ee7e0fcc02c7/research/products?plot=most_used_title_words"
     )
     assert response.status_code == 200
 

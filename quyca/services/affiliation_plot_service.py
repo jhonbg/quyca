@@ -5,7 +5,7 @@ from pymongo.command_cursor import CommandCursor
 
 from database.models.base_model import QueryParams
 from database.mongo import calculations_database, database
-from database.repositories import work_repository, plot_repository
+from database.repositories import work_repository, plot_repository, calculations_repository
 from services.parsers import bar_parser, pie_parser, map_parser
 
 
@@ -120,10 +120,8 @@ def plot_annual_articles_by_top_publishers(
 
 
 def plot_most_used_title_words(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
-    data = calculations_database["affiliations"].find_one({"_id": ObjectId(affiliation_id)}, {"top_words": 1})
-    if not data or "top_words" not in data:
-        return {"plot": None}
-    top_words = data["top_words"]
+    data = calculations_repository.get_affiliation_calculations(affiliation_id)
+    top_words = data.model_dump().get("top_words", None)
     if not top_words:
         return {
             "plot": [{"name": "Sin información", "value": 1, "percentage": 100}],

@@ -1,4 +1,4 @@
-from typing import Optional, Generator, Tuple
+from typing import Generator, Tuple
 
 from bson import ObjectId
 
@@ -8,7 +8,6 @@ from database.models.base_model import QueryParams
 from database.models.work_model import Work
 from database.repositories import base_repository
 from database.mongo import database
-from database.repositories.base_repository import set_project, set_match
 from exceptions.not_entity_exception import NotEntityException
 
 
@@ -34,8 +33,10 @@ def get_works_by_affiliation(
         },
     ]
     base_repository.set_match(pipeline, pipeline_params.get("match"))
-    base_repository.set_project(pipeline, pipeline_params.get("project"))
+    if sort := query_params.sort:
+        base_repository.set_sort(sort, pipeline)
     base_repository.set_pagination(pipeline, query_params)
+    base_repository.set_project(pipeline, pipeline_params.get("project"))
     cursor = database["works"].aggregate(pipeline)
     return work_generator.get(cursor)
 
@@ -43,8 +44,7 @@ def get_works_by_affiliation(
 def get_works_count_by_affiliation(affiliation_id: str) -> int:
     pipeline = get_works_by_affiliation_pipeline(affiliation_id)
     pipeline += [{"$count": "total"}]
-    works_count = next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
-    return works_count
+    return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
 
 def get_works_by_person(person_id: str, query_params: QueryParams, pipeline_params: dict | None = None) -> Generator:
@@ -61,13 +61,9 @@ def get_works_by_person(person_id: str, query_params: QueryParams, pipeline_para
     return work_generator.get(cursor)
 
 
-def get_works_count_by_person(person_id: str) -> Optional[int]:
-    return (
-        database["works"]
-        .aggregate([{"$match": {"authors.id": ObjectId(person_id)}}, {"$count": "total"}])
-        .next()
-        .get("total", 0)
-    )
+def get_works_count_by_person(person_id: str) -> int:
+    pipeline = [{"$match": {"authors.id": ObjectId(person_id)}}, {"$count": "total"}]
+    return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
 
 def search_works(query_params: QueryParams, pipeline_params: dict | None = None) -> Tuple[Generator, int]:
@@ -99,8 +95,8 @@ def get_works_with_sources_by_affiliation(affiliation_id: str, pipeline_params: 
         },
         {"$unwind": "$source"},
     ]
-    set_match(pipeline, pipeline_params.get("match"))
-    set_project(pipeline, pipeline_params.get("work_project"))
+    base_repository.set_match(pipeline, pipeline_params.get("match"))
+    base_repository.set_project(pipeline, pipeline_params.get("work_project"))
     cursor = database["works"].aggregate(pipeline)
     return work_generator.get(cursor)
 

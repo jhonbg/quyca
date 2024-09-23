@@ -31,8 +31,10 @@ def get_other_works_by_affiliation(
             },
         },
     ]
-    base_repository.set_project(pipeline, pipeline_params.get("project"))
+    if sort := query_params.sort:
+        base_repository.set_sort(sort, pipeline)
     base_repository.set_pagination(pipeline, query_params)
+    base_repository.set_project(pipeline, pipeline_params.get("project"))
     cursor = database["works_misc"].aggregate(pipeline)
     return other_work_generator.get(cursor)
 

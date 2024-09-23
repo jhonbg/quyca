@@ -155,7 +155,7 @@ def set_sort(sort: str | None, pipeline: list) -> None:
                                 ]
                             },
                             "then": -1,
-                            "else": {"$toInt": "$year_published"},
+                            "else": "$year_published",
                         }
                     }
                 }

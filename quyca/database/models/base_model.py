@@ -161,3 +161,46 @@ class QueryParams(BaseModel):
     keywords: str | None = None
     plot: str | None = None
     sort: str | None = None
+
+
+class Affiliation(BaseModel):
+    id: PyObjectId | None = None
+    name: str | None = None
+    types: list[Type] | None = None
+
+    addresses: list[Address] | None = None
+    ranking: list[Ranking] | None = None
+
+    class Config:
+        json_encoders = {ObjectId: str}
+
+
+class Author(BaseModel):
+    id: PyObjectId | None = None
+    affiliations: list[Affiliation] | None = None
+    full_name: str | None = None
+
+    external_ids: list[ExternalId] | None = None
+
+    class Config:
+        json_encoders = {ObjectId: str}
+
+
+class Group(BaseModel):
+    id: PyObjectId | None = None
+    name: str | None
+
+    class Config:
+        json_encoders = {ObjectId: str}
+
+
+class Title(BaseModel):
+    lang: str | None
+    provenance: str | None = None
+    source: str | None
+    title: str | None
+
+
+class ProductType(BaseModel):
+    name: str | None = None
+    source: str | None = None

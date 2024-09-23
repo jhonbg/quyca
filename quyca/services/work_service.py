@@ -1,12 +1,17 @@
 from typing import Generator
-from urllib.parse import urlparse
 
-from database.models.base_model import ExternalUrl, QueryParams
-from database.models.work_model import Work, Title, ProductType
-from database.repositories import person_repository
+from database.models.base_model import QueryParams
+from database.models.work_model import Work
 from database.repositories import work_repository
-from constants.external_urls import external_urls_dict
 from services import source_service
+from services.base_service import (
+    limit_authors,
+    set_title_and_language,
+    set_product_types,
+    set_authors_external_ids,
+    set_external_urls,
+    set_external_ids,
+)
 from services.parsers import work_parser
 
 
@@ -87,30 +92,6 @@ def get_works_by_entity_pipeline_params() -> dict:
     return pipeline_params
 
 
-def set_title_and_language(work: Work) -> None:
-    def order(title: Title) -> float:
-        hierarchy = ["openalex", "scholar", "scienti", "minciencias", "ranking"]
-        return hierarchy.index(title.source) if title.source in hierarchy else float("inf")
-
-    first_title = sorted(work.titles, key=order)[0]
-    work.language = first_title.lang
-    work.title = first_title.title
-
-
-def set_product_types(work: Work) -> None:
-    def order(product_type: ProductType) -> float:
-        hierarchy = ["openalex", "scienti", "minciencias", "scholar"]
-        return hierarchy.index(product_type.source) if product_type.source in hierarchy else float("inf")
-
-    product_types = list(
-        map(
-            lambda product_type: ProductType(name=product_type.type, source=product_type.source),
-            work.types,
-        )
-    )
-    work.product_types = sorted(product_types, key=order)
-
-
 def set_bibliographic_info(work: Work) -> None:
     if not work.bibliographic_info:
         return
@@ -118,49 +99,3 @@ def set_bibliographic_info(work: Work) -> None:
     work.open_access_status = work.bibliographic_info.open_access_status
     work.volume = work.bibliographic_info.volume
     work.bibliographic_info = None
-
-
-def set_authors_external_ids(work: Work) -> None:
-    if not work.authors:
-        return
-    for author in work.authors:
-        if author.id:
-            author.external_ids = person_repository.get_person_by_id(str(author.id)).external_ids
-
-
-def limit_authors(work: Work, limit: int = 10) -> None:
-    if not work.authors:
-        return
-    if len(work.authors) > limit:
-        work.authors = work.authors[:limit]
-
-
-def set_external_ids(work: Work) -> None:
-    if not work.external_ids:
-        return
-    new_external_ids = []
-    for external_id in work.external_ids:
-        if external_id.source in ["minciencias", "scienti"]:
-            new_external_ids.append(external_id)
-        else:
-            work.external_urls.append(ExternalUrl(url=external_id.id, source=external_id.source))
-    work.external_ids = list(set(new_external_ids))
-
-
-def set_external_urls(work: Work) -> None:
-    if not work.external_urls:
-        return
-    new_external_urls = []
-    for external_url in work.external_urls:
-        url = str(external_url.url)
-        if urlparse(url).scheme and urlparse(url).netloc:
-            new_external_urls.append(external_url)
-        else:
-            if external_url.source in external_urls_dict.keys() and url != "":
-                new_external_urls.append(
-                    ExternalUrl(
-                        url=external_urls_dict[external_url.source].format(id=url),
-                        source=external_url.source,
-                    )
-                )
-    work.external_urls = list(set(new_external_urls))

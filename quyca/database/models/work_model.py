@@ -12,33 +12,14 @@ from database.models.base_model import (
     Subject,
     Updated,
     Ranking,
-    Address,
     Publisher,
     APC,
+    Author,
+    Group,
+    Title,
+    Affiliation,
+    ProductType,
 )
-
-
-class Affiliation(BaseModel):
-    id: PyObjectId = None
-    name: str | None = None
-    types: list[Type] | None = None
-
-    addresses: list[Address] | None = None
-    ranking: list[Ranking] | None = None
-
-    class Config:
-        json_encoders = {ObjectId: str}
-
-
-class Author(BaseModel):
-    id: PyObjectId = None
-    affiliations: list[Affiliation] | None = None
-    full_name: str | None = None
-
-    external_ids: list[ExternalId] | None = None
-
-    class Config:
-        json_encoders = {ObjectId: str}
 
 
 class BiblioGraphicInfo(BaseModel):
@@ -57,14 +38,6 @@ class CitationByYear(BaseModel):
     year: int | None
 
 
-class Group(BaseModel):
-    id: PyObjectId = None
-    name: str | None
-
-    class Config:
-        json_encoders = {ObjectId: str}
-
-
 class Source(BaseModel):
     id: PyObjectId | str | None = None
     name: str | Any | None = None
@@ -78,18 +51,6 @@ class Source(BaseModel):
 
     class Config:
         json_encoders = {ObjectId: str}
-
-
-class Title(BaseModel):
-    lang: str | None
-    provenance: str | None = None
-    source: str | None
-    title: str | None
-
-
-class ProductType(BaseModel):
-    name: str | None = None
-    source: str | None = None
 
 
 class Work(BaseModel):

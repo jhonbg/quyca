@@ -1,4 +1,4 @@
-from typing import Optional, Generator, Tuple
+from typing import Generator, Tuple
 
 from bson import ObjectId
 
@@ -40,8 +40,7 @@ def get_other_works_by_affiliation(
 def get_other_works_count_by_affiliation(affiliation_id: str) -> int:
     pipeline = get_other_works_by_affiliation_pipeline(affiliation_id)
     pipeline += [{"$count": "total"}]
-    other_works_count = next(database["works_misc"].aggregate(pipeline), {"total": 0}).get("total", 0)
-    return other_works_count
+    return next(database["works_misc"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
 
 def get_other_works_by_person(
@@ -60,13 +59,9 @@ def get_other_works_by_person(
     return other_work_generator.get(cursor)
 
 
-def get_other_works_count_by_person(person_id: str) -> Optional[int]:
-    return (
-        database["works_misc"]
-        .aggregate([{"$match": {"authors.id": ObjectId(person_id)}}, {"$count": "total"}])
-        .next()
-        .get("total", 0)
-    )
+def get_other_works_count_by_person(person_id: str) -> int:
+    pipeline = [{"$match": {"authors.id": ObjectId(person_id)}}, {"$count": "total"}]
+    return next(database["works_misc"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
 
 def search_other_works(query_params: QueryParams, pipeline_params: dict | None = None) -> Tuple[Generator, int]:

@@ -134,7 +134,7 @@ def plot_articles_by_scienti_category(person_id: str, query_params: QueryParams)
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     data = chain.from_iterable(map(lambda x: x.ranking, works))
-    return pie_parser.get_articles_by_scienti_category(data)
+    return pie_parser.parse_articles_by_scienti_category(data)
 
 
 def plot_articles_by_scimago_quartile(person_id: str, query_params: QueryParams) -> dict:

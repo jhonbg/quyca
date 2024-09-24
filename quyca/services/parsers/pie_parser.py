@@ -138,16 +138,16 @@ def parse_products_by_age_range(persons: CommandCursor) -> list:
 
 
 @get_percentage
-def get_articles_by_scienti_category(data: Iterable, total_works: int = 0) -> list:
-    scienti_category = filter(
+def parse_articles_by_scienti_category(works: Generator, total_works: int = 0) -> list:
+    data = filter(
         lambda x: x.source == "scienti" and x.rank and x.rank.split("_")[-1] in ["A", "A1", "B", "C", "D"],
-        data,
+        chain.from_iterable(map(lambda x: x.ranking, works)),
     )
-    results = Counter(map(lambda x: x.rank.split("_")[-1], scienti_category))
+    counter = Counter(map(lambda x: x.rank.split("_")[-1], data))
     plot = []
-    for name, value in results.items():
+    for name, value in counter.items():
         plot.append({"name": name, "value": value})
-    plot.append({"name": "Sin información", "value": total_works - sum(results.values())})
+    plot.append({"name": "Sin información", "value": total_works - sum(counter.values())})
     return plot
 
 

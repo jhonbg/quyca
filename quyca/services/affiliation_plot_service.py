@@ -1,5 +1,3 @@
-from itertools import chain
-
 from bson import ObjectId
 from pymongo.command_cursor import CommandCursor
 
@@ -179,13 +177,11 @@ def plot_products_by_author_age_range(affiliation_id: str, affiliation_type: str
 
 def plot_articles_by_scienti_category(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {"ranking": {"$ne": []}},
         "project": ["ranking"],
     }
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     total_works = work_repository.get_works_count_by_affiliation(affiliation_id)
-    data = chain.from_iterable(map(lambda x: x.ranking, works))
-    return pie_parser.get_articles_by_scienti_category(data, total_works)
+    return pie_parser.parse_articles_by_scienti_category(works, total_works)
 
 
 def plot_articles_by_scimago_quartile(

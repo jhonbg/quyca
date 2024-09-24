@@ -94,9 +94,7 @@ def parse_products_by_database(works: Generator) -> list:
 @get_percentage
 def parse_products_by_access_route(works: Generator) -> list:
     data = map(
-        lambda x: (
-            x.bibliographic_info.open_access_status if x.bibliographic_info.open_access_status else "Sin información"
-        ),
+        lambda x: (x.open_access.open_access_status if x.open_access.open_access_status else "Sin información"),
         works,
     )
     counter = Counter(data)

@@ -76,7 +76,7 @@ def plot_h_index_by_affiliation(affiliation_id: str, affiliation_type: str, rela
 
 def plot_annual_evolution_by_scienti_classification(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {"project": ["year_published", "types"]}
-    works = work_repository.get_works_by_affiliation(affiliation_id, QueryParams(), pipeline_params)
+    works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     return {"plot": bar_parser.parse_annual_evolution_by_scienti_classification(works)}
 
 
@@ -90,7 +90,7 @@ def plot_annual_citation_count(affiliation_id: str, query_params: QueryParams) -
 
 def plot_annual_articles_open_access(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "project": ["year_published", "bibliographic_info.is_open_access"],
+        "project": ["year_published", "open_access"],
         "match": {"types.source": "scienti", "types.level": 2},
     }
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
@@ -149,7 +149,7 @@ def plot_products_by_database(affiliation_id: str, query_params: QueryParams) ->
 def plot_articles_by_access_route(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
-        "project": ["bibliographic_info"],
+        "project": ["open_access"],
     }
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     return pie_parser.parse_products_by_access_route(works)

@@ -110,11 +110,11 @@ def plot_products_by_database(person_id: str, query_params: QueryParams) -> dict
 
 def plot_articles_by_access_route(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {"bibliographic_info.open_access_status": {"$exists": 1}},
+        "match": {"open_access.open_access_status": {"$exists": 1}},
         "project": ["bibliographic_info"],
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
-    data = map(lambda x: x.bibliographic_info.open_access_status, works)
+    data = map(lambda x: x.open_access.open_access_status, works)
     return pie_parser.parse_products_by_access_route(data)
 
 

@@ -93,8 +93,6 @@ def set_csv_bibliographic_info(work: Work) -> None:
     work.bibtex = work.bibliographic_info.bibtex
     work.pages = work.bibliographic_info.pages
     work.issue = work.bibliographic_info.issue
-    work.is_open_access = work.bibliographic_info.is_open_access
-    work.open_access_status = work.bibliographic_info.open_access_status
     work.start_page = work.bibliographic_info.start_page
     work.end_page = work.bibliographic_info.end_page
     work.volume = work.bibliographic_info.volume

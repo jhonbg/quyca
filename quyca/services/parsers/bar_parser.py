@@ -48,11 +48,11 @@ def parse_annual_citation_count(works: Generator) -> dict:
 def parse_annual_articles_open_access(works: Generator) -> dict:
     data: defaultdict = defaultdict(lambda: {"Abierto": 0, "Cerrado": 0, "Sin información": 0})
     for work in works:
-        access_type = "Abierto" if work.bibliographic_info.is_open_access else "Cerrado"
-        if work.bibliographic_info.is_open_access is None and not work.year_published:
+        access_type = "Abierto" if work.open_access.is_open_access else "Cerrado"
+        if work.open_access.is_open_access is None and not work.year_published:
             data["Sin año"]["Sin información"] += 1
             continue
-        if work.bibliographic_info.is_open_access is None:
+        if work.open_access.is_open_access is None:
             data[work.year_published]["Sin información"] += 1
             continue
         if work.year_published is None:

@@ -40,13 +40,11 @@ def plot_annual_apc_expenses(person_id: str, query_params: QueryParams) -> dict:
 
 def plot_annual_articles_open_access(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {
-            "year_published": {"$ne": None},
-        },
-        "project": ["year_published", "bibliographic_info"],
+        "project": ["year_published", "open_access"],
+        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
-    return {"plot": bar_parser.parse_annual_articles_open_access(works)}
+    return bar_parser.parse_annual_articles_open_access(works)
 
 
 def plot_annual_articles_by_top_publishers(person_id: str, query_params: QueryParams) -> dict:

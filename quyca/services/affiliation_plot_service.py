@@ -89,7 +89,7 @@ def plot_annual_citation_count(affiliation_id: str, query_params: QueryParams) -
 def plot_annual_articles_open_access(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "project": ["year_published", "open_access"],
-        "match": {"types.source": "scienti", "types.level": 2},
+        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
     }
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     return bar_parser.parse_annual_articles_open_access(works)

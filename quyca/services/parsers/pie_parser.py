@@ -6,6 +6,7 @@ from collections import Counter
 from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
 
+from constants.open_access_status import open_access_status_dict
 from database.models.affiliation_model import Affiliation
 from utils.hindex import get_works_h_index_by_scholar_citations
 
@@ -95,13 +96,13 @@ def parse_products_by_database(works: Generator) -> list:
 @get_percentage
 def parse_products_by_access_route(works: Generator) -> list:
     data = map(
-        lambda x: (x.open_access.open_access_status if x.open_access.open_access_status else "Sin información"),
+        lambda x: (x.open_access.open_access_status if x.open_access.open_access_status else "no_info"),
         works,
     )
     counter = Counter(data)
     plot = []
     for name, value in counter.items():
-        plot.append({"name": name, "value": value})
+        plot.append({"name": open_access_status_dict.get(name), "value": value})
     return plot
 
 

@@ -110,15 +110,6 @@ def plot_articles_by_access_route(person_id: str, query_params: QueryParams) -> 
     return pie_parser.parse_products_by_access_route(works)
 
 
-def plot_products_by_author_age_range(person_id: str, query_params: QueryParams) -> dict:
-    works = plot_repository.get_products_by_author_age_and_person(person_id)
-    result = pie_parser.parse_products_by_age_range(works)
-    if result:
-        return result
-    else:
-        return {"plot": None}
-
-
 def plot_articles_by_scienti_category(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "match": {"ranking": {"$ne": []}},

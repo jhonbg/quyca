@@ -1,7 +1,4 @@
-from bson import ObjectId
-
 from database.models.base_model import QueryParams
-from database.mongo import calculations_database
 from database.repositories import (
     plot_repository,
     work_repository,
@@ -9,7 +6,7 @@ from database.repositories import (
     person_repository,
     affiliation_repository,
 )
-from services.parsers import map_parser, pie_parser, bar_parser
+from services.parsers import map_parser, pie_parser, bar_parser, network_parser
 
 
 def get_person_plot(person_id: str, query_params: QueryParams) -> dict:
@@ -163,17 +160,5 @@ def plot_coauthorship_by_colombian_department_map(person_id: str, query_params: 
 
 
 def plot_author_coauthorship_network(person_id: str, query_params: QueryParams) -> dict:
-    data = calculations_database["person"].find_one({"_id": ObjectId(person_id)}, {"coauthorship_network": 1})
-    if data:
-        if "coauthorship_network" not in data.keys():
-            return {"plot": None}
-        data = data["coauthorship_network"]
-        nodes = sorted(data["nodes"], key=lambda x: x["degree"], reverse=True)[:50]
-        nodes_ids = [node["id"] for node in nodes]
-        edges = []
-        for edge in data["edges"]:
-            if edge["source"] in nodes_ids and edge["target"] in nodes_ids:
-                edges.append(edge)
-        return {"plot": {"nodes": nodes, "edges": edges}}
-    else:
-        return {"plot": None}
+    data = calculations_repository.get_person_calculations(person_id)
+    return network_parser.parse_institutional_coauthorship_network(data)

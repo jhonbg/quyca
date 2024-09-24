@@ -6,28 +6,28 @@ from typing import Iterable
 from pandas import read_csv
 
 
-def get_coauthorship_by_country_map(works: Iterable) -> dict:
+def parse_coauthorship_by_country_map(data: list) -> dict:
     countries: dict = {}
-    for work in works:
-        if not "country_code" in work["affiliation"]["addresses"].keys():
+    for item in data:
+        if not "country_code" in item["affiliation"]["addresses"].keys():
             continue
-        if work["affiliation"]["addresses"]["country_code"] and work["affiliation"]["addresses"]["country"]:
-            country_code = work["affiliation"]["addresses"]["country_code"]
-            country_name = work["affiliation"]["addresses"]["country"]
+        if item["affiliation"]["addresses"]["country_code"] and item["affiliation"]["addresses"]["country"]:
+            country_code = item["affiliation"]["addresses"]["country_code"]
+            country_name = item["affiliation"]["addresses"]["country"]
             if country_code in countries.keys():
-                countries[country_code]["count"] += work["count"]
+                countries[country_code]["count"] += item["count"]
             else:
-                countries[country_code] = {"count": work["count"], "name": country_name}
-    for key, val in countries.items():
-        countries[key]["log_count"] = log(val["count"])
+                countries[country_code] = {"count": item["count"], "name": country_name}
+    for key, value in countries.items():
+        countries[key]["log_count"] = log(value["count"])
     with open(os.path.join(os.path.dirname(__file__), "concerns/worldmap.json"), "r") as worldmap_file:
-        worldmap = json.load(worldmap_file)
-    for item, feat in enumerate(worldmap["features"]):
-        if feat["properties"]["country_code"] in countries.keys():
-            country_code = feat["properties"]["country_code"]
-            worldmap["features"][item]["properties"]["count"] = countries[country_code]["count"]
-            worldmap["features"][item]["properties"]["log_count"] = countries[country_code]["log_count"]
-    return worldmap
+        plot = json.load(worldmap_file)
+    for item, feature in enumerate(plot["features"]):
+        if feature["properties"]["country_code"] in countries.keys():
+            country_code = feature["properties"]["country_code"]
+            plot["features"][item]["properties"]["count"] = countries[country_code]["count"]
+            plot["features"][item]["properties"]["log_count"] = countries[country_code]["log_count"]
+    return {"plot": plot}
 
 
 def get_coauthorship_by_colombian_department_map(works: Iterable) -> dict:

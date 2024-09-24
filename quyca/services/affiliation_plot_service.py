@@ -201,10 +201,12 @@ def plot_articles_by_publishing_institution(
 ) -> dict:
     institution = database["affiliations"].find_one({"_id": ObjectId(affiliation_id)}, {"names": 1})
     pipeline_params = {
-        "project": ["publisher"],
+        "source_project": ["publisher"],
+        "work_project": ["source"],
+        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
     }
-    sources = work_repository.get_works_with_sources_by_affiliation(affiliation_id, pipeline_params)
-    return pie_parser.get_products_by_same_institution(sources, institution)
+    works = work_repository.get_works_with_sources_by_affiliation(affiliation_id, pipeline_params)
+    return pie_parser.parse_articles_by_publishing_institution(works, institution)
 
 
 def plot_coauthorship_by_country_map(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict:

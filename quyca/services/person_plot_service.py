@@ -173,7 +173,7 @@ def plot_articles_by_publishing_institution(person_id: str, query_params: QueryP
         "project": ["publisher"],
     }
     sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
-    return pie_parser.get_products_by_same_institution(sources, institution)
+    return pie_parser.parse_articles_by_publishing_institution(sources, institution)
 
 
 def plot_coauthorship_by_country_map(person_id: str, query_params: QueryParams) -> dict:

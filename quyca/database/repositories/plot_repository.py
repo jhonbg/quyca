@@ -391,6 +391,7 @@ def get_coauthorship_by_country_map_by_person(person_id: str) -> list:
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
         {"$unwind": "$authors"},
+        {"$unwind": "$authors.affiliations"},
         {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},
         {"$unwind": "$_id"},
         {
@@ -399,6 +400,14 @@ def get_coauthorship_by_country_map_by_person(person_id: str) -> list:
                 "localField": "_id",
                 "foreignField": "_id",
                 "as": "affiliation",
+                "pipeline": [
+                    {
+                        "$project": {
+                            "addresses.country_code": 1,
+                            "addresses.country": 1,
+                        }
+                    }
+                ],
             }
         },
         {

@@ -154,11 +154,7 @@ def plot_articles_by_publishing_institution(person_id: str, query_params: QueryP
 
 def plot_coauthorship_by_country_map(person_id: str, query_params: QueryParams) -> dict:
     data = plot_repository.get_coauthorship_by_country_map_by_person(person_id)
-    result = map_parser.parse_coauthorship_by_country_map(data)
-    if result:
-        return {"plot": result}
-    else:
-        return {"plot": None}
+    return map_parser.parse_coauthorship_by_country_map(data)
 
 
 def plot_coauthorship_by_colombian_department_map(person_id: str, query_params: QueryParams) -> dict:

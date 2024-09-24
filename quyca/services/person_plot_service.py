@@ -103,12 +103,11 @@ def plot_products_by_database(person_id: str, query_params: QueryParams) -> dict
 
 def plot_articles_by_access_route(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {"open_access.open_access_status": {"$exists": 1}},
-        "project": ["bibliographic_info"],
+        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
+        "project": ["open_access"],
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
-    data = map(lambda x: x.open_access.open_access_status, works)
-    return pie_parser.parse_products_by_access_route(data)
+    return pie_parser.parse_products_by_access_route(works)
 
 
 def plot_products_by_author_age_range(person_id: str, query_params: QueryParams) -> dict:

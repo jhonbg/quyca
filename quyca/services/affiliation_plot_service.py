@@ -2,9 +2,9 @@ from bson import ObjectId
 from pymongo.command_cursor import CommandCursor
 
 from database.models.base_model import QueryParams
-from database.mongo import calculations_database, database
+from database.mongo import database
 from database.repositories import work_repository, plot_repository, calculations_repository
-from services.parsers import bar_parser, pie_parser, map_parser
+from services.parsers import bar_parser, pie_parser, map_parser, network_parser
 
 
 def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict | None:
@@ -206,22 +206,8 @@ def plot_coauthorship_by_colombian_department_map(affiliation_id: str, query_par
 
 
 def plot_institutional_coauthorship_network(affiliation_id: str, query_params: QueryParams) -> dict:
-    data = calculations_database["affiliations"].find_one(
-        {"_id": ObjectId(affiliation_id)}, {"coauthorship_network": 1}
-    )
-    if data:
-        if "coauthorship_network" not in data.keys():
-            return {"plot": None}
-        data = data["coauthorship_network"]
-        nodes = sorted(data["nodes"], key=lambda x: x["degree"], reverse=True)[:50]
-        nodes_ids = [node["id"] for node in nodes]
-        edges = []
-        for edge in data["edges"]:
-            if edge["source"] in nodes_ids and edge["target"] in nodes_ids:
-                edges.append(edge)
-        return {"plot": {"nodes": nodes, "edges": edges}}
-    else:
-        return {"plot": None}
+    data = calculations_repository.get_affiliation_calculations(affiliation_id)
+    return network_parser.parse_institutional_coauthorship_network(data)
 
 
 def plot_annual_apc_expenses(affiliation_id: str, query_params: QueryParams) -> dict:

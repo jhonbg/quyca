@@ -77,7 +77,7 @@ def plot_h_index_by_affiliation(affiliation_id: str, affiliation_type: str, rela
 def plot_annual_evolution_by_scienti_classification(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {"project": ["year_published", "types"]}
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
-    return {"plot": bar_parser.parse_annual_evolution_by_scienti_classification(works)}
+    return bar_parser.parse_annual_evolution_by_scienti_classification(works)
 
 
 def plot_annual_citation_count(affiliation_id: str, query_params: QueryParams) -> dict:

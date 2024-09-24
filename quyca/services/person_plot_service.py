@@ -13,8 +13,9 @@ def get_person_plot(person_id: str, query_params: QueryParams) -> dict:
 
 
 def plot_annual_evolution_by_scienti_classification(person_id: str, query_params: QueryParams) -> dict:
-    works = work_repository.get_works_by_person(person_id, query_params)
-    return {"plot": bar_parser.parse_annual_evolution_by_scienti_classification(works)}
+    pipeline_params = {"project": ["year_published", "types"]}
+    works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
+    return bar_parser.parse_annual_evolution_by_scienti_classification(works)
 
 
 def plot_annual_citation_count(person_id: str, query_params: QueryParams) -> dict:
@@ -39,7 +40,6 @@ def plot_annual_apc_expenses(person_id: str, query_params: QueryParams) -> dict:
 def plot_annual_articles_open_access(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "match": {
-            "bibliographic_info.is_open_access": {"$ne": None},
             "year_published": {"$ne": None},
         },
         "project": ["year_published", "bibliographic_info"],

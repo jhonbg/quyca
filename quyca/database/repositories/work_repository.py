@@ -53,6 +53,7 @@ def get_works_by_person(person_id: str, query_params: QueryParams, pipeline_para
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
     ]
+    base_repository.set_match(pipeline, pipeline_params.get("match"))
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
     base_repository.set_pagination(pipeline, query_params)

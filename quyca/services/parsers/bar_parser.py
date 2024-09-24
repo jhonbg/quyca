@@ -7,7 +7,7 @@ from pymongo.command_cursor import CommandCursor
 from utils.cpi import inflate
 
 
-def parse_annual_evolution_by_scienti_classification(works: Generator) -> list:
+def parse_annual_evolution_by_scienti_classification(works: Generator) -> dict:
     data: defaultdict = defaultdict(lambda: defaultdict(int))
     for work in works:
         if not work.year_published:
@@ -20,7 +20,7 @@ def parse_annual_evolution_by_scienti_classification(works: Generator) -> list:
         for year, work_types in data.items()
         for work_type, count in work_types.items()
     ]
-    return sorted(plot, key=lambda x: x.get("x"))
+    return {"plot": sorted(plot, key=lambda x: x.get("x"))}
 
 
 def parse_affiliations_by_product_type(data: CommandCursor) -> list:

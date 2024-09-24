@@ -102,6 +102,29 @@ def get_works_with_sources_by_affiliation(affiliation_id: str, pipeline_params: 
     return work_generator.get(cursor)
 
 
+def get_works_with_sources_by_person(person_id: str, pipeline_params: dict | None = None) -> Generator:
+    if pipeline_params is None:
+        pipeline_params = {}
+    source_project = pipeline_params.get("source_project", [])
+    pipeline = [
+        {"$match": {"authors.id": ObjectId(person_id)}},
+        {
+            "$lookup": {
+                "from": "sources",
+                "localField": "source.id",
+                "foreignField": "_id",
+                "as": "source",
+                "pipeline": [{"$project": {"_id": 1, **{p: 1 for p in source_project}}}],
+            }
+        },
+        {"$unwind": "$source"},
+    ]
+    base_repository.set_match(pipeline, pipeline_params.get("match"))
+    base_repository.set_project(pipeline, pipeline_params.get("work_project"))
+    cursor = database["works"].aggregate(pipeline)
+    return work_generator.get(cursor)
+
+
 def get_sources_by_person(person_id: str, query_params: QueryParams, pipeline_params: dict | None = None) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}

@@ -99,10 +99,15 @@ def plot_annual_articles_by_top_publishers(affiliation_id: str, query_params: Qu
     pipeline_params = {
         "source_project": ["publisher", "apc"],
         "work_project": ["source", "year_published", "types"],
-        "match": {"types.source": "scienti", "types.level": 2, "source.publisher.name": {"$ne": float("nan")}},
+        "match": {
+            "types.source": "scienti",
+            "types.level": 2,
+            "types.code": {"$regex": "^11", "$options": ""},
+            "source.publisher.name": {"$ne": float("nan")},
+        },
     }
-    sources = work_repository.get_works_with_sources_by_affiliation(affiliation_id, pipeline_params)
-    return bar_parser.parse_annual_articles_by_top_publishers(sources)
+    works = work_repository.get_works_with_sources_by_affiliation(affiliation_id, pipeline_params)
+    return bar_parser.parse_annual_articles_by_top_publishers(works)
 
 
 def plot_most_used_title_words(affiliation_id: str, query_params: QueryParams) -> dict:

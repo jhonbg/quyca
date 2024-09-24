@@ -49,11 +49,17 @@ def plot_annual_articles_open_access(person_id: str, query_params: QueryParams) 
 
 def plot_annual_articles_by_top_publishers(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
-        "project": ["publisher", "apc"],
+        "source_project": ["publisher", "apc"],
+        "work_project": ["source", "year_published", "types"],
+        "match": {
+            "types.source": "scienti",
+            "types.level": 2,
+            "types.code": {"$regex": "^11", "$options": ""},
+            "source.publisher.name": {"$ne": float("nan")},
+        },
     }
-    sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
-    return {"plot": bar_parser.parse_annual_articles_by_top_publishers(sources)}
+    works = work_repository.get_works_with_sources_by_person(person_id, pipeline_params)
+    return bar_parser.parse_annual_articles_by_top_publishers(works)
 
 
 def plot_most_used_title_words(person_id: str, query_params: QueryParams) -> dict:

@@ -118,22 +118,13 @@ def plot_articles_by_scienti_category(person_id: str, query_params: QueryParams)
 
 
 def plot_articles_by_scimago_quartile(person_id: str, query_params: QueryParams) -> dict:
-    works, total_results = plot_repository.get_works_rankings_by_person(person_id)
-    data = []
-    works_data = []
-    for work in works:
-        for ranking in work.source_data.ranking:
-            condition = (
-                ranking.source in ["Scimago Best Quartile", "scimago Best Quartile"]
-                and ranking.rank != "-"
-                and work.date_published
-                and ranking.from_date <= work.date_published <= ranking.to_date
-            )
-            if condition:
-                data.append(ranking.rank)
-                break
-        works_data.append(work)
-    return pie_parser.parse_articles_by_scimago_quartile(data, total_results)
+    pipeline_params = {
+        "source_project": ["ranking"],
+        "work_project": ["source", "date_published"],
+        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
+    }
+    works = work_repository.get_works_with_sources_by_person(person_id, pipeline_params)
+    return pie_parser.parse_articles_by_scimago_quartile(works)
 
 
 def plot_articles_by_publishing_institution(person_id: str, query_params: QueryParams) -> dict:

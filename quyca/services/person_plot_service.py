@@ -159,7 +159,7 @@ def plot_coauthorship_by_country_map(person_id: str, query_params: QueryParams) 
 
 def plot_coauthorship_by_colombian_department_map(person_id: str, query_params: QueryParams) -> dict:
     data = plot_repository.get_coauthorship_by_colombian_department_map_by_person(person_id)
-    return {"plot": map_parser.get_coauthorship_by_colombian_department_map(data)}
+    return map_parser.get_coauthorship_by_colombian_department_map(data)
 
 
 def plot_author_coauthorship_network(person_id: str, query_params: QueryParams) -> dict:

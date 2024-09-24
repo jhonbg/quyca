@@ -136,7 +136,8 @@ def parse_products_by_age_range(persons: CommandCursor) -> list:
 
 
 @get_percentage
-def parse_articles_by_scienti_category(works: Generator, total_works: int = 0) -> list:
+def parse_articles_by_scienti_category(works: list) -> list:
+    total_works = len(works)
     data = filter(
         lambda x: x.source == "scienti" and x.rank and x.rank.split("_")[-1] in ["A", "A1", "B", "C", "D"],
         chain.from_iterable(map(lambda x: x.ranking, works)),

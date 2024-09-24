@@ -1,5 +1,3 @@
-from itertools import chain
-
 from bson import ObjectId
 
 from database.models.base_model import QueryParams
@@ -112,12 +110,11 @@ def plot_articles_by_access_route(person_id: str, query_params: QueryParams) -> 
 
 def plot_articles_by_scienti_category(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {"ranking": {"$ne": []}},
+        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
         "project": ["ranking"],
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
-    data = chain.from_iterable(map(lambda x: x.ranking, works))
-    return pie_parser.parse_articles_by_scienti_category(data)
+    return pie_parser.parse_articles_by_scienti_category(list(works))
 
 
 def plot_articles_by_scimago_quartile(person_id: str, query_params: QueryParams) -> dict:

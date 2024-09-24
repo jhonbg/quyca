@@ -81,9 +81,7 @@ def plot_annual_evolution_by_scienti_classification(affiliation_id: str, query_p
 
 
 def plot_annual_citation_count(affiliation_id: str, query_params: QueryParams) -> dict:
-    pipeline_params = {
-        "project": ["citations_by_year"],
-    }
+    pipeline_params = {"project": ["citations_by_year"]}
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     return bar_parser.parse_annual_citation_count(works)
 

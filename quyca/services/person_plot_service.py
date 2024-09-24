@@ -153,7 +153,7 @@ def plot_articles_by_scimago_quartile(person_id: str, query_params: QueryParams)
                 data.append(ranking.rank)
                 break
         works_data.append(work)
-    return pie_parser.get_articles_by_scimago_quartile(data, total_results)
+    return pie_parser.parse_articles_by_scimago_quartile(data, total_results)
 
 
 def plot_articles_by_publishing_institution(person_id: str, query_params: QueryParams) -> dict:

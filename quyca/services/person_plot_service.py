@@ -1,8 +1,14 @@
 from bson import ObjectId
 
 from database.models.base_model import QueryParams
-from database.mongo import calculations_database, database
-from database.repositories import plot_repository, work_repository, calculations_repository
+from database.mongo import calculations_database
+from database.repositories import (
+    plot_repository,
+    work_repository,
+    calculations_repository,
+    person_repository,
+    affiliation_repository,
+)
 from services.parsers import map_parser, pie_parser, bar_parser
 
 
@@ -128,23 +134,22 @@ def plot_articles_by_scimago_quartile(person_id: str, query_params: QueryParams)
 
 
 def plot_articles_by_publishing_institution(person_id: str, query_params: QueryParams) -> dict:
-    person = database["person"].find_one({"_id": ObjectId(person_id)}, {"affiliations": 1})
+    person = person_repository.get_person_by_id(person_id)
     institution_id = None
-    found = False
-    for affiliation in person["affiliations"]:
-        if found:
+    for affiliation in person.affiliations:
+        if any(
+            affiliation_type.type not in ["faculty", "department", "group"] for affiliation_type in affiliation.types
+        ):
+            institution_id = affiliation.id
             break
-        for type in affiliation["types"]:
-            if not type["type"] in ["faculty", "department", "group"]:
-                institution_id = affiliation["id"]
-                found = True
-                break
-    institution = database["affiliations"].find_one({"_id": ObjectId(institution_id)}, {"names": 1})
+    institution = affiliation_repository.get_affiliation_by_id(str(institution_id))
     pipeline_params = {
-        "project": ["publisher"],
+        "source_project": ["publisher"],
+        "work_project": ["source"],
+        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
     }
-    sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
-    return pie_parser.parse_articles_by_publishing_institution(sources, institution)
+    works = work_repository.get_works_with_sources_by_person(person_id, pipeline_params)
+    return pie_parser.parse_articles_by_publishing_institution(works, institution)
 
 
 def plot_coauthorship_by_country_map(person_id: str, query_params: QueryParams) -> dict:

@@ -1,9 +1,7 @@
-from bson import ObjectId
 from pymongo.command_cursor import CommandCursor
 
 from database.models.base_model import QueryParams
-from database.mongo import database
-from database.repositories import work_repository, plot_repository, calculations_repository
+from database.repositories import work_repository, plot_repository, calculations_repository, affiliation_repository
 from services.parsers import bar_parser, pie_parser, map_parser, network_parser
 
 
@@ -188,7 +186,7 @@ def plot_articles_by_scimago_quartile(affiliation_id: str, query_params: QueryPa
 
 
 def plot_articles_by_publishing_institution(affiliation_id: str, query_params: QueryParams) -> dict:
-    institution = database["affiliations"].find_one({"_id": ObjectId(affiliation_id)}, {"names": 1})
+    institution = affiliation_repository.get_affiliation_by_id(affiliation_id)
     pipeline_params = {
         "source_project": ["publisher"],
         "work_project": ["source"],

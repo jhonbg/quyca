@@ -75,12 +75,12 @@ def plot_most_used_title_words(person_id: str, query_params: QueryParams) -> dic
 
 def plot_articles_by_publisher(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {"$and": [{"publisher": {"$exists": 1}}, {"publisher": {"$ne": ""}}]},
-        "project": ["publisher"],
+        "source_project": ["publisher"],
+        "work_project": ["source"],
+        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
     }
-    sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
-    data = map(lambda x: x.publisher.name, sources)
-    return pie_parser.parse_articles_by_publisher(data)
+    works = work_repository.get_works_with_sources_by_person(person_id, pipeline_params)
+    return pie_parser.parse_articles_by_publisher(works)
 
 
 def plot_products_by_subject(person_id: str, query_params: QueryParams) -> dict:

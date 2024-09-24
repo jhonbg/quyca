@@ -174,7 +174,7 @@ def parse_articles_by_scimago_quartile(works: Generator) -> list:
 
 @get_percentage
 def parse_articles_by_publishing_institution(works: Generator, institution: dict) -> list:
-    result = {"same": 0, "different": 0, "Sin información": 0}
+    result = {"Misma": 0, "Diferente": 0, "Sin información": 0}
     names = []
     if institution:
         names = list(set([name["name"].lower() for name in institution["names"]]))
@@ -187,9 +187,9 @@ def parse_articles_by_publishing_institution(works: Generator, institution: dict
             result["Sin información"] += 1
             continue
         if work.source.publisher.name.lower() in names:
-            result["same"] += 1
+            result["Misma"] += 1
         else:
-            result["different"] += 1
+            result["Diferente"] += 1
     plot = []
     for name, value in result.items():
         plot.append({"name": name, "value": value})

@@ -1,10 +1,7 @@
 from collections import defaultdict
 from typing import Generator
 
-from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
-
-from utils.cpi import inflate
 
 
 def parse_annual_evolution_by_scienti_classification(works: Generator) -> dict:
@@ -23,9 +20,9 @@ def parse_annual_evolution_by_scienti_classification(works: Generator) -> dict:
     return {"plot": sorted(plot, key=lambda x: x.get("x"))}
 
 
-def parse_affiliations_by_product_type(data: CommandCursor) -> list:
+def parse_affiliations_by_product_type(data: CommandCursor) -> dict:
     plot = [{"x": item["name"], "y": item["works_count"], "type": item["type"]} for item in data]
-    return sorted(plot, key=lambda x: x.get("y"), reverse=True)
+    return {"plot": sorted(plot, key=lambda x: x.get("y"), reverse=True)}
 
 
 def parse_annual_citation_count(works: Generator) -> dict:
@@ -88,33 +85,11 @@ def parse_annual_articles_by_top_publishers(works: Generator) -> dict:
     return {"plot": sorted(plot, key=lambda x: float("inf") if x.get("x") == "Sin año" else x.get("x"))}
 
 
-def apc_by_year(sources: Generator, base_year: int) -> list:
-    data = map(lambda x: x.apc, sources)
-    currency = CurrencyConverter()
-    result: dict = {}
-    for apc in data:
-        try:
-            if apc.currency == "USD":
-                raw_value = apc.charges
-                value = inflate(
-                    raw_value,
-                    apc.year_published,
-                    to=max(base_year, int(apc.year_published)),
-                )
-            else:
-                raw_value = currency.convert(apc.charges, apc.currency, "USD")
-                value = inflate(
-                    raw_value,
-                    apc.year_published,
-                    to=max(base_year, int(apc.year_published)),
-                )
-        except ValueError:
-            value = 0
-        if value:
-            if apc.year_published not in result.keys():
-                result[apc.year_published] = value
-            else:
-                result[apc.year_published] += value
-    sorted_result = sorted(result.items(), key=lambda x: x[0])
-    plot = [{"x": x[0], "y": int(x[1])} for x in sorted_result]
-    return plot
+def parse_annual_apc_expenses(works: Generator) -> dict:
+    data: defaultdict = defaultdict(int)
+    for work in works:
+        if not work.apc.paid.value_usd:
+            continue
+        data[work.year_published] += work.apc.paid.value_usd
+    plot = [{"x": year, "y": value} for year, value in data.items()]
+    return {"plot": sorted(plot, key=lambda x: x.get("x"))}

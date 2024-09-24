@@ -2,7 +2,6 @@ from typing import Generator, Tuple
 
 from bson import ObjectId
 
-from database.generators import source_generator
 from database.generators import work_generator
 from database.models.base_model import QueryParams
 from database.models.work_model import Work
@@ -79,7 +78,7 @@ def search_works(query_params: QueryParams, pipeline_params: dict | None = None)
     return work_generator.get(works), total_results
 
 
-def get_works_with_sources_by_affiliation(affiliation_id: str, pipeline_params: dict | None = None) -> Generator:
+def get_works_with_source_by_affiliation(affiliation_id: str, pipeline_params: dict | None = None) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
     source_project = pipeline_params.get("source_project", [])
@@ -102,7 +101,7 @@ def get_works_with_sources_by_affiliation(affiliation_id: str, pipeline_params: 
     return work_generator.get(cursor)
 
 
-def get_works_with_sources_by_person(person_id: str, pipeline_params: dict | None = None) -> Generator:
+def get_works_with_source_by_person(person_id: str, pipeline_params: dict | None = None) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
     source_project = pipeline_params.get("source_project", [])
@@ -125,16 +124,6 @@ def get_works_with_sources_by_person(person_id: str, pipeline_params: dict | Non
     return work_generator.get(cursor)
 
 
-def get_sources_by_person(person_id: str, query_params: QueryParams, pipeline_params: dict | None = None) -> Generator:
-    if pipeline_params is None:
-        pipeline_params = {}
-    pipeline = get_sources_by_person_pipeline(person_id)
-    base_repository.set_match(pipeline, pipeline_params.get("match"))
-    base_repository.set_project(pipeline, pipeline_params.get("project"))
-    cursor = database["works"].aggregate(pipeline)
-    return source_generator.get(cursor)
-
-
 def get_works_by_affiliation_pipeline(affiliation_id: str) -> list:
     return [
         {
@@ -143,49 +132,3 @@ def get_works_by_affiliation_pipeline(affiliation_id: str) -> list:
             },
         },
     ]
-
-
-def get_sources_by_affiliation_pipeline(affiliation_id: str) -> list:
-    pipeline = get_works_by_affiliation_pipeline(affiliation_id)
-    pipeline += [
-        {
-            "$lookup": {
-                "from": "sources",
-                "localField": "source.id",
-                "foreignField": "_id",
-                "as": "source",
-            }
-        },
-        {"$unwind": "$source"},
-        {
-            "$addFields": {
-                "source.apc.year_published": "$year_published",
-                "source.date_published": "$date_published",
-            }
-        },
-        {"$replaceRoot": {"newRoot": "$source"}},
-    ]
-    return pipeline
-
-
-def get_sources_by_person_pipeline(person_id: str) -> list:
-    pipeline = [
-        {"$match": {"authors.id": ObjectId(person_id)}},
-        {
-            "$lookup": {
-                "from": "sources",
-                "localField": "source.id",
-                "foreignField": "_id",
-                "as": "source",
-            }
-        },
-        {"$unwind": "$source"},
-        {
-            "$addFields": {
-                "source.apc.year_published": "$year_published",
-                "source.date_published": "$date_published",
-            }
-        },
-        {"$replaceRoot": {"newRoot": "$source"}},
-    ]
-    return pipeline

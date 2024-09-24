@@ -26,17 +26,9 @@ def plot_annual_citation_count(person_id: str, query_params: QueryParams) -> dic
 
 
 def plot_annual_apc_expenses(person_id: str, query_params: QueryParams) -> dict:
-    pipeline_params = {
-        "match": {
-            "$and": [
-                {"apc.charges": {"$exists": 1}},
-                {"apc.currency": {"$exists": 1}},
-            ]
-        },
-        "project": ["apc"],
-    }
-    sources = work_repository.get_sources_by_person(person_id, query_params, pipeline_params)
-    return {"plot": bar_parser.apc_by_year(sources, 2022)}
+    pipeline_params = {"project": ["apc", "year_published"]}
+    works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
+    return bar_parser.parse_annual_apc_expenses(works)
 
 
 def plot_annual_articles_open_access(person_id: str, query_params: QueryParams) -> dict:
@@ -59,7 +51,7 @@ def plot_annual_articles_by_top_publishers(person_id: str, query_params: QueryPa
             "source.publisher.name": {"$ne": float("nan")},
         },
     }
-    works = work_repository.get_works_with_sources_by_person(person_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
     return bar_parser.parse_annual_articles_by_top_publishers(works)
 
 
@@ -80,7 +72,7 @@ def plot_articles_by_publisher(person_id: str, query_params: QueryParams) -> dic
         "work_project": ["source"],
         "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
     }
-    works = work_repository.get_works_with_sources_by_person(person_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
     return pie_parser.parse_articles_by_publisher(works)
 
 
@@ -126,7 +118,7 @@ def plot_articles_by_scimago_quartile(person_id: str, query_params: QueryParams)
         "work_project": ["source", "date_published"],
         "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
     }
-    works = work_repository.get_works_with_sources_by_person(person_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
     return pie_parser.parse_articles_by_scimago_quartile(works)
 
 
@@ -144,7 +136,7 @@ def plot_articles_by_publishing_institution(person_id: str, query_params: QueryP
         "work_project": ["source"],
         "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
     }
-    works = work_repository.get_works_with_sources_by_person(person_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
     return pie_parser.parse_articles_by_publishing_institution(works, institution)
 
 

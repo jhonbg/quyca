@@ -125,10 +125,18 @@ class Publisher(BaseModel):
     name: str | float | None = None
 
 
+class Paid(BaseModel):
+    currency: str | None = None
+    provenance: str | None = None
+    source: str | None = None
+    value: int | None = None
+    value_usd: int | None = None
+
+
 class APC(BaseModel):
     charges: int | None = None
     currency: str | None = None
-    year_published: int | None = None
+    paid: Paid | None = None
 
 
 class QueryParams(BaseModel):

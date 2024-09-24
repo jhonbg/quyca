@@ -89,13 +89,7 @@ def plot_products_by_subject(person_id: str, query_params: QueryParams) -> dict:
         "project": ["subjects"],
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
-    data = chain.from_iterable(
-        map(
-            lambda x: [sub for subject in x.subjects for sub in subject.subjects if subject.source == "openalex"],
-            works,
-        )
-    )
-    return pie_parser.parse_products_by_subject(data)
+    return pie_parser.parse_products_by_subject(works)
 
 
 def plot_products_by_database(person_id: str, query_params: QueryParams) -> dict:

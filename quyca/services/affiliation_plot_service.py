@@ -217,8 +217,8 @@ def plot_coauthorship_by_country_map(affiliation_id: str, affiliation_type: str,
 def plot_coauthorship_by_colombian_department_map(
     affiliation_id: str, affiliation_type: str, query_params: QueryParams
 ) -> dict:
-    data = plot_repository.get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id, affiliation_type)
-    return {"plot": map_parser.get_coauthorship_by_colombian_department_map(data)}
+    data = plot_repository.get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id)
+    return map_parser.get_coauthorship_by_colombian_department_map(data)
 
 
 def plot_institutional_coauthorship_network(

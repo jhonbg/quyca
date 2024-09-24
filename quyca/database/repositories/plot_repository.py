@@ -416,66 +416,34 @@ def get_coauthorship_by_country_map_by_person(person_id: str) -> list:
     return data
 
 
-def get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id: str, affiliation_type: str) -> list:
+def get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id: str) -> list:
     data = []
-    if affiliation_type in ["group", "department", "faculty"]:
-        for author in database["person"].find({"affiliations.id": ObjectId(affiliation_id)}, {"affiliations": 1}):
-            pipeline = [
-                {"$match": {"authors.id": author["_id"]}},
-                {"$unwind": "$authors"},
-                {
-                    "$group": {
-                        "_id": "$authors.affiliations.id",
-                        "count": {"$sum": 1},
+    pipeline = [
+        {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+        {"$unwind": "$authors"},
+        {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},
+        {"$unwind": "$_id"},
+        {
+            "$lookup": {
+                "from": "affiliations",
+                "localField": "_id",
+                "foreignField": "_id",
+                "as": "affiliation",
+                "pipeline": [
+                    {
+                        "$project": {
+                            "addresses.country_code": 1,
+                            "addresses.city": 1,
+                        }
                     }
-                },
-                {"$unwind": "$_id"},
-                {
-                    "$lookup": {
-                        "from": "affiliations",
-                        "localField": "_id",
-                        "foreignField": "_id",
-                        "as": "affiliation",
-                    }
-                },
-                {
-                    "$project": {
-                        "count": 1,
-                        "affiliation.addresses.country_code": 1,
-                        "affiliation.addresses.city": 1,
-                    }
-                },
-                {"$unwind": "$affiliation"},
-                {"$unwind": "$affiliation.addresses"},
-            ]
-            for work in database["works"].aggregate(pipeline):
-                data.append(work)
-    else:
-        pipeline = [
-            {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
-            {"$unwind": "$authors"},
-            {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},
-            {"$unwind": "$_id"},
-            {
-                "$lookup": {
-                    "from": "affiliations",
-                    "localField": "_id",
-                    "foreignField": "_id",
-                    "as": "affiliation",
-                }
-            },
-            {
-                "$project": {
-                    "count": 1,
-                    "affiliation.addresses.country_code": 1,
-                    "affiliation.addresses.city": 1,
-                }
-            },
-            {"$unwind": "$affiliation"},
-            {"$unwind": "$affiliation.addresses"},
-        ]
-        for work in database["works"].aggregate(pipeline):
-            data.append(work)
+                ],
+            }
+        },
+        {"$unwind": "$affiliation"},
+        {"$unwind": "$affiliation.addresses"},
+    ]
+    for work in database["works"].aggregate(pipeline):
+        data.append(work)
     return data
 
 

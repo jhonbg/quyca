@@ -4,7 +4,7 @@ from bson import ObjectId
 
 from database.models.base_model import QueryParams
 from database.mongo import calculations_database, database
-from database.repositories import plot_repository, work_repository
+from database.repositories import plot_repository, work_repository, calculations_repository
 from services.parsers import map_parser, pie_parser, bar_parser
 
 
@@ -63,19 +63,14 @@ def plot_annual_articles_by_top_publishers(person_id: str, query_params: QueryPa
 
 
 def plot_most_used_title_words(person_id: str, query_params: QueryParams) -> dict:
-    data = calculations_database["person"].find_one({"_id": ObjectId(person_id)}, {"top_words": 1})
-    if data:
-        if not "top_words" in data.keys():
-            return {"plot": None}
-        data = data["top_words"]
-        if not data:
-            return {
-                "plot": [{"name": "Sin información", "value": 1, "percentage": 100}],
-                "sum": 1,
-            }
-        return {"plot": data}
-    else:
-        return {"plot": None}
+    data = calculations_repository.get_person_calculations(person_id)
+    top_words = data.model_dump().get("top_words", None)
+    if not top_words:
+        return {
+            "plot": [{"name": "Sin información", "value": 1, "percentage": 100}],
+            "sum": 1,
+        }
+    return {"plot": top_words}
 
 
 def plot_articles_by_publisher(person_id: str, query_params: QueryParams) -> dict:

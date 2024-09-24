@@ -84,7 +84,7 @@ def get_groups_scienti_works_count_by_faculty_or_department(affiliation_id: str)
         },
         {"$project": {"_id": 0, "type": "$_id.type", "works_count": 1, "name": {"$first": "$_id.name"}}},
     ]
-    return database["works"].aggregate(pipeline)
+    return database["affiliations"].aggregate(pipeline)
 
 
 def get_affiliations_citations_count_by_institution(institution_id: str, relation_type: str) -> CommandCursor:
@@ -151,22 +151,56 @@ def get_affiliations_apc_expenses_by_institution(institution_id: str, relation_t
                 "localField": "_id",
                 "foreignField": "authors.affiliations.id",
                 "as": "work",
-                "pipeline": [{"$project": {"types": 1}}],
+                "pipeline": [{"$project": {"apc": 1}}],
             }
         },
         {"$unwind": "$work"},
+        {"$match": {"work.apc.paid.value_usd": {"$exists": True}}},
+        {"$project": {"_id": 0, "work": 1, "names": 1}},
+    ]
+    return database["affiliations"].aggregate(pipeline)
+
+
+def get_departments_apc_expenses_by_faculty(affiliation_id: str) -> CommandCursor:
+    return get_affiliations_apc_expenses_by_institution(affiliation_id, "department")
+
+
+def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str) -> CommandCursor:
+    institution_id = (
+        database["affiliations"]
+        .aggregate(
+            [
+                {"$match": {"_id": ObjectId(affiliation_id)}},
+                {"$unwind": "$relations"},
+                {"$match": {"relations.types.type": "education"}},
+            ]
+        )
+        .next()
+        .get("relations", {})
+        .get("id", None)
+    )
+    pipeline = [
         {
-            "$lookup": {
-                "from": "sources",
-                "localField": "work.source.id",
-                "foreignField": "_id",
-                "as": "source_data",
-                "pipeline": [{"$project": {"_id": 0, "apc": 1}}],
+            "$match": {
+                "relations.id": institution_id,
+                "types.type": "group",
             }
         },
-        {"$unwind": "$source_data"},
+        {
+            "$lookup": {
+                "from": "works",
+                "localField": "_id",
+                "foreignField": "authors.affiliations.id",
+                "as": "work",
+                "pipeline": [{"$project": {"apc": 1, "authors": 1}}],
+            }
+        },
+        {"$unwind": "$work"},
+        {"$match": {"work.authors.affiliations.id": ObjectId(affiliation_id)}},
+        {"$match": {"work.apc.paid.value_usd": {"$exists": True}}},
+        {"$project": {"_id": 0, "work": 1, "names": 1}},
     ]
-    return database["works"].aggregate(pipeline)
+    return database["affiliations"].aggregate(pipeline)
 
 
 def get_affiliations_works_citations_count_by_institution(institution_id: str, relation_type: str) -> CommandCursor:

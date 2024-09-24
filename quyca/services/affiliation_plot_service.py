@@ -61,6 +61,17 @@ def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, r
     return pie_parser.parse_citations_by_affiliations(data)
 
 
+def plot_apc_expenses_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
+    data: CommandCursor | None = None
+    if affiliation_type == "institution":
+        data = plot_repository.get_affiliations_apc_expenses_by_institution(affiliation_id, relation_type)
+    elif affiliation_type == "faculty" and relation_type == "department":
+        data = plot_repository.get_departments_apc_expenses_by_faculty(affiliation_id)
+    elif affiliation_type in ["faculty", "department"] and relation_type == "group":
+        data = plot_repository.get_groups_apc_expenses_by_faculty_or_department(affiliation_id)
+    return pie_parser.parse_apc_expenses_by_affiliations(data)
+
+
 def plot_h_index_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
     data: CommandCursor | None = None
     if affiliation_type == "institution":
@@ -215,8 +226,3 @@ def plot_annual_apc_expenses(affiliation_id: str, query_params: QueryParams) -> 
     pipeline_params = {"project": ["apc", "year_published"]}
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     return bar_parser.parse_annual_apc_expenses(works)
-
-
-def plot_apc_expenses_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
-    data = plot_repository.get_affiliations_apc_expenses_by_institution(affiliation_id, relation_type)
-    return pie_parser.parse_apc_expenses_by_affiliations(data, 2022)

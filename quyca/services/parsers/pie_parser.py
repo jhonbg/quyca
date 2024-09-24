@@ -2,7 +2,7 @@ from functools import wraps
 from datetime import datetime
 from itertools import chain
 from typing import Callable, Iterable, Generator
-from collections import Counter
+from collections import Counter, defaultdict
 from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
 
@@ -35,11 +35,13 @@ def parse_citations_by_affiliations(data: CommandCursor) -> list:
 
 @get_percentage
 def parse_apc_expenses_by_affiliations(data: CommandCursor) -> list:
-    CurrencyConverter()
-    result: dict = {}
+    result: defaultdict = defaultdict(int)
+    for item in data:
+        value = item.get("work").get("apc").get("paid").get("value_usd", 0)
+        result[item.get("names", [{"name": "No name"}])[0].get("name")] += value
     plot = []
     for name, value in result.items():
-        plot.append({"name": name, "value": int(value)})
+        plot.append({"name": name, "value": value})
     return plot
 
 

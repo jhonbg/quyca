@@ -132,14 +132,13 @@ def plot_articles_by_scimago_quartile(person_id: str, query_params: QueryParams)
 
 def plot_articles_by_publishing_institution(person_id: str, query_params: QueryParams) -> dict:
     person = person_repository.get_person_by_id(person_id)
-    institution_id = None
+    institution = None
     for affiliation in person.affiliations:
         if any(
             affiliation_type.type not in ["faculty", "department", "group"] for affiliation_type in affiliation.types
         ):
-            institution_id = affiliation.id
+            institution = affiliation_repository.get_affiliation_by_id(str(affiliation.id))
             break
-    institution = affiliation_repository.get_affiliation_by_id(str(institution_id))
     pipeline_params = {
         "source_project": ["publisher"],
         "work_project": ["source"],

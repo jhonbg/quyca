@@ -1,7 +1,12 @@
 from pymongo.command_cursor import CommandCursor
 
 from domain.models.base_model import QueryParams
-from infrastructure.repositories import work_repository, plot_repository, calculations_repository, affiliation_repository
+from infrastructure.repositories import (
+    work_repository,
+    plot_repository,
+    calculations_repository,
+    affiliation_repository,
+)
 from domain.parsers import pie_parser, map_parser, venn_parser, bar_parser, network_parser
 
 

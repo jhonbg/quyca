@@ -1,6 +1,7 @@
 from typing import Tuple
 
 from flask import Blueprint, jsonify, request, Response
+from sentry_sdk import capture_exception
 
 from domain.models.base_model import QueryParams
 from domain.services import api_expert_service
@@ -15,4 +16,5 @@ def get_works_by_affiliation_api_expert(affiliation_id: str, affiliation_type: s
         data = api_expert_service.get_works_by_affiliation(affiliation_id, query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400

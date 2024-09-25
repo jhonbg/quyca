@@ -1,10 +1,18 @@
 from typing import Tuple
 
 from flask import Blueprint, request, Response, jsonify
+from sentry_sdk import capture_exception
 
 from domain.models.base_model import QueryParams
-from domain.services import work_service, person_service, other_work_service, project_service, person_plot_service, \
-    csv_service, patent_service
+from domain.services import (
+    work_service,
+    person_service,
+    other_work_service,
+    project_service,
+    person_plot_service,
+    csv_service,
+    patent_service,
+)
 
 person_app_router = Blueprint("person_app_router", __name__)
 
@@ -15,6 +23,7 @@ def get_person_by_id(person_id: str) -> Response | Tuple[Response, int]:
         data = person_service.get_person_by_id(person_id)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -28,6 +37,7 @@ def get_person_research_products(person_id: str) -> Response | Tuple[Response, i
         data = work_service.get_works_by_person(person_id, query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -39,6 +49,7 @@ def get_works_csv_by_person(person_id: str) -> Response | Tuple[Response, int]:
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -49,6 +60,7 @@ def get_person_research_other_works(person_id: str) -> Response | Tuple[Response
         data = other_work_service.get_other_works_by_person(person_id, query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -59,6 +71,7 @@ def get_person_research_patents(person_id: str) -> Response | Tuple[Response, in
         data = patent_service.get_patents_by_person(person_id, query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -69,4 +82,5 @@ def get_person_research_projects(person_id: str) -> Response | Tuple[Response, i
         data = project_service.get_projects_by_person(person_id, query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400

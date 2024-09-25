@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     MONGO_CALCULATIONS_DATABASE: str
     MONGO_URI: Optional[MongoDsn] = None
 
+    SENTRY_DSN: str
+
     @model_validator(mode="after")
     def validate_mongo_uri(self) -> Self:
         self.MONGO_URI = MongoDsn.build(

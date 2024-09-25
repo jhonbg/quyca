@@ -155,7 +155,7 @@ def get_affiliations_apc_expenses_by_institution(institution_id: str, relation_t
             }
         },
         {"$unwind": "$work"},
-        {"$match": {"work.apc.paid.value_usd": {"$exists": True}}},
+        # {"$match": {"work.apc.paid.value_usd": {"$exists": True}}},
         {"$project": {"_id": 0, "work": 1, "names": 1}},
     ]
     return database["affiliations"].aggregate(pipeline)
@@ -197,7 +197,7 @@ def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str) -> Com
         },
         {"$unwind": "$work"},
         {"$match": {"work.authors.affiliations.id": ObjectId(affiliation_id)}},
-        {"$match": {"work.apc.paid.value_usd": {"$exists": True}}},
+        # {"$match": {"work.apc.paid.value_usd": {"$exists": True}}},
         {"$project": {"_id": 0, "work": 1, "names": 1}},
     ]
     return database["affiliations"].aggregate(pipeline)

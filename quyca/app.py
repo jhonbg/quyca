@@ -1,8 +1,8 @@
 from flask import Flask
 from flask_cors import CORS
 
-from routes.router import router
-from core.config import Settings
+from application.routes.router import router
+from config import Settings
 
 
 def create_app() -> Flask:

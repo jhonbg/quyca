@@ -6,7 +6,7 @@ from database.repositories import (
     person_repository,
     affiliation_repository,
 )
-from services.parsers import map_parser, pie_parser, bar_parser, network_parser
+from services.parsers import map_parser, pie_parser, bar_parser, network_parser, venn_parser
 
 
 def get_person_plot(person_id: str, query_params: QueryParams) -> dict:
@@ -86,12 +86,8 @@ def plot_products_by_subject(person_id: str, query_params: QueryParams) -> dict:
 
 
 def plot_products_by_database(person_id: str, query_params: QueryParams) -> dict:
-    pipeline_params = {
-        "match": {"updated": {"$ne": []}},
-        "project": ["updated"],
-    }
-    works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
-    return pie_parser.parse_products_by_database(works)
+    data = plot_repository.get_products_by_database_by_person(person_id)
+    return venn_parser.parse_products_by_database(data)
 
 
 def plot_articles_by_access_route(person_id: str, query_params: QueryParams) -> dict:

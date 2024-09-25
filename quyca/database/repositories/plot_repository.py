@@ -155,7 +155,7 @@ def get_affiliations_apc_expenses_by_institution(institution_id: str, relation_t
             }
         },
         {"$unwind": "$work"},
-        {"$match": {"work.apc.paid.value_usd": {"$exists": True}}},
+        # {"$match": {"work.apc.paid.value_usd": {"$exists": True}}},
         {"$project": {"_id": 0, "work": 1, "names": 1}},
     ]
     return database["affiliations"].aggregate(pipeline)
@@ -197,7 +197,7 @@ def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str) -> Com
         },
         {"$unwind": "$work"},
         {"$match": {"work.authors.affiliations.id": ObjectId(affiliation_id)}},
-        {"$match": {"work.apc.paid.value_usd": {"$exists": True}}},
+        # {"$match": {"work.apc.paid.value_usd": {"$exists": True}}},
         {"$project": {"_id": 0, "work": 1, "names": 1}},
     ]
     return database["affiliations"].aggregate(pipeline)
@@ -574,3 +574,172 @@ def get_works_rankings_by_person(person_id: str) -> Tuple[Generator, int]:
     total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
     works = database["works"].aggregate(pipeline)
     return work_generator.get(works), total_results
+
+
+def get_products_by_database_by_affiliation(affiliation_id: str) -> dict:
+    pipeline = [{"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}}]
+    pipeline += get_products_by_database_pipeline(affiliation_id)
+    return next(database["works"].aggregate(pipeline), {})
+
+
+def get_products_by_database_by_person(affiliation_id: str) -> dict:
+    pipeline = [{"$match": {"authors.id": ObjectId(affiliation_id)}}]
+    pipeline += get_products_by_database_pipeline(affiliation_id)
+    return next(database["works"].aggregate(pipeline), {})
+
+
+def get_products_by_database_pipeline(affiliation_id: str) -> list:
+    pipeline = [
+        {
+            "$addFields": {
+                "scienti": {"$cond": [{"$in": ["scienti", "$updated.source"]}, 1, 0]},
+                "minciencias": {"$cond": [{"$in": ["minciencias", "$updated.source"]}, 1, 0]},
+                "openalex": {"$cond": [{"$in": ["openalex", "$updated.source"]}, 1, 0]},
+                "scholar": {"$cond": [{"$in": ["scholar", "$updated.source"]}, 1, 0]},
+                "scienti_minciencias": {
+                    "$cond": [
+                        {
+                            "$and": [
+                                {"$in": ["scienti", "$updated.source"]},
+                                {"$in": ["minciencias", "$updated.source"]},
+                            ]
+                        },
+                        1,
+                        0,
+                    ]
+                },
+                "scienti_openalex": {
+                    "$cond": [
+                        {"$and": [{"$in": ["scienti", "$updated.source"]}, {"$in": ["openalex", "$updated.source"]}]},
+                        1,
+                        0,
+                    ]
+                },
+                "scienti_scholar": {
+                    "$cond": [
+                        {"$and": [{"$in": ["scienti", "$updated.source"]}, {"$in": ["scholar", "$updated.source"]}]},
+                        1,
+                        0,
+                    ]
+                },
+                "minciencias_openalex": {
+                    "$cond": [
+                        {
+                            "$and": [
+                                {"$in": ["minciencias", "$updated.source"]},
+                                {"$in": ["openalex", "$updated.source"]},
+                            ]
+                        },
+                        1,
+                        0,
+                    ]
+                },
+                "minciencias_scholar": {
+                    "$cond": [
+                        {
+                            "$and": [
+                                {"$in": ["minciencias", "$updated.source"]},
+                                {"$in": ["scholar", "$updated.source"]},
+                            ]
+                        },
+                        1,
+                        0,
+                    ]
+                },
+                "openalex_scholar": {
+                    "$cond": [
+                        {"$and": [{"$in": ["openalex", "$updated.source"]}, {"$in": ["scholar", "$updated.source"]}]},
+                        1,
+                        0,
+                    ]
+                },
+                "scienti_minciencias_openalex": {
+                    "$cond": [
+                        {
+                            "$and": [
+                                {"$in": ["scienti", "$updated.source"]},
+                                {"$in": ["minciencias", "$updated.source"]},
+                                {"$in": ["openalex", "$updated.source"]},
+                            ]
+                        },
+                        1,
+                        0,
+                    ]
+                },
+                "scienti_minciencias_scholar": {
+                    "$cond": [
+                        {
+                            "$and": [
+                                {"$in": ["scienti", "$updated.source"]},
+                                {"$in": ["minciencias", "$updated.source"]},
+                                {"$in": ["scholar", "$updated.source"]},
+                            ]
+                        },
+                        1,
+                        0,
+                    ]
+                },
+                "scienti_openalex_scholar": {
+                    "$cond": [
+                        {
+                            "$and": [
+                                {"$in": ["scienti", "$updated.source"]},
+                                {"$in": ["openalex", "$updated.source"]},
+                                {"$in": ["scholar", "$updated.source"]},
+                            ]
+                        },
+                        1,
+                        0,
+                    ]
+                },
+                "minciencias_openalex_scholar": {
+                    "$cond": [
+                        {
+                            "$and": [
+                                {"$in": ["minciencias", "$updated.source"]},
+                                {"$in": ["openalex", "$updated.source"]},
+                                {"$in": ["scholar", "$updated.source"]},
+                            ]
+                        },
+                        1,
+                        0,
+                    ]
+                },
+                "minciencias_openalex_scholar_scienti": {
+                    "$cond": [
+                        {
+                            "$and": [
+                                {"$in": ["scienti", "$updated.source"]},
+                                {"$in": ["minciencias", "$updated.source"]},
+                                {"$in": ["openalex", "$updated.source"]},
+                                {"$in": ["scholar", "$updated.source"]},
+                            ]
+                        },
+                        1,
+                        0,
+                    ]
+                },
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "scienti": {"$sum": "$scienti"},
+                "minciencias": {"$sum": "$minciencias"},
+                "openalex": {"$sum": "$openalex"},
+                "scholar": {"$sum": "$scholar"},
+                "scienti_minciencias": {"$sum": "$scienti_minciencias"},
+                "scienti_openalex": {"$sum": "$scienti_openalex"},
+                "scienti_scholar": {"$sum": "$scienti_scholar"},
+                "minciencias_openalex": {"$sum": "$minciencias_openalex"},
+                "minciencias_scholar": {"$sum": "$minciencias_scholar"},
+                "openalex_scholar": {"$sum": "$openalex_scholar"},
+                "scienti_minciencias_openalex": {"$sum": "$scienti_minciencias_openalex"},
+                "scienti_minciencias_scholar": {"$sum": "$scienti_minciencias_scholar"},
+                "scienti_openalex_scholar": {"$sum": "$scienti_openalex_scholar"},
+                "minciencias_openalex_scholar": {"$sum": "$minciencias_openalex_scholar"},
+                "minciencias_openalex_scholar_scienti": {"$sum": "minciencias_openalex_scholar_scienti"},
+            }
+        },
+    ]
+    return pipeline

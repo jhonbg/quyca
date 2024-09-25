@@ -87,9 +87,13 @@ def parse_annual_articles_by_top_publishers(works: Generator) -> dict:
 
 def parse_annual_apc_expenses(works: Generator) -> dict:
     data: defaultdict = defaultdict(int)
+    total_apc = 0
+    total_results = 0
     for work in works:
+        total_results += 1
         if not work.apc.paid.value_usd:
             continue
         data[work.year_published] += work.apc.paid.value_usd
+        total_apc += work.apc.paid.value_usd
     plot = [{"x": year, "y": value} for year, value in data.items()]
-    return {"plot": sorted(plot, key=lambda x: x.get("x"))}
+    return {"plot": sorted(plot, key=lambda x: x.get("x")), "total_apc": total_apc, "total_results": total_results}

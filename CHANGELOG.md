@@ -16,6 +16,8 @@ All notable changes to this project will be documented in this file.
 - Add response tests for all endpoints.
 - Define and use code constants across the project.
 - Add endpoints for new entity types: other works, patents, and projects.
+- Add changelog.
+- Add sentry implementation for error reporting.
 
 ### Fixed
 - Resolved incorrect data in the co-authorship world map.

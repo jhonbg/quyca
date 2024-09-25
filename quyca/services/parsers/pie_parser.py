@@ -3,7 +3,6 @@ from datetime import datetime
 from itertools import chain
 from typing import Callable, Iterable, Generator
 from collections import Counter, defaultdict
-from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
 
 from constants.open_access_status import open_access_status_dict

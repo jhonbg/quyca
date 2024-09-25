@@ -96,6 +96,5 @@ def set_bibliographic_info(work: Work) -> None:
     if not work.bibliographic_info:
         return
     work.issue = work.bibliographic_info.issue
-    work.open_access_status = work.bibliographic_info.open_access_status
     work.volume = work.bibliographic_info.volume
     work.bibliographic_info = None

@@ -1,154 +1,95 @@
+from collections import defaultdict
 from typing import Generator
 
-from currency_converter import CurrencyConverter
-
-from utils.cpi import inflate
+from pymongo.command_cursor import CommandCursor
 
 
-def get_by_work_year_and_work_type(works: Generator) -> list:
-    result: dict = {}
+def parse_annual_evolution_by_scienti_classification(works: Generator) -> dict:
+    data: defaultdict = defaultdict(lambda: defaultdict(int))
     for work in works:
         if not work.year_published:
             continue
-        work_year = work.year_published
-        if work_year not in result.keys():
-            result[work_year] = {}
         for work_type in work.types:
-            if work_type.source == "scienti" and work_type.type == "Publicado en revista especializada":
-                if work_type.type not in result[work_year].keys():
-                    result[work_year][work_type.type] = 1
-                else:
-                    result[work_year][work_type.type] += 1
-    plot = []
-    for year in result.keys():
-        for work_type in result[year].keys():
-            plot += [{"x": year, "y": result[year][work_type], "type": work_type}] if year else []
-    plot = sorted(plot, key=lambda x: x.get("x", -99))
-    return plot
+            if work_type.source == "scienti" and work_type.level == 2:
+                data[work.year_published][work_type.type] += 1
+    plot = [
+        {"x": year, "y": count, "type": work_type}
+        for year, work_types in data.items()
+        for work_type, count in work_types.items()
+    ]
+    return {"plot": sorted(plot, key=lambda x: x.get("x"))}
 
 
-def get_by_affiliation_type(data: dict) -> list | None:
-    if not isinstance(data, dict):
-        print(type(data))
-        return None
-    if len(data) == 0:
-        print(len(data))
-        return None
-    result: dict = {}
-    for name, works in data.items():
-        for work in works:
-            if name not in result.keys():
-                result[name] = {}
-
-            for work_type in work["types"]:
-                if work_type["source"] == "scienti" and work_type["type"] == "Publicado en revista especializada":
-                    # if typ["level"] == 2:
-                    if work_type["type"] not in result[name].keys():
-                        result[name][work_type["type"]] = 1
-                    else:
-                        result[name][work_type["type"]] += 1
-    plot = []
-    for name in result.keys():
-        for work_type in result[name].keys():
-            plot.append({"x": name, "y": result[name][work_type], "type": work_type})
-    plot = sorted(plot, key=lambda x: x["y"], reverse=True)
-    return plot
+def parse_affiliations_by_product_type(data: CommandCursor) -> dict:
+    plot = [{"x": item["name"], "y": item["works_count"], "type": item["type"]} for item in data]
+    return {"plot": sorted(plot, key=lambda x: x.get("y"), reverse=True)}
 
 
-def get_citations_by_year(works: Generator) -> list:
-    result: dict = {}
+def parse_annual_citation_count(works: Generator) -> dict:
+    data: dict = {}
     no_info = 0
     for work in works:
         if not work.citations_by_year:
             no_info += 1
             continue
-        for yearly in work.citations_by_year:
-            if yearly.year in result.keys():
-                result[yearly.year] += yearly.cited_by_count
+        for citation in work.citations_by_year:
+            if citation.year in data.keys():
+                data[citation.year] += citation.cited_by_count
             else:
-                result[yearly.year] = yearly.cited_by_count
-    plot_data = sorted(result.items(), key=lambda x: x[0])
-    plot = [{"x": x[0], "y": x[1]} for x in plot_data]
+                data[citation.year] = citation.cited_by_count
+    plot = [{"x": year, "y": count} for year, count in sorted(data.items())]
     plot += [{"x": "Sin información", "y": no_info}]
-    return plot
+    return {"plot": plot}
 
 
-def apc_by_year(sources: Generator, base_year: int) -> list:
-    data = map(lambda x: x.apc, sources)
-    currency = CurrencyConverter()
-    result: dict = {}
-    for apc in data:
-        try:
-            if apc.currency == "USD":
-                raw_value = apc.charges
-                value = inflate(
-                    raw_value,
-                    apc.year_published,
-                    to=max(base_year, int(apc.year_published)),
-                )
-            else:
-                raw_value = currency.convert(apc.charges, apc.currency, "USD")
-                value = inflate(
-                    raw_value,
-                    apc.year_published,
-                    to=max(base_year, int(apc.year_published)),
-                )
-        except ValueError:
-            value = 0
-        if value:
-            if apc.year_published not in result.keys():
-                result[apc.year_published] = value
-            else:
-                result[apc.year_published] += value
-    sorted_result = sorted(result.items(), key=lambda x: x[0])
-    plot = [{"x": x[0], "y": int(x[1])} for x in sorted_result]
-    return plot
-
-
-def oa_by_year(works: Generator) -> list:
-    result: dict = {}
+def parse_annual_articles_open_access(works: Generator) -> dict:
+    data: defaultdict = defaultdict(lambda: {"Abierto": 0, "Cerrado": 0, "Sin información": 0})
     for work in works:
-        year = work.year_published
-        if year in result.keys():
-            if work.bibliographic_info.is_open_access:
-                result[year]["open"] += 1
-            else:
-                result[year]["closed"] += 1
-        else:
-            if work.bibliographic_info.is_open_access:
-                result[year] = {"open": 1, "closed": 0}
-            else:
-                result[year] = {"open": 0, "closed": 1}
-    result_list = []
-    for year in result.keys():
-        for typ in result[year].keys():
-            result_list.append({"x": year, "y": result[year][typ], "type": typ})
-    return sorted(result_list, key=lambda x: x["x"])
+        access_type = "Abierto" if work.open_access.is_open_access else "Cerrado"
+        if work.open_access.is_open_access is None and not work.year_published:
+            data["Sin año"]["Sin información"] += 1
+            continue
+        if work.open_access.is_open_access is None:
+            data[work.year_published]["Sin información"] += 1
+            continue
+        if work.year_published is None:
+            data["Sin año"][access_type] += 1
+            continue
+        data[work.year_published][access_type] += 1
+    plot = [
+        {"x": year, "y": count, "type": access_type}
+        for year, counts in data.items()
+        for access_type, count in counts.items()
+    ]
+    return {"plot": sorted(plot, key=lambda x: float("inf") if x.get("x") == "Sin año" else x.get("x"))}
 
 
-def works_by_publisher_year(data: Generator) -> list:
-    result: dict = {}
-    top5: dict = {}
-    for source in data:
-        year = int(source.apc.year_published or 0)
-        if year in result.keys():
-            if source.publisher.name not in result[year].keys():
-                result[year][source.publisher.name] = 1
-            else:
-                result[year][source.publisher.name] += 1
-        else:
-            result[year] = {source.publisher.name: 1}
-        if source.publisher.name not in top5.keys():
-            top5[source.publisher.name] = 1
-        else:
-            top5[source.publisher.name] += 1
-    top = [top[0] for top in sorted(top5.items(), key=lambda x: x[1], reverse=True)][:5]
-    plot = []
-    for year in result.keys():
-        for publisher in top:
-            if publisher in result[year].keys():
-                plot.append({"x": year, "y": result[year][publisher], "type": publisher})
-            else:
-                plot.append({"x": year, "y": 0, "type": publisher})
-    plot = sorted(plot, key=lambda x: x["x"])
-    return plot
+def parse_annual_articles_by_top_publishers(works: Generator) -> dict:
+    data: defaultdict = defaultdict(lambda: defaultdict(int))
+    for work in works:
+        if not work.source.publisher and not work.year_published:
+            data["Sin año"]["Sin información"] += 1
+            continue
+        if not work.source.publisher:
+            data[work.year_published]["Sin información"] += 1
+            continue
+        if not work.year_published:
+            data["Sin año"][work.source.publisher.name] += 1
+            continue
+        data[work.year_published][work.source.publisher.name] += 1
+    plot = [
+        {"x": year, "y": count, "type": publisher}
+        for year, publishers in data.items()
+        for publisher, count in publishers.items()
+    ]
+    return {"plot": sorted(plot, key=lambda x: float("inf") if x.get("x") == "Sin año" else x.get("x"))}
+
+
+def parse_annual_apc_expenses(works: Generator) -> dict:
+    data: defaultdict = defaultdict(int)
+    for work in works:
+        if not work.apc.paid.value_usd:
+            continue
+        data[work.year_published] += work.apc.paid.value_usd
+    plot = [{"x": year, "y": value} for year, value in data.items()]
+    return {"plot": sorted(plot, key=lambda x: x.get("x"))}

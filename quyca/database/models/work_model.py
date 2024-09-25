@@ -24,13 +24,18 @@ from database.models.base_model import (
 
 class BiblioGraphicInfo(BaseModel):
     bibtex: str | None = None
-    is_open_access: bool | None = None
     issue: str | None = None
-    open_access_status: str | None = None
     pages: str | None = None
     start_page: str | None = None
     end_page: str | None = None
     volume: str | int | None = None
+
+
+class OpenAccess(BaseModel):
+    is_open_access: bool | None = None
+    open_access_status: str | None = None
+    url: str | None = None
+    has_repository_fulltext: bool | None = None
 
 
 class CitationByYear(BaseModel):
@@ -56,6 +61,7 @@ class Source(BaseModel):
 class Work(BaseModel):
     id: PyObjectId = Field(alias="_id")
     abstract: str | None = None
+    apc: APC | None = Field(default_factory=APC)
     author_count: int | None = None
     authors: list[Author] | str | None = None
     bibliographic_info: BiblioGraphicInfo | None = None
@@ -67,6 +73,7 @@ class Work(BaseModel):
     external_urls: list[ExternalUrl] | None = None
     groups: list[Group] | str | None = None
     keywords: list | None = None
+    open_access: OpenAccess | None = Field(default_factory=OpenAccess)
     ranking: list[Ranking] | str | None = None
     references: list | None = None
     references_count: int | None = None
@@ -88,7 +95,6 @@ class Work(BaseModel):
     departments: str | None = None
     faculties: str | None = None
     groups_ranking: str | None = None
-    is_open_access: bool | None = None
     pages: str | None = None
     start_page: str | None = None
     end_page: str | None = None
@@ -96,7 +102,6 @@ class Work(BaseModel):
     doi: str | None = None
     issue: str | None = None
     language: str | None = None
-    open_access_status: str | None = None
     product_types: list[ProductType] | None = None
     publisher: str | None = None
     openalex_types: str | None = None

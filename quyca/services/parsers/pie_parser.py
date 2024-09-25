@@ -1,11 +1,13 @@
 from functools import wraps
 from datetime import datetime
-from typing import Callable, Generator, Iterable
-from collections import Counter
-from currency_converter import CurrencyConverter
+from itertools import chain
+from typing import Callable, Iterable, Generator
+from collections import Counter, defaultdict
+from pymongo.command_cursor import CommandCursor
 
-from utils.cpi import inflate
-from utils.hindex import hindex
+from constants.open_access_status import open_access_status_dict
+from database.models.affiliation_model import Affiliation
+from utils.hindex import get_works_h_index_by_scholar_citations
 
 
 def get_percentage(func: Callable[..., list]) -> Callable[..., dict]:
@@ -21,156 +23,178 @@ def get_percentage(func: Callable[..., list]) -> Callable[..., dict]:
 
 
 @get_percentage
-def get_citations_by_affiliation(data: dict) -> list:
-    counter = 0
-    results = {}
-    for name, citations in data.items():
-        for count in citations:
-            counter = 0
-            if count.source == "scholar":
-                counter = count.count
-                break
-            elif count.source == "openalex":
-                counter = count.count
-                break
-        results[name] = counter
+def parse_citations_by_affiliations(data: CommandCursor) -> list:
+    plot: list = []
+    for item in data:
+        citations_count = item.get("citations_count", {})
+        openalex_citations_count: dict = next(filter(lambda x: x["source"] == "openalex", citations_count), {})
+        plot.append({"name": item.get("name", "No name"), "value": openalex_citations_count.get("count", 0)})
+    return plot
+
+
+@get_percentage
+def parse_apc_expenses_by_affiliations(data: CommandCursor) -> list:
+    result: defaultdict = defaultdict(int)
+    for item in data:
+        value = item.get("work").get("apc").get("paid").get("value_usd", 0)
+        result[item.get("names", [{"name": "No name"}])[0].get("name")] += value
     plot = []
-    for name, value in results.items():
+    for name, value in result.items():
         plot.append({"name": name, "value": value})
     return plot
 
 
 @get_percentage
-def get_apc_by_sources(sources: Generator, base_year: int) -> list:
-    currency_converter = CurrencyConverter()
-    result: dict = {}
-    for source in sources:
-        apc = source.apc
-        if apc.currency == "USD":
-            raw_value = apc.charges
-            value = inflate(raw_value, apc.year_published, to=max(base_year, apc.year_published))
-        else:
-            try:
-                raw_value = currency_converter.convert(apc.charges, apc.currency, "USD")
-                value = inflate(raw_value, apc.year_published, to=max(base_year, apc.year_published))
-            except Exception:
-                value = 0
-        if value and (name := source.affiliation_names[0].name):
-            if name not in result.keys():
-                result[name] = value
-            else:
-                result[name] += value
+def parse_h_index_by_affiliation(data: CommandCursor) -> list:
     plot = []
-    for name, value in result.items():
-        plot.append({"name": name, "value": int(value)})
+    for item in data:
+        plot.append({"name": item.get("name"), "value": get_works_h_index_by_scholar_citations(item.get("works"))})
     return plot
 
 
 @get_percentage
-def get_h_by_affiliation(data: dict) -> list:
+def parse_articles_by_publisher(works: Generator) -> list:
+    data = map(
+        lambda x: (
+            x.source.publisher.name
+            if x.source.publisher and isinstance(x.source.publisher.name, str)
+            else "Sin información"
+        ),
+        works,
+    )
+    counter = Counter(data)
     plot = []
-    for idx, value in data.items():
-        plot.append({"name": idx, "value": hindex(value)})
-    return plot
-
-
-@get_percentage
-def get_products_by_publisher(data: Iterable[str]) -> list:
-    results = Counter(data)
-    plot = []
-    for name, value in results.items():
+    for name, value in counter.items():
         plot += [{"name": name, "value": value}]
     return plot
 
 
 @get_percentage
-def get_products_by_subject(data: Iterable) -> list:
-    results = Counter(sub.name for sub in data)
-    plot = []
-    for name, value in results.items():
-        plot.append({"name": name, "value": value})
-    return plot
-
-
-@get_percentage
-def get_products_by_database(data: Iterable) -> list:
-    results = Counter(up.source for up in data)
-    plot = []
-    for name, value in results.items():
-        plot.append({"name": name, "value": value})
-    return plot
-
-
-@get_percentage
-def get_products_by_open_access(data: Iterable) -> list:
-    results = Counter(data)
-    plot = []
-    for name, value in results.items():
-        plot.append({"name": name, "value": value})
-    return plot
-
-
-@get_percentage
-def get_products_by_age(works: Iterable) -> list:
-    ranges = {"14-26": (14, 26), "27-59": (27, 59), "60+": (60, 999)}
-    results = {"14-26": 0, "27-59": 0, "60+": 0, "Sin información": 0}
-    for work in works:
-        if not work["birthdate"] or work["birthdate"] == -1 or not work["work"]["date_published"]:
-            results["Sin información"] += 1
-            continue
-        if work["birthdate"]:
-            birthdate = datetime.fromtimestamp(work["birthdate"]).year
-            date_published = datetime.fromtimestamp(work["work"]["date_published"]).year
-            age = date_published - birthdate
-            for name, (date_low, date_high) in ranges.items():
-                if date_low <= age <= date_high:
-                    results[name] += 1
-                    break
-    plot = []
-    for name, value in results.items():
-        plot.append({"name": name, "value": value})
-    return plot
-
-
-@get_percentage
-def get_articles_by_scienti_category(data: Iterable, total_works: int = 0) -> list:
-    scienti_category = filter(
-        lambda x: x.source == "scienti" and x.rank and x.rank.split("_")[-1] in ["A", "A1", "B", "C", "D"],
-        data,
+def parse_products_by_subject(works: Generator) -> list:
+    data = chain.from_iterable(
+        map(
+            lambda x: [sub for subject in x.subjects for sub in subject.subjects if subject.source == "openalex"],
+            works,
+        )
     )
-    results = Counter(map(lambda x: x.rank.split("_")[-1], scienti_category))
+    results = Counter(subject.name for subject in data)
     plot = []
     for name, value in results.items():
         plot.append({"name": name, "value": value})
-    plot.append({"name": "Sin información", "value": total_works - sum(results.values())})
     return plot
 
 
 @get_percentage
-def get_articles_by_scimago_quartile(data: list, total_results: int) -> list:
-    plot = [{"name": "Sin información", "value": total_results - len(data)}]
-    results = Counter(data)
-    for name, value in results.items():
+def parse_products_by_database(works: Generator) -> list:
+    data = chain.from_iterable(map(lambda x: x.updated, works))
+    counter = Counter(up.source for up in data)
+    plot = []
+    for name, value in counter.items():
         plot.append({"name": name, "value": value})
     return plot
 
 
 @get_percentage
-def get_products_by_same_institution(sources: Iterable, institution: dict) -> list:
-    results = {"same": 0, "different": 0, "Sin información": 0}
+def parse_products_by_access_route(works: Generator) -> list:
+    data = map(
+        lambda x: (x.open_access.open_access_status if x.open_access.open_access_status else "no_info"),
+        works,
+    )
+    counter = Counter(data)
+    plot = []
+    for name, value in counter.items():
+        plot.append({"name": open_access_status_dict.get(name), "value": value})
+    return plot
+
+
+@get_percentage
+def parse_products_by_author_sex(data: CommandCursor) -> list:
+    plot = []
+    for item in data:
+        if item.get("_id", "") == "":
+            plot.append({"name": "Sin información", "value": item.get("works_count", 0)})
+            continue
+        plot.append({"name": item.get("_id"), "value": item.get("works_count", 0)})
+    return plot
+
+
+@get_percentage
+def parse_products_by_age_range(persons: CommandCursor) -> list:
+    ranges = {"14-26": (14, 26), "27-59": (27, 59), "60+": (60, float("inf"))}
+    result = {"14-26": 0, "27-59": 0, "60+": 0, "Sin información": 0}
+    for person in persons:
+        if not person.get("birthdate") or person.get("birthdate") == -1:
+            result["Sin información"] += person.get("works_count", 0)
+            continue
+        birthdate = datetime.fromtimestamp(person.get("birthdate")).year
+        age = datetime.now().year - birthdate
+        for name, (low_age, high_age) in ranges.items():
+            if low_age <= age <= high_age:
+                result[name] += person.get("works_count", 0)
+                break
+    plot = []
+    for name, value in result.items():
+        plot.append({"name": name, "value": value})
+    return plot
+
+
+@get_percentage
+def parse_articles_by_scienti_category(works: list) -> list:
+    total_works = len(works)
+    data = filter(
+        lambda x: x.source == "scienti" and x.rank and x.rank.split("_")[-1] in ["A", "A1", "B", "C", "D"],
+        chain.from_iterable(map(lambda x: x.ranking, works)),
+    )
+    counter = Counter(map(lambda x: x.rank.split("_")[-1], data))
+    plot = []
+    for name, value in counter.items():
+        plot.append({"name": name, "value": value})
+    plot.append({"name": "Sin información", "value": total_works - sum(counter.values())})
+    return plot
+
+
+@get_percentage
+def parse_articles_by_scimago_quartile(works: Generator) -> list:
+    data = []
+    total_articles = 0
+    for work in works:
+        total_articles += 1
+        for ranking in work.source.ranking:
+            condition = (
+                ranking.source in ["Scimago Best Quartile", "scimago Best Quartile"]
+                and ranking.rank != "-"
+                and work.date_published
+                and ranking.from_date <= work.date_published <= ranking.to_date
+            )
+            if condition:
+                data.append(ranking.rank)
+                break
+    counter = Counter(data)
+    plot = [{"name": "Sin información", "value": total_articles - len(data)}]
+    for name, value in counter.items():
+        plot.append({"name": name, "value": value})
+    return plot
+
+
+@get_percentage
+def parse_articles_by_publishing_institution(works: Generator, institution: Affiliation) -> list:
+    result = {"Misma": 0, "Diferente": 0, "Sin información": 0}
     names = []
     if institution:
-        names = list(set([name["name"].lower() for name in institution["names"]]))
-    for source in sources:
-        if not source.publisher or not source.publisher.name or not isinstance(source.publisher.name, str):
-            results["Sin información"] += 1
+        names = list(set([name.name.lower() for name in institution.names]))
+    for work in works:
+        if (
+            not work.source.publisher
+            or not work.source.publisher.name
+            or not isinstance(work.source.publisher.name, str)
+        ):
+            result["Sin información"] += 1
             continue
-
-        if source.publisher.name.lower() in names:
-            results["same"] += 1
+        if work.source.publisher.name.lower() in names:
+            result["Misma"] += 1
         else:
-            results["different"] += 1
+            result["Diferente"] += 1
     plot = []
-    for name, value in results.items():
+    for name, value in result.items():
         plot.append({"name": name, "value": value})
     return plot

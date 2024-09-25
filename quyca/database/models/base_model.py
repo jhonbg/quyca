@@ -18,30 +18,6 @@ class PyObjectId(ObjectId):
         return str(value)
 
 
-class Node(BaseModel):
-    degree: int
-    id: str
-    label: str
-    size: float
-
-
-class Edge(BaseModel):
-    coauthorships: int
-    size: int | float
-    source: str
-    target: str
-
-
-class CoauthorshipNetwork(BaseModel):
-    nodes: list[Node] | None = Field(default_factory=list)
-    edges: list[Edge] | None = Field(default_factory=list)
-
-
-class TopWord(BaseModel):
-    name: str
-    value: int
-
-
 class CitationsCount(BaseModel):
     source: str | None
     count: int | None
@@ -149,10 +125,18 @@ class Publisher(BaseModel):
     name: str | float | None = None
 
 
+class Paid(BaseModel):
+    currency: str | None = None
+    provenance: str | None = None
+    source: str | None = None
+    value: int | None = None
+    value_usd: int | None = None
+
+
 class APC(BaseModel):
     charges: int | None = None
     currency: str | None = None
-    year_published: int | None = None
+    paid: Paid | None = None
 
 
 class QueryParams(BaseModel):

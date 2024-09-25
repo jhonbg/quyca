@@ -1,4 +1,4 @@
-from quyca.database.mongo import database
+from quyca.infrastructure.mongo import database
 
 
 def test_it_can_plot_citations_by_faculty_by_institution(client):

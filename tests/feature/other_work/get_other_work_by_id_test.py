@@ -1,4 +1,4 @@
-from quyca.database.mongo import database
+from quyca.infrastructure.mongo import database
 
 random_other_work_id = database["works_misc"].aggregate([{"$sample": {"size": 1}}]).next()["_id"]
 

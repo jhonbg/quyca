@@ -1,4 +1,4 @@
-from quyca.database.mongo import database
+from quyca.infrastructure.mongo import database
 
 
 def test_get_patents_by_person(client):

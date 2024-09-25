@@ -85,16 +85,6 @@ def parse_products_by_subject(works: Generator) -> list:
 
 
 @get_percentage
-def parse_products_by_database(works: Generator) -> list:
-    data = chain.from_iterable(map(lambda x: x.updated, works))
-    counter = Counter(up.source for up in data)
-    plot = []
-    for name, value in counter.items():
-        plot.append({"name": name, "value": value})
-    return plot
-
-
-@get_percentage
 def parse_products_by_access_route(works: Generator) -> list:
     data = map(
         lambda x: (x.open_access.open_access_status if x.open_access.open_access_status else "no_info"),

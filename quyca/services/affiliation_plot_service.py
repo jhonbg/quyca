@@ -2,7 +2,7 @@ from pymongo.command_cursor import CommandCursor
 
 from database.models.base_model import QueryParams
 from database.repositories import work_repository, plot_repository, calculations_repository, affiliation_repository
-from services.parsers import bar_parser, pie_parser, map_parser, network_parser
+from services.parsers import bar_parser, pie_parser, map_parser, network_parser, venn_parser
 
 
 def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict | None:
@@ -150,12 +150,8 @@ def plot_products_by_subject(affiliation_id: str, query_params: QueryParams) -> 
 
 
 def plot_products_by_database(affiliation_id: str, query_params: QueryParams) -> dict:
-    pipeline_params = {
-        "match": {"updated": {"$ne": []}},
-        "project": ["updated"],
-    }
-    works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
-    return pie_parser.parse_products_by_database(works)
+    data = plot_repository.get_products_by_database_by_affiliation(affiliation_id)
+    return venn_parser.parse_products_by_database(data)
 
 
 def plot_articles_by_access_route(affiliation_id: str, query_params: QueryParams) -> dict:

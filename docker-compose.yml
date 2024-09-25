@@ -10,16 +10,9 @@ services:
     image: colav/quyca-dev:dev
     volumes:
       - .:/app
-    working_dir: /app/quyca
-    entrypoint:
-      - poetry
-      - run
-      - gunicorn
-      - --bind
-      - 0.0.0.0:${APP_PORT}
-      - --workers
-      - "2"
-      - app:create_app()
+    working_dir: /app
+    entrypoint: [ "poetry", "run", "python", "./quyca/app.py" ]
+
 
   prod:
     container_name: quyca-prod
@@ -40,7 +33,7 @@ services:
       - --bind
       - 0.0.0.0:${APP_PORT}
       - --workers
-      - "4"
+      - "12"
       - app:create_app()
 
   local:

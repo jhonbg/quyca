@@ -150,24 +150,25 @@ def parse_articles_by_scienti_category(works: list) -> list:
 
 @get_percentage
 def parse_articles_by_scimago_quartile(works: Generator) -> list:
+    valid_sources = {"Scimago Best Quartile", "scimago Best Quartile"}
     data = []
     total_articles = 0
     for work in works:
         total_articles += 1
+        work_date = work.date_published
+        if not work_date:
+            continue
         for ranking in work.source.ranking:
-            condition = (
-                ranking.source in ["Scimago Best Quartile", "scimago Best Quartile"]
+            if (
+                ranking.source in valid_sources
                 and ranking.rank != "-"
-                and work.date_published
-                and ranking.from_date <= work.date_published <= ranking.to_date
-            )
-            if condition:
+                and ranking.from_date <= work_date <= ranking.to_date
+            ):
                 data.append(ranking.rank)
                 break
     counter = Counter(data)
     plot = [{"name": "Sin información", "value": total_articles - len(data)}]
-    for name, value in counter.items():
-        plot.append({"name": name, "value": value})
+    plot.extend({"name": name, "value": value} for name, value in counter.items())
     return plot
 
 

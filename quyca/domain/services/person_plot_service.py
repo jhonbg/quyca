@@ -26,8 +26,8 @@ def plot_annual_citation_count(person_id: str, query_params: QueryParams) -> dic
 
 
 def plot_annual_apc_expenses(person_id: str, query_params: QueryParams) -> dict:
-    pipeline_params = {"project": ["apc", "year_published"]}
-    works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
+    pipeline_params = {"source_project": ["apc"], "work_project": ["source", "year_published"]}
+    works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
     return bar_parser.parse_annual_apc_expenses(works)
 
 

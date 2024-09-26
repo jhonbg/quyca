@@ -224,6 +224,6 @@ def plot_institutional_coauthorship_network(affiliation_id: str, query_params: Q
 
 
 def plot_annual_apc_expenses(affiliation_id: str, query_params: QueryParams) -> dict:
-    pipeline_params = {"project": ["apc", "year_published"]}
-    works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
+    pipeline_params = {"source_project": ["apc"], "work_project": ["source", "year_published"]}
+    works = work_repository.get_works_with_source_by_affiliation(affiliation_id, pipeline_params)
     return bar_parser.parse_annual_apc_expenses(works)

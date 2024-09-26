@@ -3,6 +3,8 @@ from datetime import datetime
 from itertools import chain
 from typing import Callable, Iterable, Generator
 from collections import Counter, defaultdict
+
+from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
 
 from domain.constants.open_access_status import open_access_status_dict
@@ -35,9 +37,12 @@ def parse_citations_by_affiliations(data: CommandCursor) -> list:
 @get_percentage
 def parse_apc_expenses_by_affiliations(data: CommandCursor) -> list:
     result: defaultdict = defaultdict(int)
+    currency_converter = CurrencyConverter()
     for item in data:
-        value = item.get("work").get("apc").get("paid").get("value_usd", 0)
-        result[item.get("names", [{"name": "No name"}])[0].get("name")] += value
+        apc_charges = item.get("source").get("apc").get("charges", 0)
+        apc_currency = item.get("source").get("apc").get("currency", "USD")
+        usd_charges = currency_converter.convert(apc_charges, apc_currency, "USD")
+        result[item.get("names", [{"name": "No name"}])[0].get("name")] += usd_charges
     plot = []
     for name, value in result.items():
         plot.append({"name": name, "value": value})

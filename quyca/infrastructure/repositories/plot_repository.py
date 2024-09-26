@@ -151,12 +151,21 @@ def get_affiliations_apc_expenses_by_institution(institution_id: str, relation_t
                 "localField": "_id",
                 "foreignField": "authors.affiliations.id",
                 "as": "work",
-                "pipeline": [{"$project": {"apc": 1}}],
+                "pipeline": [{"$project": {"source": 1}}],
             }
         },
         {"$unwind": "$work"},
-        # {"$match": {"work.apc.paid.value_usd": {"$exists": True}}},
-        {"$project": {"_id": 0, "work": 1, "names": 1}},
+        {
+            "$lookup": {
+                "from": "sources",
+                "localField": "work.source.id",
+                "foreignField": "_id",
+                "as": "source",
+                "pipeline": [{"$project": {"apc": 1}}],
+            }
+        },
+        {"$unwind": "$source"},
+        {"$project": {"_id": 0, "source": 1, "names": 1}},
     ]
     return database["affiliations"].aggregate(pipeline)
 
@@ -197,8 +206,17 @@ def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str) -> Com
         },
         {"$unwind": "$work"},
         {"$match": {"work.authors.affiliations.id": ObjectId(affiliation_id)}},
-        # {"$match": {"work.apc.paid.value_usd": {"$exists": True}}},
-        {"$project": {"_id": 0, "work": 1, "names": 1}},
+        {
+            "$lookup": {
+                "from": "sources",
+                "localField": "work.source.id",
+                "foreignField": "_id",
+                "as": "source",
+                "pipeline": [{"$project": {"apc": 1}}],
+            }
+        },
+        {"$unwind": "$source"},
+        {"$project": {"_id": 0, "source": 1, "names": 1}},
     ]
     return database["affiliations"].aggregate(pipeline)
 

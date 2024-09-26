@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import Generator
 
+from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
 
 
@@ -89,11 +90,15 @@ def parse_annual_apc_expenses(works: Generator) -> dict:
     data: defaultdict = defaultdict(int)
     total_apc = 0
     total_results = 0
+    currency_converter = CurrencyConverter()
     for work in works:
         total_results += 1
-        if not work.apc.paid.value_usd:
+        apc_charges = work.source.apc.charges
+        apc_currency = work.source.apc.currency
+        if not apc_charges or not apc_currency or apc_currency == "IRR":
             continue
-        data[work.year_published] += work.apc.paid.value_usd
-        total_apc += work.apc.paid.value_usd
+        usd_charges = currency_converter.convert(apc_charges, apc_currency, "USD")
+        data[work.year_published] += int(usd_charges)
+        total_apc += usd_charges
     plot = [{"x": year, "y": value} for year, value in data.items()]
-    return {"plot": sorted(plot, key=lambda x: x.get("x")), "total_apc": total_apc, "total_results": total_results}
+    return {"plot": sorted(plot, key=lambda x: x.get("x")), "total_apc": int(total_apc), "total_results": total_results}

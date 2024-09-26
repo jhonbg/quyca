@@ -1,4 +1,4 @@
-from domain.models.affiliation_calculations_model import Calculations
+from domain.models.calculations_model import Calculations
 
 
 def parse_institutional_coauthorship_network(data: Calculations) -> dict:

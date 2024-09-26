@@ -1,6 +1,6 @@
 from bson import ObjectId
 
-from domain.models.affiliation_calculations_model import Calculations
+from domain.models.calculations_model import Calculations
 from infrastructure.mongo import calculations_database
 
 

@@ -1,3 +1,4 @@
+from domain.constants.articles_types import articles_types_list
 from domain.models.base_model import QueryParams
 from infrastructure.repositories import (
     plot_repository,
@@ -34,7 +35,7 @@ def plot_annual_apc_expenses(person_id: str, query_params: QueryParams) -> dict:
 def plot_annual_articles_open_access(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
         "project": ["year_published", "open_access"],
-        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
+        "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     return bar_parser.parse_annual_articles_open_access(works)
@@ -45,9 +46,7 @@ def plot_annual_articles_by_top_publishers(person_id: str, query_params: QueryPa
         "source_project": ["publisher", "apc"],
         "work_project": ["source", "year_published", "types"],
         "match": {
-            "types.source": "scienti",
-            "types.level": 2,
-            "types.code": {"$regex": "^11", "$options": ""},
+            "types.type": {"$in": articles_types_list},
             "source.publisher.name": {"$ne": float("nan")},
         },
     }
@@ -70,7 +69,7 @@ def plot_articles_by_publisher(person_id: str, query_params: QueryParams) -> dic
     pipeline_params = {
         "source_project": ["publisher"],
         "work_project": ["source"],
-        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
+        "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
     return pie_parser.parse_articles_by_publisher(works)
@@ -92,7 +91,7 @@ def plot_products_by_database(person_id: str, query_params: QueryParams) -> dict
 
 def plot_articles_by_access_route(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
+        "match": {"types.type": {"$in": articles_types_list}},
         "project": ["open_access"],
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
@@ -101,7 +100,7 @@ def plot_articles_by_access_route(person_id: str, query_params: QueryParams) -> 
 
 def plot_articles_by_scienti_category(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
+        "match": {"types.type": {"$in": articles_types_list}},
         "project": ["ranking"],
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
@@ -112,7 +111,7 @@ def plot_articles_by_scimago_quartile(person_id: str, query_params: QueryParams)
     pipeline_params = {
         "source_project": ["ranking"],
         "work_project": ["source", "date_published"],
-        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
+        "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
     return pie_parser.parse_articles_by_scimago_quartile(works)
@@ -130,7 +129,7 @@ def plot_articles_by_publishing_institution(person_id: str, query_params: QueryP
     pipeline_params = {
         "source_project": ["publisher"],
         "work_project": ["source"],
-        "match": {"types.source": "scienti", "types.level": 2, "types.code": {"$regex": "^11", "$options": ""}},
+        "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
     return pie_parser.parse_articles_by_publishing_institution(works, institution)

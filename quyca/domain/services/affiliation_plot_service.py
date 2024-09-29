@@ -125,13 +125,7 @@ def plot_annual_articles_by_top_publishers(affiliation_id: str, query_params: Qu
 
 def plot_most_used_title_words(affiliation_id: str, query_params: QueryParams) -> dict:
     data = calculations_repository.get_affiliation_calculations(affiliation_id)
-    top_words = data.model_dump().get("top_words")
-    if not top_words:
-        return {
-            "plot": [{"name": "Sin información", "value": 1, "percentage": 100}],
-            "sum": 1,
-        }
-    return {"plot": sorted(top_words, key=lambda x: x.get("value"), reverse=True)}
+    return pie_parser.parse_most_used_title_words(data)
 
 
 def plot_articles_by_publisher(affiliation_id: str, query_params: QueryParams) -> dict:

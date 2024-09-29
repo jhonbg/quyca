@@ -10,6 +10,7 @@ from pymongo.command_cursor import CommandCursor
 from domain.constants.open_access_status import open_access_status_dict
 from domain.models.affiliation_model import Affiliation
 from domain.helpers import get_works_h_index_by_scholar_citations
+from domain.models.calculations_model import Calculations
 
 
 def get_percentage(func: Callable[..., list]) -> Callable[..., dict]:
@@ -194,3 +195,13 @@ def parse_articles_by_publishing_institution(works: Generator, institution: Affi
     for name, value in result.items():
         plot.append({"name": name, "value": value})
     return plot
+
+
+def parse_most_used_title_words(data: Calculations) -> dict:
+    top_words = data.model_dump().get("top_words")
+    if not top_words:
+        return {
+            "plot": [{"name": "Sin información", "value": 1, "percentage": 100}],
+            "sum": 1,
+        }
+    return {"plot": sorted(top_words, key=lambda x: x.get("value"), reverse=True)}

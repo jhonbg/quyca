@@ -47,8 +47,14 @@ def parse_annual_articles_open_access(works: Generator) -> dict:
     data: defaultdict = defaultdict(lambda: {"Abierto": 0, "Cerrado": 0, "Sin información": 0})
     for work in works:
         access_type = "Abierto" if work.open_access.is_open_access else "Cerrado"
+        if work.open_access.is_open_access is None and not work.year_published:
+            data["Sin año"]["Sin información"] += 1
+            continue
         if work.open_access.is_open_access is None:
             data[work.year_published]["Sin información"] += 1
+            continue
+        if work.year_published is None:
+            data["Sin año"][access_type] += 1
             continue
         data[work.year_published][access_type] += 1
     plot = [
@@ -56,7 +62,7 @@ def parse_annual_articles_open_access(works: Generator) -> dict:
         for year, counts in data.items()
         for access_type, count in counts.items()
     ]
-    return {"plot": sorted(plot, key=lambda x: x.get("x"))}
+    return {"plot": sorted(plot, key=lambda x: float("inf") if x.get("x") == "Sin año" else x.get("x"))}
 
 
 def parse_annual_articles_by_top_publishers(works: Generator) -> dict:

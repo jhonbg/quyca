@@ -115,18 +115,18 @@ def parse_products_by_author_sex(data: CommandCursor) -> list:
 
 
 @get_percentage
-def parse_products_by_age_range(persons: CommandCursor) -> list:
+def parse_active_authors_by_age_range(persons: CommandCursor) -> list:
     ranges = {"14-26": (14, 26), "27-59": (27, 59), "60+": (60, float("inf"))}
     result = {"14-26": 0, "27-59": 0, "60+": 0, "Sin información": 0}
     for person in persons:
         if not person.get("birthdate") or person.get("birthdate") == -1:
-            result["Sin información"] += person.get("works_count", 0)
+            result["Sin información"] += 1
             continue
         birthdate = datetime.fromtimestamp(person.get("birthdate")).year
         age = datetime.now().year - birthdate
         for name, (low_age, high_age) in ranges.items():
             if low_age <= age <= high_age:
-                result[name] += person.get("works_count", 0)
+                result[name] += 1
                 break
     plot = []
     for name, value in result.items():

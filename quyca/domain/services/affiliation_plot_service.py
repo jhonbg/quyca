@@ -112,7 +112,7 @@ def plot_annual_articles_open_access(affiliation_id: str, query_params: QueryPar
 
 def plot_annual_articles_by_top_publishers(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "source_project": ["publisher", "apc"],
+        "source_project": ["publisher"],
         "work_project": ["source", "year_published", "types"],
         "match": {
             "types.type": {"$in": articles_types_list},

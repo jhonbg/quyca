@@ -56,13 +56,13 @@ def plot_annual_articles_by_top_publishers(person_id: str, query_params: QueryPa
 
 def plot_most_used_title_words(person_id: str, query_params: QueryParams) -> dict:
     data = calculations_repository.get_person_calculations(person_id)
-    top_words = data.model_dump().get("top_words", None)
+    top_words = data.model_dump().get("top_words")
     if not top_words:
         return {
             "plot": [{"name": "Sin información", "value": 1, "percentage": 100}],
             "sum": 1,
         }
-    return {"plot": top_words}
+    return {"plot": sorted(top_words, key=lambda x: x.get("value"), reverse=True)}
 
 
 def plot_articles_by_publisher(person_id: str, query_params: QueryParams) -> dict:

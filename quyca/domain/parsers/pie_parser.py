@@ -104,13 +104,16 @@ def parse_products_by_access_route(works: Generator) -> list:
 
 
 @get_percentage
-def parse_products_by_author_sex(data: CommandCursor) -> list:
-    plot = []
-    for item in data:
-        if item.get("_id", "") == "":
-            plot.append({"name": "Sin información", "value": item.get("works_count", 0)})
+def parse_active_authors_by_sex(persons: CommandCursor) -> list:
+    result: defaultdict = defaultdict(int)
+    for person in persons:
+        if not person.get("sex") or person.get("sex") == "":
+            result["Sin información"] += 1
             continue
-        plot.append({"name": item.get("_id"), "value": item.get("works_count", 0)})
+        result[person.get("sex")] += 1
+    plot = []
+    for name, value in result.items():
+        plot.append({"name": name, "value": value})
     return plot
 
 

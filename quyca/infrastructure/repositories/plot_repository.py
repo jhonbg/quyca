@@ -347,9 +347,9 @@ def get_groups_works_citations_count_by_faculty_or_department(affiliation_id: st
     return database["affiliations"].aggregate(pipeline)
 
 
-def get_products_by_author_sex(affiliation_id: str) -> CommandCursor:
+def get_active_authors_by_sex(affiliation_id: str) -> CommandCursor:
     pipeline = [
-        {"$match": {"affiliations.id": ObjectId(affiliation_id)}},
+        {"$match": {"affiliations": {"$elemMatch": {"id": ObjectId(affiliation_id), "end_date": -1}}}},
         {
             "$lookup": {
                 "from": "works",
@@ -359,8 +359,8 @@ def get_products_by_author_sex(affiliation_id: str) -> CommandCursor:
                 "pipeline": [{"$count": "count"}],
             }
         },
-        {"$unwind": "$works"},
-        {"$group": {"_id": "$sex", "works_count": {"$sum": "$works.count"}}},
+        {"$match": {"works.count": {"$exists": True}}},
+        {"$project": {"_id": 0, "sex": 1}},
     ]
     return database["person"].aggregate(pipeline)
 

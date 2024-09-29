@@ -31,7 +31,7 @@ def parse_citations_by_affiliations(data: CommandCursor) -> list:
         citations_count = item.get("citations_count", {})
         openalex_citations_count: dict = next(filter(lambda x: x["source"] == "openalex", citations_count), {})
         plot.append({"name": item.get("name", "No name"), "value": openalex_citations_count.get("count", 0)})
-    return plot
+    return sorted(plot, key=lambda x: x.get("value"), reverse=True)
 
 
 @get_percentage
@@ -46,7 +46,7 @@ def parse_apc_expenses_by_affiliations(data: CommandCursor) -> list:
     plot = []
     for name, value in result.items():
         plot.append({"name": name, "value": value})
-    return plot
+    return sorted(plot, key=lambda x: x.get("value"), reverse=True)
 
 
 @get_percentage
@@ -54,7 +54,7 @@ def parse_h_index_by_affiliation(data: CommandCursor) -> list:
     plot = []
     for item in data:
         plot.append({"name": item.get("name"), "value": get_works_h_index_by_scholar_citations(item.get("works"))})
-    return plot
+    return sorted(plot, key=lambda x: x.get("value"), reverse=True)
 
 
 @get_percentage
@@ -71,7 +71,7 @@ def parse_articles_by_publisher(works: Generator) -> list:
     plot = []
     for name, value in counter.items():
         plot += [{"name": name, "value": value}]
-    return plot
+    return sorted(plot, key=lambda x: x.get("value"), reverse=True)
 
 
 @get_percentage
@@ -86,7 +86,7 @@ def parse_products_by_subject(works: Generator) -> list:
     plot = []
     for name, value in results.items():
         plot.append({"name": name, "value": value})
-    return plot
+    return sorted(plot, key=lambda x: x.get("value"), reverse=True)
 
 
 @get_percentage
@@ -99,7 +99,7 @@ def parse_products_by_access_route(works: Generator) -> list:
     plot = []
     for name, value in counter.items():
         plot.append({"name": open_access_status_dict.get(name), "value": value})
-    return plot
+    return sorted(plot, key=lambda x: x.get("value"), reverse=True)
 
 
 @get_percentage

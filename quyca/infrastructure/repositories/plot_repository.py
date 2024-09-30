@@ -209,11 +209,13 @@ def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str) -> Com
                 "localField": "_id",
                 "foreignField": "authors.affiliations.id",
                 "as": "work",
-                "pipeline": [{"$project": {"apc": 1, "authors": 1}}],
+                "pipeline": [
+                    {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+                    {"$project": {"source": 1, "authors": 1}},
+                ],
             }
         },
         {"$unwind": "$work"},
-        {"$match": {"work.authors.affiliations.id": ObjectId(affiliation_id)}},
         {
             "$lookup": {
                 "from": "sources",

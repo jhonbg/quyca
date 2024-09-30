@@ -5,6 +5,7 @@ def parse_search_results(other_works: list) -> list:
     include = [
         "id",
         "authors",
+        "author_count",
         "product_types",
         "year_published",
         "title",
@@ -18,6 +19,7 @@ def parse_other_works_by_entity(other_works: list) -> list:
     include = [
         "id",
         "authors",
+        "author_count",
         "product_types",
         "year_published",
         "title",

@@ -50,6 +50,7 @@ def parse_search_results(works: list) -> list:
     include = [
         "id",
         "authors",
+        "author_count",
         "open_access",
         "citations_count",
         "product_types",
@@ -67,6 +68,7 @@ def parse_works_by_entity(works: list) -> list:
     include = [
         "id",
         "authors",
+        "author_count",
         "open_access",
         "citations_count",
         "product_types",

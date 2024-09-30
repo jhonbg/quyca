@@ -141,7 +141,8 @@ def get_groups_citations_count_by_faculty_or_department(affiliation_id: str) -> 
         {"$replaceRoot": {"newRoot": "$group"}},
         {
             "$group": {
-                "_id": "$name",
+                "_id": "$_id",
+                "name": {"$first": "$name"},
                 "citations_count": {"$first": "$citations_count"},
             }
         },

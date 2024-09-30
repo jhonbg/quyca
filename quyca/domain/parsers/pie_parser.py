@@ -42,6 +42,8 @@ def parse_apc_expenses_by_affiliations(data: CommandCursor) -> list:
     for item in data:
         apc_charges = item.get("source").get("apc").get("charges", 0)
         apc_currency = item.get("source").get("apc").get("currency", "USD")
+        if apc_currency in ["IRR", "NGN"]:
+            continue
         usd_charges = currency_converter.convert(apc_charges, apc_currency, "USD")
         result[item.get("names", [{"name": "No name"}])[0].get("name")] += int(usd_charges)
     plot = []

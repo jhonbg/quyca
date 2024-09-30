@@ -139,6 +139,12 @@ def get_groups_citations_count_by_faculty_or_department(affiliation_id: str) -> 
         },
         {"$unwind": "$group"},
         {"$replaceRoot": {"newRoot": "$group"}},
+        {
+            "$group": {
+                "_id": "$name",
+                "citations_count": {"$first": "$citations_count"},
+            }
+        },
     ]
     return database["works"].aggregate(pipeline)
 

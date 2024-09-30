@@ -89,7 +89,7 @@ def parse_annual_apc_expenses(works: Generator) -> dict:
         total_results += 1
         apc_charges = work.source.apc.charges
         apc_currency = work.source.apc.currency
-        if not apc_charges or not apc_currency or apc_currency == "IRR":
+        if not apc_charges or not apc_currency or apc_currency in ["IRR", "NGN"]:
             continue
         usd_charges = currency_converter.convert(apc_charges, apc_currency, "USD")
         data[work.year_published] += int(usd_charges)

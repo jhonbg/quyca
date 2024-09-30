@@ -133,7 +133,7 @@ def get_groups_citations_count_by_faculty_or_department(affiliation_id: str) -> 
                             "types.type": "group",
                         },
                     },
-                    {"$project": {"_id": 0, "name": {"$first": "$names.name"}, "citations_count": 1}},
+                    {"$project": {"_id": 1, "name": {"$first": "$names.name"}, "citations_count": 1}},
                 ],
             }
         },

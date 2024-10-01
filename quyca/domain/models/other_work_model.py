@@ -18,7 +18,7 @@ from domain.models.base_model import (
 class OtherWork(BaseModel):
     id: PyObjectId = Field(alias="_id")
     abstract: str | None = None
-    author_count: int | None = None
+    authors_count: int | None = Field(default_factory=int, alias="author_count")
     authors: list[Author] | str | None = None
     date_published: int | None = None
     external_ids: list[ExternalId] | None = None

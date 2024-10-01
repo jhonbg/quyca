@@ -5,7 +5,7 @@ def parse_search_results(patents: list) -> list:
     include = [
         "id",
         "authors",
-        "author_count",
+        "authors_count",
         "product_types",
         "title",
         "external_ids",
@@ -18,7 +18,7 @@ def parse_patents_by_entity(patents: list) -> list:
     include = [
         "id",
         "authors",
-        "author_count",
+        "authors_count",
         "product_types",
         "title",
         "external_ids",

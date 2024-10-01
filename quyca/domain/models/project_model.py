@@ -18,7 +18,7 @@ from domain.models.base_model import (
 class Project(BaseModel):
     id: PyObjectId = Field(alias="_id")
     abstract: str | None = None
-    author_count: int | None = None
+    authors_count: int | None = Field(default_factory=int, alias="author_count")
     authors: list[Author] | str | None = None
     date_init: int | None = None
     date_end: int | None = None

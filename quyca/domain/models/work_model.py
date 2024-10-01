@@ -62,7 +62,7 @@ class Work(BaseModel):
     id: PyObjectId = Field(alias="_id")
     abstract: str | None = None
     apc: APC | None = Field(default_factory=APC)
-    author_count: int | None = None
+    authors_count: int | None = Field(default_factory=int, alias="author_count")
     authors: list[Author] | str | None = None
     bibliographic_info: BiblioGraphicInfo | None = None
     citations: list | None = Field(default_factory=list)

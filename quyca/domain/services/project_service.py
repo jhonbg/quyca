@@ -71,6 +71,7 @@ def get_projects_by_entity_pipeline_params() -> dict:
     pipeline_params = {
         "project": [
             "_id",
+            "author_count",
             "authors",
             "types",
             "titles",

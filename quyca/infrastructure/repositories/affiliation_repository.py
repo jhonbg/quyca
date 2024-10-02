@@ -88,10 +88,11 @@ def get_groups_by_faculty_or_department(affiliation_id: str) -> Generator:
                 ],
             }
         },
-        {"$replaceRoot": {"newRoot": "$groups"}},
+        {"$unwind": "$group"},
+        {"$group": {"_id": "$group._id", "name": {"$first": "$groups.name"}}},
     ]
     groups = database["works"].aggregate(pipeline)
-    return affiliation_generator.get_entity_affiliations(groups)
+    return affiliation_generator.get(groups)
 
 
 def search_affiliations(

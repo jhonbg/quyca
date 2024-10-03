@@ -1,6 +1,6 @@
 from typing import Generator
 
-from pydantic import BaseModel, field_validator, Field, conint
+from pydantic import BaseModel, field_validator, Field, conint, model_validator
 from bson import ObjectId
 
 
@@ -145,6 +145,12 @@ class QueryParams(BaseModel):
     keywords: str | None = None
     plot: str | None = None
     sort: str | None = None
+
+    @model_validator(mode="after")
+    def validate_keywords(self) -> "QueryParams":
+        if self.keywords:
+            self.keywords = '"' + self.keywords + '"'
+        return self
 
 
 class Affiliation(BaseModel):

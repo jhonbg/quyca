@@ -1,7 +1,7 @@
 from typing import Any
 
 from bson import ObjectId
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from domain.models.base_model import (
     PyObjectId,
@@ -29,6 +29,8 @@ class BiblioGraphicInfo(BaseModel):
     start_page: str | None = None
     end_page: str | None = None
     volume: str | int | None = None
+    is_open_access: bool | None = None
+    open_access_status: str | None = None
 
 
 class OpenAccess(BaseModel):
@@ -112,6 +114,15 @@ class Work(BaseModel):
     source_urls: str | None = None
     title: str | None = None
     volume: str | int | None = None
+
+    @model_validator(mode="after")
+    def validate_open_access(self) -> "Work":
+        if self.bibliographic_info and self.open_access:
+            if self.open_access.is_open_access is None:
+                self.open_access.is_open_access = self.bibliographic_info.is_open_access
+            if self.open_access.open_access_status is None:
+                self.open_access.open_access_status = self.bibliographic_info.open_access_status
+        return self
 
     class Config:
         json_encoders = {ObjectId: str}

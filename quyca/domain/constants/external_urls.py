@@ -3,7 +3,7 @@ external_urls_dict = {
     "lens": "https://www.lens.org/lens/scholar/article/{id}",
     "researchgate": "https://www.researchgate.net/profile/{id}",
     "orcid": "https://orcid.org/{id}",
-    "scholar": "https://scholar.google.com/citations?user={id}",
+    "scholar": "https://scholar.google.com/scholar?hl=en&as_sdt=0%2C5&q=info%3A{id}%3Ascholar.google.com&btnG=",
     "scholar citations": "https://scholar.google.com{id}",
     "scopus": "https://www.scopus.com/authid/detail.uri?authorId={id}",
     "openalex": "https://openalex.org/{id}",

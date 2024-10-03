@@ -82,23 +82,7 @@ def parse_works_by_entity(works: list) -> list:
 
 
 def parse_work(work: Work) -> dict:
-    exclude_fields = {
-        "subtitle": True,
-        "titles": True,
-        "authors_count": True,
-        "citations": True,
-        "citations_by_year": True,
-        "date_published": True,
-        "product_types": True,
-        "groups": True,
-        "keywords": True,
-        "ranking": True,
-        "references": True,
-        "types": True,
-        "updated": True,
-        "subjects": {"__all__": {"subjects": {"__all__": {"external_ids"}}}},
-    }
-    return work.model_dump(exclude=exclude_fields, exclude_none=True)
+    return work.model_dump(exclude_none=True)
 
 
 def parse_api_expert(works: Generator) -> list:

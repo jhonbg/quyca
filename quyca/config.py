@@ -14,7 +14,7 @@ class Settings(BaseSettings):
         else:
             env_file = "../.env.local"
 
-    environment: str | None
+    environment: str = "local"
 
     APP_NAME: str
     APP_VERSION: str

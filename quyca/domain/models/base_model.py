@@ -148,7 +148,7 @@ class QueryParams(BaseModel):
 
     @model_validator(mode="after")
     def validate_keywords(self) -> "QueryParams":
-        if self.keywords:
+        if self.keywords and not self.keywords.startswith('"'):
             self.keywords = '"' + self.keywords + '"'
         return self
 

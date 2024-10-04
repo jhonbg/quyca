@@ -4,11 +4,9 @@ from domain.models.base_model import QueryParams
 def set_search_end_stages(pipeline: list, query_params: QueryParams, pipeline_params: dict | None = None) -> list:
     if pipeline_params is None:
         pipeline_params = {}
-    if query_params.keywords != "":
-        pipeline += [{"$sort": {"score": {"$meta": "textScore"}}}]
-    set_pagination(pipeline, query_params)
+    set_sort(query_params.sort, pipeline, query_params.keywords)
     set_project(pipeline, pipeline_params.get("project"))
-    set_sort(query_params.sort, pipeline)
+    set_pagination(pipeline, query_params)
     return pipeline
 
 
@@ -30,7 +28,7 @@ def set_project(pipeline: list, project: list | None) -> None:
     pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}]
 
 
-def set_sort(sort: str | None, pipeline: list) -> None:
+def set_sort(sort: str | None, pipeline: list, keywords: str = "") -> None:
     if not sort:
         return
     sort_field, direction_str = sort.split("_")
@@ -164,4 +162,7 @@ def set_sort(sort: str | None, pipeline: list) -> None:
             },
         ]
         sort_field = "sort_year"
-    pipeline += [{"$sort": {sort_field: direction}}]
+    if keywords != "":
+        pipeline += [{"$sort": {"score": {"$meta": "textScore"}, sort_field: direction}}]
+    else:
+        pipeline += [{"$sort": {sort_field: direction}}]

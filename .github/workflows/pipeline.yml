@@ -1,35 +1,76 @@
 name: quyca
 
-on: [ pull_request ]
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Python
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python3 -
-
       - name: Add Poetry to PATH
         run: echo "$HOME/.local/bin" >> $GITHUB_PATH
-
       - name: Install dependencies
         run: poetry install
-
       - name: Run linter
         run: |
           poetry run black --line-length 120 --check . && \
           poetry run autoflake --in-place --recursive \
           --remove-unused-variables --remove-all-unused-imports \
           --remove-duplicate-keys --ignore-init-module-import --check .
-
       - name: Run static analyzer
         run: poetry run mypy ./quyca/
+
+  deploy-dev:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install SSH Key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no backend_dev@colav.co << 'EOF'
+            cd /home/quyca-dev
+            git checkout develop
+            git pull origin develop
+            make down-dev
+            make up-dev
+          EOF
+
+  deploy-prod:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install SSH Key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no backend_dev@colav.co << 'EOF'
+            cd /home/quyca-prod
+            git checkout master
+            git pull origin master
+            make down-prod
+            make up-prod
+          EOF

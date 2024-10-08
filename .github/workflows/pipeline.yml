@@ -42,7 +42,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Deploy
-        run: sshpass -p "${{secrets.SSH_PASS}}" ssh -o StrictHostKeyChecking=no backend_dev@colav.co cd /home/quyca-dev && git checkout develop && git pull origin develop && make down-dev && make up-dev
+        run: sshpass -p "${{secrets.SSH_PASS}}" ssh -o StrictHostKeyChecking=no backend_dev@colav.co cd /home/backend_dev/quyca-dev && git checkout develop && git pull origin develop && make down-dev && make up-dev
 
   deploy-prod:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -51,4 +51,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Deploy
-        run: sshpass -p "${{secrets.SSH_PASS}}" ssh -o StrictHostKeyChecking=no backend_dev@colav.co cd /home/quyca-prod && git checkout master && git pull origin master && make down-prod && make up-prod
+        run: sshpass -p "${{secrets.SSH_PASS}}" ssh -o StrictHostKeyChecking=no backend_dev@colav.co cd /home/backend_dev/quyca-prod && git checkout master && git pull origin master && make down-prod && make up-prod

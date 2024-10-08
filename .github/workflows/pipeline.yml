@@ -48,7 +48,7 @@ jobs:
       - name: Deploy
         shell: bash
         run: |
-          ssh -o StrictHostKeyChecking=no backend_dev@colav.co << 'EOF'
+          ssh -t -o StrictHostKeyChecking=no backend_dev@colav.co << 'EOF'
             cd /home/quyca-dev
             git checkout develop
             git pull origin develop
@@ -69,7 +69,7 @@ jobs:
       - name: Deploy
         shell: bash
         run: |
-          ssh -o StrictHostKeyChecking=no backend_dev@colav.co << 'EOF'
+          ssh -t -o StrictHostKeyChecking=no backend_dev@colav.co << 'EOF'
             cd /home/quyca-prod
             git checkout master
             git pull origin master

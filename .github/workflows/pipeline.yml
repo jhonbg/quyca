@@ -41,12 +41,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install SSH Key
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Deploy
-        run: ssh -o StrictHostKeyChecking=no backend_dev@colav.co cd /home/quyca-dev && git checkout develop && git pull origin develop && make down-dev && make up-dev
+        run: sshpass -p "${{secrets.SSH_PASS}}" ssh -o StrictHostKeyChecking=no backend_dev@colav.co cd /home/quyca-dev && git checkout develop && git pull origin develop && make down-dev && make up-dev
 
   deploy-prod:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -54,9 +50,5 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install SSH Key
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Deploy
-        run: ssh -o StrictHostKeyChecking=no backend_dev@colav.co cd /home/quyca-prod && git checkout master && git pull origin master && make down-prod && make up-prod
+        run: sshpass -p "${{secrets.SSH_PASS}}" ssh -o StrictHostKeyChecking=no backend_dev@colav.co cd /home/quyca-prod && git checkout master && git pull origin master && make down-prod && make up-prod

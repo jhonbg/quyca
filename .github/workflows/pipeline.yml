@@ -46,15 +46,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Deploy
-        shell: bash
-        run: |
-          ssh -t -o StrictHostKeyChecking=no backend_dev@colav.co << 'EOF'
-            cd /home/quyca-dev
-            git checkout develop
-            git pull origin develop
-            make down-dev
-            make up-dev
-          EOF
+        run: ssh -t -o StrictHostKeyChecking=no backend_dev@colav.co "cd /home/quyca-dev && git checkout develop && git pull origin develop && make down-dev && make up-dev"
 
   deploy-prod:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -67,12 +59,4 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Deploy
-        shell: bash
-        run: |
-          ssh -t -o StrictHostKeyChecking=no backend_dev@colav.co << 'EOF'
-            cd /home/quyca-prod
-            git checkout master
-            git pull origin master
-            make down-prod
-            make up-prod
-          EOF
+        run: ssh -o StrictHostKeyChecking=no backend_dev@colav.co "cd /home/quyca-prod && git checkout master && git pull origin master && make down-prod && make up-prod"

@@ -67,14 +67,15 @@ def get_groups_by_faculty_or_department(affiliation_id: str) -> Generator:
     pipeline = [
         {
             "$match": {
-                "authors.affiliations.id": ObjectId(affiliation_id),
+                "affiliations.id": ObjectId(affiliation_id),
             }
         },
-        {"$unwind": "$groups"},
+        {"$unwind": "$affiliations"},
+        {"$match": {"affiliations.types.type": "group"}},
         {
             "$lookup": {
                 "from": "affiliations",
-                "localField": "groups.id",
+                "localField": "affiliations.id",
                 "foreignField": "_id",
                 "as": "group",
                 "pipeline": [
@@ -91,7 +92,7 @@ def get_groups_by_faculty_or_department(affiliation_id: str) -> Generator:
         {"$unwind": "$group"},
         {"$group": {"_id": "$group._id", "names": {"$first": "$group.names"}}},
     ]
-    groups = database["works"].aggregate(pipeline)
+    groups = database["person"].aggregate(pipeline)
     return affiliation_generator.get(groups)
 
 

@@ -1,3 +1,5 @@
+import os
+
 import sentry_sdk
 from flask import Flask
 from flask_cors import CORS
@@ -8,7 +10,9 @@ from config import Settings
 
 
 def create_app() -> Flask:
-    app_factory = Flask(__name__)
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    static_dir = os.path.join(project_dir, "application", "static")
+    app_factory = Flask(__name__, static_folder=static_dir)
     app_settings = Settings()
     sentry_sdk.init(
         dsn=app_settings.SENTRY_DSN,

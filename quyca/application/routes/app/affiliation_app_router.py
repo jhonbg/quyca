@@ -1,3 +1,4 @@
+import json
 from typing import Tuple
 
 from flask import Blueprint, request, Response, jsonify
@@ -31,7 +32,8 @@ def get_affiliation_by_id(affiliation_type: str, affiliation_id: str) -> Respons
 def get_affiliation_affiliations(affiliation_type: str, affiliation_id: str) -> Response | Tuple[Response, int]:
     try:
         data = affiliation_service.get_related_affiliations_by_affiliation(affiliation_id, affiliation_type)
-        return jsonify(data)
+        response_data = json.dumps(data, sort_keys=False)
+        return Response(response_data, mimetype="application/json")
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400

@@ -5,6 +5,7 @@ def parse_search_results(projects: list) -> list:
     include = [
         "id",
         "authors",
+        "authors_count",
         "product_types",
         "year_init",
         "year_end",
@@ -19,6 +20,7 @@ def parse_projects_by_entity(projects: list) -> list:
     include = [
         "id",
         "authors",
+        "authors_count",
         "product_types",
         "year_init",
         "year_end",

@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import Generator
 
+from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
 
 
@@ -17,7 +18,7 @@ def parse_annual_evolution_by_scienti_classification(works: Generator) -> dict:
         for year, work_types in data.items()
         for work_type, count in work_types.items()
     ]
-    return {"plot": sorted(plot, key=lambda x: x.get("x"))}
+    return {"plot": sorted(plot, key=lambda x: (x.get("x"), -x.get("y")))}
 
 
 def parse_affiliations_by_product_type(data: CommandCursor) -> dict:
@@ -67,14 +68,8 @@ def parse_annual_articles_open_access(works: Generator) -> dict:
 def parse_annual_articles_by_top_publishers(works: Generator) -> dict:
     data: defaultdict = defaultdict(lambda: defaultdict(int))
     for work in works:
-        if not work.source.publisher and not work.year_published:
-            data["Sin año"]["Sin información"] += 1
-            continue
         if not work.source.publisher:
             data[work.year_published]["Sin información"] += 1
-            continue
-        if not work.year_published:
-            data["Sin año"][work.source.publisher.name] += 1
             continue
         data[work.year_published][work.source.publisher.name] += 1
     plot = [
@@ -82,18 +77,22 @@ def parse_annual_articles_by_top_publishers(works: Generator) -> dict:
         for year, publishers in data.items()
         for publisher, count in publishers.items()
     ]
-    return {"plot": sorted(plot, key=lambda x: float("inf") if x.get("x") == "Sin año" else x.get("x"))}
+    return {"plot": sorted(plot, key=lambda x: (x.get("x"), -x.get("y")))}
 
 
 def parse_annual_apc_expenses(works: Generator) -> dict:
     data: defaultdict = defaultdict(int)
     total_apc = 0
     total_results = 0
+    currency_converter = CurrencyConverter()
     for work in works:
         total_results += 1
-        if not work.apc.paid.value_usd:
+        apc_charges = work.source.apc.charges
+        apc_currency = work.source.apc.currency
+        if not apc_charges or not apc_currency or apc_currency in ["IRR", "NGN"]:
             continue
-        data[work.year_published] += work.apc.paid.value_usd
-        total_apc += work.apc.paid.value_usd
+        usd_charges = currency_converter.convert(apc_charges, apc_currency, "USD")
+        data[work.year_published] += int(usd_charges)
+        total_apc += usd_charges
     plot = [{"x": year, "y": value} for year, value in data.items()]
-    return {"plot": sorted(plot, key=lambda x: x.get("x")), "total_apc": total_apc, "total_results": total_results}
+    return {"plot": sorted(plot, key=lambda x: x.get("x")), "total_apc": int(total_apc), "total_results": total_results}

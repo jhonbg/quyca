@@ -1,65 +1,62 @@
 import json
 import os
+from collections import defaultdict
 from math import log
 
-from pandas import read_csv
+import pandas as pd
 
 
 def parse_coauthorship_by_country_map(data: list) -> dict:
-    countries: dict = {}
+    countries: defaultdict = defaultdict(lambda: {"count": 0, "name": ""})
     for item in data:
-        if not "country_code" in item["affiliation"]["addresses"].keys():
-            continue
-        if item["affiliation"]["addresses"]["country_code"] and item["affiliation"]["addresses"]["country"]:
-            country_code = item["affiliation"]["addresses"]["country_code"]
-            country_name = item["affiliation"]["addresses"]["country"]
-            if country_code in countries.keys():
-                countries[country_code]["count"] += item["count"]
-            else:
-                countries[country_code] = {"count": item["count"], "name": country_name}
-    for key, value in countries.items():
-        countries[key]["log_count"] = log(value["count"])
-    with open(os.path.join(os.path.dirname(__file__), "concerns/worldmap.json"), "r") as worldmap_file:
+        addresses = item.get("affiliation", {}).get("addresses", {})
+        country_code = addresses.get("country_code")
+        country_name = addresses.get("country")
+        if country_code and country_name:
+            country_data = countries[country_code]
+            country_data["count"] += item["count"]
+            country_data["name"] = country_name
+    for country_data in countries.values():
+        country_data["log_count"] = log(country_data["count"])  # type: ignore
+    worldmap_path = os.path.join(os.path.dirname(__file__), "concerns/worldmap.json")
+    with open(worldmap_path, "r") as worldmap_file:
         plot = json.load(worldmap_file)
-    for item, feature in enumerate(plot["features"]):
-        if feature["properties"]["country_code"] in countries.keys():
-            country_code = feature["properties"]["country_code"]
-            plot["features"][item]["properties"]["count"] = countries[country_code]["count"]
-            plot["features"][item]["properties"]["log_count"] = countries[country_code]["log_count"]
+    for feature in plot["features"]:
+        country_code = feature["properties"].get("country_code")
+        if country_code in countries:
+            country_data = countries[country_code]
+            feature["properties"]["count"] = country_data["count"]
+            feature["properties"]["log_count"] = country_data["log_count"]
+        else:
+            feature["properties"]["count"] = 0
+            feature["properties"]["log_count"] = 0
     return {"plot": plot}
 
 
 def get_coauthorship_by_colombian_department_map(data: list) -> dict:
-    states: dict = {}
-    with open(os.path.join(os.path.dirname(__file__), "concerns/cities_by_state.csv"), "r") as cities_by_state_file:
-        cities_by_state = read_csv(cities_by_state_file)
+    cities_by_state_path = os.path.join(os.path.dirname(__file__), "concerns/cities_by_state.csv")
+    cities_by_state = pd.read_csv(cities_by_state_path)
+    city_to_state = dict(zip(cities_by_state["MUNICIPIO"], cities_by_state["DEPARTAMENTO"]))
+    states = {}
     for item in data:
-        if not "country_code" in item["affiliation"]["addresses"].keys():
-            continue
-        if item["affiliation"]["addresses"]["country_code"] and item["affiliation"]["addresses"]["city"]:
-            city = item["affiliation"]["addresses"]["city"]
-            state = cities_by_state[cities_by_state["MUNICIPIO"] == city]["DEPARTAMENTO"]
-            if len(state) == 0:
-                continue
-            state = state.iloc[0]
-            if state in states.keys():
+        addresses = item.get("affiliation", {}).get("addresses", {})
+        if addresses.get("country_code") and addresses.get("city"):
+            city = addresses["city"]
+            state = city_to_state.get(city)
+            if state:
+                if state not in states:
+                    states[state] = {"count": 0, "name": state}
                 states[state]["count"] += item["count"]
-            else:
-                states[state] = {"count": item["count"], "name": state}
-    for key, value in states.items():
-        states[key]["log_count"] = log(value["count"])
-    with open(os.path.join(os.path.dirname(__file__), "concerns/colombiamap.json"), "r") as colombiamap_file:
+    for state_data in states.values():
+        state_data["log_count"] = log(state_data["count"])
+    colombiamap_path = os.path.join(os.path.dirname(__file__), "concerns/colombiamap.json")
+    with open(colombiamap_path, "r") as colombiamap_file:
         plot = json.load(colombiamap_file)
-    for item, feature in enumerate(plot["features"]):
-        state = (
-            feature["properties"]["NOMBRE_DPT"].capitalize()
-            if "bogota" not in feature["properties"]["NOMBRE_DPT"].lower()
-            else "Bogotá D.C."
-        )
-        if state in states.keys():
-            plot["features"][item]["properties"]["count"] = states[state]["count"]
-            plot["features"][item]["properties"]["log_count"] = states[state]["log_count"]
-        else:
-            plot["features"][item]["properties"]["count"] = 0
-            plot["features"][item]["properties"]["log_count"] = 0
+    for feature in plot["features"]:
+        state = feature["properties"]["NOMBRE_DPT"].capitalize()
+        if "bogota" in state.lower():
+            state = "Bogotá D.C."
+        state_data = states.get(state, {"count": 0, "log_count": 0})
+        feature["properties"]["count"] = state_data["count"]
+        feature["properties"]["log_count"] = state_data["log_count"]
     return {"plot": plot}

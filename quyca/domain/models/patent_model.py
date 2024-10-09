@@ -17,7 +17,7 @@ from domain.models.base_model import (
 
 class Patent(BaseModel):
     id: PyObjectId = Field(alias="_id")
-    author_count: int | None = None
+    authors_count: int | None = Field(default_factory=int, alias="author_count")
     authors: list[Author] | str | None = None
     external_ids: list[ExternalId] | None = None
     external_urls: list[ExternalUrl] | None = None

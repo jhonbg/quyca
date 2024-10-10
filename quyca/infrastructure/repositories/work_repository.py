@@ -41,8 +41,14 @@ def get_works_by_affiliation(
 
 
 def get_works_count_by_affiliation(affiliation_id: str) -> int:
-    pipeline = get_works_by_affiliation_pipeline(affiliation_id)
-    pipeline += [{"$count": "total"}]
+    pipeline = [
+        {
+            "$match": {
+                "authors.affiliations.id": ObjectId(affiliation_id),
+            },
+        },
+        {"$count": "total"},
+    ]
     return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
 
@@ -76,6 +82,28 @@ def search_works(query_params: QueryParams, pipeline_params: dict | None = None)
     ]
     total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0}).get("total_results", 0)
     return work_generator.get(works), total_results
+
+
+def get_works_available_filters(pipeline: list) -> dict:
+    available_filters: dict = {}
+    product_types_pipeline = pipeline.copy() + [
+        {"$unwind": "$types"},
+        {"$group": {"_id": "$types.source", "types": {"$addToSet": "$types.type"}}},
+    ]
+    product_types = database["works"].aggregate(product_types_pipeline)
+    available_filters["product_types"] = list(product_types)
+    return available_filters
+
+
+def get_search_works_available_filters(query_params: QueryParams, pipeline_params: dict | None = None) -> dict:
+    pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    return get_works_available_filters(pipeline)
+
+
+def get_search_works_pipeline(query_params: QueryParams, pipeline_params: dict | None = None) -> list:
+    pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
+    return pipeline
 
 
 def get_works_with_source_by_affiliation(affiliation_id: str, pipeline_params: dict | None = None) -> Generator:
@@ -122,13 +150,3 @@ def get_works_with_source_by_person(person_id: str, pipeline_params: dict | None
     base_repository.set_project(pipeline, pipeline_params.get("work_project"))
     cursor = database["works"].aggregate(pipeline)
     return work_generator.get(cursor)
-
-
-def get_works_by_affiliation_pipeline(affiliation_id: str) -> list:
-    return [
-        {
-            "$match": {
-                "authors.affiliations.id": ObjectId(affiliation_id),
-            },
-        },
-    ]

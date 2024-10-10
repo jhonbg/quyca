@@ -53,7 +53,7 @@ def get_works_by_affiliation(affiliation_id: str, query_params: QueryParams) -> 
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     works_data = get_work_by_entity_data(works)
     data = work_parser.parse_works_by_entity(works_data)
-    total_results = work_repository.get_works_count_by_affiliation(affiliation_id)
+    total_results = work_repository.get_works_count_by_affiliation(affiliation_id, query_params)
     return {"data": data, "total_results": total_results}
 
 
@@ -67,7 +67,7 @@ def get_works_by_person(person_id: str, query_params: QueryParams) -> dict:
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     works_data = get_work_by_entity_data(works)
     data = work_parser.parse_works_by_entity(works_data)
-    total_results = work_repository.get_works_count_by_person(person_id)
+    total_results = work_repository.get_works_count_by_person(person_id, query_params)
     return {"data": data, "total_results": total_results}
 
 

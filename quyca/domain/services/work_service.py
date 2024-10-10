@@ -66,6 +66,11 @@ def get_works_by_person(person_id: str, query_params: QueryParams) -> dict:
     return {"data": data, "total_results": total_results}
 
 
+def get_works_filters_by_person(person_id: str, query_params: QueryParams) -> dict:
+    available_filters = work_repository.get_works_available_filters_by_person(person_id, query_params)
+    return work_parser.parse_available_filters(available_filters)
+
+
 def get_work_by_entity_data(works: Generator) -> list:
     works_data = []
     for work in works:

@@ -67,6 +67,13 @@ def get_works_by_person(person_id: str, query_params: QueryParams, pipeline_para
     return work_generator.get(cursor)
 
 
+def get_works_available_filters_by_person(person_id: str, query_params: QueryParams) -> dict:
+    pipeline = [
+        {"$match": {"authors.id": ObjectId(person_id)}},
+    ]
+    return get_works_available_filters(pipeline)
+
+
 def get_works_count_by_person(person_id: str) -> int:
     pipeline = [{"$match": {"authors.id": ObjectId(person_id)}}, {"$count": "total"}]
     return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)

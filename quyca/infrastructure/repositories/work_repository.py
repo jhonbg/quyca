@@ -40,6 +40,13 @@ def get_works_by_affiliation(
     return work_generator.get(cursor)
 
 
+def get_works_available_filters_by_affiliation(affiliation_id: str, query_params: QueryParams) -> dict:
+    pipeline = [
+        {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+    ]
+    return get_works_available_filters(pipeline)
+
+
 def get_works_count_by_affiliation(affiliation_id: str) -> int:
     pipeline = [
         {

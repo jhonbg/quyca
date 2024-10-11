@@ -1,7 +1,6 @@
 from typing import Tuple
 
 from flask import Blueprint, jsonify, Response
-from sentry_sdk import capture_exception
 
 from domain.services import patent_service
 
@@ -14,7 +13,6 @@ def get_patent_by_id(patent_id: str) -> Response | Tuple[Response, int]:
         data = patent_service.get_patent_by_id(patent_id)
         return jsonify(data)
     except Exception as e:
-        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -24,5 +22,4 @@ def get_patent_authors(patent_id: str) -> Response | Tuple[Response, int]:
         data = patent_service.get_patent_authors(patent_id)
         return jsonify(data)
     except Exception as e:
-        capture_exception(e)
         return jsonify({"error": str(e)}), 400

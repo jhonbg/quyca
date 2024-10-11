@@ -1,7 +1,6 @@
 from typing import Tuple
 
 from flask import Blueprint, jsonify, Response
-from sentry_sdk import capture_exception
 
 from domain.services import work_service
 
@@ -14,7 +13,6 @@ def get_work_by_id(work_id: str) -> Response | Tuple[Response, int]:
         data = work_service.get_work_by_id(work_id)
         return jsonify(data)
     except Exception as e:
-        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -24,5 +22,4 @@ def get_work_authors(work_id: str) -> Response | Tuple[Response, int]:
         data = work_service.get_work_authors(work_id)
         return jsonify(data)
     except Exception as e:
-        capture_exception(e)
         return jsonify({"error": str(e)}), 400

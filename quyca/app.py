@@ -1,9 +1,7 @@
 import os
 
-import sentry_sdk
 from flask import Flask
 from flask_cors import CORS
-from sentry_sdk.integrations.flask import FlaskIntegration
 
 from application.routes.router import router
 from config import Settings
@@ -13,13 +11,6 @@ def create_app() -> Flask:
     project_dir = os.path.dirname(os.path.abspath(__file__))
     static_dir = os.path.join(project_dir, "application", "static")
     app_factory = Flask(__name__, static_folder=static_dir)
-    app_settings = Settings()
-    sentry_sdk.init(
-        dsn=app_settings.SENTRY_DSN,
-        integrations=[FlaskIntegration()],
-        traces_sample_rate=1.0,
-        profiles_sample_rate=1.0,
-    )
     CORS(app_factory)
     app_factory.register_blueprint(router)
     return app_factory

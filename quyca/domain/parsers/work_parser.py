@@ -42,7 +42,7 @@ def parse_csv(works: list) -> str:
     ]
     works_dict = [work.model_dump(include=include) for work in works]
     output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=include)
+    writer = csv.DictWriter(output, fieldnames=include, escapechar='\\', quoting=csv.QUOTE_MINIMAL)
     writer.writeheader()
     writer.writerows(works_dict)
     return output.getvalue()

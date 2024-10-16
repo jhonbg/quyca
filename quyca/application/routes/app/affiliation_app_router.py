@@ -58,7 +58,6 @@ def get_affiliation_research_products_filters(
         data = work_service.get_works_filters_by_affiliation(affiliation_id, query_params)
         return jsonify(data)
     except Exception as e:
-        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 

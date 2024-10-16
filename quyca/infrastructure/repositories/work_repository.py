@@ -57,7 +57,7 @@ def get_works_count_by_affiliation(affiliation_id: str, query_params: QueryParam
         },
     ]
     set_product_type_filters(pipeline, query_params.product_type)
-    pipeline += [{"$count": "total"}] # type: ignore
+    pipeline += [{"$count": "total"}]  # type: ignore
     return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
 
@@ -87,7 +87,7 @@ def get_works_available_filters_by_person(person_id: str, query_params: QueryPar
 def get_works_count_by_person(person_id: str, query_params: QueryParams) -> int:
     pipeline = [{"$match": {"authors.id": ObjectId(person_id)}}]
     set_product_type_filters(pipeline, query_params.product_type)
-    pipeline += [{"$count": "total"}] # type: ignore
+    pipeline += [{"$count": "total"}]  # type: ignore
     return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
 

@@ -100,8 +100,55 @@ def parse_available_filters(filters: dict) -> dict:
             if product_type.get("_id") == "crossref":
                 continue
             children = []
-            for inner_type in product_type.get("types"):
-                children.append({"value": product_type.get("_id") + "_" + inner_type, "title": inner_type})
+            if product_type.get("_id") == "scienti":
+                second_level_children = []
+                third_level_children = []
+                for inner_type in product_type.get("types"):
+                    if inner_type.get("level") == 0:
+                        children.append(
+                            {
+                                "value": "scienti_" + inner_type.get("type"),
+                                "title": inner_type.get("code") + " " + inner_type.get("type"),
+                                "code": inner_type.get("code"),
+                                "children": [],
+                            }
+                        )
+                    elif inner_type.get("level") == 1:
+                        second_level_children.append(
+                            {
+                                "value": "scienti_" + inner_type.get("type"),
+                                "title": inner_type.get("code") + " " + inner_type.get("type"),
+                                "code": inner_type.get("code"),
+                                "children": [],
+                            }
+                        )
+                    elif inner_type.get("level") == 2:
+                        third_level_children.append(
+                            {
+                                "value": "scienti_" + inner_type.get("type"),
+                                "title": inner_type.get("code") + " " + inner_type.get("type"),
+                                "code": inner_type.get("code"),
+                            }
+                        )
+                second_level_children.sort(key=lambda x: x.get("title")) # type: ignore
+                third_level_children.sort(key=lambda x: x.get("title")) # type: ignore
+                for child in second_level_children:
+                    child["children"] = list(
+                        filter(lambda x: str(x.get("code")).startswith(str(child.get("code"))), third_level_children)
+                    )
+                for child in children:
+                    child["children"] = list(
+                        filter(lambda x: str(x.get("code")).startswith(str(child.get("code"))), second_level_children)
+                    )
+            else:
+                for inner_type in product_type.get("types"):
+                    children.append(
+                        {
+                            "value": product_type.get("_id") + "_" + inner_type.get("type"),
+                            "title": inner_type.get("type"),
+                        }
+                    )
+            children.sort(key=lambda x: x.get("title")) # type: ignore
             types.append(
                 {
                     "value": product_type.get("_id"),

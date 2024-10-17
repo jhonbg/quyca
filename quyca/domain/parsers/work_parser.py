@@ -130,8 +130,8 @@ def parse_available_filters(filters: dict) -> dict:
                                 "code": inner_type.get("code"),
                             }
                         )
-                second_level_children.sort(key=lambda x: x.get("title")) # type: ignore
-                third_level_children.sort(key=lambda x: x.get("title")) # type: ignore
+                second_level_children.sort(key=lambda x: x.get("title"))  # type: ignore
+                third_level_children.sort(key=lambda x: x.get("title"))  # type: ignore
                 for child in second_level_children:
                     child["children"] = list(
                         filter(lambda x: str(x.get("code")).startswith(str(child.get("code"))), third_level_children)
@@ -148,7 +148,7 @@ def parse_available_filters(filters: dict) -> dict:
                             "title": inner_type.get("type"),
                         }
                     )
-            children.sort(key=lambda x: x.get("title")) # type: ignore
+            children.sort(key=lambda x: x.get("title"))  # type: ignore
             types.append(
                 {
                     "value": product_type.get("_id"),

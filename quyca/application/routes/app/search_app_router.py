@@ -1,6 +1,7 @@
 from typing import Tuple
 
 from flask import Blueprint, request, jsonify, Response
+from sentry_sdk import capture_exception
 
 from domain.models.base_model import QueryParams
 from domain.services import (
@@ -22,6 +23,7 @@ def search_persons() -> Response | Tuple[Response, int]:
         data = person_service.search_persons(query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -32,6 +34,7 @@ def search_works() -> Response | Tuple[Response, int]:
         data = work_service.search_works(query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -42,6 +45,7 @@ def get_search_works_filters() -> Response | Tuple[Response, int]:
         data = work_service.get_search_works_available_filters(query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -52,6 +56,7 @@ def search_affiliations(affiliation_type: str) -> Response | Tuple[Response, int
         data = affiliation_service.search_affiliations(affiliation_type, query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -62,6 +67,7 @@ def search_other_works() -> Response | Tuple[Response, int]:
         data = other_work_service.search_other_works(query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -72,6 +78,7 @@ def search_patents() -> Response | Tuple[Response, int]:
         data = patent_service.search_patents(query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -82,4 +89,5 @@ def search_projects() -> Response | Tuple[Response, int]:
         data = project_service.search_projects(query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400

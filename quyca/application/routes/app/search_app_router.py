@@ -45,6 +45,7 @@ def get_search_works_filters() -> Response | Tuple[Response, int]:
         data = work_service.get_search_works_available_filters(query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 

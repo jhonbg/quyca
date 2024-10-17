@@ -49,6 +49,18 @@ def get_affiliation_research_products(affiliation_id: str, affiliation_type: str
         return jsonify({"error": str(e)}), 400
 
 
+@affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/research/products/filters", methods=["GET"])
+def get_affiliation_research_products_filters(
+    affiliation_id: str, affiliation_type: str
+) -> Response | Tuple[Response, int]:
+    try:
+        query_params = QueryParams(**request.args)
+        data = work_service.get_works_filters_by_affiliation(affiliation_id, query_params)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/research/products/csv", methods=["GET"])
 def get_works_csv_by_affiliation(affiliation_type: str, affiliation_id: str) -> Response | Tuple[Response, int]:
     try:

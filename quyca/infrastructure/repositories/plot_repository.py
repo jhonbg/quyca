@@ -358,17 +358,12 @@ def get_groups_works_citations_count_by_faculty_or_department(affiliation_id: st
 
 def get_active_authors_by_sex(affiliation_id: str) -> CommandCursor:
     pipeline = [
-        {"$match": {"affiliations": {"$elemMatch": {"id": ObjectId(affiliation_id), "end_date": -1}}}},
         {
-            "$lookup": {
-                "from": "works",
-                "localField": "_id",
-                "foreignField": "authors.id",
-                "as": "works",
-                "pipeline": [{"$count": "count"}],
+            "$match": {
+                "affiliations": {"$elemMatch": {"id": ObjectId(affiliation_id), "end_date": -1}},
+                "ranking.source": "staff",
             }
         },
-        {"$match": {"works.count": {"$exists": True}}},
         {"$project": {"_id": 0, "sex": 1}},
     ]
     return database["person"].aggregate(pipeline)
@@ -376,17 +371,12 @@ def get_active_authors_by_sex(affiliation_id: str) -> CommandCursor:
 
 def get_active_authors_by_age_range(affiliation_id: str) -> CommandCursor:
     pipeline = [
-        {"$match": {"affiliations": {"$elemMatch": {"id": ObjectId(affiliation_id), "end_date": -1}}}},
         {
-            "$lookup": {
-                "from": "works",
-                "localField": "_id",
-                "foreignField": "authors.id",
-                "as": "works",
-                "pipeline": [{"$count": "count"}],
+            "$match": {
+                "affiliations": {"$elemMatch": {"id": ObjectId(affiliation_id), "end_date": -1}},
+                "ranking.source": "staff",
             }
         },
-        {"$match": {"works.count": {"$exists": True}}},
         {"$project": {"_id": 0, "birthdate": 1}},
     ]
     return database["person"].aggregate(pipeline)

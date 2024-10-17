@@ -145,6 +145,7 @@ class QueryParams(BaseModel):
     keywords: str | None = None
     plot: str | None = None
     sort: str | None = None
+    product_type: str | None = None
 
 
 class Affiliation(BaseModel):

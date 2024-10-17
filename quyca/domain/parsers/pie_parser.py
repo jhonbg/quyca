@@ -30,8 +30,8 @@ def parse_citations_by_affiliations(data: CommandCursor) -> list:
     plot: list = []
     for item in data:
         citations_count = item.get("citations_count", {})
-        openalex_citations_count: dict = next(filter(lambda x: x["source"] == "openalex", citations_count), {})
-        plot.append({"name": item.get("name", "No name"), "value": openalex_citations_count.get("count", 0)})
+        scholar_citations_count: dict = next(filter(lambda x: x["source"] == "scholar", citations_count), {})
+        plot.append({"name": item.get("name", "No name"), "value": scholar_citations_count.get("count", 0)})
     return sorted(plot, key=lambda x: x.get("value"), reverse=True)
 
 

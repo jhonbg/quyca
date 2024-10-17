@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Add endpoints for new entity types: other works, patents, and projects.
 - Add changelog.
 - Add sentry implementation for error reporting.
+- Add works filter by product type on works lists.
 
 ### Fixed
 - Resolved incorrect data in the co-authorship world map.

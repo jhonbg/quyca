@@ -2,6 +2,7 @@ import json
 from typing import Tuple
 
 from flask import Blueprint, request, Response, jsonify
+from sentry_sdk import capture_exception
 
 from domain.models.base_model import QueryParams
 from domain.services import (
@@ -23,6 +24,7 @@ def get_affiliation_by_id(affiliation_type: str, affiliation_id: str) -> Respons
         data = affiliation_service.get_affiliation_by_id(affiliation_id, affiliation_type)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -33,6 +35,7 @@ def get_affiliation_affiliations(affiliation_type: str, affiliation_id: str) -> 
         response_data = json.dumps(data, sort_keys=False)
         return Response(response_data, mimetype="application/json")
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -46,6 +49,7 @@ def get_affiliation_research_products(affiliation_id: str, affiliation_type: str
         data = work_service.get_works_by_affiliation(affiliation_id, query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -69,6 +73,7 @@ def get_works_csv_by_affiliation(affiliation_type: str, affiliation_id: str) -> 
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -79,6 +84,7 @@ def get_affiliation_research_other_works(affiliation_id: str, affiliation_type: 
         data = other_work_service.get_other_works_by_affiliation(affiliation_id, query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -89,6 +95,7 @@ def get_affiliation_research_patents(affiliation_id: str, affiliation_type: str)
         data = patent_service.get_patents_by_affiliation(affiliation_id, query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
 
@@ -99,4 +106,5 @@ def get_affiliation_research_projects(affiliation_id: str, affiliation_type: str
         data = project_service.get_projects_by_affiliation(affiliation_id, query_params)
         return jsonify(data)
     except Exception as e:
+        capture_exception(e)
         return jsonify({"error": str(e)}), 400

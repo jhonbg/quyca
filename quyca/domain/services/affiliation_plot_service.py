@@ -20,7 +20,7 @@ def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_param
     }
     if plot_type in plot_type_dict.keys():
         relation_type = plot_type_dict[plot_type]
-        return plot_affiliations_by_product_type(affiliation_id, affiliation_type, relation_type)
+        return plot_affiliations_by_product_type(affiliation_id, affiliation_type, relation_type, query_params)
     if plot_type in [
         "citations_by_faculty",
         "citations_by_department",
@@ -34,25 +34,29 @@ def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_param
         "apc_expenses_by_group",
     ]:
         relation_type = plot_type.split("_")[-1]
-        return plot_apc_expenses_by_affiliation(affiliation_id, affiliation_type, relation_type)
+        return plot_apc_expenses_by_affiliation(affiliation_id, affiliation_type, relation_type, query_params)
     if plot_type in [
         "h_index_by_faculty",
         "h_index_by_department",
         "h_index_by_research_group",
     ]:
         relation_type = plot_type.split("_")[-1]
-        return plot_h_index_by_affiliation(affiliation_id, affiliation_type, relation_type)
+        return plot_h_index_by_affiliation(affiliation_id, affiliation_type, relation_type, query_params)
     return globals()["plot_" + plot_type](affiliation_id, query_params)
 
 
-def plot_affiliations_by_product_type(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict | None:
+def plot_affiliations_by_product_type(
+    affiliation_id: str, affiliation_type: str, relation_type: str, query_params: QueryParams
+) -> dict | None:
     data: CommandCursor | None = None
     if affiliation_type == "institution":
-        data = plot_repository.get_affiliations_scienti_works_count_by_institution(affiliation_id, relation_type)
+        data = plot_repository.get_affiliations_scienti_works_count_by_institution(
+            affiliation_id, relation_type, query_params
+        )
     elif affiliation_type == "faculty" and relation_type == "department":
-        data = plot_repository.get_departments_scienti_works_count_by_faculty(affiliation_id)
+        data = plot_repository.get_departments_scienti_works_count_by_faculty(affiliation_id, query_params)
     elif affiliation_type in ["faculty", "department"] and relation_type == "group":
-        data = plot_repository.get_groups_scienti_works_count_by_faculty_or_department(affiliation_id)
+        data = plot_repository.get_groups_scienti_works_count_by_faculty_or_department(affiliation_id, query_params)
     return bar_parser.parse_affiliations_by_product_type(data)
 
 
@@ -67,25 +71,31 @@ def plot_citations_by_affiliations(affiliation_id: str, affiliation_type: str, r
     return pie_parser.parse_citations_by_affiliations(data)
 
 
-def plot_apc_expenses_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
+def plot_apc_expenses_by_affiliation(
+    affiliation_id: str, affiliation_type: str, relation_type: str, query_params: QueryParams
+) -> dict:
     data: CommandCursor | None = None
     if affiliation_type == "institution":
-        data = plot_repository.get_affiliations_apc_expenses_by_institution(affiliation_id, relation_type)
+        data = plot_repository.get_affiliations_apc_expenses_by_institution(affiliation_id, relation_type, query_params)
     elif affiliation_type == "faculty" and relation_type == "department":
-        data = plot_repository.get_departments_apc_expenses_by_faculty(affiliation_id)
+        data = plot_repository.get_departments_apc_expenses_by_faculty(affiliation_id, query_params)
     elif affiliation_type in ["faculty", "department"] and relation_type == "group":
-        data = plot_repository.get_groups_apc_expenses_by_faculty_or_department(affiliation_id)
+        data = plot_repository.get_groups_apc_expenses_by_faculty_or_department(affiliation_id, query_params)
     return pie_parser.parse_apc_expenses_by_affiliations(data)
 
 
-def plot_h_index_by_affiliation(affiliation_id: str, affiliation_type: str, relation_type: str) -> dict:
+def plot_h_index_by_affiliation(
+    affiliation_id: str, affiliation_type: str, relation_type: str, query_params: QueryParams
+) -> dict:
     data: CommandCursor | None = None
     if affiliation_type == "institution":
-        data = plot_repository.get_affiliations_works_citations_count_by_institution(affiliation_id, relation_type)
+        data = plot_repository.get_affiliations_works_citations_count_by_institution(
+            affiliation_id, relation_type, query_params
+        )
     elif affiliation_type == "faculty" and relation_type == "department":
-        data = plot_repository.get_departments_works_citations_count_by_faculty(affiliation_id)
+        data = plot_repository.get_departments_works_citations_count_by_faculty(affiliation_id, query_params)
     elif affiliation_type in ["faculty", "department"] and relation_type == "group":
-        data = plot_repository.get_groups_works_citations_count_by_faculty_or_department(affiliation_id)
+        data = plot_repository.get_groups_works_citations_count_by_faculty_or_department(affiliation_id, query_params)
     return pie_parser.parse_h_index_by_affiliation(data)
 
 
@@ -119,7 +129,7 @@ def plot_annual_articles_by_top_publishers(affiliation_id: str, query_params: Qu
             "source.publisher.name": {"$ne": float("nan")},
         },
     }
-    works = work_repository.get_works_with_source_by_affiliation(affiliation_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
     return bar_parser.parse_annual_articles_by_top_publishers(works)
 
 
@@ -134,7 +144,7 @@ def plot_articles_by_publisher(affiliation_id: str, query_params: QueryParams) -
         "work_project": ["source"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
-    works = work_repository.get_works_with_source_by_affiliation(affiliation_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
     return pie_parser.parse_articles_by_publisher(works)
 
 
@@ -186,7 +196,7 @@ def plot_articles_by_scimago_quartile(affiliation_id: str, query_params: QueryPa
         "work_project": ["source", "date_published"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
-    works = work_repository.get_works_with_source_by_affiliation(affiliation_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
     return pie_parser.parse_articles_by_scimago_quartile(works)
 
 
@@ -197,17 +207,17 @@ def plot_articles_by_publishing_institution(affiliation_id: str, query_params: Q
         "work_project": ["source"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
-    works = work_repository.get_works_with_source_by_affiliation(affiliation_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
     return pie_parser.parse_articles_by_publishing_institution(works, institution)
 
 
 def plot_coauthorship_by_country_map(affiliation_id: str, query_params: QueryParams) -> dict:
-    data = plot_repository.get_coauthorship_by_country_map_by_affiliation(affiliation_id)
+    data = plot_repository.get_coauthorship_by_country_map_by_affiliation(affiliation_id, query_params)
     return map_parser.parse_coauthorship_by_country_map(data)
 
 
 def plot_coauthorship_by_colombian_department_map(affiliation_id: str, query_params: QueryParams) -> dict:
-    data = plot_repository.get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id)
+    data = plot_repository.get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id, query_params)
     return map_parser.get_coauthorship_by_colombian_department_map(data)
 
 
@@ -218,5 +228,5 @@ def plot_institutional_coauthorship_network(affiliation_id: str, query_params: Q
 
 def plot_annual_apc_expenses(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {"source_project": ["apc"], "work_project": ["source", "year_published"]}
-    works = work_repository.get_works_with_source_by_affiliation(affiliation_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
     return bar_parser.parse_annual_apc_expenses(works)

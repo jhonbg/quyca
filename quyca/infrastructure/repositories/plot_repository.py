@@ -3,11 +3,15 @@ from typing import Generator, Tuple
 from bson import ObjectId
 from pymongo.command_cursor import CommandCursor
 
+from domain.models.base_model import QueryParams
 from infrastructure.generators import work_generator
 from infrastructure.mongo import database, calculations_database
+from infrastructure.repositories import work_repository
 
 
-def get_affiliations_scienti_works_count_by_institution(institution_id: str, relation_type: str) -> CommandCursor:
+def get_affiliations_scienti_works_count_by_institution(
+    institution_id: str, relation_type: str, query_params: QueryParams
+) -> CommandCursor:
     pipeline = [
         {"$match": {"relations.id": ObjectId(institution_id), "types.type": relation_type}},
         {
@@ -22,6 +26,9 @@ def get_affiliations_scienti_works_count_by_institution(institution_id: str, rel
         {"$unwind": "$works"},
         {"$unwind": "$works.types"},
         {"$match": {"works.types.source": "scienti", "works.types.level": 2}},
+    ]
+    set_plot_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
         {
             "$group": {
                 "_id": {"id": "$_id", "type": "$works.types.type", "name": "$names.name"},
@@ -33,11 +40,13 @@ def get_affiliations_scienti_works_count_by_institution(institution_id: str, rel
     return database["affiliations"].aggregate(pipeline)
 
 
-def get_departments_scienti_works_count_by_faculty(affiliation_id: str) -> CommandCursor:
-    return get_affiliations_scienti_works_count_by_institution(affiliation_id, "department")
+def get_departments_scienti_works_count_by_faculty(affiliation_id: str, query_params: QueryParams) -> CommandCursor:
+    return get_affiliations_scienti_works_count_by_institution(affiliation_id, "department", query_params)
 
 
-def get_groups_scienti_works_count_by_faculty_or_department(affiliation_id: str) -> CommandCursor:
+def get_groups_scienti_works_count_by_faculty_or_department(
+    affiliation_id: str, query_params: QueryParams
+) -> CommandCursor:
     institution_id = (
         database["affiliations"]
         .aggregate(
@@ -76,6 +85,9 @@ def get_groups_scienti_works_count_by_faculty_or_department(affiliation_id: str)
                 "works.types.level": 2,
             }
         },
+    ]
+    set_plot_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
         {
             "$group": {
                 "_id": {"id": "$_id", "type": "$works.types.type", "name": "$names.name"},
@@ -150,7 +162,9 @@ def get_groups_citations_count_by_faculty_or_department(affiliation_id: str) -> 
     return database["works"].aggregate(pipeline)
 
 
-def get_affiliations_apc_expenses_by_institution(institution_id: str, relation_type: str) -> CommandCursor:
+def get_affiliations_apc_expenses_by_institution(
+    institution_id: str, relation_type: str, query_params: QueryParams
+) -> CommandCursor:
     pipeline = [
         {"$match": {"relations.id": ObjectId(institution_id), "types.type": relation_type}},
         {
@@ -158,15 +172,18 @@ def get_affiliations_apc_expenses_by_institution(institution_id: str, relation_t
                 "from": "works",
                 "localField": "_id",
                 "foreignField": "authors.affiliations.id",
-                "as": "work",
+                "as": "works",
                 "pipeline": [{"$project": {"source": 1}}],
             }
         },
-        {"$unwind": "$work"},
+        {"$unwind": "$works"},
+    ]
+    set_plot_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
         {
             "$lookup": {
                 "from": "sources",
-                "localField": "work.source.id",
+                "localField": "works.source.id",
                 "foreignField": "_id",
                 "as": "source",
                 "pipeline": [{"$project": {"apc": 1}}],
@@ -178,11 +195,11 @@ def get_affiliations_apc_expenses_by_institution(institution_id: str, relation_t
     return database["affiliations"].aggregate(pipeline)
 
 
-def get_departments_apc_expenses_by_faculty(affiliation_id: str) -> CommandCursor:
-    return get_affiliations_apc_expenses_by_institution(affiliation_id, "department")
+def get_departments_apc_expenses_by_faculty(affiliation_id: str, query_params: QueryParams) -> CommandCursor:
+    return get_affiliations_apc_expenses_by_institution(affiliation_id, "department", query_params)
 
 
-def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str) -> CommandCursor:
+def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str, query_params: QueryParams) -> CommandCursor:
     institution_id = (
         database["affiliations"]
         .aggregate(
@@ -208,18 +225,21 @@ def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str) -> Com
                 "from": "works",
                 "localField": "_id",
                 "foreignField": "authors.affiliations.id",
-                "as": "work",
+                "as": "works",
                 "pipeline": [
                     {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
                     {"$project": {"source": 1, "authors": 1}},
                 ],
             }
         },
-        {"$unwind": "$work"},
+        {"$unwind": "$works"},
+    ]
+    set_plot_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
         {
             "$lookup": {
                 "from": "sources",
-                "localField": "work.source.id",
+                "localField": "works.source.id",
                 "foreignField": "_id",
                 "as": "source",
                 "pipeline": [{"$project": {"apc": 1}}],
@@ -231,7 +251,9 @@ def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str) -> Com
     return database["affiliations"].aggregate(pipeline)
 
 
-def get_affiliations_works_citations_count_by_institution(institution_id: str, relation_type: str) -> CommandCursor:
+def get_affiliations_works_citations_count_by_institution(
+    institution_id: str, relation_type: str, query_params: QueryParams
+) -> CommandCursor:
     pipeline = [
         {"$match": {"relations.id": ObjectId(institution_id), "types.type": relation_type}},
         {
@@ -277,16 +299,21 @@ def get_affiliations_works_citations_count_by_institution(institution_id: str, r
                 ],
             }
         },
+    ]
+    set_plot_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
         {"$project": {"_id": 0, "works": 1, "name": {"$first": "$names.name"}}},
     ]
     return database["affiliations"].aggregate(pipeline)
 
 
-def get_departments_works_citations_count_by_faculty(affiliation_id: str) -> CommandCursor:
-    return get_affiliations_works_citations_count_by_institution(affiliation_id, "department")
+def get_departments_works_citations_count_by_faculty(affiliation_id: str, query_params: QueryParams) -> CommandCursor:
+    return get_affiliations_works_citations_count_by_institution(affiliation_id, "department", query_params)
 
 
-def get_groups_works_citations_count_by_faculty_or_department(affiliation_id: str) -> CommandCursor:
+def get_groups_works_citations_count_by_faculty_or_department(
+    affiliation_id: str, query_params: QueryParams
+) -> CommandCursor:
     institution_id = (
         database["affiliations"]
         .aggregate(
@@ -351,6 +378,9 @@ def get_groups_works_citations_count_by_faculty_or_department(affiliation_id: st
                 ],
             }
         },
+    ]
+    set_plot_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
         {"$project": {"_id": 0, "works": 1, "name": {"$first": "$names.name"}}},
     ]
     return database["affiliations"].aggregate(pipeline)
@@ -382,45 +412,51 @@ def get_active_authors_by_age_range(affiliation_id: str) -> CommandCursor:
     return database["person"].aggregate(pipeline)
 
 
-def get_products_by_author_age_and_person(person_id: str) -> CommandCursor:
+def get_products_by_author_age_and_person(person_id: str, query_params: QueryParams) -> CommandCursor:
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
-        {"$project": {"authors": 1, "date_published": 1, "year_published": 1}},
+    ]
+    work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
+        {"$project": {"authors": 1, "date_published": 1, "year_published": 1}},  # type: ignore
         {
             "$lookup": {
-                "from": "person",
-                "localField": "authors.id",
-                "foreignField": "_id",
-                "pipeline": [{"$project": {"birthdate": 1}}],
-                "as": "author",
+                "from": "person",  # type: ignore
+                "localField": "authors.id",  # type: ignore
+                "foreignField": "_id",  # type: ignore
+                "pipeline": [{"$project": {"birthdate": 1}}],  # type: ignore
+                "as": "author",  # type: ignore
             }
         },
-        {"$unwind": "$author"},
+        {"$unwind": "$author"},  # type: ignore
         {
             "$project": {
-                "work.date_published": "$date_published",
-                "work.year_published": "$year_published",
-                "birthdate": "$author.birthdate",
+                "work.date_published": "$date_published",  # type: ignore
+                "work.year_published": "$year_published",  # type: ignore
+                "birthdate": "$author.birthdate",  # type: ignore
             }
         },
     ]
     return database["works"].aggregate(pipeline)
 
 
-def get_coauthorship_by_country_map_by_affiliation(affiliation_id: str) -> list:
+def get_coauthorship_by_country_map_by_affiliation(affiliation_id: str, query_params: QueryParams) -> list:
     data = []
     pipeline = [
         {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
-        {"$unwind": "$authors"},
-        {"$unwind": "$authors.affiliations"},
-        {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},
+    ]
+    work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
+        {"$unwind": "$authors"},  # type: ignore
+        {"$unwind": "$authors.affiliations"},  # type: ignore
+        {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},  # type: ignore
         {
             "$lookup": {
-                "from": "affiliations",
-                "localField": "_id",
-                "foreignField": "_id",
-                "as": "affiliation",
-                "pipeline": [
+                "from": "affiliations",  # type: ignore
+                "localField": "_id",  # type: ignore
+                "foreignField": "_id",  # type: ignore
+                "as": "affiliation",  # type: ignore
+                "pipeline": [  # type: ignore
                     {
                         "$project": {
                             "addresses.country_code": 1,
@@ -430,29 +466,32 @@ def get_coauthorship_by_country_map_by_affiliation(affiliation_id: str) -> list:
                 ],
             }
         },
-        {"$unwind": "$affiliation"},
-        {"$unwind": "$affiliation.addresses"},
+        {"$unwind": "$affiliation"},  # type: ignore
+        {"$unwind": "$affiliation.addresses"},  # type: ignore
     ]
     for work in database["works"].aggregate(pipeline):
         data.append(work)
     return data
 
 
-def get_coauthorship_by_country_map_by_person(person_id: str) -> list:
+def get_coauthorship_by_country_map_by_person(person_id: str, query_params: QueryParams) -> list:
     data = []
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
-        {"$unwind": "$authors"},
-        {"$unwind": "$authors.affiliations"},
-        {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},
-        {"$unwind": "$_id"},
+    ]
+    work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
+        {"$unwind": "$authors"},  # type: ignore
+        {"$unwind": "$authors.affiliations"},  # type: ignore
+        {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},  # type: ignore
+        {"$unwind": "$_id"},  # type: ignore
         {
             "$lookup": {
-                "from": "affiliations",
-                "localField": "_id",
-                "foreignField": "_id",
-                "as": "affiliation",
-                "pipeline": [
+                "from": "affiliations",  # type: ignore
+                "localField": "_id",  # type: ignore
+                "foreignField": "_id",  # type: ignore
+                "as": "affiliation",  # type: ignore
+                "pipeline": [  # type: ignore
                     {
                         "$project": {
                             "addresses.country_code": 1,
@@ -464,33 +503,36 @@ def get_coauthorship_by_country_map_by_person(person_id: str) -> list:
         },
         {
             "$project": {
-                "count": 1,
-                "affiliation.addresses.country_code": 1,
-                "affiliation.addresses.country": 1,
+                "count": 1,  # type: ignore
+                "affiliation.addresses.country_code": 1,  # type: ignore
+                "affiliation.addresses.country": 1,  # type: ignore
             }
         },
-        {"$unwind": "$affiliation"},
-        {"$unwind": "$affiliation.addresses"},
+        {"$unwind": "$affiliation"},  # type: ignore
+        {"$unwind": "$affiliation.addresses"},  # type: ignore
     ]
     for work in database["works"].aggregate(pipeline):
         data.append(work)
     return data
 
 
-def get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id: str) -> list:
+def get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id: str, query_params: QueryParams) -> list:
     data = []
     pipeline = [
         {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
-        {"$unwind": "$authors"},
-        {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},
-        {"$unwind": "$_id"},
+    ]
+    work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
+        {"$unwind": "$authors"},  # type: ignore
+        {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},  # type: ignore
+        {"$unwind": "$_id"},  # type: ignore
         {
             "$lookup": {
-                "from": "affiliations",
-                "localField": "_id",
-                "foreignField": "_id",
-                "as": "affiliation",
-                "pipeline": [
+                "from": "affiliations",  # type: ignore
+                "localField": "_id",  # type: ignore
+                "foreignField": "_id",  # type: ignore
+                "as": "affiliation",  # type: ignore
+                "pipeline": [  # type: ignore
                     {
                         "$project": {
                             "addresses.country_code": 1,
@@ -500,38 +542,41 @@ def get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id: 
                 ],
             }
         },
-        {"$unwind": "$affiliation"},
-        {"$unwind": "$affiliation.addresses"},
+        {"$unwind": "$affiliation"},  # type: ignore
+        {"$unwind": "$affiliation.addresses"},  # type: ignore
     ]
     for work in database["works"].aggregate(pipeline):
         data.append(work)
     return data
 
 
-def get_coauthorship_by_colombian_department_map_by_person(person_id: str) -> list:
+def get_coauthorship_by_colombian_department_map_by_person(person_id: str, query_params: QueryParams) -> list:
     data = []
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
-        {"$unwind": "$authors"},
-        {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},
-        {"$unwind": "$_id"},
+    ]
+    work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
+        {"$unwind": "$authors"},  # type: ignore
+        {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},  # type: ignore
+        {"$unwind": "$_id"},  # type: ignore
         {
             "$lookup": {
-                "from": "affiliations",
-                "localField": "_id",
-                "foreignField": "_id",
-                "as": "affiliation",
+                "from": "affiliations",  # type: ignore
+                "localField": "_id",  # type: ignore
+                "foreignField": "_id",  # type: ignore
+                "as": "affiliation",  # type: ignore
             }
         },
         {
             "$project": {
-                "count": 1,
-                "affiliation.addresses.country_code": 1,
-                "affiliation.addresses.city": 1,
+                "count": 1,  # type: ignore
+                "affiliation.addresses.country_code": 1,  # type: ignore
+                "affiliation.addresses.city": 1,  # type: ignore
             }
         },
-        {"$unwind": "$affiliation"},
-        {"$unwind": "$affiliation.addresses"},
+        {"$unwind": "$affiliation"},  # type: ignore
+        {"$unwind": "$affiliation.addresses"},  # type: ignore
     ]
     for work in database["works"].aggregate(pipeline):
         data.append(work)
@@ -568,26 +613,32 @@ def get_collaboration_network(affiliation_id: str) -> CommandCursor:
     return calculations_database["affiliations"].aggregate(pipeline)
 
 
-def get_works_rankings_by_person(person_id: str) -> Tuple[Generator, int]:
+def get_works_rankings_by_person(person_id: str, query_params: QueryParams) -> Tuple[Generator, int]:
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
+    ]
+    work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
         {
             "$lookup": {
-                "from": "sources",
-                "localField": "source.id",
-                "foreignField": "_id",
-                "as": "source_data",
-                "pipeline": [
+                "from": "sources",  # type: ignore
+                "localField": "source.id",  # type: ignore
+                "foreignField": "_id",  # type: ignore
+                "as": "source_data",  # type: ignore
+                "pipeline": [  # type: ignore
                     {"$project": {"_id": 1, "ranking": 1}},
                 ],
             }
         },
-        {"$unwind": "$source_data"},
-        {"$project": {"_id": 1, "source_data": 1, "date_published": 1}},
+        {"$unwind": "$source_data"},  # type: ignore
+        {"$project": {"_id": 1, "source_data": 1, "date_published": 1}},  # type: ignore
     ]
     count_pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
-        {"$count": "total_results"},
+    ]
+    work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    count_pipeline += [
+        {"$count": "total_results"},  # type: ignore
     ]
     total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
     works = database["works"].aggregate(pipeline)
@@ -876,3 +927,13 @@ def get_products_by_database_by_person(affiliation_id: str) -> dict:
             }
         ),
     }
+
+
+def set_plot_product_type_filters(pipeline: list, type_filters: str | None) -> None:
+    if not type_filters:
+        return
+    match_filters = []
+    for type_filter in type_filters.split(","):
+        source, type_name = type_filter.split("_")
+        match_filters.append({"works.types.source": source, "works.types.type": type_name})
+    pipeline += [{"$match": {"$or": match_filters}}]

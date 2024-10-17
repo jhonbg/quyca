@@ -28,7 +28,7 @@ def plot_annual_citation_count(person_id: str, query_params: QueryParams) -> dic
 
 def plot_annual_apc_expenses(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {"source_project": ["apc"], "work_project": ["source", "year_published"]}
-    works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_person(person_id, query_params, pipeline_params)
     return bar_parser.parse_annual_apc_expenses(works)
 
 
@@ -50,7 +50,7 @@ def plot_annual_articles_by_top_publishers(person_id: str, query_params: QueryPa
             "source.publisher.name": {"$ne": float("nan")},
         },
     }
-    works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_person(person_id, query_params, pipeline_params)
     return bar_parser.parse_annual_articles_by_top_publishers(works)
 
 
@@ -65,7 +65,7 @@ def plot_articles_by_publisher(person_id: str, query_params: QueryParams) -> dic
         "work_project": ["source"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
-    works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_person(person_id, query_params, pipeline_params)
     return pie_parser.parse_articles_by_publisher(works)
 
 
@@ -107,7 +107,7 @@ def plot_articles_by_scimago_quartile(person_id: str, query_params: QueryParams)
         "work_project": ["source", "date_published"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
-    works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_person(person_id, query_params, pipeline_params)
     return pie_parser.parse_articles_by_scimago_quartile(works)
 
 
@@ -125,17 +125,17 @@ def plot_articles_by_publishing_institution(person_id: str, query_params: QueryP
         "work_project": ["source"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
-    works = work_repository.get_works_with_source_by_person(person_id, pipeline_params)
+    works = work_repository.get_works_with_source_by_person(person_id, query_params, pipeline_params)
     return pie_parser.parse_articles_by_publishing_institution(works, institution)
 
 
 def plot_coauthorship_by_country_map(person_id: str, query_params: QueryParams) -> dict:
-    data = plot_repository.get_coauthorship_by_country_map_by_person(person_id)
+    data = plot_repository.get_coauthorship_by_country_map_by_person(person_id, query_params)
     return map_parser.parse_coauthorship_by_country_map(data)
 
 
 def plot_coauthorship_by_colombian_department_map(person_id: str, query_params: QueryParams) -> dict:
-    data = plot_repository.get_coauthorship_by_colombian_department_map_by_person(person_id)
+    data = plot_repository.get_coauthorship_by_colombian_department_map_by_person(person_id, query_params)
     return map_parser.get_coauthorship_by_colombian_department_map(data)
 
 

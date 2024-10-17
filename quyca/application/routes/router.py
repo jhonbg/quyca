@@ -12,7 +12,6 @@ from application.routes.app.person_app_router import person_app_router
 from application.routes.api.person_api_router import person_api_router
 from application.routes.app.work_app_router import work_app_router
 from application.routes.docs_router import router as docs_router
-from application.routes.etl_router import etl_router
 from application.routes.ping_router import ping_router
 
 router = Blueprint("router", __name__)
@@ -36,5 +35,3 @@ router.register_blueprint(other_work_app_router, url_prefix=f"{settings.APP_URL_
 router.register_blueprint(patent_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/patent")
 
 router.register_blueprint(project_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/project")
-
-router.register_blueprint(etl_router, url_prefix=f"{settings.APP_URL_PREFIX}/etl")

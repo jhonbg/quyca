@@ -11,7 +11,35 @@ from infrastructure.mongo import database
 
 
 def get_person_by_id(person_id: str) -> Person:
-    person_data = database["person"].find_one({"_id": ObjectId(person_id)})
+    person_data = database["person"].aggregate(
+        [
+            {"$match": {"_id": ObjectId(person_id)}},
+            {
+                "$addFields": {
+                    "filtered_affiliations": {
+                        "$filter": {
+                            "input": "$affiliations",
+                            "as": "affiliation",
+                            "cond": {"$eq": ["$$affiliation.end_date", -1]},
+                        }
+                    }
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "affiliations",
+                    "localField": "filtered_affiliations.id",
+                    "foreignField": "_id",
+                    "as": "affiliations_data",
+                    "pipeline": [
+                        {"$match": {"external_urls.source": "logo"}},
+                        {"$project": {"_id": 0, "external_urls": 1}},
+                    ],
+                }
+            },
+        ]
+    )
+    person_data = next(person_data, None)
     if not person_data:
         raise NotEntityException(f"The person with id {person_id} does not exist.")
     return Person(**person_data)
@@ -30,6 +58,31 @@ def search_persons(query_params: QueryParams, pipeline_params: dict | None = Non
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    pipeline += [
+        {
+            "$addFields": {
+                "filtered_affiliations": {
+                    "$filter": {
+                        "input": "$affiliations",
+                        "as": "affiliation",
+                        "cond": {"$eq": ["$$affiliation.end_date", -1]},
+                    }
+                }
+            }
+        },
+        {
+            "$lookup": {
+                "from": "affiliations",  # type: ignore
+                "localField": "filtered_affiliations.id",  # type: ignore
+                "foreignField": "_id",  # type: ignore
+                "as": "affiliations_data",  # type: ignore
+                "pipeline": [  # type: ignore
+                    {"$match": {"external_urls.source": "logo"}},
+                    {"$project": {"_id": 0, "external_urls": 1}},
+                ],
+            }
+        },
+    ]
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     persons = database["person"].aggregate(pipeline)
     count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []

@@ -9,8 +9,9 @@ def parse_search_result(persons: list) -> list:
         "external_ids",
         "products_count",
         "citations_count",
+        "logo",
     ]
-    return [person.model_dump(include=include, exclude_none=True) for person in persons]
+    return [person.model_dump(include=include) for person in persons]
 
 
 def parse_person(person: Person) -> dict:

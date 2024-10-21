@@ -1,5 +1,5 @@
 from bson import ObjectId
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from domain.models.base_model import (
     PyObjectId,
     CitationsCount,
@@ -9,16 +9,18 @@ from domain.models.base_model import (
     Identifier,
     Subject,
     Ranking,
+    ExternalUrl,
 )
 
 
 class Affiliation(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId)
-    name: str | None
+    name: str | None = None
     position: str | None = None
-    start_date: int | str | None
-    end_date: int | str | None
+    start_date: int | str | None = None
+    end_date: int | str | None = None
     types: list[Type] | None = Field(default_factory=list)
+    external_urls: list[ExternalUrl] | None = Field(default_factory=list)
 
     @field_validator("start_date")
     @classmethod
@@ -94,6 +96,7 @@ class Person(BaseModel):
     subjects: list[Subject] | None = Field(default_factory=list)
     updated: list[Updated] | None = Field(default_factory=list)
 
+    affiliations_data: list[Affiliation] | None = None
     logo: str | None = None
 
     @field_validator("external_ids")
@@ -109,3 +112,9 @@ class Person(BaseModel):
 
     class Config:
         json_encoders = {ObjectId: str}
+
+    @model_validator(mode="after")
+    def get_logo(self) -> "Person":
+        if self.affiliations_data:
+            self.logo = next(filter(lambda x: x.source == "logo", self.affiliations_data[0].external_urls)).url  # type: ignore
+        return self

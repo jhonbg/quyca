@@ -121,22 +121,27 @@ def get_search_works_available_filters(query_params: QueryParams, pipeline_param
     return get_works_available_filters(pipeline, query_params)
 
 
-def get_works_with_source_by_affiliation(affiliation_id: str, pipeline_params: dict | None = None) -> Generator:
+def get_works_with_source_by_affiliation(
+    affiliation_id: str, query_params: QueryParams, pipeline_params: dict | None = None
+) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
     source_project = pipeline_params.get("source_project", [])
     pipeline = [
         {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+    ]
+    set_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
         {
             "$lookup": {
-                "from": "sources",
-                "localField": "source.id",
-                "foreignField": "_id",
-                "as": "source",
-                "pipeline": [{"$project": {"_id": 1, **{p: 1 for p in source_project}}}],
+                "from": "sources",  # type: ignore
+                "localField": "source.id",  # type: ignore
+                "foreignField": "_id",  # type: ignore
+                "as": "source",  # type: ignore
+                "pipeline": [{"$project": {"_id": 1, **{p: 1 for p in source_project}}}],  # type: ignore
             }
         },
-        {"$unwind": "$source"},
+        {"$unwind": "$source"},  # type: ignore
     ]
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     base_repository.set_project(pipeline, pipeline_params.get("work_project"))
@@ -144,22 +149,27 @@ def get_works_with_source_by_affiliation(affiliation_id: str, pipeline_params: d
     return work_generator.get(cursor)
 
 
-def get_works_with_source_by_person(person_id: str, pipeline_params: dict | None = None) -> Generator:
+def get_works_with_source_by_person(
+    person_id: str, query_params: QueryParams, pipeline_params: dict | None = None
+) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
     source_project = pipeline_params.get("source_project", [])
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
+    ]
+    set_product_type_filters(pipeline, query_params.product_type)
+    pipeline += [
         {
             "$lookup": {
-                "from": "sources",
-                "localField": "source.id",
-                "foreignField": "_id",
-                "as": "source",
-                "pipeline": [{"$project": {"_id": 1, **{p: 1 for p in source_project}}}],
+                "from": "sources",  # type: ignore
+                "localField": "source.id",  # type: ignore
+                "foreignField": "_id",  # type: ignore
+                "as": "source",  # type: ignore
+                "pipeline": [{"$project": {"_id": 1, **{p: 1 for p in source_project}}}],  # type: ignore
             }
         },
-        {"$unwind": "$source"},
+        {"$unwind": "$source"},  # type: ignore
     ]
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     base_repository.set_project(pipeline, pipeline_params.get("work_project"))

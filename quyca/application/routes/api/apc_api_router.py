@@ -1,3 +1,5 @@
+import csv
+import io
 from typing import Tuple
 
 from bson import ObjectId
@@ -23,7 +25,7 @@ def apc_search() -> Response | Tuple[Response, int]:
                     "foreignField": "_id",  # type: ignore
                     "as": "source_data",  # type: ignore
                     "pipeline": [  # type: ignore
-                        {"$project": {"_id": 0, "apc": 1}},
+                        {"$project": {"_id": 0, "apc": 1, "names": 1}},
                     ],
                 }
             },
@@ -31,7 +33,9 @@ def apc_search() -> Response | Tuple[Response, int]:
             {
                 "$project": {
                     "_id": 0,  # type: ignore
-                    "doi": 1,  # type: ignore
+                    "work_doi": "$doi",  # type: ignore
+                    "work_title": {"$first": "$titles.title"},  # type: ignore
+                    "source_name": {"$first": "$source_data.names.name"},  # type: ignore
                     "source_apc_value": "$source_data.apc.charges",  # type: ignore
                     "source_apc_currency": "$source_data.apc.currency",  # type: ignore
                     "work_apc_currency": "$apc.paid.currency",  # type: ignore
@@ -40,7 +44,24 @@ def apc_search() -> Response | Tuple[Response, int]:
             },
         ]
         data = database["works"].aggregate(pipeline)
-        return jsonify(list(data))
+        fieldnames = [
+            "work_doi",
+            "work_title",
+            "source_name",
+            "source_apc_value",
+            "source_apc_currency",
+            "work_apc_value",
+            "work_apc_currency",
+        ]
+        data = list(data)
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=fieldnames, escapechar="\\", quoting=csv.QUOTE_MINIMAL)
+        writer.writeheader()
+        writer.writerows(data)
+        data = output.getvalue()
+        response = Response(data, content_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
+        return response
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400
@@ -58,7 +79,7 @@ def apc_person(person_id: str) -> Response | Tuple[Response, int]:
                     "foreignField": "_id",  # type: ignore
                     "as": "source_data",  # type: ignore
                     "pipeline": [  # type: ignore
-                        {"$project": {"_id": 0, "apc": 1}},
+                        {"$project": {"_id": 0, "apc": 1, "names": 1}},
                     ],  # type: ignore
                 }
             },
@@ -66,7 +87,9 @@ def apc_person(person_id: str) -> Response | Tuple[Response, int]:
             {
                 "$project": {
                     "_id": 0,
-                    "doi": 1,
+                    "work_doi": "$doi",
+                    "work_title": {"$first": "$titles.title"},  # type: ignore
+                    "source_name": {"$first": "$source_data.names.name"},  # type: ignore
                     "source_apc_value": "$source_data.apc.charges",
                     "source_apc_currency": "$source_data.apc.currency",
                     "work_apc_currency": "$apc.paid.currency",
@@ -75,7 +98,24 @@ def apc_person(person_id: str) -> Response | Tuple[Response, int]:
             },
         ]
         data = database["works"].aggregate(pipeline)
-        return jsonify(list(data))
+        fieldnames = [
+            "work_doi",
+            "work_title",
+            "source_name",
+            "source_apc_value",
+            "source_apc_currency",
+            "work_apc_value",
+            "work_apc_currency",
+        ]
+        data = list(data)
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=fieldnames, escapechar="\\", quoting=csv.QUOTE_MINIMAL)
+        writer.writeheader()
+        writer.writerows(data)
+        data = output.getvalue()
+        response = Response(data, content_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
+        return response
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400
@@ -93,7 +133,7 @@ def apc_affiliation(affiliation_id: str) -> Response | Tuple[Response, int]:
                     "foreignField": "_id",  # type: ignore
                     "as": "source_data",  # type: ignore
                     "pipeline": [  # type: ignore
-                        {"$project": {"_id": 0, "apc": 1}},
+                        {"$project": {"_id": 0, "apc": 1, "names": 1}},
                     ],  # type: ignore
                 }
             },
@@ -101,7 +141,9 @@ def apc_affiliation(affiliation_id: str) -> Response | Tuple[Response, int]:
             {
                 "$project": {
                     "_id": 0,
-                    "doi": 1,
+                    "work_doi": "$doi",
+                    "work_title": {"$first": "$titles.title"},  # type: ignore
+                    "source_name": {"$first": "$source_data.names.name"},  # type: ignore
                     "source_apc_value": "$source_data.apc.charges",
                     "source_apc_currency": "$source_data.apc.currency",
                     "work_apc_currency": "$apc.paid.currency",
@@ -110,7 +152,24 @@ def apc_affiliation(affiliation_id: str) -> Response | Tuple[Response, int]:
             },
         ]
         data = database["works"].aggregate(pipeline)
-        return jsonify(list(data))
+        fieldnames = [
+            "work_doi",
+            "work_title",
+            "source_name",
+            "source_apc_value",
+            "source_apc_currency",
+            "work_apc_value",
+            "work_apc_currency",
+        ]
+        data = list(data)
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=fieldnames, escapechar="\\", quoting=csv.QUOTE_MINIMAL)
+        writer.writeheader()
+        writer.writerows(data)
+        data = output.getvalue()
+        response = Response(data, content_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
+        return response
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400

@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Add changelog.
 - Add sentry implementation for error reporting.
 - Add works filter by product type on works lists.
+- Add person logo
 
 ### Fixed
 - Resolved incorrect data in the co-authorship world map.

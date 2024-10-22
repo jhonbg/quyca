@@ -2,6 +2,7 @@ import os
 
 import sentry_sdk
 from flask import Flask
+from flask_compress import Compress
 from flask_cors import CORS
 from sentry_sdk.integrations.flask import FlaskIntegration
 
@@ -23,6 +24,7 @@ def create_app() -> Flask:
     app_factory = Flask(__name__, static_folder=static_dir)
     CORS(app_factory)
     app_factory.register_blueprint(router)
+    Compress(app_factory)
     return app_factory
 
 

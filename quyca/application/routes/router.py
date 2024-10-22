@@ -1,6 +1,7 @@
 from flask import Blueprint
 
 from application.routes.api.apc_api_router import apc_api_router
+from application.routes.app.info_app_router import info_app_router
 from config import settings
 from application.routes.app.other_work_app_router import other_work_app_router
 from application.routes.app.patent_app_router import patent_app_router
@@ -19,6 +20,8 @@ router = Blueprint("router", __name__)
 
 router.register_blueprint(ping_router)
 router.register_blueprint(docs_router)
+
+router.register_blueprint(info_app_router, url_prefix=f"{settings.APP_URL_PREFIX}")
 
 router.register_blueprint(search_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/search")
 router.register_blueprint(search_api_router, url_prefix=f"{settings.API_URL_PREFIX}/search")

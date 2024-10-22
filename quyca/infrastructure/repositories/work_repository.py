@@ -97,6 +97,7 @@ def search_works(query_params: QueryParams, pipeline_params: dict | None = None)
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     works = database["works"].aggregate(pipeline)
     count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    set_product_type_filters(count_pipeline, query_params.product_type)
     count_pipeline += [
         {"$count": "total_results"},  # type: ignore
     ]
@@ -183,5 +184,5 @@ def set_product_type_filters(pipeline: list, type_filters: str | None) -> None:
     match_filters = []
     for type_filter in type_filters.split(","):
         source, type_name = type_filter.split("_")
-        match_filters.append({"types.source": source, "types.type": type_name})
+        match_filters.append({"types": {"$elemMatch": {"source": source, "type": type_name}}})
     pipeline += [{"$match": {"$or": match_filters}}]

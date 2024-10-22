@@ -183,6 +183,13 @@ def set_product_type_filters(pipeline: list, type_filters: str | None) -> None:
         return
     match_filters = []
     for type_filter in type_filters.split(","):
-        source, type_name = type_filter.split("_")
-        match_filters.append({"types": {"$elemMatch": {"source": source, "type": type_name}}})
+        params = type_filter.split("_")
+        if len(params) == 1:
+            match_filters.append({"types": {"$elemMatch": {"source": params[0]}}})
+        elif len(params) == 2:
+            match_filters.append({"types": {"$elemMatch": {"source": params[0], "type": params[1]}}})
+        elif len(params) == 3 and params[0] == "scienti":
+            match_filters.append(
+                {"types": {"$elemMatch": {"source": params[0], "type": params[1], "code": {"$regex": "^" + params[2]}}}}  # type: ignore
+            )
     pipeline += [{"$match": {"$or": match_filters}}]

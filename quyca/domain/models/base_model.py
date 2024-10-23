@@ -152,8 +152,11 @@ class Affiliation(BaseModel):
     id: PyObjectId | None = None
     name: str | None = None
     types: list[Type] | None = None
+    start_date: int | str | None = None
+    end_date: int | str | None = None
 
     addresses: list[Address] | None = None
+    position: str | None = None
     ranking: list[Ranking] | None = None
 
     class Config:
@@ -165,7 +168,11 @@ class Author(BaseModel):
     affiliations: list[Affiliation] | None = None
     full_name: str | None = None
 
+    first_names: list[str] | None = None
+    last_names: list[str] | None = None
+    sex: str | None = None
     external_ids: list[ExternalId] | None = None
+    ranking: list[Ranking] | None = None
 
     class Config:
         json_encoders = {ObjectId: str}

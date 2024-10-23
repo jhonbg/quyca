@@ -4,12 +4,12 @@ from domain.parsers import work_parser
 
 
 def get_works_by_affiliation(affiliation_id: str, query_params: QueryParams) -> dict:
-    works = work_repository.get_works_by_affiliation(affiliation_id, query_params)
+    works = work_repository.get_works_by_affiliation_for_api_expert(affiliation_id, query_params)
     data = work_parser.parse_api_expert(works)
     return {"data": data}
 
 
 def get_works_by_person(person_id: str, query_params: QueryParams) -> dict:
-    works = work_repository.get_works_by_person(person_id, query_params)
+    works = work_repository.get_works_by_person_for_api_expert(person_id, query_params)
     data = work_parser.parse_api_expert(works)
     return {"data": data}

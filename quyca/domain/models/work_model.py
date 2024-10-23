@@ -1,7 +1,7 @@
 from typing import Any
 
 from bson import ObjectId
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
 from domain.models.base_model import (
     PyObjectId,
@@ -19,6 +19,7 @@ from domain.models.base_model import (
     Title,
     Affiliation,
     ProductType,
+    Name,
 )
 
 
@@ -29,8 +30,6 @@ class BiblioGraphicInfo(BaseModel):
     start_page: str | None = None
     end_page: str | None = None
     volume: str | int | None = None
-    is_open_access: bool | None = None
-    open_access_status: str | None = None
 
 
 class OpenAccess(BaseModel):
@@ -49,6 +48,8 @@ class Source(BaseModel):
     id: PyObjectId | str | None = None
     name: str | Any | None = None
 
+    types: list[Type] | None = None
+    names: list[Name] | None = None
     scimago_quartile: str | None = None
     serials: dict | None = None
     external_urls: list[ExternalUrl] | None = None
@@ -114,15 +115,6 @@ class Work(BaseModel):
     source_urls: str | None = None
     title: str | None = None
     volume: str | int | None = None
-
-    @model_validator(mode="after")
-    def validate_open_access(self) -> "Work":
-        if self.bibliographic_info and self.open_access:
-            if self.open_access.is_open_access is None:
-                self.open_access.is_open_access = self.bibliographic_info.is_open_access
-            if self.open_access.open_access_status is None:
-                self.open_access.open_access_status = self.bibliographic_info.open_access_status
-        return self
 
     class Config:
         json_encoders = {ObjectId: str}

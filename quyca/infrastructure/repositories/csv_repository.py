@@ -36,7 +36,6 @@ def get_works_csv_by_person(person_id: str) -> Generator:
                 ],
             }
         },
-        {"$unwind": "$source_data"},
         {
             "$project": {
                 "external_ids": 1,
@@ -89,7 +88,6 @@ def get_works_csv_by_affiliation(affiliation_id: str) -> Generator:
                 ],
             }
         },
-        {"$unwind": "$source_data"},
         {
             "$project": {
                 "external_ids": 1,

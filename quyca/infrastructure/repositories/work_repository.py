@@ -259,7 +259,7 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
         {"$project": {"_id": 0, "min_year": 1, "max_year": 1}},
     ]
     years = database["works"].aggregate(years_pipeline)
-    available_filters["years"] = next(years)
+    available_filters["years"] = next(years, {"min_year": None, "max_year": None})
     return available_filters
 
 

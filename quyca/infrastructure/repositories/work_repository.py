@@ -32,6 +32,7 @@ def get_works_by_affiliation(
         },
     ]
     set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
@@ -100,6 +101,7 @@ def get_works_by_affiliation_for_api_expert(
         {"$set": {"source": {"$arrayElemAt": ["$sources", 0]}}},
     ]
     set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
@@ -125,6 +127,7 @@ def get_works_count_by_affiliation(affiliation_id: str, query_params: QueryParam
         },
     ]
     set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
     pipeline += [{"$count": "total"}]  # type: ignore
     return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
@@ -136,6 +139,7 @@ def get_works_by_person(person_id: str, query_params: QueryParams, pipeline_para
         {"$match": {"authors.id": ObjectId(person_id)}},
     ]
     set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
@@ -198,6 +202,7 @@ def get_works_by_person_for_api_expert(
         {"$set": {"source": {"$arrayElemAt": ["$sources", 0]}}},
     ]
     set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
@@ -217,6 +222,7 @@ def get_works_available_filters_by_person(person_id: str, query_params: QueryPar
 def get_works_count_by_person(person_id: str, query_params: QueryParams) -> int:
     pipeline = [{"$match": {"authors.id": ObjectId(person_id)}}]
     set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
     pipeline += [{"$count": "total"}]  # type: ignore
     return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
@@ -224,10 +230,12 @@ def get_works_count_by_person(person_id: str, query_params: QueryParams) -> int:
 def search_works(query_params: QueryParams, pipeline_params: dict | None = None) -> Tuple[Generator, int]:
     pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     works = database["works"].aggregate(pipeline)
     count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     set_product_type_filters(count_pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
     count_pipeline += [
         {"$count": "total_results"},  # type: ignore
     ]
@@ -237,6 +245,7 @@ def search_works(query_params: QueryParams, pipeline_params: dict | None = None)
 
 def get_works_available_filters(pipeline: list, query_params: QueryParams) -> dict:
     set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
     available_filters: dict = {}
     product_types_pipeline = pipeline.copy() + [
         {"$unwind": "$types"},
@@ -269,6 +278,7 @@ def get_works_with_source_by_affiliation(
         {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
     ]
     set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
     pipeline += [
         {
             "$lookup": {
@@ -297,6 +307,7 @@ def get_works_with_source_by_person(
         {"$match": {"authors.id": ObjectId(person_id)}},
     ]
     set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
     pipeline += [
         {
             "$lookup": {
@@ -330,3 +341,10 @@ def set_product_type_filters(pipeline: list, type_filters: str | None) -> None:
                 {"types": {"$elemMatch": {"source": params[0], "type": params[1], "code": {"$regex": "^" + params[2]}}}}  # type: ignore
             )
     pipeline += [{"$match": {"$or": match_filters}}]
+
+
+def set_year_filters(pipeline: list, years: str | None) -> None:
+    if not years:
+        return
+    year_list = [int(year) for year in years.split(",")]
+    pipeline += [{"$match": {"year_published": {"$in": year_list}}}]

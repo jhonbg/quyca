@@ -102,7 +102,7 @@ def parse_available_filters(filters: dict) -> dict:
     return available_filters
 
 
-def parse_product_type_filter(product_types):
+def parse_product_type_filter(product_types: list) -> list:
     types = []
     for product_type in product_types:
         if product_type.get("_id") == "crossref":

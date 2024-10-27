@@ -244,6 +244,13 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
     ]
     product_types = database["works"].aggregate(product_types_pipeline)
     available_filters["product_types"] = list(product_types)
+    years_pipeline = pipeline.copy() + [
+        {"$match": {"year_published": {"$type": "number"}}},
+        {"$group": {"_id": None, "min_year": {"$min": "$year_published"}, "max_year": {"$max": "$year_published"}}},
+        {"$project": {"_id": 0, "min_year": 1, "max_year": 1}},
+    ]
+    years = database["works"].aggregate(years_pipeline)
+    available_filters["years"] = next(years)
     return available_filters
 
 

@@ -347,4 +347,6 @@ def set_year_filters(pipeline: list, years: str | None) -> None:
     if not years:
         return
     year_list = [int(year) for year in years.split(",")]
-    pipeline += [{"$match": {"year_published": {"$in": year_list}}}]
+    first_year = min(year_list)
+    last_year = max(year_list)
+    pipeline += [{"$match": {"year_published": {"$gte": first_year, "$lte": last_year}}}]

@@ -28,6 +28,7 @@ def get_affiliations_scienti_works_count_by_institution(
         {"$match": {"works.types.source": "scienti", "works.types.level": 2}},
     ]
     set_plot_product_type_filters(pipeline, query_params.product_type)
+    set_plot_year_filters(pipeline, query_params.year)
     pipeline += [
         {
             "$group": {
@@ -87,6 +88,7 @@ def get_groups_scienti_works_count_by_faculty_or_department(
         },
     ]
     set_plot_product_type_filters(pipeline, query_params.product_type)
+    set_plot_year_filters(pipeline, query_params.year)
     pipeline += [
         {
             "$group": {
@@ -179,6 +181,7 @@ def get_affiliations_apc_expenses_by_institution(
         {"$unwind": "$works"},
     ]
     set_plot_product_type_filters(pipeline, query_params.product_type)
+    set_plot_year_filters(pipeline, query_params.year)
     pipeline += [
         {
             "$lookup": {
@@ -235,6 +238,7 @@ def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str, query_
         {"$unwind": "$works"},
     ]
     set_plot_product_type_filters(pipeline, query_params.product_type)
+    set_plot_year_filters(pipeline, query_params.year)
     pipeline += [
         {
             "$lookup": {
@@ -301,6 +305,7 @@ def get_affiliations_works_citations_count_by_institution(
         },
     ]
     set_plot_product_type_filters(pipeline, query_params.product_type)
+    set_plot_year_filters(pipeline, query_params.year)
     pipeline += [
         {"$project": {"_id": 0, "works": 1, "name": {"$first": "$names.name"}}},
     ]
@@ -380,6 +385,7 @@ def get_groups_works_citations_count_by_faculty_or_department(
         },
     ]
     set_plot_product_type_filters(pipeline, query_params.product_type)
+    set_plot_year_filters(pipeline, query_params.year)
     pipeline += [
         {"$project": {"_id": 0, "works": 1, "name": {"$first": "$names.name"}}},
     ]
@@ -417,6 +423,7 @@ def get_products_by_author_age_and_person(person_id: str, query_params: QueryPar
         {"$match": {"authors.id": ObjectId(person_id)}},
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    work_repository.set_year_filters(pipeline, query_params.year)
     pipeline += [
         {"$project": {"authors": 1, "date_published": 1, "year_published": 1}},  # type: ignore
         {
@@ -446,6 +453,7 @@ def get_coauthorship_by_country_map_by_affiliation(affiliation_id: str, query_pa
         {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    work_repository.set_year_filters(pipeline, query_params.year)
     pipeline += [
         {"$unwind": "$authors"},  # type: ignore
         {"$unwind": "$authors.affiliations"},  # type: ignore
@@ -480,6 +488,7 @@ def get_coauthorship_by_country_map_by_person(person_id: str, query_params: Quer
         {"$match": {"authors.id": ObjectId(person_id)}},
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    work_repository.set_year_filters(pipeline, query_params.year)
     pipeline += [
         {"$unwind": "$authors"},  # type: ignore
         {"$unwind": "$authors.affiliations"},  # type: ignore
@@ -522,6 +531,7 @@ def get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id: 
         {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    work_repository.set_year_filters(pipeline, query_params.year)
     pipeline += [
         {"$unwind": "$authors"},  # type: ignore
         {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},  # type: ignore
@@ -556,6 +566,7 @@ def get_coauthorship_by_colombian_department_map_by_person(person_id: str, query
         {"$match": {"authors.id": ObjectId(person_id)}},
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    work_repository.set_year_filters(pipeline, query_params.year)
     pipeline += [
         {"$unwind": "$authors"},  # type: ignore
         {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},  # type: ignore
@@ -618,6 +629,7 @@ def get_works_rankings_by_person(person_id: str, query_params: QueryParams) -> T
         {"$match": {"authors.id": ObjectId(person_id)}},
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    work_repository.set_year_filters(pipeline, query_params.year)
     pipeline += [
         {
             "$lookup": {
@@ -637,6 +649,7 @@ def get_works_rankings_by_person(person_id: str, query_params: QueryParams) -> T
         {"$match": {"authors.id": ObjectId(person_id)}},
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
+    work_repository.set_year_filters(pipeline, query_params.year)
     count_pipeline += [
         {"$count": "total_results"},  # type: ignore
     ]
@@ -937,3 +950,12 @@ def set_plot_product_type_filters(pipeline: list, type_filters: str | None) -> N
         source, type_name = type_filter.split("_")
         match_filters.append({"works.types.source": source, "works.types.type": type_name})
     pipeline += [{"$match": {"$or": match_filters}}]
+
+
+def set_plot_year_filters(pipeline: list, years: str | None) -> None:
+    if not years:
+        return
+    year_list = [int(year) for year in years.split(",")]
+    first_year = min(year_list)
+    last_year = max(year_list)
+    pipeline += [{"$match": {"works.year_published": {"$gte": first_year, "$lte": last_year}}}]

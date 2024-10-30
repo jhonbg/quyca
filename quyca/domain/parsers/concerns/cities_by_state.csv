@@ -9,7 +9,7 @@ Antioquia,Andes
 Antioquia,Angelópolis
 Antioquia,Angostura
 Antioquia,Anorí
-Boyacá,Tununguá
+Boyaca,Tununguá
 Antioquia,Anza
 Antioquia,Apartadó
 Antioquia,Arboletes
@@ -19,7 +19,7 @@ Antioquia,Barbosa
 Antioquia,Bello
 Antioquia,Betania
 Antioquia,Betulia
-Antioquia,Ciudad Bolívar
+Antioquia,Ciudad Bolivar
 Antioquia,Briceño
 Antioquia,Buriticá
 Antioquia,Cáceres
@@ -30,7 +30,7 @@ Antioquia,Cañasgordas
 Antioquia,Caracolí
 Antioquia,Caramanta
 Antioquia,Carepa
-Boyacá,Motavita
+Boyaca,Motavita
 Antioquia,Carolina
 Antioquia,Caucasia
 Antioquia,Chigorodó
@@ -46,11 +46,11 @@ Antioquia,El Bagre
 Antioquia,Entrerrios
 Antioquia,Envigado
 Antioquia,Fredonia
-Córdoba,San Bernardo del Viento
+Cordoba,San Bernardo del Viento
 Antioquia,Giraldo
 Antioquia,Girardota
 Antioquia,Gómez Plata
-Chocó,Istmina
+Choco,Istmina
 Antioquia,Guadalupe
 Antioquia,Guarne
 Antioquia,Guatapé
@@ -86,7 +86,7 @@ Antioquia,Rionegro
 Antioquia,Sabanalarga
 Antioquia,Sabaneta
 Antioquia,Salgar
-Boyacá,Ciénega
+Boyaca,Ciénega
 Nariño,Santacruz
 Antioquia,San Francisco
 Antioquia,San Jerónimo
@@ -120,163 +120,163 @@ Antioquia,Yarumal
 Antioquia,Yolombó
 Antioquia,Yondó
 Antioquia,Zaragoza
-Atlántico,Barranquilla
-Atlántico,Baranoa
-Atlántico,Candelaria
-Atlántico,Galapa
-Atlántico,Luruaco
-Atlántico,Malambo
-Atlántico,Manatí
-Atlántico,Piojó
-Atlántico,Polonuevo
-Atlántico,Sabanagrande
-Atlántico,Sabanalarga
-Atlántico,Santa Lucía
-Atlántico,Santo Tomás
-Atlántico,Soledad
-Atlántico,Suan
-Atlántico,Tubará
-Atlántico,Usiacurí
-Bolívar,Achí
-Bolívar,Arenal
-Bolívar,Arjona
-Bolívar,Arroyohondo
-Bolívar,Calamar
-Bolívar,Cantagallo
-Bolívar,Cicuco
-Bolívar,Córdoba
-Bolívar,Clemencia
-Bolívar,El Guamo
-Bolívar,Magangué
-Bolívar,Mahates
-Bolívar,Margarita
-Bolívar,Montecristo
-Bolívar,Mompós
-Bolívar,Morales
-Bolívar,Norosí
-Bolívar,Pinillos
-Bolívar,Regidor
-Bolívar,Río Viejo
-Bolívar,San Estanislao
-Bolívar,San Fernando
-Bolívar,San Juan Nepomuceno
-Bolívar,Santa Catalina
-Bolívar,Santa Rosa
-Bolívar,Simití
-Bolívar,Soplaviento
-Bolívar,Talaigua Nuevo
-Bolívar,Tiquisio
-Bolívar,Turbaco
-Bolívar,Turbaná
-Bolívar,Villanueva
-Boyacá,Tunja
-Boyacá,Almeida
-Boyacá,Aquitania
-Boyacá,Arcabuco
-Boyacá,Berbeo
-Boyacá,Betéitiva
-Boyacá,Boavita
-Boyacá,Boyacá
-Boyacá,Briceño
-Boyacá,Buena Vista
-Boyacá,Busbanzá
-Boyacá,Caldas
-Boyacá,Campohermoso
-Boyacá,Cerinza
-Boyacá,Chinavita
-Boyacá,Chiquinquirá
-Boyacá,Chiscas
-Boyacá,Chita
-Boyacá,Chitaraque
-Boyacá,Chivatá
-Boyacá,Cómbita
-Boyacá,Coper
-Boyacá,Corrales
-Boyacá,Covarachía
-Boyacá,Cubará
-Boyacá,Cucaita
-Boyacá,Cuítiva
-Boyacá,Chíquiza
-Boyacá,Chivor
-Boyacá,Duitama
-Boyacá,El Cocuy
-Boyacá,El Espino
-Boyacá,Firavitoba
-Boyacá,Floresta
-Boyacá,Gachantivá
-Boyacá,Gameza
-Boyacá,Garagoa
-Boyacá,Guacamayas
-Boyacá,Guateque
-Boyacá,Guayatá
-Boyacá,Güicán
-Boyacá,Iza
-Boyacá,Jenesano
-Boyacá,Jericó
-Boyacá,Labranzagrande
-Boyacá,La Capilla
-Boyacá,La Victoria
-Boyacá,Macanal
-Boyacá,Maripí
-Boyacá,Miraflores
-Boyacá,Mongua
-Boyacá,Monguí
-Boyacá,Moniquirá
-Boyacá,Muzo
-Boyacá,Nobsa
-Boyacá,Nuevo Colón
-Boyacá,Oicatá
-Boyacá,Otanche
-Boyacá,Pachavita
-Boyacá,Páez
-Boyacá,Paipa
-Boyacá,Pajarito
-Boyacá,Panqueba
-Boyacá,Pauna
-Boyacá,Paya
-Boyacá,Pesca
-Boyacá,Pisba
-Boyacá,Puerto Boyacá
-Boyacá,Quípama
-Boyacá,Ramiriquí
-Boyacá,Ráquira
-Boyacá,Rondón
-Boyacá,Saboyá
-Boyacá,Sáchica
-Boyacá,Samacá
-Boyacá,San Eduardo
-Boyacá,San Mateo
-Boyacá,Santana
-Boyacá,Santa María
-Boyacá,Santa Sofía
-Boyacá,Sativanorte
-Boyacá,Sativasur
-Boyacá,Siachoque
-Boyacá,Soatá
-Boyacá,Socotá
-Boyacá,Socha
-Boyacá,Sogamoso
-Boyacá,Somondoco
-Boyacá,Sora
-Boyacá,Sotaquirá
-Boyacá,Soracá
-Boyacá,Susacón
-Boyacá,Sutamarchán
-Boyacá,Sutatenza
-Boyacá,Tasco
-Boyacá,Tenza
-Boyacá,Tibaná
-Boyacá,Tinjacá
-Boyacá,Tipacoque
-Boyacá,Toca
-Boyacá,Tópaga
-Boyacá,Tota
-Boyacá,Turmequé
-Boyacá,Tutazá
-Boyacá,Umbita
-Boyacá,Ventaquemada
-Boyacá,Viracachá
-Boyacá,Zetaquira
+Atlantico,Barranquilla
+Atlantico,Baranoa
+Atlantico,Candelaria
+Atlantico,Galapa
+Atlantico,Luruaco
+Atlantico,Malambo
+Atlantico,Manatí
+Atlantico,Piojó
+Atlantico,Polonuevo
+Atlantico,Sabanagrande
+Atlantico,Sabanalarga
+Atlantico,Santa Lucía
+Atlantico,Santo Tomás
+Atlantico,Soledad
+Atlantico,Suan
+Atlantico,Tubará
+Atlantico,Usiacurí
+Bolivar,Achí
+Bolivar,Arenal
+Bolivar,Arjona
+Bolivar,Arroyohondo
+Bolivar,Calamar
+Bolivar,Cantagallo
+Bolivar,Cicuco
+Bolivar,Cordoba
+Bolivar,Clemencia
+Bolivar,El Guamo
+Bolivar,Magangué
+Bolivar,Mahates
+Bolivar,Margarita
+Bolivar,Montecristo
+Bolivar,Mompós
+Bolivar,Morales
+Bolivar,Norosí
+Bolivar,Pinillos
+Bolivar,Regidor
+Bolivar,Río Viejo
+Bolivar,San Estanislao
+Bolivar,San Fernando
+Bolivar,San Juan Nepomuceno
+Bolivar,Santa Catalina
+Bolivar,Santa Rosa
+Bolivar,Simití
+Bolivar,Soplaviento
+Bolivar,Talaigua Nuevo
+Bolivar,Tiquisio
+Bolivar,Turbaco
+Bolivar,Turbaná
+Bolivar,Villanueva
+Boyaca,Tunja
+Boyaca,Almeida
+Boyaca,Aquitania
+Boyaca,Arcabuco
+Boyaca,Berbeo
+Boyaca,Betéitiva
+Boyaca,Boavita
+Boyaca,Boyaca
+Boyaca,Briceño
+Boyaca,Buena Vista
+Boyaca,Busbanzá
+Boyaca,Caldas
+Boyaca,Campohermoso
+Boyaca,Cerinza
+Boyaca,Chinavita
+Boyaca,Chiquinquirá
+Boyaca,Chiscas
+Boyaca,Chita
+Boyaca,Chitaraque
+Boyaca,Chivatá
+Boyaca,Cómbita
+Boyaca,Coper
+Boyaca,Corrales
+Boyaca,Covarachía
+Boyaca,Cubará
+Boyaca,Cucaita
+Boyaca,Cuítiva
+Boyaca,Chíquiza
+Boyaca,Chivor
+Boyaca,Duitama
+Boyaca,El Cocuy
+Boyaca,El Espino
+Boyaca,Firavitoba
+Boyaca,Floresta
+Boyaca,Gachantivá
+Boyaca,Gameza
+Boyaca,Garagoa
+Boyaca,Guacamayas
+Boyaca,Guateque
+Boyaca,Guayatá
+Boyaca,Güicán
+Boyaca,Iza
+Boyaca,Jenesano
+Boyaca,Jericó
+Boyaca,Labranzagrande
+Boyaca,La Capilla
+Boyaca,La Victoria
+Boyaca,Macanal
+Boyaca,Maripí
+Boyaca,Miraflores
+Boyaca,Mongua
+Boyaca,Monguí
+Boyaca,Moniquirá
+Boyaca,Muzo
+Boyaca,Nobsa
+Boyaca,Nuevo Colón
+Boyaca,Oicatá
+Boyaca,Otanche
+Boyaca,Pachavita
+Boyaca,Páez
+Boyaca,Paipa
+Boyaca,Pajarito
+Boyaca,Panqueba
+Boyaca,Pauna
+Boyaca,Paya
+Boyaca,Pesca
+Boyaca,Pisba
+Boyaca,Puerto Boyaca
+Boyaca,Quípama
+Boyaca,Ramiriquí
+Boyaca,Ráquira
+Boyaca,Rondón
+Boyaca,Saboyá
+Boyaca,Sáchica
+Boyaca,Samacá
+Boyaca,San Eduardo
+Boyaca,San Mateo
+Boyaca,Santana
+Boyaca,Santa María
+Boyaca,Santa Sofía
+Boyaca,Sativanorte
+Boyaca,Sativasur
+Boyaca,Siachoque
+Boyaca,Soatá
+Boyaca,Socotá
+Boyaca,Socha
+Boyaca,Sogamoso
+Boyaca,Somondoco
+Boyaca,Sora
+Boyaca,Sotaquirá
+Boyaca,Soracá
+Boyaca,Susacón
+Boyaca,Sutamarchán
+Boyaca,Sutatenza
+Boyaca,Tasco
+Boyaca,Tenza
+Boyaca,Tibaná
+Boyaca,Tinjacá
+Boyaca,Tipacoque
+Boyaca,Toca
+Boyaca,Tópaga
+Boyaca,Tota
+Boyaca,Turmequé
+Boyaca,Tutazá
+Boyaca,Umbita
+Boyaca,Ventaquemada
+Boyaca,Viracachá
+Boyaca,Zetaquira
 Caldas,Manizales
 Caldas,Aguadas
 Caldas,Anserma
@@ -303,21 +303,21 @@ Caldas,Supía
 Caldas,Victoria
 Caldas,Villamaría
 Caldas,Viterbo
-Caquetá,Florencia
-Caquetá,Albania
-Caquetá,Curillo
-Caquetá,El Doncello
-Caquetá,El Paujil
-Caquetá,Morelia
-Caquetá,Puerto Rico
-Caquetá,Solano
-Caquetá,Solita
-Caquetá,Valparaíso
+Caqueta,Florencia
+Caqueta,Albania
+Caqueta,Curillo
+Caqueta,El Doncello
+Caqueta,El Paujil
+Caqueta,Morelia
+Caqueta,Puerto Rico
+Caqueta,Solano
+Caqueta,Solita
+Caqueta,Valparaíso
 Cauca,Popayán
 Cauca,Almaguer
 Cauca,Argelia
 Cauca,Balboa
-Cauca,Bolívar
+Cauca,Bolivar
 Cauca,Buenos Aires
 Cauca,Cajibío
 Cauca,Caldono
@@ -375,29 +375,29 @@ Cesar,San Alberto
 Cesar,San Diego
 Cesar,San Martín
 Cesar,Tamalameque
-Córdoba,Montería
-Córdoba,Ayapel
-Córdoba,Buenavista
-Córdoba,Canalete
-Córdoba,Cereté
-Córdoba,Chimá
-Córdoba,Chinú
-Córdoba,Cotorra
-Córdoba,Lorica
-Córdoba,Los Córdobas
-Córdoba,Momil
-Córdoba,Moñitos
-Córdoba,Planeta Rica
-Córdoba,Pueblo Nuevo
-Córdoba,Puerto Escondido
-Córdoba,Purísima
-Córdoba,Sahagún
-Córdoba,San Andrés Sotavento
-Córdoba,San Antero
-Córdoba,San Pelayo
-Córdoba,Tierralta
-Córdoba,Tuchín
-Córdoba,Valencia
+Cordoba,Montería
+Cordoba,Ayapel
+Cordoba,Buenavista
+Cordoba,Canalete
+Cordoba,Cereté
+Cordoba,Chimá
+Cordoba,Chinú
+Cordoba,Cotorra
+Cordoba,Lorica
+Cordoba,Los Cordobas
+Cordoba,Momil
+Cordoba,Moñitos
+Cordoba,Planeta Rica
+Cordoba,Pueblo Nuevo
+Cordoba,Puerto Escondido
+Cordoba,Purísima
+Cordoba,Sahagún
+Cordoba,San Andrés Sotavento
+Cordoba,San Antero
+Cordoba,San Pelayo
+Cordoba,Tierralta
+Cordoba,Tuchín
+Cordoba,Valencia
 Cundinamarca,Anapoima
 Cundinamarca,Arbeláez
 Cundinamarca,Beltrán
@@ -496,28 +496,28 @@ Cundinamarca,Villapinzón
 Cundinamarca,Villeta
 Cundinamarca,Viotá
 Cundinamarca,Zipacón
-Chocó,Quibdó
-Chocó,Acandí
-Chocó,Alto Baudo
-Chocó,Atrato
-Chocó,Bagadó
-Chocó,Bahía Solano
-Chocó,Bajo Baudó
-Chocó,Bojaya
-Chocó,Cértegui
-Chocó,Condoto
-Chocó,Juradó
-Chocó,Lloró
-Chocó,Medio Atrato
-Chocó,Medio Baudó
-Chocó,Medio San Juan
-Chocó,Nóvita
-Chocó,Nuquí
-Chocó,Río Iro
-Chocó,Río Quito
-Chocó,Riosucio
-Chocó,Sipí
-Chocó,Unguía
+Choco,Quibdó
+Choco,Acandí
+Choco,Alto Baudo
+Choco,Atrato
+Choco,Bagadó
+Choco,Bahía Solano
+Choco,Bajo Baudó
+Choco,Bojaya
+Choco,Cértegui
+Choco,Condoto
+Choco,Juradó
+Choco,Lloró
+Choco,Medio Atrato
+Choco,Medio Baudó
+Choco,Medio San Juan
+Choco,Nóvita
+Choco,Nuquí
+Choco,Río Iro
+Choco,Río Quito
+Choco,Riosucio
+Choco,Sipí
+Choco,Unguía
 Huila,Neiva
 Huila,Acevedo
 Huila,Agrado
@@ -554,19 +554,19 @@ Huila,Teruel
 Huila,Timaná
 Huila,Villavieja
 Huila,Yaguará
-La Guajira,Riohacha
-La Guajira,Albania
-La Guajira,Barrancas
-La Guajira,Dibula
-La Guajira,Distracción
-La Guajira,El Molino
-La Guajira,Fonseca
-La Guajira,Hatonuevo
-La Guajira,Maicao
-La Guajira,Manaure
-La Guajira,Uribia
-La Guajira,Urumita
-La Guajira,Villanueva
+La guajira,Riohacha
+La guajira,Albania
+La guajira,Barrancas
+La guajira,Dibula
+La guajira,Distracción
+La guajira,El Molino
+La guajira,Fonseca
+La guajira,Hatonuevo
+La guajira,Maicao
+La guajira,Manaure
+La guajira,Uribia
+La guajira,Urumita
+La guajira,Villanueva
 Magdalena,Santa Marta
 Magdalena,Algarrobo
 Magdalena,Aracataca
@@ -622,7 +622,7 @@ Nariño,Barbacoas
 Nariño,Colón
 Nariño,Consaca
 Nariño,Contadero
-Nariño,Córdoba
+Nariño,Cordoba
 Nariño,Cuaspud
 Nariño,Cumbal
 Nariño,Cumbitara
@@ -670,16 +670,16 @@ Nariño,Taminango
 Nariño,Tangua
 Nariño,Túquerres
 Nariño,Yacuanquer
-Quindío,Armenia
-Quindío,Buenavista
-Quindío,Circasia
-Quindío,Córdoba
-Quindío,Filandia
-Quindío,La Tebaida
-Quindío,Montenegro
-Quindío,Pijao
-Quindío,Quimbaya
-Quindío,Salento
+Quindio,Armenia
+Quindio,Buenavista
+Quindio,Circasia
+Quindio,Cordoba
+Quindio,Filandia
+Quindio,La Tebaida
+Quindio,Montenegro
+Quindio,Pijao
+Quindio,Quimbaya
+Quindio,Salento
 Risaralda,Pereira
 Risaralda,Apía
 Risaralda,Balboa
@@ -700,7 +700,7 @@ Santander,Barbosa
 Santander,Barichara
 Santander,Barrancabermeja
 Santander,Betulia
-Santander,Bolívar
+Santander,Bolivar
 Santander,Cabrera
 Santander,California
 Santander,Carcasí
@@ -862,53 +862,53 @@ Amazonas,Puerto Arica
 Amazonas,Puerto Nariño
 Amazonas,Puerto Santander
 Amazonas,Tarapacá
-Guainía,Inírida
-Guainía,Barranco Minas
-Guainía,Mapiripana
-Guainía,San Felipe
-Guainía,Puerto Colombia
-Guainía,La Guadalupe
-Guainía,Cacahual
-Guainía,Pana Pana
-Vaupés,Mitú
-Vaupés,Carurú
-Vaupés,Taraira
-Vaupés,Papunahua
-Vaupés,Yavaraté
-Vaupés,Pacoa
-Guainía,Morichal
+Guainia,Inírida
+Guainia,Barranco Minas
+Guainia,Mapiripana
+Guainia,San Felipe
+Guainia,Puerto Colombia
+Guainia,La Guadalupe
+Guainia,Cacahual
+Guainia,Pana Pana
+Vaupes,Mitú
+Vaupes,Carurú
+Vaupes,Taraira
+Vaupes,Papunahua
+Vaupes,Yavaraté
+Vaupes,Pacoa
+Guainia,Morichal
 Vichada,Puerto Carreño
 Vichada,La Primavera
 Vichada,Santa Rosalía
 Vichada,Cumaribo
-Caquetá,San José del Fragua
+Caqueta,San José del Fragua
 Meta,Barranca de Upía
 Santander,Palmas del Socorro
 Cundinamarca,San Juan de Río Seco
-Atlántico,Juan de Acosta
+Atlantico,Juan de Acosta
 Meta,Fuente de Oro
 Casanare,San Luis de Gaceno
-Chocó,El Litoral del San Juan
+Choco,El Litoral del San Juan
 Cundinamarca,Villa de San Diego de Ubate
-Bolívar,Barranco de Loba
-Boyacá,Togüí
-Bolívar,Santa Rosa del Sur
-Chocó,El Cantón del San Pablo
-Boyacá,Villa de Leyva
+Bolivar,Barranco de Loba
+Boyaca,Togüí
+Bolivar,Santa Rosa del Sur
+Choco,El Cantón del San Pablo
+Boyaca,Villa de Leyva
 Magdalena,San Sebastián de Buenavista
-Boyacá,Paz de Río
-Bolívar,Hatillo de Loba
+Boyaca,Paz de Río
+Bolivar,Hatillo de Loba
 Magdalena,Sabanas de San Angel
 Guaviare,Calamar
 Cesar,Río de Oro
 Antioquia,San Pedro de Uraba
 Guaviare,San José del Guaviare
-Boyacá,Santa Rosa de Viterbo
+Boyaca,Santa Rosa de Viterbo
 Cauca,Santander de Quilichao
 Guaviare,Miraflores
 Antioquia,Santafé de Antioquia
 Meta,San Carlos de Guaroa
-Atlántico,Palmar de Varela
+Atlantico,Palmar de Varela
 Antioquia,Santa Rosa de Osos
 Antioquia,San Andrés de Cuerquía
 Tolima,Valle de San Juan
@@ -917,209 +917,210 @@ Santander,San José de Miranda
 "Archipiélago de San Andrés, Providencia y Santa Catalina",Providencia
 Risaralda,Santa Rosa de Cabal
 Cundinamarca,Guayabal de Siquima
-Caquetá,Belén de Los Andaquies
+Caqueta,Belén de Los Andaquies
 Casanare,Paz de Ariporo
 Santander,Santa Helena del Opón
-Boyacá,San Pablo de Borbur
-La Guajira,La Jagua del Pilar
+Boyaca,San Pablo de Borbur
+La guajira,La Jagua del Pilar
 Cesar,La Jagua de Ibirico
 Sucre,San Luis de Sincé
-Boyacá,San Luis de Gaceno
-Bolívar,El Carmen de Bolívar
-Chocó,El Carmen de Atrato
+Boyaca,San Luis de Gaceno
+Bolivar,El Carmen de Bolivar
+Choco,El Carmen de Atrato
 Sucre,San Juan de Betulia
 Magdalena,Pijiño del Carmen
 Antioquia,Vigía del Fuerte
-Bolívar,San Martín de Loba
-Bolívar,Altos del Rosario
+Bolivar,San Martín de Loba
+Bolivar,Altos del Rosario
 Tolima,Carmen de Apicala
 Cundinamarca,San Antonio del Tequendama
 Santander,Sabana de Torres
 Guaviare,El Retorno
-Córdoba,San José de Uré
+Cordoba,San José de Uré
 Nariño,San Pedro de Cartago
-Atlántico,Campo de La Cruz
+Atlantico,Campo de La Cruz
 Meta,San Juan de Arama
 Antioquia,San José de La Montaña
-Caquetá,Cartagena del Chairá
-Chocó,San José del Palmar
+Caqueta,Cartagena del Chairá
+Choco,San José del Palmar
 Cundinamarca,Agua de Dios
-Bolívar,San Jacinto del Cauca
+Bolivar,San Jacinto del Cauca
 Huila,San Agustín
 Nariño,El Tablón de Gómez
 "Archipiélago de San Andrés, Providencia y Santa Catalina",San Andrés
-Boyacá,San José de Pare
+Boyaca,San José de Pare
 Putumayo,Valle de Guamez
-Bolívar,San Pablo de Borbur
+Bolivar,San Pablo de Borbur
 Sucre,Santiago de Tolú
 Bogotá D.C.,Bogotá D.C.
 Bogotá D.C.,Bogotá
 Cundinamarca,Carmen de Carupa
-Córdoba,Ciénaga de Oro
+Cordoba,Ciénaga de Oro
 Antioquia,San Juan de Urabá
-La Guajira,San Juan del Cesar
+La guajira,San Juan del Cesar
 Santander,El Carmen de Chucurí
 Antioquia,El Carmen de Viboral
 Risaralda,Belén de Umbría
-Chocó,Belén de Bajira
+Choco,Belén de Bajira
 Santander,Valle de San José
 Tolima,San Luis
-Boyacá,San Miguel de Sema
+Boyaca,San Miguel de Sema
 Tolima,San Antonio
 Santander,San Benito
 Cundinamarca,Vergara
-Córdoba,San Carlos
+Cordoba,San Carlos
 Amazonas,Puerto Alegría
 Santander,Hato
-Bolívar,San Jacinto
+Bolivar,San Jacinto
 Cauca,San Sebastián
 Antioquia,San Carlos
-Boyacá,Tuta
-Norte de Santander,Silos
-Norte de Santander,Cácota
-Valle del Cauca,El Dovio
-Norte de Santander,Toledo
-Valle del Cauca,Roldanillo
-Norte de Santander,Mutiscua
-Valle del Cauca,Argelia
-Norte de Santander,El Zulia
-Norte de Santander,Salazar
-Valle del Cauca,Sevilla
-Valle del Cauca,Zarzal
-Norte de Santander,Cucutilla
-Valle del Cauca,El Cerrito
-Valle del Cauca,Cartago
-Valle del Cauca,Caicedonia
-Norte de Santander,Puerto Santander
-Norte de Santander,Gramalote
-Valle del Cauca,El Cairo
-Norte de Santander,El Tarra
-Valle del Cauca,La Unión
-Valle del Cauca,Restrepo
-Norte de Santander,Teorama
-Valle del Cauca,Dagua
-Norte de Santander,Arboledas
-Valle del Cauca,Guacarí
-Norte de Santander,Lourdes
-Valle del Cauca,Ansermanuevo
-Norte de Santander,Bochalema
-Valle del Cauca,Bugalagrande
-Norte de Santander,Convención
-Norte de Santander,Hacarí
-Valle del Cauca,La Victoria
-Norte de Santander,Herrán
-Valle del Cauca,Ginebra
-Valle del Cauca,Yumbo
-Valle del Cauca,Obando
-Norte de Santander,Tibú
-Norte de Santander,San Cayetano
-Norte de Santander,San Calixto
-Valle del Cauca,Bolívar
-Norte de Santander,La Playa
-Valle del Cauca,Cali
-Valle del Cauca,San Pedro
-Valle del Cauca,Guadalajara de Buga
-Norte de Santander,Chinácota
-Norte de Santander,Ragonvalia
-Norte de Santander,La Esperanza
-Norte de Santander,Villa del Rosario
-Norte de Santander,Chitagá
-Valle del Cauca,Calima
-Norte de Santander,Sardinata
-Valle del Cauca,Andalucía
-Valle del Cauca,Pradera
-Norte de Santander,Abrego
-Norte de Santander,Los Patios
-Norte de Santander,Ocaña
-Norte de Santander,Bucarasica
-Valle del Cauca,Yotoco
-Valle del Cauca,Palmira
-Valle del Cauca,Riofrío
-Norte de Santander,Santiago
-Valle del Cauca,Alcalá
-Valle del Cauca,Versalles
-Norte de Santander,Labateca
-Norte de Santander,Cachirá
-Norte de Santander,Villa Caro
-Norte de Santander,Durania
-Valle del Cauca,El Águila
-Valle del Cauca,Toro
-Valle del Cauca,Candelaria
-Valle del Cauca,La Cumbre
-Valle del Cauca,Ulloa
-Valle del Cauca,Trujillo
-Valle del Cauca,Vijes
+Boyaca,Tuta
+Norte de santander,Silos
+Norte de santander,Cácota
+Valle del cauca,El Dovio
+Norte de santander,Toledo
+Valle del cauca,Roldanillo
+Norte de santander,Mutiscua
+Valle del cauca,Argelia
+Norte de santander,El Zulia
+Norte de santander,Salazar
+Valle del cauca,Sevilla
+Valle del cauca,Zarzal
+Norte de santander,Cucutilla
+Valle del cauca,El Cerrito
+Valle del cauca,Cartago
+Valle del cauca,Caicedonia
+Norte de santander,Puerto Santander
+Norte de santander,Gramalote
+Valle del cauca,El Cairo
+Norte de santander,El Tarra
+Valle del cauca,La Unión
+Valle del cauca,Restrepo
+Norte de santander,Teorama
+Valle del cauca,Dagua
+Norte de santander,Arboledas
+Valle del cauca,Guacarí
+Norte de santander,Lourdes
+Valle del cauca,Ansermanuevo
+Norte de santander,Bochalema
+Valle del cauca,Bugalagrande
+Norte de santander,Convención
+Norte de santander,Hacarí
+Valle del cauca,La Victoria
+Norte de santander,Herrán
+Valle del cauca,Ginebra
+Valle del cauca,Yumbo
+Valle del cauca,Obando
+Norte de santander,Tibú
+Norte de santander,San Cayetano
+Norte de santander,San Calixto
+Valle del cauca,Bolivar
+Norte de santander,La Playa
+Valle del cauca,Cali
+Valle del cauca,San Pedro
+Valle del cauca,Guadalajara de Buga
+Norte de santander,Chinácota
+Norte de santander,Ragonvalia
+Norte de santander,La Esperanza
+Norte de santander,Villa del Rosario
+Norte de santander,Chitagá
+Valle del cauca,Calima
+Norte de santander,Sardinata
+Valle del cauca,Andalucía
+Valle del cauca,Pradera
+Norte de santander,Abrego
+Norte de santander,Los Patios
+Norte de santander,Ocaña
+Norte de santander,Bucarasica
+Valle del cauca,Yotoco
+Valle del cauca,Palmira
+Valle del cauca,Riofrío
+Norte de santander,Santiago
+Valle del cauca,Alcalá
+Valle del cauca,Versalles
+Norte de santander,Labateca
+Norte de santander,Cachirá
+Norte de santander,Villa Caro
+Norte de santander,Durania
+Valle del cauca,El Águila
+Valle del cauca,Toro
+Valle del cauca,Candelaria
+Valle del cauca,La Cumbre
+Valle del cauca,Ulloa
+Valle del cauca,Trujillo
+Valle del cauca,Vijes
 Santander,Chimá
 Sucre,Sampués
 Casanare,Nunchía
-Norte de Santander,Pamplona
+Norte de santander,Pamplona
 Cundinamarca,Albán
-Córdoba,Montelíbano
+Cordoba,Montelíbano
 Putumayo,Puerto Asís
 Sucre,Corozal
 Nariño,Buesaco
 Casanare,Maní
-Bolívar,El Peñón
-Valle del Cauca,Tuluá
+Bolivar,El Peñón
+Valle del cauca,Tuluá
 Tolima,Casabianca
 Cundinamarca,Anolaima
 Cundinamarca,Chía
 Nariño,San Andrés de Tumaco
-Caquetá,Milán
+Caqueta,Milán
 Santander,Capitanejo
 Tolima,Anzoátegui
-Valle del Cauca,Florida
-Atlántico,Repelón
+Valle del cauca,Florida
+Atlantico,Repelón
 Antioquia,Frontino
 Cundinamarca,El Peñón
-Norte de Santander,Pamplonita
+Norte de santander,Pamplonita
 Amazonas,Miriti Paraná
 Casanare,Támara
-Boyacá,Tibasosa
+Boyaca,Tibasosa
 Cauca,Páez
 Tolima,Ibagué
-Atlántico,Puerto Colombia
+Atlantico,Puerto Colombia
 Nariño,Belén
 Cundinamarca,Sopó
-Chocó,Carmen del Darien
+Choco,Carmen del Darien
 Cundinamarca,Gama
 Cundinamarca,Sasaima
 Nariño,Chachagüí
-Norte de Santander,Cúcuta
-Bolívar,Cartagena
+Norte de santander,Cúcuta
+Bolivar,Cartagena
 Antioquia,Granada
 Magdalena,Santa Bárbara de Pinto
-Bolívar,María la Baja
-Caquetá,La Montañita
-Caquetá,San Vicente del Caguán
+Bolivar,María la Baja
+Caqueta,La Montañita
+Caqueta,San Vicente del Caguán
 Santander,El Peñón
 Antioquia,Jardín
-Valle del Cauca,Jamundí
-Chocó,Tadó
+Valle del cauca,Jamundí
+Choco,Tadó
 Casanare,Orocué
 Tolima,Líbano
 Cundinamarca,Yacopí
-Quindío,Calarcá
+Quindio,Calarcá
 Antioquia,Sonsón
-Norte de Santander,El Carmen
+Norte de santander,El Carmen
 Tolima,Lérida
-Córdoba,La Apartada
-Bolívar,San Cristóbal
+Cordoba,La Apartada
+Bolivar,San Cristóbal
 Cundinamarca,Fusagasugá
-Bolívar,Zambrano
-Boyacá,La Uvita
+Bolivar,Zambrano
+Boyaca,La Uvita
 Cundinamarca,Zipaquirá
-Quindío,Génova
+Quindio,Génova
 Tolima,Suárez
 Meta,Castilla la Nueva
-Boyacá,Belén
-Chocó,Unión Panamericana
+Boyaca,Belén
+Choco,Unión Panamericana
 Magdalena,Pueblo Viejo
 Putumayo,Villagarzón
 Cundinamarca,Facatativá
-Córdoba,Puerto Libertador
+Cordoba,Puerto Libertador
 Caldas,Marquetalia
 Nariño,Arboleda
-Valle del Cauca,Buenaventura
+Valle del cauca,Buenaventura
 Magdalena,Ciénaga
-Atlántico,Ponedera
+Atlantico,Ponedera
+Valle del cauca,Santiago de Cali

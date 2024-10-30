@@ -147,6 +147,7 @@ class QueryParams(BaseModel):
     sort: str | None = None
     product_type: str | None = None
     year: str | None = None
+    status: str | None = None
 
 
 class Affiliation(BaseModel):

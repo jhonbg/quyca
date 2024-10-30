@@ -29,6 +29,7 @@ def get_affiliations_scienti_works_count_by_institution(
     ]
     set_plot_product_type_filters(pipeline, query_params.product_type)
     set_plot_year_filters(pipeline, query_params.year)
+    set_plot_status_filters(pipeline, query_params.status)
     pipeline += [
         {
             "$group": {
@@ -89,6 +90,7 @@ def get_groups_scienti_works_count_by_faculty_or_department(
     ]
     set_plot_product_type_filters(pipeline, query_params.product_type)
     set_plot_year_filters(pipeline, query_params.year)
+    set_plot_status_filters(pipeline, query_params.status)
     pipeline += [
         {
             "$group": {
@@ -182,6 +184,7 @@ def get_affiliations_apc_expenses_by_institution(
     ]
     set_plot_product_type_filters(pipeline, query_params.product_type)
     set_plot_year_filters(pipeline, query_params.year)
+    set_plot_status_filters(pipeline, query_params.status)
     pipeline += [
         {
             "$lookup": {
@@ -239,6 +242,7 @@ def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str, query_
     ]
     set_plot_product_type_filters(pipeline, query_params.product_type)
     set_plot_year_filters(pipeline, query_params.year)
+    set_plot_status_filters(pipeline, query_params.status)
     pipeline += [
         {
             "$lookup": {
@@ -306,6 +310,7 @@ def get_affiliations_works_citations_count_by_institution(
     ]
     set_plot_product_type_filters(pipeline, query_params.product_type)
     set_plot_year_filters(pipeline, query_params.year)
+    set_plot_status_filters(pipeline, query_params.status)
     pipeline += [
         {"$project": {"_id": 0, "works": 1, "name": {"$first": "$names.name"}}},
     ]
@@ -386,6 +391,7 @@ def get_groups_works_citations_count_by_faculty_or_department(
     ]
     set_plot_product_type_filters(pipeline, query_params.product_type)
     set_plot_year_filters(pipeline, query_params.year)
+    set_plot_status_filters(pipeline, query_params.status)
     pipeline += [
         {"$project": {"_id": 0, "works": 1, "name": {"$first": "$names.name"}}},
     ]
@@ -424,6 +430,7 @@ def get_products_by_author_age_and_person(person_id: str, query_params: QueryPar
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
     work_repository.set_year_filters(pipeline, query_params.year)
+    work_repository.set_status_filters(pipeline, query_params.status)
     pipeline += [
         {"$project": {"authors": 1, "date_published": 1, "year_published": 1}},  # type: ignore
         {
@@ -454,6 +461,7 @@ def get_coauthorship_by_country_map_by_affiliation(affiliation_id: str, query_pa
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
     work_repository.set_year_filters(pipeline, query_params.year)
+    work_repository.set_status_filters(pipeline, query_params.status)
     pipeline += [
         {"$unwind": "$authors"},  # type: ignore
         {"$unwind": "$authors.affiliations"},  # type: ignore
@@ -489,6 +497,7 @@ def get_coauthorship_by_country_map_by_person(person_id: str, query_params: Quer
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
     work_repository.set_year_filters(pipeline, query_params.year)
+    work_repository.set_status_filters(pipeline, query_params.status)
     pipeline += [
         {"$unwind": "$authors"},  # type: ignore
         {"$unwind": "$authors.affiliations"},  # type: ignore
@@ -532,6 +541,7 @@ def get_coauthorship_by_colombian_department_map_by_affiliation(affiliation_id: 
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
     work_repository.set_year_filters(pipeline, query_params.year)
+    work_repository.set_status_filters(pipeline, query_params.status)
     pipeline += [
         {"$unwind": "$authors"},  # type: ignore
         {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},  # type: ignore
@@ -567,6 +577,7 @@ def get_coauthorship_by_colombian_department_map_by_person(person_id: str, query
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
     work_repository.set_year_filters(pipeline, query_params.year)
+    work_repository.set_status_filters(pipeline, query_params.status)
     pipeline += [
         {"$unwind": "$authors"},  # type: ignore
         {"$group": {"_id": "$authors.affiliations.id", "count": {"$sum": 1}}},  # type: ignore
@@ -630,6 +641,7 @@ def get_works_rankings_by_person(person_id: str, query_params: QueryParams) -> T
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
     work_repository.set_year_filters(pipeline, query_params.year)
+    work_repository.set_status_filters(pipeline, query_params.status)
     pipeline += [
         {
             "$lookup": {
@@ -650,6 +662,7 @@ def get_works_rankings_by_person(person_id: str, query_params: QueryParams) -> T
     ]
     work_repository.set_product_type_filters(pipeline, query_params.product_type)
     work_repository.set_year_filters(pipeline, query_params.year)
+    work_repository.set_status_filters(pipeline, query_params.status)
     count_pipeline += [
         {"$count": "total_results"},  # type: ignore
     ]
@@ -959,3 +972,17 @@ def set_plot_year_filters(pipeline: list, years: str | None) -> None:
     first_year = min(year_list)
     last_year = max(year_list)
     pipeline += [{"$match": {"works.year_published": {"$gte": first_year, "$lte": last_year}}}]
+
+
+def set_plot_status_filters(pipeline: list, status: str | None) -> None:
+    if not status:
+        return
+    match_filters = []
+    for single_status in status.split(","):
+        if single_status == "unknown":
+            match_filters.append({"works.open_access.open_access_status": None})
+        elif single_status == "open":
+            match_filters.append({"works.open_access.open_access_status": {"$nin": [None, "closed"]}})  # type: ignore
+        else:
+            match_filters.append({"works.open_access.open_access_status": single_status})  # type: ignore
+    pipeline += [{"$match": {"$or": match_filters}}]

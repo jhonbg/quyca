@@ -260,6 +260,11 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
     ]
     years = database["works"].aggregate(years_pipeline)
     available_filters["years"] = next(years, {"min_year": None, "max_year": None})
+    status_pipeline = pipeline.copy() + [
+        {"$group": {"_id": "$open_access.open_access_status"}},
+    ]
+    status = database["works"].aggregate(status_pipeline)
+    available_filters["status"] = list(status)
     return available_filters
 
 

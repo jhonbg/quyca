@@ -2,7 +2,7 @@ import csv
 import io
 from typing import Generator
 
-
+from domain.constants.open_access_status import open_access_status_dict
 from domain.constants.product_types import source_titles
 from domain.models.work_model import Work
 
@@ -99,7 +99,28 @@ def parse_available_filters(filters: dict) -> dict:
         available_filters["product_types"] = types
     if years := filters.get("years"):
         available_filters["years"] = years
+    if status := filters.get("status"):
+        statuses = parse_status_filter(status)
+        available_filters["status"] = statuses
     return available_filters
+
+
+def parse_status_filter(status: list) -> list:
+    statuses = []
+    open_children = []
+    for oa_status in status:
+        if not oa_status.get("_id"):
+            statuses.append({"value": "unknown", "title": "Sin información"})
+        elif oa_status.get("_id") != "closed":
+            open_children.append(
+                {"value": oa_status.get("_id"), "title": open_access_status_dict.get(oa_status.get("_id"))}
+            )
+        else:
+            statuses.append({"value": "closed", "title": "Cerrado"})
+    open_children.sort(key=lambda x: x.get("title"))  # type: ignore
+    statuses.append({"value": "open", "title": "Abierto", "children": open_children})  # type: ignore
+    statuses.sort(key=lambda x: x.get("title"))  # type: ignore
+    return statuses
 
 
 def parse_product_type_filter(product_types: list) -> list:

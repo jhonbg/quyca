@@ -117,8 +117,9 @@ def parse_status_filter(status: list) -> list:
             )
         else:
             statuses.append({"value": "closed", "title": "Cerrado"})
-    open_children.sort(key=lambda x: x.get("title"))  # type: ignore
-    statuses.append({"value": "open", "title": "Abierto", "children": open_children})  # type: ignore
+    if len(open_children) > 0:
+        open_children.sort(key=lambda x: x.get("title"))  # type: ignore
+        statuses.append({"value": "open", "title": "Abierto", "children": open_children})  # type: ignore
     statuses.sort(key=lambda x: x.get("title"))  # type: ignore
     return statuses
 

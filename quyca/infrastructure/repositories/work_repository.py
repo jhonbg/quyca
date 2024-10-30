@@ -33,6 +33,7 @@ def get_works_by_affiliation(
     ]
     set_product_type_filters(pipeline, query_params.product_type)
     set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
@@ -102,6 +103,7 @@ def get_works_by_affiliation_for_api_expert(
     ]
     set_product_type_filters(pipeline, query_params.product_type)
     set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
@@ -128,6 +130,7 @@ def get_works_count_by_affiliation(affiliation_id: str, query_params: QueryParam
     ]
     set_product_type_filters(pipeline, query_params.product_type)
     set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
     pipeline += [{"$count": "total"}]  # type: ignore
     return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
@@ -140,6 +143,7 @@ def get_works_by_person(person_id: str, query_params: QueryParams, pipeline_para
     ]
     set_product_type_filters(pipeline, query_params.product_type)
     set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
@@ -203,6 +207,7 @@ def get_works_by_person_for_api_expert(
     ]
     set_product_type_filters(pipeline, query_params.product_type)
     set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
@@ -223,6 +228,7 @@ def get_works_count_by_person(person_id: str, query_params: QueryParams) -> int:
     pipeline = [{"$match": {"authors.id": ObjectId(person_id)}}]
     set_product_type_filters(pipeline, query_params.product_type)
     set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
     pipeline += [{"$count": "total"}]  # type: ignore
     return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
@@ -231,11 +237,13 @@ def search_works(query_params: QueryParams, pipeline_params: dict | None = None)
     pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     set_product_type_filters(pipeline, query_params.product_type)
     set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     works = database["works"].aggregate(pipeline)
     count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     set_product_type_filters(count_pipeline, query_params.product_type)
     set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
     count_pipeline += [
         {"$count": "total_results"},  # type: ignore
     ]
@@ -246,6 +254,7 @@ def search_works(query_params: QueryParams, pipeline_params: dict | None = None)
 def get_works_available_filters(pipeline: list, query_params: QueryParams) -> dict:
     set_product_type_filters(pipeline, query_params.product_type)
     set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
     available_filters: dict = {}
     product_types_pipeline = pipeline.copy() + [
         {"$unwind": "$types"},
@@ -284,6 +293,7 @@ def get_works_with_source_by_affiliation(
     ]
     set_product_type_filters(pipeline, query_params.product_type)
     set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
     pipeline += [
         {
             "$lookup": {
@@ -313,6 +323,7 @@ def get_works_with_source_by_person(
     ]
     set_product_type_filters(pipeline, query_params.product_type)
     set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
     pipeline += [
         {
             "$lookup": {
@@ -355,3 +366,17 @@ def set_year_filters(pipeline: list, years: str | None) -> None:
     first_year = min(year_list)
     last_year = max(year_list)
     pipeline += [{"$match": {"year_published": {"$gte": first_year, "$lte": last_year}}}]
+
+
+def set_status_filters(pipeline: list, status: str | None) -> None:
+    if not status:
+        return
+    match_filters = []
+    for single_status in status.split(","):
+        if single_status == "unknown":
+            match_filters.append({"open_access.open_access_status": None})
+        elif single_status == "open":
+            match_filters.append({"open_access.open_access_status": {"$nin": [None, "closed"]}})  # type: ignore
+        else:
+            match_filters.append({"open_access.open_access_status": single_status})  # type: ignore
+    pipeline += [{"$match": {"$or": match_filters}}]

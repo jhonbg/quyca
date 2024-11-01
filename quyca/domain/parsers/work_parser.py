@@ -127,10 +127,20 @@ def parse_status_filter(status: list) -> list:
 def parse_product_type_filter(product_types: list) -> list:
     types = []
     for product_type in product_types:
+        children = []
         if product_type.get("_id") == "crossref":
             continue
-        children = []
-        if product_type.get("_id") == "scienti":
+        elif product_type.get("_id") == "minciencias":
+            for inner_type in product_type.get("types"):
+                if inner_type.get("level") == 0:
+                    continue
+                children.append(
+                    {
+                        "value": product_type.get("_id") + "_" + inner_type.get("type"),
+                        "title": inner_type.get("type"),
+                    }
+                )
+        elif product_type.get("_id") == "scienti":
             second_level_children = []
             third_level_children = []
             for inner_type in product_type.get("types"):

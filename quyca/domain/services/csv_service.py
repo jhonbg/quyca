@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Generator
 
-from domain.models.base_model import ExternalId
+from domain.models.base_model import ExternalId, QueryParams
 from domain.models.work_model import Work, Affiliation
 from infrastructure.repositories import csv_repository
 from domain.constants.institutions import institutions_list
@@ -11,14 +11,14 @@ from domain.services.work_service import set_title_and_language
 from domain.parsers import work_parser
 
 
-def get_works_csv_by_affiliation(affiliation_id: str) -> str:
-    works = csv_repository.get_works_csv_by_affiliation(affiliation_id)
+def get_works_csv_by_affiliation(affiliation_id: str, query_params: QueryParams) -> str:
+    works = csv_repository.get_works_csv_by_affiliation(affiliation_id, query_params)
     data = get_csv_data(works)
     return work_parser.parse_csv(data)
 
 
-def get_works_csv_by_person(person_id: str) -> str:
-    works = csv_repository.get_works_csv_by_person(person_id)
+def get_works_csv_by_person(person_id: str, query_params: QueryParams) -> str:
+    works = csv_repository.get_works_csv_by_person(person_id, query_params)
     data = get_csv_data(works)
     return work_parser.parse_csv(data)
 

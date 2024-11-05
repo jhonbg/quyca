@@ -104,6 +104,7 @@ class Work(BaseModel):
     doi: str | None = None
     issue: str | None = None
     language: str | None = None
+    open_access_status: str | None = None
     product_types: list[ProductType] | None = None
     publisher: str | None = None
     openalex_types: str | None = None

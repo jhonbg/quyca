@@ -50,6 +50,7 @@ def get_works_csv_by_person(person_id: str, query_params: QueryParams) -> Genera
                 "affiliations_data": 1,  # type: ignore
                 "bibliographic_info": 1,  # type: ignore
                 "citations_count": 1,  # type: ignore
+                "open_access": 1,  # type: ignore
                 "subjects": 1,  # type: ignore
                 "titles": 1,  # type: ignore
                 "types": 1,  # type: ignore
@@ -106,6 +107,7 @@ def get_works_csv_by_affiliation(affiliation_id: str, query_params: QueryParams)
                 "authors": 1,  # type: ignore
                 "affiliations_data": 1,  # type: ignore
                 "bibliographic_info": 1,  # type: ignore
+                "open_access": 1,  # type: ignore
                 "citations_count": 1,  # type: ignore
                 "subjects": 1,  # type: ignore
                 "titles": 1,  # type: ignore

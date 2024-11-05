@@ -21,7 +21,7 @@ def parse_csv(works: list) -> str:
         "groups_ranking",
         "ranking",
         "issue",
-        "open_access",
+        "open_access_status",
         "pages",
         "start_page",
         "end_page",

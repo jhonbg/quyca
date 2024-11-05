@@ -6,6 +6,6 @@
   "url": "https://api.dev.impactu.colav.co/apidoc",
   "sampleUrl": "https://api.dev.impactu.colav.co",
   "header": {
-    "filename": "app/core/docs/apidoc-header.md"
+    "filename": "quyca/application/docs/apidoc-header.md"
   }
 }

@@ -69,7 +69,8 @@ def get_affiliation_research_products_filters(
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/research/products/csv", methods=["GET"])
 def get_works_csv_by_affiliation(affiliation_type: str, affiliation_id: str) -> Response | Tuple[Response, int]:
     try:
-        data = csv_service.get_works_csv_by_affiliation(affiliation_id)
+        query_params = QueryParams(**request.args)
+        data = csv_service.get_works_csv_by_affiliation(affiliation_id, query_params)
         response = Response(data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response

@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.0.0]
 
 ### Added
 - Prevent application crash when the calculations database is missing.
@@ -19,6 +19,11 @@ All notable changes to this project will be documented in this file.
 - Add changelog.
 - Add sentry implementation for error reporting.
 - Add works filter by product type on works lists.
+- Add works filter by product type on works plots.
+- Add works filter by year on works lists.
+- Add works filter by year on works plots.
+- Add works filter by open access status on works lists.
+- Add works filter by open access status on works plots. 
 - Add person logo
 
 ### Fixed

@@ -150,6 +150,15 @@ class QueryParams(BaseModel):
     status: str | None = None
 
 
+class Geography(BaseModel):
+    city: str | None = None
+    region: str | None = None
+    country: str | None = None
+    country_code: str | None = None
+    latitude: float | str | None = None
+    longitude: float | str | None = None
+
+
 class Affiliation(BaseModel):
     id: PyObjectId | None = None
     name: str | None = None
@@ -157,9 +166,12 @@ class Affiliation(BaseModel):
     start_date: int | str | None = None
     end_date: int | str | None = None
 
+    ror: str | None = None
+    geo: Geography | None = Field(default_factory=Geography)
     addresses: list[Address] | None = None
     position: str | None = None
     ranking: list[Ranking] | None = None
+    external_ids: list[ExternalId] | None = None
 
     class Config:
         json_encoders = {ObjectId: str}
@@ -167,9 +179,10 @@ class Affiliation(BaseModel):
 
 class Author(BaseModel):
     id: PyObjectId | None = None
-    affiliations: list[Affiliation] | None = None
+    affiliations: list[Affiliation] | None = Field(default_factory=list[Affiliation])
     full_name: str | None = None
 
+    countries: list[str] | None = None
     first_names: list[str] | None = None
     last_names: list[str] | None = None
     sex: str | None = None

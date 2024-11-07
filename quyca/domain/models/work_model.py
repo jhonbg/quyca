@@ -48,14 +48,18 @@ class Source(BaseModel):
     id: PyObjectId | str | None = None
     name: str | Any | None = None
 
+    issn_l: str | None = None
+    is_in_doaj: bool | None = None
     types: list[Type] | None = None
     names: list[Name] | None = None
     scimago_quartile: str | None = None
     serials: dict | None = None
     external_urls: list[ExternalUrl] | None = None
+    external_ids: list[ExternalId] | None = None
     ranking: list[Ranking] | None = None
     publisher: Publisher | str | None = None
     apc: APC | None = None
+    updated: list[Updated] | None = None
 
     class Config:
         json_encoders = {ObjectId: str}
@@ -66,7 +70,7 @@ class Work(BaseModel):
     abstract: str | None = None
     apc: APC | None = Field(default_factory=APC)
     authors_count: int | None = Field(default_factory=int, alias="author_count")
-    authors: list[Author] | str | None = None
+    authors: list[Author] | str | None = Field(default_factory=list[Author])
     bibliographic_info: BiblioGraphicInfo | None = None
     citations: list | None = Field(default_factory=list)
     citations_by_year: list[CitationByYear] | None = None

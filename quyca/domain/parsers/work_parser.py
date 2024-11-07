@@ -1,6 +1,5 @@
 import csv
 import io
-from typing import Generator
 
 from domain.constants.open_access_status import open_access_status_dict
 from domain.constants.product_types import source_titles
@@ -88,7 +87,7 @@ def parse_work(work: Work) -> dict:
     return work.model_dump(exclude_none=True)
 
 
-def parse_api_expert(works: Generator) -> list:
+def parse_api_expert(works: list) -> list:
     return [work.model_dump(exclude_none=True) for work in works]
 
 

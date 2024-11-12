@@ -113,7 +113,12 @@ def set_sort(sort: str | None, pipeline: list) -> None:
                                                 "case": {"$eq": ["$$title.source", "ranking"]},
                                                 "then": 4,
                                             },
-                                        ]
+                                            {
+                                                "case": {"$eq": ["$$title.source", "siiu"]},
+                                                "then": 5,
+                                            },
+                                        ],
+                                        "default": 10,
                                     }
                                 },
                             },

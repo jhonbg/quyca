@@ -1,0 +1,248 @@
+from typing import Generator, Tuple
+
+from bson import ObjectId
+
+from infrastructure.generators import work_generator
+from domain.models.base_model import QueryParams
+from domain.models.work_model import Work
+from infrastructure.repositories import base_repository
+from infrastructure.mongo import database
+from domain.exceptions.not_entity_exception import NotEntityException
+
+
+def get_work_by_id(work_id: str) -> Work:
+    work = database["works"].find_one(ObjectId(work_id))
+    if not work:
+        raise NotEntityException(f"The work with id {work_id} does not exist.")
+    return Work(**work)
+
+
+def get_works_by_affiliation(
+    affiliation_id: str,
+    query_params: QueryParams,
+    pipeline_params: dict | None = None,
+) -> Generator:
+    if pipeline_params is None:
+        pipeline_params = {}
+    pipeline = [
+        {
+            "$match": {
+                "authors.affiliations.id": ObjectId(affiliation_id),
+            },
+        },
+    ]
+    set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
+    base_repository.set_match(pipeline, pipeline_params.get("match"))
+    if sort := query_params.sort:
+        base_repository.set_sort(sort, pipeline)
+    base_repository.set_pagination(pipeline, query_params)
+    base_repository.set_project(pipeline, pipeline_params.get("project"))
+    cursor = database["works"].aggregate(pipeline)
+    return work_generator.get(cursor)
+
+
+def get_works_available_filters_by_affiliation(affiliation_id: str, query_params: QueryParams) -> dict:
+    pipeline = [
+        {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+    ]
+    return get_works_available_filters(pipeline, query_params)
+
+
+def get_works_count_by_affiliation(affiliation_id: str, query_params: QueryParams) -> int:
+    pipeline = [
+        {
+            "$match": {
+                "authors.affiliations.id": ObjectId(affiliation_id),
+            },
+        },
+    ]
+    set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
+    pipeline += [{"$count": "total"}]  # type: ignore
+    return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
+
+
+def get_works_by_person(person_id: str, query_params: QueryParams, pipeline_params: dict | None = None) -> Generator:
+    if pipeline_params is None:
+        pipeline_params = {}
+    pipeline = [
+        {"$match": {"authors.id": ObjectId(person_id)}},
+    ]
+    set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
+    base_repository.set_match(pipeline, pipeline_params.get("match"))
+    if sort := query_params.sort:
+        base_repository.set_sort(sort, pipeline)
+    base_repository.set_pagination(pipeline, query_params)
+    base_repository.set_project(pipeline, pipeline_params.get("project"))
+    cursor = database["works"].aggregate(pipeline)
+    return work_generator.get(cursor)
+
+
+def get_works_available_filters_by_person(person_id: str, query_params: QueryParams) -> dict:
+    pipeline = [
+        {"$match": {"authors.id": ObjectId(person_id)}},
+    ]
+    return get_works_available_filters(pipeline, query_params)
+
+
+def get_works_count_by_person(person_id: str, query_params: QueryParams) -> int:
+    pipeline = [{"$match": {"authors.id": ObjectId(person_id)}}]
+    set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
+    pipeline += [{"$count": "total"}]  # type: ignore
+    return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
+
+
+def search_works(query_params: QueryParams, pipeline_params: dict | None = None) -> Tuple[Generator, int]:
+    pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
+    base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
+    works = database["works"].aggregate(pipeline)
+    count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    set_product_type_filters(count_pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
+    count_pipeline += [
+        {"$count": "total_results"},  # type: ignore
+    ]
+    total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0}).get("total_results", 0)
+    return work_generator.get(works), total_results
+
+
+def get_works_available_filters(pipeline: list, query_params: QueryParams) -> dict:
+    set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
+    available_filters: dict = {}
+    product_types_pipeline = pipeline.copy() + [
+        {"$unwind": "$types"},
+        {"$group": {"_id": "$types.source", "types": {"$addToSet": "$types"}}},
+    ]
+    product_types = database["works"].aggregate(product_types_pipeline)
+    available_filters["product_types"] = list(product_types)
+    years_pipeline = pipeline.copy() + [
+        {"$match": {"year_published": {"$type": "number"}}},
+        {"$group": {"_id": None, "min_year": {"$min": "$year_published"}, "max_year": {"$max": "$year_published"}}},
+        {"$project": {"_id": 0, "min_year": 1, "max_year": 1}},
+    ]
+    years = database["works"].aggregate(years_pipeline)
+    available_filters["years"] = next(years, {"min_year": None, "max_year": None})
+    status_pipeline = pipeline.copy() + [
+        {"$group": {"_id": "$open_access.open_access_status"}},
+    ]
+    status = database["works"].aggregate(status_pipeline)
+    available_filters["status"] = list(status)
+    return available_filters
+
+
+def get_search_works_available_filters(query_params: QueryParams, pipeline_params: dict | None = None) -> dict:
+    pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    return get_works_available_filters(pipeline, query_params)
+
+
+def get_works_with_source_by_affiliation(
+    affiliation_id: str, query_params: QueryParams, pipeline_params: dict | None = None
+) -> Generator:
+    if pipeline_params is None:
+        pipeline_params = {}
+    source_project = pipeline_params.get("source_project", [])
+    pipeline = [
+        {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+    ]
+    set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
+    pipeline += [
+        {
+            "$lookup": {
+                "from": "sources",  # type: ignore
+                "localField": "source.id",  # type: ignore
+                "foreignField": "_id",  # type: ignore
+                "as": "source",  # type: ignore
+                "pipeline": [{"$project": {"_id": 1, **{p: 1 for p in source_project}}}],  # type: ignore
+            }
+        },
+        {"$unwind": "$source"},  # type: ignore
+    ]
+    base_repository.set_match(pipeline, pipeline_params.get("match"))
+    base_repository.set_project(pipeline, pipeline_params.get("work_project"))
+    cursor = database["works"].aggregate(pipeline)
+    return work_generator.get(cursor)
+
+
+def get_works_with_source_by_person(
+    person_id: str, query_params: QueryParams, pipeline_params: dict | None = None
+) -> Generator:
+    if pipeline_params is None:
+        pipeline_params = {}
+    source_project = pipeline_params.get("source_project", [])
+    pipeline = [
+        {"$match": {"authors.id": ObjectId(person_id)}},
+    ]
+    set_product_type_filters(pipeline, query_params.product_type)
+    set_year_filters(pipeline, query_params.year)
+    set_status_filters(pipeline, query_params.status)
+    pipeline += [
+        {
+            "$lookup": {
+                "from": "sources",  # type: ignore
+                "localField": "source.id",  # type: ignore
+                "foreignField": "_id",  # type: ignore
+                "as": "source",  # type: ignore
+                "pipeline": [{"$project": {"_id": 1, **{p: 1 for p in source_project}}}],  # type: ignore
+            }
+        },
+        {"$unwind": "$source"},  # type: ignore
+    ]
+    base_repository.set_match(pipeline, pipeline_params.get("match"))
+    base_repository.set_project(pipeline, pipeline_params.get("work_project"))
+    cursor = database["works"].aggregate(pipeline)
+    return work_generator.get(cursor)
+
+
+def set_product_type_filters(pipeline: list, type_filters: str | None) -> None:
+    if not type_filters:
+        return
+    match_filters = []
+    for type_filter in type_filters.split(","):
+        params = type_filter.split("_")
+        if len(params) == 1:
+            match_filters.append({"types": {"$elemMatch": {"source": params[0]}}})
+        elif len(params) == 2:
+            match_filters.append({"types": {"$elemMatch": {"source": params[0], "type": params[1]}}})
+        elif len(params) == 3 and params[0] == "scienti":
+            match_filters.append(
+                {"types": {"$elemMatch": {"source": params[0], "type": params[1], "code": {"$regex": "^" + params[2]}}}}  # type: ignore
+            )
+    pipeline += [{"$match": {"$or": match_filters}}]
+
+
+def set_year_filters(pipeline: list, years: str | None) -> None:
+    if not years:
+        return
+    year_list = [int(year) for year in years.split(",")]
+    first_year = min(year_list)
+    last_year = max(year_list)
+    pipeline += [{"$match": {"year_published": {"$gte": first_year, "$lte": last_year}}}]
+
+
+def set_status_filters(pipeline: list, status: str | None) -> None:
+    if not status:
+        return
+    match_filters = []
+    for single_status in status.split(","):
+        if single_status == "unknown":
+            match_filters.append({"open_access.open_access_status": None})
+        elif single_status == "open":
+            match_filters.append({"open_access.open_access_status": {"$nin": [None, "closed"]}})  # type: ignore
+        else:
+            match_filters.append({"open_access.open_access_status": single_status})  # type: ignore
+    pipeline += [{"$match": {"$or": match_filters}}]

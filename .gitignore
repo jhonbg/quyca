@@ -70,7 +70,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+quyca/application/docs/_build/
 
 # PyBuilder
 target/
@@ -135,4 +135,3 @@ dmypy.json
 mongo-data/
 db/
 storage/
-apidoc/

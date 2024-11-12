@@ -1,28 +1,34 @@
+import os
+
+import sentry_sdk
 from flask import Flask
+from flask_compress import Compress
 from flask_cors import CORS
+from sentry_sdk.integrations.flask import FlaskIntegration
 
-from api.router import api_router
-from core.config import get_settings
-from core.debugger import initialize_server_debugger_if_needed
-# from core.apidoc import generate_apidoc
-from infraestructure.mongo import init_mongo_infraestructure
+from application.routes.router import router
+from config import Settings
 
 
-def create_app():
-    app_factory = Flask(__name__)
+def create_app() -> Flask:
+    app_settings = Settings()
+    sentry_sdk.init(
+        dsn=app_settings.SENTRY_DSN,
+        integrations=[FlaskIntegration()],
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+    )
+
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    static_dir = os.path.join(project_dir, "application", "static")
+    app_factory = Flask(__name__, static_folder=static_dir)
     CORS(app_factory)
-    app_factory.register_blueprint(api_router)
-
+    app_factory.register_blueprint(router)
+    Compress(app_factory)
     return app_factory
 
 
 if __name__ == "__main__":
+    settings = Settings()
     app = create_app()
-    settings = get_settings()
-    # generate_apidoc()
-    initialize_server_debugger_if_needed()
-    init_mongo_infraestructure()
-
-    app.run(
-        host="0.0.0.0", port=settings.APP_PORT, threaded=True, debug=settings.APP_DEBUG
-    )
+    app.run(host="0.0.0.0", port=settings.APP_PORT, debug=settings.APP_DEBUG, threaded=True)

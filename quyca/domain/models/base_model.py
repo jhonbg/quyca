@@ -189,6 +189,19 @@ class Author(BaseModel):
     external_ids: list[ExternalId] | None = None
     ranking: list[Ranking] | None = None
 
+    @field_validator("external_ids")
+    @classmethod
+    def delete_sensitive_external_ids(cls, value: list | None) -> list | None:
+        if value is None:
+            return value
+        return list(
+            filter(
+                lambda external_id: external_id.source
+                not in ["Cédula de Ciudadanía", "Cédula de Extranjería", "Passport"],
+                value,
+            )
+        )
+
     class Config:
         json_encoders = {ObjectId: str}
 

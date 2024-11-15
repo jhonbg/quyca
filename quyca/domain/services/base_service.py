@@ -11,7 +11,7 @@ from infrastructure.repositories import person_repository
 
 def set_title_and_language(workable: Work | OtherWork | Patent | Project) -> None:
     def order(title: Title) -> float:
-        hierarchy = ["openalex", "scholar", "scienti", "minciencias", "ranking"]
+        hierarchy = ["openalex", "scienti", "minciencias", "ranking", "scholar"]
         return hierarchy.index(title.source) if title.source in hierarchy else float("inf")
 
     first_title = sorted(workable.titles, key=order)[0]

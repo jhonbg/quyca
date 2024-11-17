@@ -177,11 +177,21 @@ class Affiliation(BaseModel):
         json_encoders = {ObjectId: str}
 
 
+class BirthPlace(BaseModel):
+    city: str | None = None
+    country: str | None = None
+    state: str | None = None
+
+
 class Author(BaseModel):
     id: PyObjectId | None = None
     affiliations: list[Affiliation] | None = Field(default_factory=list[Affiliation])
     full_name: str | None = None
 
+    birth_country: str | None = None
+    age: int | None = None
+    birthdate: int | str | None = None
+    birthplace: BirthPlace | None = None
     countries: list[str] | None = None
     first_names: list[str] | None = None
     last_names: list[str] | None = None

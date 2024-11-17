@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Generator
 
 from domain.models.base_model import QueryParams, Affiliation, Author, ExternalId
@@ -40,6 +41,15 @@ def set_authors_data(work: Work) -> None:
         author.first_names = author_data.first_names
         author.sex = author_data.sex
         author.affiliations = author_data.affiliations
+        if author_data.birthplace:
+            author.birth_country = author_data.birthplace.country
+        if author_data.birthdate and author_data.birthdate != -1 and author_data.birthdate != "":
+            birthdate = datetime.fromtimestamp(author_data.birthdate)
+            today = datetime.today()
+            age = today.year - birthdate.year
+            if (today.month, today.day) < (birthdate.month, birthdate.day):
+                age -= 1
+            author.age = age
     work.authors_data = None
 
 

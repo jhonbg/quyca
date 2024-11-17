@@ -45,6 +45,8 @@ def get_works_for_api_expert(pipeline: list, pipeline_params: dict, query_params
                         "$project": {
                             "id": "$_id",
                             "sex": 1,
+                            "birthplace.country": 1,
+                            "birthdate": 1,
                             "first_names": 1,
                             "last_names": 1,
                             "affiliations.id": 1,

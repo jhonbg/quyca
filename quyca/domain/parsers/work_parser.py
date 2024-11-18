@@ -101,7 +101,27 @@ def parse_available_filters(filters: dict) -> dict:
     if status := filters.get("status"):
         statuses = parse_status_filter(status)
         available_filters["status"] = statuses
+    if subjects := filters.get("subjects"):
+        available_filters["subjects"] = parse_subject_filter(subjects)
     return available_filters
+
+
+def parse_subject_filter(subjects: list) -> list:
+    parsed_subjects = []
+    first_level_children = []
+    second_level_children = []
+    for subject in subjects:
+        if subject.get("level") == 0:
+            first_level_children.append({"value": "0_" + subject.get("name"), "title": subject.get("name")})
+        elif subject.get("level") == 1:
+            second_level_children.append({"value": "1_" + subject.get("name"), "title": subject.get("name")})
+    if len(first_level_children) > 0:
+        first_level_children.sort(key=lambda x: x.get("title"))  # type: ignore
+        parsed_subjects.append({"value": "0", "title": "Primer Nivel", "children": first_level_children})  # type: ignore
+    if len(second_level_children) > 0:
+        second_level_children.sort(key=lambda x: x.get("title"))  # type: ignore
+        parsed_subjects.append({"value": "1", "title": "Segundo Nivel", "children": second_level_children})  # type: ignore
+    return parsed_subjects
 
 
 def parse_status_filter(status: list) -> list:

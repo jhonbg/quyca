@@ -140,6 +140,14 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
     ]
     status = database["works"].aggregate(status_pipeline)
     available_filters["status"] = list(status)
+    subjects_pipeline = pipeline.copy() + [
+        {"$unwind": "$subjects"},
+        {"$unwind": "$subjects.subjects"},
+        {"$match": {"subjects.subjects.level": {"$in": [0, 1]}}},
+        {"$group": {"_id": "$subjects.source", "subjects": {"$addToSet": "$subjects.subjects"}}},
+    ]
+    subjects = database["works"].aggregate(subjects_pipeline)
+    available_filters["subjects"] = list(next(subjects).get("subjects", []))
     return available_filters
 
 

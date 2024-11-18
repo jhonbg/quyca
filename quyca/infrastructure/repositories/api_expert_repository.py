@@ -90,9 +90,7 @@ def get_works_for_api_expert(pipeline: list, pipeline_params: dict, query_params
             },
         },
     ]
-    work_repository.set_product_type_filters(pipeline, query_params.product_type)
-    work_repository.set_year_filters(pipeline, query_params.year)
-    work_repository.set_status_filters(pipeline, query_params.status)
+    work_repository.set_product_filters(pipeline, query_params)
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)

@@ -27,9 +27,7 @@ def get_affiliations_scienti_works_count_by_institution(
         {"$unwind": "$works.types"},
         {"$match": {"works.types.source": "scienti", "works.types.level": 2}},
     ]
-    set_plot_product_type_filters(pipeline, query_params.product_type)
-    set_plot_year_filters(pipeline, query_params.year)
-    set_plot_status_filters(pipeline, query_params.status)
+    set_plot_product_filters(pipeline, query_params)
     pipeline += [
         {
             "$group": {
@@ -88,9 +86,7 @@ def get_groups_scienti_works_count_by_faculty_or_department(
             }
         },
     ]
-    set_plot_product_type_filters(pipeline, query_params.product_type)
-    set_plot_year_filters(pipeline, query_params.year)
-    set_plot_status_filters(pipeline, query_params.status)
+    set_plot_product_filters(pipeline, query_params)
     pipeline += [
         {
             "$group": {
@@ -182,9 +178,7 @@ def get_affiliations_apc_expenses_by_institution(
         },
         {"$unwind": "$works"},
     ]
-    set_plot_product_type_filters(pipeline, query_params.product_type)
-    set_plot_year_filters(pipeline, query_params.year)
-    set_plot_status_filters(pipeline, query_params.status)
+    set_plot_product_filters(pipeline, query_params)
     pipeline += [
         {
             "$lookup": {
@@ -240,9 +234,7 @@ def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str, query_
         },
         {"$unwind": "$works"},
     ]
-    set_plot_product_type_filters(pipeline, query_params.product_type)
-    set_plot_year_filters(pipeline, query_params.year)
-    set_plot_status_filters(pipeline, query_params.status)
+    set_plot_product_filters(pipeline, query_params)
     pipeline += [
         {
             "$lookup": {
@@ -308,9 +300,7 @@ def get_affiliations_works_citations_count_by_institution(
             }
         },
     ]
-    set_plot_product_type_filters(pipeline, query_params.product_type)
-    set_plot_year_filters(pipeline, query_params.year)
-    set_plot_status_filters(pipeline, query_params.status)
+    set_plot_product_filters(pipeline, query_params)
     pipeline += [
         {"$project": {"_id": 0, "works": 1, "name": {"$first": "$names.name"}}},
     ]
@@ -389,9 +379,7 @@ def get_groups_works_citations_count_by_faculty_or_department(
             }
         },
     ]
-    set_plot_product_type_filters(pipeline, query_params.product_type)
-    set_plot_year_filters(pipeline, query_params.year)
-    set_plot_status_filters(pipeline, query_params.status)
+    set_plot_product_filters(pipeline, query_params)
     pipeline += [
         {"$project": {"_id": 0, "works": 1, "name": {"$first": "$names.name"}}},
     ]
@@ -939,6 +927,12 @@ def get_products_by_database_by_person(affiliation_id: str) -> dict:
             }
         ),
     }
+
+
+def set_plot_product_filters(pipeline: list, query_params: QueryParams) -> None:
+    set_plot_product_type_filters(pipeline, query_params.product_type)
+    set_plot_year_filters(pipeline, query_params.year)
+    set_plot_status_filters(pipeline, query_params.status)
 
 
 def set_plot_product_type_filters(pipeline: list, type_filters: str | None) -> None:

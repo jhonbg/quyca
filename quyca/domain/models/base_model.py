@@ -140,7 +140,7 @@ class APC(BaseModel):
 
 
 class QueryParams(BaseModel):
-    limit: conint(ge=10, le=250) | None = Field(default=10, alias="max")  # type: ignore
+    limit: conint(ge=1, le=250) | None = Field(default=10, alias="max")  # type: ignore
     page: conint(ge=1) | None = 1  # type: ignore
     keywords: str | None = None
     plot: str | None = None

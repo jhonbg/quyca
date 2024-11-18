@@ -933,6 +933,7 @@ def set_plot_product_filters(pipeline: list, query_params: QueryParams) -> None:
     set_plot_product_type_filters(pipeline, query_params.product_type)
     set_plot_year_filters(pipeline, query_params.year)
     set_plot_status_filters(pipeline, query_params.status)
+    set_plot_subject_filters(pipeline, query_params.subject)
 
 
 def set_plot_product_type_filters(pipeline: list, type_filters: str | None) -> None:
@@ -965,4 +966,16 @@ def set_plot_status_filters(pipeline: list, status: str | None) -> None:
             match_filters.append({"works.open_access.open_access_status": {"$nin": [None, "closed"]}})  # type: ignore
         else:
             match_filters.append({"works.open_access.open_access_status": single_status})  # type: ignore
+    pipeline += [{"$match": {"$or": match_filters}}]
+
+
+def set_plot_subject_filters(pipeline: list, subjects: str | None) -> None:
+    if not subjects:
+        return
+    match_filters = []
+    for subject in subjects.split(","):
+        params = subject.split("_")
+        if len(params) == 1:
+            return
+        match_filters.append({"works.subjects.subjects": {"$elemMatch": {"level": int(params[0]), "name": params[1]}}})
     pipeline += [{"$match": {"$or": match_filters}}]

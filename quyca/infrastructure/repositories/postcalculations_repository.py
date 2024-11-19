@@ -173,3 +173,94 @@ def set_works_authors_affiliations_country_code():  # type: ignore
         },
     ]
     database["works"].aggregate(pipeline)
+
+
+def set_works_groups_ranking():  # type: ignore
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "affiliations",
+                "localField": "groups.id",
+                "foreignField": "_id",
+                "as": "groups_data",
+                "pipeline": [{"$match": {"ranking.source": "minciencias"}}, {"$project": {"_id": 1, "ranking": 1}}],
+            }
+        },
+        {
+            "$addFields": {
+                "groups": {
+                    "$map": {
+                        "input": "$groups",
+                        "as": "group",
+                        "in": {
+                            "$mergeObjects": [
+                                "$$group",
+                                {
+                                    "ranking": {
+                                        "$let": {
+                                            "vars": {
+                                                "matchedGroup": {
+                                                    "$arrayElemAt": [
+                                                        {
+                                                            "$filter": {
+                                                                "input": "$groups_data",
+                                                                "as": "group_data",
+                                                                "cond": {
+                                                                    "$eq": [
+                                                                        "$$group.id",
+                                                                        "$$group_data._id",
+                                                                    ]
+                                                                },
+                                                            }
+                                                        },
+                                                        0,
+                                                    ]
+                                                }
+                                            },
+                                            "in": {
+                                                "$ifNull": [
+                                                    {
+                                                        "$arrayElemAt": [
+                                                            {
+                                                                "$map": {
+                                                                    "input": {
+                                                                        "$filter": {
+                                                                            "input": "$$matchedGroup.ranking",
+                                                                            "as": "rankData",
+                                                                            "cond": {
+                                                                                "$eq": [
+                                                                                    "$$rankData.source",
+                                                                                    "minciencias",
+                                                                                ]
+                                                                            },
+                                                                        }
+                                                                    },
+                                                                    "as": "filteredRank",
+                                                                    "in": "$$filteredRank.rank",
+                                                                }
+                                                            },
+                                                            0,
+                                                        ]
+                                                    },
+                                                    None,
+                                                ]
+                                            },
+                                        }
+                                    }
+                                },
+                            ]
+                        },
+                    }
+                }
+            }
+        },
+        {"$project": {"groups_data": 0}},
+        {
+            "$merge": {
+                "into": "works",
+                "whenMatched": "merge",
+                "whenNotMatched": "fail",
+            }
+        },
+    ]
+    database["works"].aggregate(pipeline)

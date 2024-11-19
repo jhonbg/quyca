@@ -103,7 +103,18 @@ def parse_available_filters(filters: dict) -> dict:
         available_filters["subjects"] = parse_subject_filter(subjects)
     if countries := filters.get("countries"):
         available_filters["countries"] = parse_country_filter(countries)
+    if groups_ranking := filters.get("groups_ranking"):
+        available_filters["groups_ranking"] = parse_groups_ranking_filter(groups_ranking)
     return available_filters
+
+
+def parse_groups_ranking_filter(groups_ranking: list) -> list:
+    parsed_groups_ranking = []
+    for group in groups_ranking:
+        if group.get("_id"):
+            parsed_groups_ranking.append({"value": group.get("_id"), "label": group.get("_id")})
+    parsed_groups_ranking.sort(key=lambda x: x.get("label"))  # type: ignore
+    return parsed_groups_ranking
 
 
 def parse_country_filter(countries: list) -> list:

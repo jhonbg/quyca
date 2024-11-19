@@ -101,7 +101,18 @@ def parse_available_filters(filters: dict) -> dict:
         available_filters["status"] = parse_status_filter(status)
     if subjects := filters.get("subjects"):
         available_filters["subjects"] = parse_subject_filter(subjects)
+    if countries := filters.get("countries"):
+        available_filters["countries"] = parse_country_filter(countries)
     return available_filters
+
+
+def parse_country_filter(countries: list) -> list:
+    parsed_countries = []
+    for country in countries:
+        if country.get("country_code") and country.get("_id"):
+            parsed_countries.append({"value": country.get("country_code"), "label": country.get("_id")})
+    parsed_countries.sort(key=lambda x: x.get("label"))  # type: ignore
+    return parsed_countries
 
 
 def parse_subject_filter(subjects: list) -> list:

@@ -140,23 +140,6 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
     ]
     status = database["works"].aggregate(status_pipeline)
     available_filters["status"] = list(status)
-    group_ranking_pipeline = pipeline.copy() + [
-        {
-            "$lookup": {
-                "from": "affiliations",
-                "localField": "groups.id",
-                "foreignField": "_id",
-                "as": "group_data",
-                "pipeline": [{"$match": {"ranking.source": "minciencias"}}, {"$project": {"_id": 0, "ranking": 1}}],
-            }
-        },
-        {"$unwind": "$group_data"},
-        {"$unwind": "$group_data.ranking"},
-        {"$group": {"_id": None, "ranking": {"$addToSet": "$group_data.ranking.rank"}}},
-        {"$project": {"_id": 0, "ranking": 1}},
-    ]
-    group_ranking = database["works"].aggregate(group_ranking_pipeline)
-    available_filters["group_ranking"] = list(next(group_ranking).get("ranking", []))
     return available_filters
 
 

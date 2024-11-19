@@ -1,7 +1,6 @@
 import csv
 import io
 
-
 from domain.constants.open_access_status import open_access_status_dict
 from domain.constants.product_types import source_titles
 from domain.models.work_model import Work
@@ -102,8 +101,6 @@ def parse_available_filters(filters: dict) -> dict:
     if status := filters.get("status"):
         statuses = parse_status_filter(status)
         available_filters["status"] = statuses
-    if group_ranking := filters.get("group_ranking"):
-        available_filters["group_ranking"] = sorted(group_ranking)
     return available_filters
 
 

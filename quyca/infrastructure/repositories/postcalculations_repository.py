@@ -264,3 +264,94 @@ def set_works_groups_ranking():  # type: ignore
         },
     ]
     database["works"].aggregate(pipeline)
+
+
+def set_works_authors_ranking():  # type: ignore
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "person",
+                "localField": "authors.id",
+                "foreignField": "_id",
+                "as": "authors_data",
+                "pipeline": [{"$match": {"ranking.source": "minciencias"}}, {"$project": {"_id": 1, "ranking": 1}}],
+            }
+        },
+        {
+            "$addFields": {
+                "authors": {
+                    "$map": {
+                        "input": "$authors",
+                        "as": "author",
+                        "in": {
+                            "$mergeObjects": [
+                                "$$author",
+                                {
+                                    "ranking": {
+                                        "$let": {
+                                            "vars": {
+                                                "matchedAuthor": {
+                                                    "$arrayElemAt": [
+                                                        {
+                                                            "$filter": {
+                                                                "input": "$authors_data",
+                                                                "as": "author_data",
+                                                                "cond": {
+                                                                    "$eq": [
+                                                                        "$$author.id",
+                                                                        "$$author_data._id",
+                                                                    ]
+                                                                },
+                                                            }
+                                                        },
+                                                        0,
+                                                    ]
+                                                }
+                                            },
+                                            "in": {
+                                                "$ifNull": [
+                                                    {
+                                                        "$arrayElemAt": [
+                                                            {
+                                                                "$map": {
+                                                                    "input": {
+                                                                        "$filter": {
+                                                                            "input": "$$matchedAuthor.ranking",
+                                                                            "as": "rankData",
+                                                                            "cond": {
+                                                                                "$eq": [
+                                                                                    "$$rankData.source",
+                                                                                    "minciencias",
+                                                                                ]
+                                                                            },
+                                                                        }
+                                                                    },
+                                                                    "as": "filteredRank",
+                                                                    "in": "$$filteredRank.rank",
+                                                                }
+                                                            },
+                                                            0,
+                                                        ]
+                                                    },
+                                                    None,
+                                                ]
+                                            },
+                                        }
+                                    }
+                                },
+                            ]
+                        },
+                    }
+                }
+            }
+        },
+        {"$project": {"authors_data": 0}},
+        {
+            "$merge": {
+                "into": "works",
+                "whenMatched": "merge",
+                "whenNotMatched": "fail",
+            }
+        },
+    ]
+    database["works"].aggregate(pipeline)

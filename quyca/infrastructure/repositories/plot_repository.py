@@ -936,6 +936,7 @@ def set_plot_product_filters(pipeline: list, query_params: QueryParams) -> None:
     set_plot_subject_filters(pipeline, query_params.subject)
     set_plot_country_filters(pipeline, query_params.country)
     set_plot_groups_ranking_filters(pipeline, query_params.groups_ranking)
+    set_plot_authors_ranking_filters(pipeline, query_params.authors_ranking)
 
 
 def set_plot_product_type_filters(pipeline: list, type_filters: str | None) -> None:
@@ -998,4 +999,13 @@ def set_plot_groups_ranking_filters(pipeline: list, groups_ranking: str | None) 
     match_filters = []
     for ranking in groups_ranking.split(","):
         match_filters.append({"works.groups": {"$elemMatch": {"ranking": ranking}}})
+    pipeline += [{"$match": {"$or": match_filters}}]
+
+
+def set_plot_authors_ranking_filters(pipeline: list, authors_ranking: str | None) -> None:
+    if not authors_ranking:
+        return
+    match_filters = []
+    for ranking in authors_ranking.split(","):
+        match_filters.append({"works.authors": {"$elemMatch": {"ranking": ranking}}})
     pipeline += [{"$match": {"$or": match_filters}}]

@@ -151,6 +151,7 @@ class QueryParams(BaseModel):
     subject: str | None = None
     country: str | None = None
     groups_ranking: str | None = None
+    authors_ranking: str | None = None
 
 
 class Geography(BaseModel):
@@ -200,7 +201,7 @@ class Author(BaseModel):
     last_names: list[str] | None = None
     sex: str | None = None
     external_ids: list[ExternalId] | None = None
-    ranking: list[Ranking] | None = None
+    ranking: list[Ranking] | str | None = None
 
     @field_validator("external_ids")
     @classmethod

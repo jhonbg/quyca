@@ -139,7 +139,7 @@ def search_works(query_params: QueryParams, pipeline_params: dict | None = None)
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     works = database["works"].aggregate(pipeline)
     count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
-    set_product_filters(pipeline, query_params)
+    set_product_filters(count_pipeline, query_params)
     count_pipeline += [
         {"$count": "total_results"},  # type: ignore
     ]

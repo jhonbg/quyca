@@ -215,6 +215,7 @@ def set_product_filters(pipeline: list, query_params: QueryParams) -> None:
     set_year_filters(pipeline, query_params.year)
     set_status_filters(pipeline, query_params.status)
     set_subject_filters(pipeline, query_params.subject)
+    set_country_filters(pipeline, query_params.country)
 
 
 def set_product_type_filters(pipeline: list, type_filters: str | None) -> None:
@@ -266,4 +267,13 @@ def set_subject_filters(pipeline: list, subjects: str | None) -> None:
         if len(params) == 1:
             return
         match_filters.append({"subjects.subjects": {"$elemMatch": {"level": int(params[0]), "name": params[1]}}})
+    pipeline += [{"$match": {"$or": match_filters}}]
+
+
+def set_country_filters(pipeline: list, countries: str | None) -> None:
+    if not countries:
+        return
+    match_filters = []
+    for country in countries.split(","):
+        match_filters.append({"authors.affiliations": {"$elemMatch": {"country_code": country}}})
     pipeline += [{"$match": {"$or": match_filters}}]

@@ -149,6 +149,7 @@ class QueryParams(BaseModel):
     year: str | None = None
     status: str | None = None
     subject: str | None = None
+    country: str | None = None
 
 
 class Geography(BaseModel):

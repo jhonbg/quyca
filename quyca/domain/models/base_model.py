@@ -150,6 +150,7 @@ class QueryParams(BaseModel):
     status: str | None = None
     subject: str | None = None
     country: str | None = None
+    groups_ranking: str | None = None
 
 
 class Geography(BaseModel):

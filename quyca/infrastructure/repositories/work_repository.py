@@ -140,23 +140,6 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
     ]
     status = database["works"].aggregate(status_pipeline)
     available_filters["status"] = list(status)
-    countries_pipeline = pipeline.copy() + [
-        {
-            "$lookup": {
-                "from": "affiliations",
-                "localField": "authors.affiliations.id",
-                "foreignField": "_id",
-                "as": "affiliations_data",
-                "pipeline": [{"$project": {"_id": 0, "addresses.country": 1}}],
-            }
-        },
-        {"$unwind": "$affiliations_data"},
-        {"$unwind": "$affiliations_data.addresses"},
-        {"$group": {"_id": None, "countries": {"$addToSet": "$affiliations_data.addresses.country"}}},
-        {"$project": {"_id": 0, "countries": 1}},
-    ]
-    countries = database["works"].aggregate(countries_pipeline)
-    available_filters["countries"] = list(next(countries).get("countries", []))
     return available_filters
 
 

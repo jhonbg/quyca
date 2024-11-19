@@ -101,8 +101,6 @@ def parse_available_filters(filters: dict) -> dict:
     if status := filters.get("status"):
         statuses = parse_status_filter(status)
         available_filters["status"] = statuses
-    if countries := filters.get("countries"):
-        available_filters["countries"] = sorted(countries)
     return available_filters
 
 

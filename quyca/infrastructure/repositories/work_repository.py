@@ -195,6 +195,18 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
     ]
     subjects = database["works"].aggregate(subjects_pipeline)
     available_filters["subjects"] = list(next(subjects, {"subjects": []}).get("subjects"))  # type: ignore
+    countries_pipeline = pipeline.copy() + [
+        {"$unwind": "$authors"},
+        {"$unwind": "$authors.affiliations"},
+        {
+            "$group": {
+                "_id": "$authors.affiliations.country",
+                "country_code": {"$first": "$authors.affiliations.country_code"},
+            }
+        },
+    ]
+    countries = database["works"].aggregate(countries_pipeline)
+    available_filters["countries"] = list(countries)
     return available_filters
 
 

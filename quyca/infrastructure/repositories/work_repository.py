@@ -207,6 +207,12 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
     ]
     countries = database["works"].aggregate(countries_pipeline)
     available_filters["countries"] = list(countries)
+    groups_ranking_pipeline = pipeline.copy() + [
+        {"$unwind": "$groups"},
+        {"$group": {"_id": "$groups.ranking"}},
+    ]
+    groups_ranking = database["works"].aggregate(groups_ranking_pipeline)
+    available_filters["groups_ranking"] = list(groups_ranking)
     return available_filters
 
 

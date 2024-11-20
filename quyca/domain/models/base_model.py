@@ -151,7 +151,7 @@ class QueryParams(BaseModel):
 
     @model_validator(mode="after")
     def validate_pagination_and_sort(self) -> "QueryParams":
-        if not self.plot:
+        if not self.plot and not self.limit and not self.page and not self.sort:
             self.limit = 10
             self.page = 1
             self.sort = "citations_desc"

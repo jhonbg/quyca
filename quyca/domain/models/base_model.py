@@ -144,16 +144,17 @@ class QueryParams(BaseModel):
     page: conint(ge=1) | None = None  # type: ignore
     keywords: str | None = None
     plot: str | None = None
-    sort: str | None = "citations_desc"
+    sort: str | None = None
     product_type: str | None = None
     year: str | None = None
     status: str | None = None
 
     @model_validator(mode="after")
-    def validate_pagination(self) -> "QueryParams":
+    def validate_pagination_and_sort(self) -> "QueryParams":
         if not self.plot:
             self.limit = 10
             self.page = 1
+            self.sort = "citations_desc"
         return self
 
 

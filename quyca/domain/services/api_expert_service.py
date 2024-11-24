@@ -19,6 +19,12 @@ def get_works_by_affiliation(affiliation_id: str, query_params: QueryParams) -> 
     return {"data": data}
 
 
+def search_works(query_params: QueryParams) -> dict:
+    works = api_expert_repository.search_works_for_api_expert(query_params)
+    data = process_works(works)
+    return {"data": data}
+
+
 def process_works(works: Generator) -> list:
     works_list = []
     for work in works:
@@ -72,6 +78,7 @@ def set_authors_affiliations_data(work: Work) -> None:
                 affiliation.geo.latitude = address.lat
                 affiliation.geo.longitude = address.lng
                 author.countries.append(affiliation.geo.country)
+        author.countries = list(set(author.countries))
     work.affiliations_data = None
 
 

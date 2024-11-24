@@ -32,6 +32,13 @@ def get_works_by_person_for_api_expert(
     return get_works_for_api_expert(pipeline, pipeline_params, query_params)
 
 
+def search_works_for_api_expert(query_params: QueryParams, pipeline_params: dict | None = None) -> Generator:
+    if pipeline_params is None:
+        pipeline_params = {}
+    pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    return get_works_for_api_expert(pipeline, pipeline_params, query_params)
+
+
 def get_works_for_api_expert(pipeline: list, pipeline_params: dict, query_params: QueryParams) -> Generator:
     pipeline += [
         {

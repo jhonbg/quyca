@@ -172,7 +172,7 @@ class Geography(BaseModel):
 
 
 class Affiliation(BaseModel):
-    id: PyObjectId | None = None
+    id: str | None = None
     name: str | None = None
     types: list[Type] | None = None
     start_date: int | str | None = None

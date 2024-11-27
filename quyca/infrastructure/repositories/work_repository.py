@@ -156,7 +156,7 @@ def get_works_available_filters_by_person(person_id: str, query_params: QueryPar
 
 def get_works_available_filters_by_affiliation(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline = [
-        {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+        {"$match": {"authors.affiliations.id": affiliation_id}},
     ]
     return get_works_available_filters(pipeline, query_params)
 

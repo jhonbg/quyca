@@ -17,7 +17,7 @@ def get_works_by_affiliation_for_api_expert(
         pipeline_params = {}
     pipeline = [
         {
-            "$match": {"authors.affiliations.id": ObjectId(affiliation_id)},
+            "$match": {"authors.affiliations.id": affiliation_id},
         }
     ]
     return get_works_for_api_expert(pipeline, pipeline_params, query_params)

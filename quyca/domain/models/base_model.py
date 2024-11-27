@@ -229,7 +229,7 @@ class Author(BaseModel):
 
 
 class Group(BaseModel):
-    id: PyObjectId | None = None
+    id: str | None = None
     name: str | None
 
     class Config:

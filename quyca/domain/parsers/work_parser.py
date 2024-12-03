@@ -181,7 +181,8 @@ def parse_product_type_filter(product_types: list) -> list:
         if product_type.get("_id") == "crossref":
             continue
         elif product_type.get("_id") == "minciencias":
-            for inner_type in product_type.get("types"):
+            inner_types = list({element["type"]: element for element in product_type.get("types")}.values())
+            for inner_type in inner_types:
                 if inner_type.get("level") == 0:
                     continue
                 children.append(

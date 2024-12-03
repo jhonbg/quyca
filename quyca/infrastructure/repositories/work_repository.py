@@ -223,11 +223,11 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
 
 
 def set_product_filters(pipeline: list, query_params: QueryParams) -> None:
-    set_product_type_filters(pipeline, query_params.product_type)
-    set_year_filters(pipeline, query_params.year)
+    set_product_type_filters(pipeline, query_params.product_types)
+    set_year_filters(pipeline, query_params.years)
     set_status_filters(pipeline, query_params.status)
-    set_subject_filters(pipeline, query_params.subject)
-    set_country_filters(pipeline, query_params.country)
+    set_subject_filters(pipeline, query_params.subjects)
+    set_country_filters(pipeline, query_params.countries)
     set_groups_ranking_filters(pipeline, query_params.groups_ranking)
     set_authors_ranking_filters(pipeline, query_params.authors_ranking)
 

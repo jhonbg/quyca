@@ -145,11 +145,11 @@ class QueryParams(BaseModel):
     keywords: str | None = None
     plot: str | None = None
     sort: str | None = None
-    product_type: str | None = None
-    year: str | None = None
+    product_types: str | None = None
+    years: str | None = None
     status: str | None = None
-    subject: str | None = None
-    country: str | None = None
+    subjects: str | None = None
+    countries: str | None = None
     groups_ranking: str | None = None
     authors_ranking: str | None = None
 

@@ -1,6 +1,7 @@
 import csv
 import io
 
+from domain.constants import countries_iso
 from domain.constants.open_access_status import open_access_status_dict
 from domain.constants.product_types import source_titles
 from domain.models.work_model import Work
@@ -131,8 +132,10 @@ def parse_groups_ranking_filter(groups_ranking: list) -> list:
 def parse_country_filter(countries: list) -> list:
     parsed_countries = []
     for country in countries:
-        if country.get("country_code") and country.get("_id"):
-            parsed_countries.append({"value": country.get("country_code"), "label": country.get("_id")})
+        if country.get("_id"):
+            parsed_countries.append(
+                {"value": country.get("_id"), "label": countries_iso.countries_dict.get(country.get("_id"), "Sin País")}
+            )
     parsed_countries.sort(key=lambda x: x.get("label"))  # type: ignore
     return parsed_countries
 

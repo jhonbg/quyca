@@ -200,8 +200,7 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
         {"$unwind": "$authors.affiliations"},
         {
             "$group": {
-                "_id": "$authors.affiliations.country",
-                "country_code": {"$first": "$authors.affiliations.country_code"},
+                "_id": "$authors.affiliations.country_code",
             }
         },
     ]

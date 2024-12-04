@@ -930,11 +930,11 @@ def get_products_by_database_by_person(person_id: str) -> dict:
 
 
 def set_plot_product_filters(pipeline: list, query_params: QueryParams) -> None:
-    set_plot_product_type_filters(pipeline, query_params.product_type)
-    set_plot_year_filters(pipeline, query_params.year)
+    set_plot_product_type_filters(pipeline, query_params.product_types)
+    set_plot_year_filters(pipeline, query_params.years)
     set_plot_status_filters(pipeline, query_params.status)
-    set_plot_subject_filters(pipeline, query_params.subject)
-    set_plot_country_filters(pipeline, query_params.country)
+    set_plot_subject_filters(pipeline, query_params.subjects)
+    set_plot_country_filters(pipeline, query_params.countries)
     set_plot_groups_ranking_filters(pipeline, query_params.groups_ranking)
     set_plot_authors_ranking_filters(pipeline, query_params.authors_ranking)
 

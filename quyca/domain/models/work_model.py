@@ -121,7 +121,6 @@ class Work(BaseModel):
     openalex_types: str | None = None
     scienti_types: str | None = None
     scimago_quartile: str | None = None
-#    source_data: Source | list[Source] | None = None
     source_apc: str | None = None
     source_data: Source | None = None
     source_name: str | None = None

@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Colav API Documentation",
   "title": "Colav APIDoc",
-  "url": "https://api.impactu.colav.co/apidoc",
+  "url": "https://api.impactu.colav.co",
   "sampleUrl": "https://api.impactu.colav.co/",
   "header": {
-    "filename": "quyca/core/docs/apidoc-header.md"
+    "filename": "quyca/application/docs/apidoc-header.md"
   }
 }

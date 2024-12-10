@@ -1,6 +1,6 @@
 from typing import Generator
 
-from pydantic import BaseModel, field_validator, Field, conint
+from pydantic import BaseModel, field_validator, Field, conint, model_validator
 from bson import ObjectId
 
 
@@ -140,39 +140,96 @@ class APC(BaseModel):
 
 
 class QueryParams(BaseModel):
-    limit: conint(ge=10, le=250) | None = Field(default=None, alias="max")  # type: ignore
+    limit: conint(ge=1, le=250) | None = Field(default=None, alias="max")  # type: ignore
     page: conint(ge=1) | None = None  # type: ignore
     keywords: str | None = None
     plot: str | None = None
     sort: str | None = None
-    product_type: str | None = None
+    product_types: str | None = None
+    years: str | None = None
+    status: str | None = None
+    subjects: str | None = None
+    countries: str | None = None
+    groups_ranking: str | None = None
+    authors_ranking: str | None = None
+
+    @model_validator(mode="after")
+    def validate_pagination_and_sort(self) -> "QueryParams":
+        if not self.plot and not self.limit and not self.page and not self.sort:
+            self.limit = 10
+            self.page = 1
+            self.sort = "citations_desc"
+        return self
+
+
+class Geography(BaseModel):
+    city: str | None = None
+    region: str | None = None
+    country: str | None = None
+    country_code: str | None = None
+    latitude: float | str | None = None
+    longitude: float | str | None = None
 
 
 class Affiliation(BaseModel):
-    id: PyObjectId | None = None
+    id: str | None = None
     name: str | None = None
     types: list[Type] | None = None
+    start_date: int | str | None = None
+    end_date: int | str | None = None
 
+    ror: str | None = None
+    geo: Geography | None = Field(default_factory=Geography)
     addresses: list[Address] | None = None
+    position: str | None = None
     ranking: list[Ranking] | None = None
-
-    class Config:
-        json_encoders = {ObjectId: str}
-
-
-class Author(BaseModel):
-    id: PyObjectId | None = None
-    affiliations: list[Affiliation] | None = None
-    full_name: str | None = None
-
     external_ids: list[ExternalId] | None = None
 
     class Config:
         json_encoders = {ObjectId: str}
 
 
-class Group(BaseModel):
+class BirthPlace(BaseModel):
+    city: str | None = None
+    country: str | None = None
+    state: str | None = None
+
+
+class Author(BaseModel):
     id: PyObjectId | None = None
+    affiliations: list[Affiliation] | None = Field(default_factory=list[Affiliation])
+    full_name: str | None = None
+
+    birth_country: str | None = None
+    age: int | None = None
+    birthdate: int | str | None = None
+    birthplace: BirthPlace | None = None
+    countries: list[str] | None = None
+    first_names: list[str] | None = None
+    last_names: list[str] | None = None
+    sex: str | None = None
+    external_ids: list[ExternalId] | None = None
+    ranking: list[Ranking] | str | None = None
+
+    @field_validator("external_ids")
+    @classmethod
+    def delete_sensitive_external_ids(cls, value: list | None) -> list | None:
+        if value is None:
+            return value
+        return list(
+            filter(
+                lambda external_id: external_id.source
+                not in ["Cédula de Ciudadanía", "Cédula de Extranjería", "Passport"],
+                value,
+            )
+        )
+
+    class Config:
+        json_encoders = {ObjectId: str}
+
+
+class Group(BaseModel):
+    id: str | None = None
     name: str | None
 
     class Config:

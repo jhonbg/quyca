@@ -1,6 +1,5 @@
 from typing import Generator, Tuple
 
-from bson import ObjectId
 
 from domain.models.base_model import QueryParams
 from domain.constants.institutions import institutions_list
@@ -14,7 +13,7 @@ from domain.exceptions.not_entity_exception import NotEntityException
 
 def get_affiliation_by_id(affiliation_id: str) -> Affiliation:
     pipeline = [
-        {"$match": {"_id": ObjectId(affiliation_id)}},
+        {"$match": {"_id": affiliation_id}},
         {
             "$lookup": {
                 "from": "affiliations",
@@ -36,7 +35,7 @@ def get_affiliations_by_institution(institution_id: str, relation_type: str) -> 
     pipeline = [
         {
             "$match": {
-                "relations.id": ObjectId(institution_id),
+                "relations.id": institution_id,
                 "types.type": relation_type,
             }
         }
@@ -55,7 +54,7 @@ def get_groups_by_faculty_or_department(affiliation_id: str) -> Generator:
         database["affiliations"]
         .aggregate(
             [
-                {"$match": {"_id": ObjectId(affiliation_id)}},
+                {"$match": {"_id": affiliation_id}},
                 {"$unwind": "$relations"},
                 {"$match": {"relations.types.type": "education"}},
             ]
@@ -67,7 +66,7 @@ def get_groups_by_faculty_or_department(affiliation_id: str) -> Generator:
     pipeline = [
         {
             "$match": {
-                "affiliations.id": ObjectId(affiliation_id),
+                "affiliations.id": affiliation_id,
             }
         },
         {"$unwind": "$affiliations"},
@@ -81,7 +80,7 @@ def get_groups_by_faculty_or_department(affiliation_id: str) -> Generator:
                 "pipeline": [
                     {
                         "$match": {
-                            "relations.id": ObjectId(institution_id),
+                            "relations.id": institution_id,
                             "types.type": "group",
                         },
                     },

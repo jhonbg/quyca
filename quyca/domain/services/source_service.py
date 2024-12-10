@@ -12,7 +12,7 @@ def update_work_source(work: Work) -> None:
 
 def update_csv_work_source(work: Work) -> None:
     if work.source.id:
-        source_data = work.source_data
+        source_data = work.source_data[0]
         set_csv_scimago_quartile(work, source_data)
         set_source_urls(work, source_data)
         if source_data.publisher:

@@ -125,7 +125,7 @@ def apc_person(person_id: str) -> Response | Tuple[Response, int]:
 def apc_affiliation(affiliation_id: str) -> Response | Tuple[Response, int]:
     try:
         pipeline = [
-            {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+            {"$match": {"authors.affiliations.id": affiliation_id}},
             {
                 "$lookup": {
                     "from": "sources",  # type: ignore

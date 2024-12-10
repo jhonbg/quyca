@@ -12,7 +12,7 @@ def get_person_calculations(person_id: str) -> Calculations:
 
 
 def get_affiliation_calculations(affiliation_id: str) -> Calculations:
-    affiliation_calculations = calculations_database["affiliations"].find_one({"_id": ObjectId(affiliation_id)})
+    affiliation_calculations = calculations_database["affiliations"].find_one({"_id": affiliation_id})
     if not affiliation_calculations:
         return Calculations()
     return Calculations(**affiliation_calculations)

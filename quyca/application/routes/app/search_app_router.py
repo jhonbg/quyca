@@ -15,6 +15,15 @@ from domain.services import (
 
 search_app_router = Blueprint("search_app_router", __name__)
 
+"""
+@api {get} /app/search/person Search persons
+@apiName SearchPersons
+@apiGroup Search
+@apiVersion 1.0.0
+
+@apiDescription Búsqueda de autores por palabra clave.
+"""
+
 
 @search_app_router.route("/person", methods=["GET"])
 def search_persons() -> Response | Tuple[Response, int]:
@@ -25,6 +34,16 @@ def search_persons() -> Response | Tuple[Response, int]:
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400
+
+
+"""
+@api {get} /app/search/works Search works
+@apiName SearchWorks
+@apiGroup Search
+@apiVersion 1.0.0
+
+@apiDescription Búsqueda de productos bibliográficos por palabra clave.
+"""
 
 
 @search_app_router.route("/works", methods=["GET"])
@@ -38,6 +57,16 @@ def search_works() -> Response | Tuple[Response, int]:
         return jsonify({"error": str(e)}), 400
 
 
+"""
+@api {get} /app/search/works/filters Search works filters
+@apiName SearchWorksFilters
+@apiGroup Search
+@apiVersion 1.0.0
+
+@apiDescription Filtros disponibles en la búsqueda de productos bibliográficos por palabra clave.
+"""
+
+
 @search_app_router.route("/works/filters", methods=["GET"])
 def get_search_works_filters() -> Response | Tuple[Response, int]:
     try:
@@ -47,6 +76,18 @@ def get_search_works_filters() -> Response | Tuple[Response, int]:
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400
+
+
+"""
+@api {get} /app/search/affiliations/:affiliation_type Search affiliations
+@apiName SearchAffiliations
+@apiGroup Search
+@apiVersion 1.0.0
+
+@apiDescription Búsqueda de afiliaciones por palabra clave y tipo.
+
+@apiParam {String} affiliation_type Tipo de afiliación (ej. "institution", "department").
+"""
 
 
 @search_app_router.route("/affiliations/<affiliation_type>", methods=["GET"])
@@ -60,6 +101,16 @@ def search_affiliations(affiliation_type: str) -> Response | Tuple[Response, int
         return jsonify({"error": str(e)}), 400
 
 
+"""
+@api {get} /app/search/other_works Search other works
+@apiName SearchOtherWorks
+@apiGroup Search
+@apiVersion 1.0.0
+
+@apiDescription Búsqueda de productos de otro tipo por palabra clave.
+"""
+
+
 @search_app_router.route("/other_works", methods=["GET"])
 def search_other_works() -> Response | Tuple[Response, int]:
     try:
@@ -71,6 +122,16 @@ def search_other_works() -> Response | Tuple[Response, int]:
         return jsonify({"error": str(e)}), 400
 
 
+"""
+@api {get} /app/search/patents Search patents
+@apiName SearchPatents
+@apiGroup Search
+@apiVersion 1.0.0
+
+@apiDescription Búsqueda de patentes por palabra clave.
+"""
+
+
 @search_app_router.route("/patents", methods=["GET"])
 def search_patents() -> Response | Tuple[Response, int]:
     try:
@@ -80,6 +141,16 @@ def search_patents() -> Response | Tuple[Response, int]:
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400
+
+
+"""
+@api {get} /app/search/projects Search projects
+@apiName SearchProjects
+@apiGroup Search
+@apiVersion 1.0.0
+
+@apiDescription Búsqueda de proyectos por palabra clave.
+"""
 
 
 @search_app_router.route("/projects", methods=["GET"])

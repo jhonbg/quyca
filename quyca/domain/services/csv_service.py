@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Generator
 
-from domain.models.base_model import ExternalId
+from domain.models.base_model import ExternalId, QueryParams
 from domain.models.work_model import Work, Affiliation
 from infrastructure.repositories import csv_repository
 from domain.constants.institutions import institutions_list
@@ -11,14 +11,14 @@ from domain.services.work_service import set_title_and_language
 from domain.parsers import work_parser
 
 
-def get_works_csv_by_affiliation(affiliation_id: str) -> str:
-    works = csv_repository.get_works_csv_by_affiliation(affiliation_id)
+def get_works_csv_by_affiliation(affiliation_id: str, query_params: QueryParams) -> str:
+    works = csv_repository.get_works_csv_by_affiliation(affiliation_id, query_params)
     data = get_csv_data(works)
     return work_parser.parse_csv(data)
 
 
-def get_works_csv_by_person(person_id: str) -> str:
-    works = csv_repository.get_works_csv_by_person(person_id)
+def get_works_csv_by_person(person_id: str, query_params: QueryParams) -> str:
+    works = csv_repository.get_works_csv_by_person(person_id, query_params)
     data = get_csv_data(works)
     return work_parser.parse_csv(data)
 
@@ -26,6 +26,7 @@ def get_works_csv_by_person(person_id: str) -> str:
 def get_csv_data(works: Generator) -> list:
     data = []
     for work in works:
+        set_open_access_status(work)
         set_doi(work)
         set_csv_ranking(work)
         set_csv_affiliations(work)
@@ -38,6 +39,11 @@ def get_csv_data(works: Generator) -> list:
         source_service.update_csv_work_source(work)
         data.append(work)
     return data
+
+
+def set_open_access_status(work: Work) -> None:
+    if work.open_access:
+        work.open_access_status = work.open_access.open_access_status
 
 
 def set_csv_ranking(work: Work) -> None:

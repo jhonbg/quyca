@@ -10,11 +10,12 @@ from domain.models.base_model import (
     Subject,
     Ranking,
     ExternalUrl,
+    BirthPlace,
 )
 
 
 class Affiliation(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId)
+    id: str | None = None
     name: str | None = None
     position: str | None = None
     start_date: int | str | None = None
@@ -40,12 +41,6 @@ class Affiliation(BaseModel):
 
     class Config:
         json_encoders = {ObjectId: str}
-
-
-class BirthPlace(BaseModel):
-    city: str | None = None
-    country: str | None = None
-    state: str | None = None
 
 
 class Degree(BaseModel):

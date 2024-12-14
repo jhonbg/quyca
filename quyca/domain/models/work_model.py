@@ -122,7 +122,7 @@ class Work(BaseModel):
     scienti_types: str | None = None
     scimago_quartile: str | None = None
     source_apc: str | None = None
-    source_data: Source | None = None
+    source_data: Source | list[Source] | None = None
     source_name: str | None = None
     source_urls: str | None = None
     title: str | None = None

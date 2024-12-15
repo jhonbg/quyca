@@ -45,7 +45,7 @@ class Affiliation(BaseModel):
 
 class Degree(BaseModel):
     id: str | None
-    date: str | None
+    date: int | None
     degree: str | None
     institutions: list | None = Field(default_factory=list)
     source: str | None

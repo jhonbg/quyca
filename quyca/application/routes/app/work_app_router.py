@@ -20,12 +20,8 @@ work_app_router = Blueprint("work_app_router", __name__)
 
 @work_app_router.route("/<work_id>", methods=["GET"])
 def get_work_by_id(work_id: str) -> Response | Tuple[Response, int]:
-#    try:
     data = work_service.get_work_by_id(work_id)
     return jsonify(data)
-    # except Exception as e:
-    #     capture_exception(e)
-    #     return jsonify({"error": str(e)}), 400
 
 
 """

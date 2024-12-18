@@ -35,6 +35,8 @@ def set_abstract(work: Work) -> None:
         hierarchy = ["openalex", "scholar", "scienti"]
         return hierarchy.index(abstract.source) if abstract.source in hierarchy else float("inf")
 
+    if not work.abstracts:
+        return
     first_abstract = sorted(work.abstracts, key=order)[0]
     work.abstract = first_abstract.abstract
 

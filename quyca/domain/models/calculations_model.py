@@ -28,6 +28,6 @@ class TopWord(BaseModel):
 
 
 class Calculations(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    id: str = Field(default_factory=str, alias="_id")
     coauthorship_network: CoauthorshipNetwork = Field(default_factory=CoauthorshipNetwork)
     top_words: list[TopWord] = Field(default_factory=list)

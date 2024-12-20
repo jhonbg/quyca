@@ -1,7 +1,5 @@
 from pydantic import BaseModel, Field
 
-from domain.models.base_model import PyObjectId
-
 
 class Node(BaseModel):
     degree: int = Field(default_factory=int)

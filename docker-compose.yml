@@ -4,6 +4,7 @@ services:
     network_mode: host
     restart: on-failure
     build:
+      network: host
       context: .
       dockerfile: Dockerfile
       target: development
@@ -19,6 +20,7 @@ services:
     network_mode: host
     restart: on-failure
     build:
+      network: host
       context: .
       dockerfile: Dockerfile
       target: production
@@ -45,6 +47,7 @@ services:
     network_mode: host
     restart: on-failure
     build:
+      network: host
       context: .
       dockerfile: Dockerfile
       target: local

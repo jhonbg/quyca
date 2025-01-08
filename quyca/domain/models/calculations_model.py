@@ -1,9 +1,10 @@
 from pydantic import BaseModel, Field
+from domain.models.base_model import PyObjectId
 
 
 class Node(BaseModel):
     degree: int = Field(default_factory=int)
-    id: str = Field(default_factory=str)
+    id: str | PyObjectId = Field(default_factory=str)
     label: str = Field(default_factory=str)
     size: float = Field(default_factory=float)
 
@@ -26,6 +27,6 @@ class TopWord(BaseModel):
 
 
 class Calculations(BaseModel):
-    id: str = Field(default_factory=str, alias="_id")
+    id: str | PyObjectId = Field(default_factory=str, alias="_id")
     coauthorship_network: CoauthorshipNetwork = Field(default_factory=CoauthorshipNetwork)
     top_words: list[TopWord] = Field(default_factory=list)

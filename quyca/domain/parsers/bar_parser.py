@@ -18,7 +18,7 @@ def parse_annual_evolution_by_scienti_classification(works: Generator) -> dict:
         for year, work_types in data.items()
         for work_type, count in work_types.items()
     ]
-    return {"plot": sorted(plot, key=lambda x: (x.get("x"), -x.get("y")))}
+    return {"plot": sorted(plot, key=lambda x: (-x.get("x"), -x.get("y")))}
 
 
 def parse_affiliations_by_product_type(data: CommandCursor) -> dict:
@@ -38,7 +38,7 @@ def parse_annual_citation_count(works: Generator) -> dict:
                 data[citation.year] += citation.cited_by_count
             else:
                 data[citation.year] = citation.cited_by_count
-    plot = [{"x": year, "y": count} for year, count in sorted(data.items())]
+    plot = [{"x": year, "y": count} for year, count in sorted(data.items(), reverse=True)]
     plot += [{"x": "Sin información", "y": no_info}]
     return {"plot": plot}
 
@@ -62,7 +62,7 @@ def parse_annual_articles_open_access(works: Generator) -> dict:
         for year, counts in data.items()
         for access_type, count in counts.items()
     ]
-    return {"plot": sorted(plot, key=lambda x: float("inf") if x.get("x") == "Sin año" else x.get("x"))}
+    return {"plot": sorted(plot, key=lambda x: float("inf") if x.get("x") == "Sin año" else -x.get("x"))}
 
 
 def parse_annual_articles_by_top_publishers(works: Generator) -> dict:
@@ -77,7 +77,7 @@ def parse_annual_articles_by_top_publishers(works: Generator) -> dict:
         for year, publishers in data.items()
         for publisher, count in publishers.items()
     ]
-    return {"plot": sorted(plot, key=lambda x: (x.get("x"), -x.get("y")))}
+    return {"plot": sorted(plot, key=lambda x: (-x.get("x"), -x.get("y")))}
 
 
 def parse_annual_apc_expenses(works: Generator) -> dict:
@@ -95,4 +95,8 @@ def parse_annual_apc_expenses(works: Generator) -> dict:
         data[work.year_published] += int(usd_charges)
         total_apc += usd_charges
     plot = [{"x": year, "y": value} for year, value in data.items()]
-    return {"plot": sorted(plot, key=lambda x: x.get("x")), "total_apc": int(total_apc), "total_results": total_results}
+    return {
+        "plot": sorted(plot, key=lambda x: -x.get("x")),
+        "total_apc": int(total_apc),
+        "total_results": total_results,
+    }

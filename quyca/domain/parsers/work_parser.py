@@ -1,6 +1,7 @@
 import csv
 import io
 
+from domain.constants import countries_iso
 from domain.constants.open_access_status import open_access_status_dict
 from domain.constants.product_types import source_titles
 from domain.models.work_model import Work
@@ -94,14 +95,67 @@ def parse_api_expert(works: list) -> list:
 def parse_available_filters(filters: dict) -> dict:
     available_filters: dict = {}
     if product_types := filters.get("product_types"):
-        types = parse_product_type_filter(product_types)
-        available_filters["product_types"] = types
+        available_filters["product_types"] = parse_product_type_filter(product_types)
     if years := filters.get("years"):
         available_filters["years"] = years
     if status := filters.get("status"):
-        statuses = parse_status_filter(status)
-        available_filters["status"] = statuses
+        available_filters["status"] = parse_status_filter(status)
+    if subjects := filters.get("subjects"):
+        available_filters["subjects"] = parse_subject_filter(subjects)
+    if countries := filters.get("countries"):
+        available_filters["countries"] = parse_country_filter(countries)
+    if groups_ranking := filters.get("groups_ranking"):
+        available_filters["groups_ranking"] = parse_groups_ranking_filter(groups_ranking)
+    if authors_ranking := filters.get("authors_ranking"):
+        available_filters["authors_ranking"] = parse_authors_ranking_filter(authors_ranking)
     return available_filters
+
+
+def parse_authors_ranking_filter(authors_ranking: list) -> list:
+    parsed_authors_ranking = []
+    for ranking in authors_ranking:
+        if ranking.get("_id"):
+            parsed_authors_ranking.append({"value": ranking.get("_id"), "label": ranking.get("_id")})
+    parsed_authors_ranking.sort(key=lambda x: x.get("label"))  # type: ignore
+    return parsed_authors_ranking
+
+
+def parse_groups_ranking_filter(groups_ranking: list) -> list:
+    parsed_groups_ranking = []
+    for ranking in groups_ranking:
+        if ranking.get("_id"):
+            parsed_groups_ranking.append({"value": ranking.get("_id"), "label": ranking.get("_id")})
+    parsed_groups_ranking.sort(key=lambda x: x.get("label"))  # type: ignore
+    return parsed_groups_ranking
+
+
+def parse_country_filter(countries: list) -> list:
+    parsed_countries = []
+    for country in countries:
+        if country.get("_id"):
+            parsed_countries.append(
+                {"value": country.get("_id"), "label": countries_iso.countries_dict.get(country.get("_id"), "Sin País")}
+            )
+    parsed_countries.sort(key=lambda x: x.get("label"))  # type: ignore
+    return parsed_countries
+
+
+def parse_subject_filter(subjects: list) -> list:
+    parsed_subjects = []
+    first_level_children = []
+    second_level_children = []
+    for subject in subjects:
+        if subject.get("level") == 0:
+            first_level_children.append({"value": "0_" + subject.get("name"), "title": subject.get("name")})
+        elif subject.get("level") == 1:
+            second_level_children.append({"value": "1_" + subject.get("name"), "title": subject.get("name")})
+    if len(first_level_children) > 0:
+        first_level_children.sort(key=lambda x: x.get("title"))  # type: ignore
+        parsed_subjects.append({"value": "0", "title": "Gran área de conocimiento", "children": first_level_children})  # type: ignore
+    if len(second_level_children) > 0:
+        second_level_children.sort(key=lambda x: x.get("title"))  # type: ignore
+        parsed_subjects.append({"value": "1", "title": "Áreas de especialidad", "children": second_level_children})  # type: ignore
+    return parsed_subjects
 
 
 def parse_status_filter(status: list) -> list:
@@ -129,8 +183,13 @@ def parse_product_type_filter(product_types: list) -> list:
         children = []
         if product_type.get("_id") == "crossref":
             continue
+
+        if product_type.get("_id") == "ciarp":
+            continue
+
         elif product_type.get("_id") == "minciencias":
-            for inner_type in product_type.get("types"):
+            inner_types = list({element["type"]: element for element in product_type.get("types")}.values())
+            for inner_type in inner_types:
                 if inner_type.get("level") == 0:
                     continue
                 children.append(

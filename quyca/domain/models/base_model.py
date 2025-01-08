@@ -145,9 +145,13 @@ class QueryParams(BaseModel):
     keywords: str | None = None
     plot: str | None = None
     sort: str | None = None
-    product_type: str | None = None
-    year: str | None = None
+    product_types: str | None = None
+    years: str | None = None
     status: str | None = None
+    subjects: str | None = None
+    countries: str | None = None
+    groups_ranking: str | None = None
+    authors_ranking: str | None = None
 
     @model_validator(mode="after")
     def validate_pagination_and_sort(self) -> "QueryParams":
@@ -168,7 +172,7 @@ class Geography(BaseModel):
 
 
 class Affiliation(BaseModel):
-    id: PyObjectId | None = None
+    id: str | None = None
     name: str | None = None
     types: list[Type] | None = None
     start_date: int | str | None = None
@@ -185,17 +189,27 @@ class Affiliation(BaseModel):
         json_encoders = {ObjectId: str}
 
 
+class BirthPlace(BaseModel):
+    city: str | None = None
+    country: str | None = None
+    state: str | None = None
+
+
 class Author(BaseModel):
     id: PyObjectId | None = None
     affiliations: list[Affiliation] | None = Field(default_factory=list[Affiliation])
     full_name: str | None = None
 
+    birth_country: str | None = None
+    age: int | None = None
+    birthdate: int | str | None = None
+    birthplace: BirthPlace | None = None
     countries: list[str] | None = None
     first_names: list[str] | None = None
     last_names: list[str] | None = None
     sex: str | None = None
     external_ids: list[ExternalId] | None = None
-    ranking: list[Ranking] | None = None
+    ranking: list[Ranking] | str | None = None
 
     @field_validator("external_ids")
     @classmethod
@@ -215,7 +229,7 @@ class Author(BaseModel):
 
 
 class Group(BaseModel):
-    id: PyObjectId | None = None
+    id: str | None = None
     name: str | None
 
     class Config:

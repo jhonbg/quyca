@@ -17,7 +17,7 @@ def get_works_by_affiliation_for_api_expert(
         pipeline_params = {}
     pipeline = [
         {
-            "$match": {"authors.affiliations.id": ObjectId(affiliation_id)},
+            "$match": {"authors.affiliations.id": affiliation_id},
         }
     ]
     return get_works_for_api_expert(pipeline, pipeline_params, query_params)
@@ -29,6 +29,13 @@ def get_works_by_person_for_api_expert(
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = [{"$match": {"authors.id": ObjectId(person_id)}}]
+    return get_works_for_api_expert(pipeline, pipeline_params, query_params)
+
+
+def search_works_for_api_expert(query_params: QueryParams, pipeline_params: dict | None = None) -> Generator:
+    if pipeline_params is None:
+        pipeline_params = {}
+    pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     return get_works_for_api_expert(pipeline, pipeline_params, query_params)
 
 
@@ -45,6 +52,8 @@ def get_works_for_api_expert(pipeline: list, pipeline_params: dict, query_params
                         "$project": {
                             "id": "$_id",
                             "sex": 1,
+                            "birthplace.country": 1,
+                            "birthdate": 1,
                             "first_names": 1,
                             "last_names": 1,
                             "affiliations.id": 1,
@@ -88,9 +97,7 @@ def get_works_for_api_expert(pipeline: list, pipeline_params: dict, query_params
             },
         },
     ]
-    work_repository.set_product_type_filters(pipeline, query_params.product_type)
-    work_repository.set_year_filters(pipeline, query_params.year)
-    work_repository.set_status_filters(pipeline, query_params.status)
+    work_repository.set_product_filters(pipeline, query_params)
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)

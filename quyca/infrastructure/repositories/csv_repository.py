@@ -12,9 +12,7 @@ def get_works_csv_by_person(person_id: str, query_params: QueryParams) -> Genera
     pipeline = [
         {"$match": {"authors.id": ObjectId(person_id)}},
     ]
-    work_repository.set_product_type_filters(pipeline, query_params.product_type)
-    work_repository.set_year_filters(pipeline, query_params.year)
-    work_repository.set_status_filters(pipeline, query_params.status)
+    work_repository.set_product_filters(pipeline, query_params)
     pipeline += [
         {
             "$lookup": {
@@ -68,11 +66,9 @@ def get_works_csv_by_person(person_id: str, query_params: QueryParams) -> Genera
 
 def get_works_csv_by_affiliation(affiliation_id: str, query_params: QueryParams) -> Generator:
     pipeline = [
-        {"$match": {"authors.affiliations.id": ObjectId(affiliation_id)}},
+        {"$match": {"authors.affiliations.id": affiliation_id}},
     ]
-    work_repository.set_product_type_filters(pipeline, query_params.product_type)
-    work_repository.set_year_filters(pipeline, query_params.year)
-    work_repository.set_status_filters(pipeline, query_params.status)
+    work_repository.set_product_filters(pipeline, query_params)
     pipeline += [
         {
             "$lookup": {

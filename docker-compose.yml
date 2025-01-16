@@ -36,6 +36,8 @@ services:
       - 0.0.0.0:${APP_PORT}
       - --workers
       - "12"
+      - --timeout
+      - "600"
       - app:create_app()
       - --access-logfile
       - "-"

@@ -45,7 +45,7 @@ where /app is the endpoint for the web application and /api is the endpoint for 
 
 
 # Contributing
-If you are interested in contributing to KAHI or creating your own plugins, please refer to the kahi-plugins repository. It contains the necessary resources and documentation to implement new plugins easily. Feel free to submit pull requests or report any issues you encounter.
+If you are interested in contributing to Quyca feel free to submit pull requests or report any issues you encounter.
 
 # License
 BSD-3-Clause License

@@ -40,7 +40,6 @@ def search_works_for_api_expert(query_params: QueryParams, pipeline_params: dict
 
 
 def get_works_for_api_expert(pipeline: list, pipeline_params: dict, query_params: QueryParams) -> Generator:
-
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)

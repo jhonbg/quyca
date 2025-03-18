@@ -5,5 +5,5 @@ source_titles: dict = {
     "scienti": "ScienTi",
     "croosref": "CrossRef",
     "dspace": "DSpace",
-    "colav": "Colav",
+    "impactu": "ImpactU",
 }

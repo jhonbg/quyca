@@ -5,6 +5,7 @@ from domain.models.base_model import QueryParams, Affiliation, Author, ExternalI
 from domain.models.work_model import Work, Source
 from infrastructure.repositories import api_expert_repository
 from domain.parsers import work_parser
+from domain.services import source_service
 
 
 def get_works_by_person(person_id: str, query_params: QueryParams) -> dict:
@@ -91,4 +92,5 @@ def set_source_data(work: Work) -> None:
         work.source.is_in_doaj = (
             True if next(filter(lambda x: x.source == "doaj", source_data.updated), None) else False
         )
+    source_service.update_work_source(work)
     work.source_data = None

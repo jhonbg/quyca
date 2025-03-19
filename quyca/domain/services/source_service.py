@@ -30,6 +30,8 @@ def set_source_urls(work: Work, source: Source) -> None:
 
 
 def set_scimago_quartile(work: Work, source: Source) -> None:
+    if work.source:
+        work.source.scimago_quartile = ""
     if source.ranking:
         for ranking in source.ranking:
             condition = (

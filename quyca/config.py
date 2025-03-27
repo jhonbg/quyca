@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     MONGO_CALCULATIONS_DATABASE: str
     MONGO_URI: Optional[MongoDsn] = None
 
+    ES_SERVER: str
+    ES_USERNAME: str
+    ES_PASSWORD: str
+
     SENTRY_DSN: str
 
     @model_validator(mode="after")

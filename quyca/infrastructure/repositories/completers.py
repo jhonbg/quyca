@@ -21,3 +21,20 @@ def person_completer(text: str) -> List[Dict[str, Any]]:
                 full_name = name
         opt["full_name"] = full_name
     return response["suggest"]["name_suggest"][0]["options"]
+
+
+def affiliations_completer(aff_type: str, text: str) -> List[Dict[str, Any]]:
+    query = {
+        "suggest": {
+            "affiliation_suggest": {
+                "prefix": text,
+                "completion": {"field": "name", "size": 5},
+            }
+        }
+    }
+
+    index = ""
+    if aff_type == "institution":
+        index = settings.ES_INSTITUTION_COMPLETER_INDEX
+    response = es_database.search(index=index, body=query)
+    return response["suggest"]["affiliation_suggest"][0]["options"]

@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     ES_USERNAME: str
     ES_PASSWORD: str
     ES_PERSON_COMPLETER_INDEX: str
+    ES_INSTITUTION_COMPLETER_INDEX: str
 
     SENTRY_DSN: str
 

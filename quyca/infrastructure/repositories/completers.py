@@ -36,6 +36,17 @@ def affiliations_completer(aff_type: str, text: str) -> List[Dict[str, Any]]:
     index = ""
     if aff_type == "institution":
         index = settings.ES_INSTITUTION_COMPLETER_INDEX
+    if aff_type == "group":
+        index = settings.ES_GROUP_COMPLETER_INDEX
+    if aff_type == "department":
+        index = settings.ES_DEPARTMENT_COMPLETER_INDEX
+    if aff_type == "faculty":
+        index = settings.ES_FACULTY_COMPLETER_INDEX
+    if not index:
+        raise ValueError("Invalid affiliation type")
+    if es_database is None:
+        raise ValueError("Elasticsearch database is not initialized")
+
     response = es_database.search(index=index, body=query)
     for opt in response["suggest"]["affiliation_suggest"][0]["options"]:
         name = ""

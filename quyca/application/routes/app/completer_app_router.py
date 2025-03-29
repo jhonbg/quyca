@@ -47,3 +47,66 @@ def get_institution_completion(text: str) -> Response | Tuple[Response, int]:
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400
+
+
+"""
+@api {get} /app/completer/affiliations/group/:text Get completion suggestions
+@apiName GetGroupCompleter
+@apiGroup Completer
+@apiVersion 1.0.0
+@apiDescription Allows to get completion options for research groups.
+
+@apiParam {String} text with the name of the groups.
+"""
+
+
+@completer_app_router.route("/affiliations/group/<text>", methods=["GET"])
+def get_group_completion(text: str) -> Response | Tuple[Response, int]:
+    try:
+        data = completers.affiliations_completer("group", text)
+        return jsonify(data)
+    except Exception as e:
+        capture_exception(e)
+        return jsonify({"error": str(e)}), 400
+
+
+"""
+@api {get} /app/completer/affiliations/department/:text Get completion suggestions
+@apiName GetDepartmentCompleter
+@apiGroup Completer
+@apiVersion 1.0.0
+@apiDescription Allows to get completion options for academic departments.
+
+@apiParam {String} text with the name of the departments.
+"""
+
+
+@completer_app_router.route("/affiliations/department/<text>", methods=["GET"])
+def get_department_completion(text: str) -> Response | Tuple[Response, int]:
+    try:
+        data = completers.affiliations_completer("department", text)
+        return jsonify(data)
+    except Exception as e:
+        capture_exception(e)
+        return jsonify({"error": str(e)}), 400
+
+
+"""
+@api {get} /app/completer/affiliations/faculty/:text Get completion suggestions
+@apiName GetFacultyCompleter
+@apiGroup Completer
+@apiVersion 1.0.0
+@apiDescription Allows to get completion options for academic faculties.
+
+@apiParam {String} text with the name of the faculties.
+"""
+
+
+@completer_app_router.route("/affiliations/faculty/<text>", methods=["GET"])
+def get_faculty_completion(text: str) -> Response | Tuple[Response, int]:
+    try:
+        data = completers.affiliations_completer("faculty", text)
+        return jsonify(data)
+    except Exception as e:
+        capture_exception(e)
+        return jsonify({"error": str(e)}), 400

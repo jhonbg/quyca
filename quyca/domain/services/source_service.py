@@ -30,6 +30,8 @@ def set_source_urls(work: Work, source: Source) -> None:
 
 
 def set_scimago_quartile(work: Work, source: Source) -> None:
+    if work.source:
+        work.source.scimago_quartile = ""
     if source.ranking:
         for ranking in source.ranking:
             condition = (
@@ -58,7 +60,7 @@ def set_csv_scimago_quartile(work: Work, source: Source) -> None:
 
 def set_serials(work: Work, source: Source) -> None:
     if source.external_ids:
-        serials = {}
+        external_ids = {}
         for external_id in source.external_ids:
-            serials[external_id.source] = external_id.id
-        work.source.serials = serials
+            external_ids[external_id.source] = external_id.id
+        work.source.external_ids = external_ids

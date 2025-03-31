@@ -16,6 +16,8 @@ from application.routes.app.work_app_router import work_app_router
 from application.routes.docs_router import router as docs_router
 from application.routes.ping_router import ping_router
 
+from application.routes.app.completer_app_router import completer_app_router
+
 router = Blueprint("router", __name__)
 
 router.register_blueprint(ping_router)
@@ -41,3 +43,5 @@ router.register_blueprint(patent_app_router, url_prefix=f"{settings.APP_URL_PREF
 router.register_blueprint(project_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/project")
 
 router.register_blueprint(apc_api_router, url_prefix=f"{settings.API_URL_PREFIX}/apc")
+
+router.register_blueprint(completer_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/completer")

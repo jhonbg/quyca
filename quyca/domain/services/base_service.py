@@ -24,11 +24,16 @@ def set_product_types(workable: Work | OtherWork | Patent | Project) -> None:
         hierarchy = ["openalex", "scienti", "minciencias", "scholar"]
         return hierarchy.index(product_type.source) if product_type.source in hierarchy else float("inf")
 
+    scienti_levels = {ptype.level for ptype in workable.types if ptype.source == "scienti"}
+
     def filter_func(product_type: ProductType) -> bool:
         if product_type.source == "minciencias" and product_type.level == 0:
             return False
-        elif product_type.source == "scienti" and product_type.level in [0, 1]:
-            return False
+        if product_type.source == "scienti":
+            if 2 in scienti_levels:
+                return product_type.level >= 2
+            else:
+                return product_type.level >= 1
         return True
 
     types = filter(filter_func, workable.types)

@@ -2,7 +2,7 @@
 name = "quyca"
 version = "0.1.0"
 description = ""
-authors = ["colav <colav@udea.edu.co>"]
+authors = ["colav <grupocolav@udea.edu.co>"]
 
 
 [tool.poetry.dependencies]
@@ -17,6 +17,7 @@ pymongo = "^4.8.0"
 pydantic = "^2.9.1"
 sentry-sdk = "^2.14.0"
 flask-compress = "^1.17"
+elasticsearch = "^8.17.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"

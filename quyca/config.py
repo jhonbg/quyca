@@ -33,6 +33,15 @@ class Settings(BaseSettings):
     MONGO_CALCULATIONS_DATABASE: str
     MONGO_URI: Optional[MongoDsn] = None
 
+    ES_SERVER: str
+    ES_USERNAME: str
+    ES_PASSWORD: str
+    ES_PERSON_COMPLETER_INDEX: str
+    ES_INSTITUTION_COMPLETER_INDEX: str
+    ES_GROUP_COMPLETER_INDEX: str
+    ES_DEPARTMENT_COMPLETER_INDEX: str
+    ES_FACULTY_COMPLETER_INDEX: str
+
     SENTRY_DSN: str
 
     @model_validator(mode="after")

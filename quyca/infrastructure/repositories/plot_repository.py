@@ -391,7 +391,7 @@ def get_active_authors_by_sex(affiliation_id: str) -> CommandCursor:
         {
             "$match": {
                 "affiliations": {"$elemMatch": {"id": affiliation_id, "end_date": -1}},
-                "ranking.source": "staff",
+                "updated.source": "staff",
             }
         },
         {"$project": {"_id": 0, "sex": 1}},

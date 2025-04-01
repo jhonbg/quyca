@@ -404,7 +404,7 @@ def get_active_authors_by_age_range(affiliation_id: str) -> CommandCursor:
         {
             "$match": {
                 "affiliations": {"$elemMatch": {"id": affiliation_id, "end_date": -1}},
-                "ranking.source": "staff",
+                "updated.source": "staff",
             }
         },
         {"$project": {"_id": 0, "birthdate": 1}},

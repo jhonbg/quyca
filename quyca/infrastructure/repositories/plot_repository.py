@@ -7,6 +7,7 @@ from domain.models.base_model import QueryParams
 from infrastructure.generators import work_generator
 from infrastructure.mongo import database, calculations_database
 from infrastructure.repositories import work_repository
+from infrastructure.repositories import affiliation_repository
 
 
 def get_affiliations_scienti_works_count_by_institution(
@@ -125,13 +126,10 @@ def get_groups_citations_count_by_faculty_or_department(affiliation_id: str) -> 
         .get("relations", {})
         .get("id", None)
     )
+    groups_ids = [group.id for group in affiliation_repository.get_groups_by_faculty_or_department(affiliation_id)]
     pipeline = [
-        {
-            "$match": {
-                "authors.affiliations.id": affiliation_id,
-            }
-        },
         {"$unwind": "$groups"},
+        {"$match": {"groups.id": {"$in": groups_ids}}},
         {
             "$lookup": {
                 "from": "affiliations",
@@ -391,7 +389,7 @@ def get_active_authors_by_sex(affiliation_id: str) -> CommandCursor:
         {
             "$match": {
                 "affiliations": {"$elemMatch": {"id": affiliation_id, "end_date": -1}},
-                "ranking.source": "staff",
+                "updated.source": "staff",
             }
         },
         {"$project": {"_id": 0, "sex": 1}},
@@ -404,7 +402,7 @@ def get_active_authors_by_age_range(affiliation_id: str) -> CommandCursor:
         {
             "$match": {
                 "affiliations": {"$elemMatch": {"id": affiliation_id, "end_date": -1}},
-                "ranking.source": "staff",
+                "updated.source": "staff",
             }
         },
         {"$project": {"_id": 0, "birthdate": 1}},

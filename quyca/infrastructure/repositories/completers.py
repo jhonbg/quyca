@@ -50,8 +50,11 @@ def affiliations_completer(aff_type: str, text: str) -> List[Dict[str, Any]]:
     response = es_database.search(index=index, body=query)
     for opt in response["suggest"]["affiliation_suggest"][0]["options"]:
         name = ""
-        for _name in opt["_source"]["name"]["input"]:
-            if len(name) < len(_name):
-                name = _name
+        if opt["_source"]["full_name"]:
+            name = opt["_source"]["full_name"]
+        else:
+            for _name in opt["_source"]["name"]["input"]:
+                if len(name) < len(_name):
+                    name = _name
         opt["name"] = name
     return response["suggest"]["affiliation_suggest"][0]["options"]

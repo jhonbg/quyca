@@ -1,5 +1,7 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field
+from typing import Optional
+
 
 from domain.models.base_model import (
     Type,
@@ -21,12 +23,12 @@ class Copyright(BaseModel):
 
 
 class Licence(BaseModel):
-    BY: bool | None
-    NC: bool | None
-    ND: bool | None
-    SA: bool | None
-    type: str | None
-    url: str | None = None
+    BY: Optional[bool] = None
+    NC: Optional[bool] = None
+    ND: Optional[bool] = None
+    SA: Optional[bool] = None
+    type: Optional[str] = None
+    url: Optional[str] = None
 
 
 class Waiver(BaseModel):

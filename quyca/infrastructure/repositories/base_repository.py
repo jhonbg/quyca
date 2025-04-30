@@ -167,4 +167,4 @@ def set_sort(sort: str | None, pipeline: list) -> None:
             },
         ]
         sort_field = "sort_year"
-    pipeline += [{"$sort": {sort_field: direction}}]
+    pipeline += [{"$sort": {sort_field: direction, "_id": 1}}]

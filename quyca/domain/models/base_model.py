@@ -86,6 +86,7 @@ class Ranking(BaseModel):
     rank: str | int | float | None = None
     source: str | None = None
     to_date: int | str | None = None
+    level: int | None = None
 
 
 class Status(BaseModel):

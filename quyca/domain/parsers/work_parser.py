@@ -63,6 +63,7 @@ def parse_search_results(works: list) -> list:
         "source",
         "external_ids",
         "external_urls",
+        "ranking",
     ]
     return [work.model_dump(include=include, exclude_none=True) for work in works]
 
@@ -80,6 +81,7 @@ def parse_works_by_entity(works: list) -> list:
         "subjects",
         "source",
         "external_ids",
+        "ranking",
     ]
     return [work.model_dump(include=include, exclude_none=True) for work in works]
 

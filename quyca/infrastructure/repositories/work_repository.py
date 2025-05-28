@@ -149,7 +149,7 @@ def search_works(query_params: QueryParams, pipeline_params: dict | None = None)
 
 def get_works_available_filters_by_person(person_id: str, query_params: QueryParams) -> dict:
     pipeline = [
-        {"$match": {"authors.id": ObjectId(person_id)}},
+        {"$match": {"authors.id": person_id}},
     ]
     return get_works_available_filters(pipeline, query_params)
 

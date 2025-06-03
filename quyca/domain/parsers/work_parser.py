@@ -183,7 +183,7 @@ def parse_product_type_filter(product_types: list) -> list:
     types = []
     for product_type in product_types:
         children = []
-        ignore = ["crossref", "ciarp", "coar", "eu-repo", "redcol", "dspace"]
+        ignore = ["crossref", "ciarp", "eu-repo", "redcol", "dspace"]
         if product_type.get("_id") in ignore:
             continue
 

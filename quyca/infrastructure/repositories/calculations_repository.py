@@ -1,11 +1,9 @@
-from bson import ObjectId
-
 from domain.models.calculations_model import Calculations
 from infrastructure.mongo import calculations_database
 
 
 def get_person_calculations(person_id: str) -> Calculations:
-    person_calculations = calculations_database["person"].find_one({"_id": ObjectId(person_id)})
+    person_calculations = calculations_database["person"].find_one({"_id": person_id})
     if not person_calculations:
         return Calculations()
     return Calculations(**person_calculations)

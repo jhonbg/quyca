@@ -76,6 +76,7 @@ def parse_annual_articles_by_top_publishers(works: Generator) -> dict:
         {"x": year, "y": count, "type": publisher}
         for year, publishers in data.items()
         for publisher, count in publishers.items()
+        if year is not None and count is not None
     ]
     return {"plot": sorted(plot, key=lambda x: (-x.get("x"), -x.get("y")))}
 

@@ -60,6 +60,7 @@ def get_groups_scienti_works_count_by_faculty_or_department(
         .get("relations", {})
         .get("id", None)
     )
+
     pipeline = [
         {
             "$match": {
@@ -73,7 +74,7 @@ def get_groups_scienti_works_count_by_faculty_or_department(
                 "localField": "_id",
                 "foreignField": "authors.affiliations.id",
                 "as": "works",
-                "pipeline": [{"$project": {"types": 1}}],
+                "pipeline": [{"$project": {"types": 1, "authors": 1}}],
             }
         },
         {"$unwind": "$works"},
@@ -96,6 +97,7 @@ def get_groups_scienti_works_count_by_faculty_or_department(
         },
         {"$project": {"_id": 0, "type": "$_id.type", "works_count": 1, "name": {"$first": "$_id.name"}}},
     ]
+
     return database["affiliations"].aggregate(pipeline)
 
 

@@ -247,3 +247,15 @@ class Title(BaseModel):
 class ProductType(BaseModel):
     name: str | None = None
     source: str | None = None
+
+
+class TopicBase(BaseModel):
+    id: str | None = None
+    display_name: str | None = None
+
+
+class Topic(TopicBase):
+    subfield: TopicBase | None = None
+    field: TopicBase | None = None
+    domain: TopicBase | None = None
+    score: float | None = None

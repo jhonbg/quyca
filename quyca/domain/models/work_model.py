@@ -20,6 +20,7 @@ from domain.models.base_model import (
     Affiliation,
     ProductType,
     Name,
+    Topic,
 )
 
 
@@ -136,6 +137,8 @@ class Work(BaseModel):
     source_urls: str | None = None
     title: str | None = None
     volume: str | int | None = None
+    topics: list[Topic] | None = None
+    primary_topic: Topic | None = None
 
     class Config:
         json_encoders = {ObjectId: str}

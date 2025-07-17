@@ -115,6 +115,7 @@ def get_works_by_entity_pipeline_params() -> dict:
             "external_urls",
             "authors_data",
             "ranking",
+            "topics",
         ]
     }
     return pipeline_params

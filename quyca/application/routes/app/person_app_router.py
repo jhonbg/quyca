@@ -7,7 +7,6 @@ from domain.models.base_model import QueryParams
 from domain.services import (
     work_service,
     person_service,
-    other_work_service,
     project_service,
     person_plot_service,
     csv_service,
@@ -103,28 +102,6 @@ def get_works_csv_by_person(person_id: str) -> Response | Tuple[Response, int]:
         response = Response(data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response
-    except Exception as e:
-        capture_exception(e)
-        return jsonify({"error": str(e)}), 400
-
-
-"""
-@api {get} /app/person/:person_id/research/other_works Get person research other works
-@apiName GetPersonResearchOtherWorks
-@apiGroup Person
-@apiVersion 1.0.0
-@apiDescription Obtiene los productos de otro tipo de un autor.
-
-@apiParam {String} person_id ID del autor.
-"""
-
-
-@person_app_router.route("/<person_id>/research/other_works", methods=["GET"])
-def get_person_research_other_works(person_id: str) -> Response | Tuple[Response, int]:
-    try:
-        query_params = QueryParams(**request.args)
-        data = other_work_service.get_other_works_by_person(person_id, query_params)
-        return jsonify(data)
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400

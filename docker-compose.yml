@@ -12,6 +12,8 @@ services:
     volumes:
       - .:/app
     working_dir: /app
+    environment:
+      PYTHONPATH: /quyca
     entrypoint: [ "poetry", "run", "python", "./quyca/app.py" ]
 
 
@@ -28,6 +30,8 @@ services:
     volumes:
       - .:/app
     working_dir: /app/quyca
+    environment:
+      PYTHONPATH: /quyca
     entrypoint:
       - poetry
       - run
@@ -57,4 +61,6 @@ services:
     volumes:
       - .:/app
     working_dir: /app
+    environment:
+      PYTHONPATH: /quyca
     entrypoint: [ "poetry", "run", "python", "./quyca/app.py" ]

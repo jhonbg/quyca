@@ -25,3 +25,8 @@ shell-local:
 build-local:
 	docker build --file Dockerfile -t colav/quyca-local:local --target local .
 
+tests-dev:
+	docker compose exec dev pytest
+
+tests-dev:
+        docker compose exec prod pytest

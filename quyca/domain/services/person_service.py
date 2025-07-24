@@ -1,6 +1,6 @@
-from domain.models.base_model import QueryParams
-from domain.parsers import person_parser
-from infrastructure.repositories import person_repository
+from quyca.domain.models.base_model import QueryParams
+from quyca.domain.parsers import person_parser
+from quyca.infrastructure.repositories import person_repository
 
 
 def get_person_by_id(person_id: str) -> dict:

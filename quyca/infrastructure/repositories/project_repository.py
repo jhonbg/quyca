@@ -2,12 +2,12 @@ from typing import Generator, Tuple
 
 from bson import ObjectId
 
-from infrastructure.generators import project_generator
-from domain.models.base_model import QueryParams
-from domain.models.project_model import Project
-from infrastructure.repositories import base_repository
-from infrastructure.mongo import database
-from domain.exceptions.not_entity_exception import NotEntityException
+from quyca.infrastructure.generators import project_generator
+from quyca.domain.models.base_model import QueryParams
+from quyca.domain.models.project_model import Project
+from quyca.infrastructure.repositories import base_repository
+from quyca.infrastructure.mongo import database
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
 
 
 def get_project_by_id(project_id: str) -> Project:

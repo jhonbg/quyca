@@ -1,6 +1,6 @@
-from domain.models.source_model import Source
-from domain.models.work_model import Work
-from infrastructure.repositories import source_repository
+from quyca.domain.models.source_model import Source
+from quyca.domain.models.work_model import Work
+from quyca.infrastructure.repositories import source_repository
 
 
 def update_work_source(work: Work) -> None:

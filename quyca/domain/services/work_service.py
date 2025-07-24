@@ -1,10 +1,10 @@
 from typing import Generator
 
-from domain.models.base_model import QueryParams
-from domain.models.work_model import Work, Abstract
-from infrastructure.repositories import work_repository
-from domain.services import source_service
-from domain.services.base_service import (
+from quyca.domain.models.base_model import QueryParams
+from quyca.domain.models.work_model import Work, Abstract
+from quyca.infrastructure.repositories import work_repository
+from quyca.domain.services import source_service
+from quyca.domain.services.base_service import (
     limit_authors,
     set_title_and_language,
     set_product_types,
@@ -12,7 +12,7 @@ from domain.services.base_service import (
     set_external_urls,
     set_external_ids,
 )
-from domain.parsers import work_parser
+from quyca.domain.parsers import work_parser
 
 
 def get_work_by_id(work_id: str) -> dict:

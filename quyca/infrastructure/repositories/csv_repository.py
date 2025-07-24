@@ -1,10 +1,10 @@
 from typing import Generator
 
 
-from domain.models.base_model import QueryParams
-from infrastructure.generators import work_generator
-from infrastructure.mongo import database
-from infrastructure.repositories import work_repository
+from quyca.domain.models.base_model import QueryParams
+from quyca.infrastructure.generators import work_generator
+from quyca.infrastructure.mongo import database
+from quyca.infrastructure.repositories import work_repository
 
 
 def get_works_csv_by_person(person_id: str, query_params: QueryParams) -> Generator:

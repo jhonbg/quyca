@@ -1,4 +1,4 @@
-from domain.models.person_model import Person
+from quyca.domain.models.person_model import Person
 
 
 def parse_search_result(persons: list) -> list:

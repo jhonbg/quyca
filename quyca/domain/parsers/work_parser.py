@@ -1,10 +1,10 @@
 import csv
 import io
 
-from domain.constants import countries_iso
-from domain.constants.open_access_status import open_access_status_dict
-from domain.constants.product_types import source_titles
-from domain.models.work_model import Work
+from quyca.domain.constants import countries_iso
+from quyca.domain.constants.open_access_status import open_access_status_dict
+from quyca.domain.constants.product_types import source_titles
+from quyca.domain.models.work_model import Work
 
 
 def parse_csv(works: list) -> str:

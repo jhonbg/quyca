@@ -1,12 +1,12 @@
 from typing import Generator, Tuple
 
 
-from infrastructure.generators import person_generator
-from domain.models.base_model import QueryParams
-from infrastructure.repositories import base_repository
-from domain.exceptions.not_entity_exception import NotEntityException
-from domain.models.person_model import Person
-from infrastructure.mongo import database
+from quyca.infrastructure.generators import person_generator
+from quyca.domain.models.base_model import QueryParams
+from quyca.infrastructure.repositories import base_repository
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
+from quyca.domain.models.person_model import Person
+from quyca.infrastructure.mongo import database
 
 
 def get_person_by_id(person_id: str) -> Person:

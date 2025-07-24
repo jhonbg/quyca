@@ -1,11 +1,11 @@
 from urllib.parse import urlparse
 
-from domain.constants.external_urls import external_urls_dict
-from domain.models.base_model import Title, ProductType, ExternalUrl
-from domain.models.patent_model import Patent
-from domain.models.project_model import Project
-from domain.models.work_model import Work
-from infrastructure.repositories import person_repository
+from quyca.domain.constants.external_urls import external_urls_dict
+from quyca.domain.models.base_model import Title, ProductType, ExternalUrl
+from quyca.domain.models.patent_model import Patent
+from quyca.domain.models.project_model import Project
+from quyca.domain.models.work_model import Work
+from quyca.infrastructure.repositories import person_repository
 
 
 def set_title_and_language(workable: Work | Patent | Project) -> None:

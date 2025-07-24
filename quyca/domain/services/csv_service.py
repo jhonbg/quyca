@@ -1,14 +1,14 @@
 from datetime import datetime
 from typing import Generator
 
-from domain.models.base_model import ExternalId, QueryParams
-from domain.models.work_model import Work, Affiliation
-from infrastructure.repositories import csv_repository
-from domain.constants.institutions import institutions_list
-from domain.constants.openalex_types import openalex_types_dict
-from domain.services import source_service
-from domain.services.work_service import set_title_and_language
-from domain.parsers import work_parser
+from quyca.domain.models.base_model import ExternalId, QueryParams
+from quyca.domain.models.work_model import Work, Affiliation
+from quyca.infrastructure.repositories import csv_repository
+from quyca.domain.constants.institutions import institutions_list
+from quyca.domain.constants.openalex_types import openalex_types_dict
+from quyca.domain.services import source_service
+from quyca.domain.services.work_service import set_title_and_language
+from quyca.domain.parsers import work_parser
 
 
 def get_works_csv_by_affiliation(affiliation_id: str, query_params: QueryParams) -> str:

@@ -29,4 +29,4 @@ tests-dev:
 	docker compose exec dev pytest
 
 tests-dev:
-        docker compose exec prod pytest
+	docker compose exec prod pytest

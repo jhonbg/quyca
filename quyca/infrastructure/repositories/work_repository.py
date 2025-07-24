@@ -2,12 +2,12 @@ from typing import Generator, Tuple
 
 from bson import ObjectId
 
-from infrastructure.generators import work_generator
-from domain.models.base_model import QueryParams
-from domain.models.work_model import Work
-from infrastructure.repositories import base_repository
-from infrastructure.mongo import database
-from domain.exceptions.not_entity_exception import NotEntityException
+from quyca.infrastructure.generators import work_generator
+from quyca.domain.models.base_model import QueryParams
+from quyca.domain.models.work_model import Work
+from quyca.infrastructure.repositories import base_repository
+from quyca.infrastructure.mongo import database
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
 
 
 def get_work_by_id(work_id: str) -> Work:

@@ -7,10 +7,10 @@ from collections import Counter, defaultdict
 from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
 
-from domain.constants.open_access_status import open_access_status_dict
-from domain.models.affiliation_model import Affiliation
-from domain.helpers import get_works_h_index_by_scholar_citations
-from domain.models.calculations_model import Calculations
+from quyca.domain.constants.open_access_status import open_access_status_dict
+from quyca.domain.models.affiliation_model import Affiliation
+from quyca.domain.helpers import get_works_h_index_by_scholar_citations
+from quyca.domain.models.calculations_model import Calculations
 
 
 def get_percentage(func: Callable[..., list]) -> Callable[..., dict]:

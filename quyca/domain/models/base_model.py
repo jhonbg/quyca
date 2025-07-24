@@ -250,7 +250,7 @@ class ProductType(BaseModel):
 
 
 class TopicBase(BaseModel):
-    id: str | None = None
+    id: str | int | None = None
     display_name: str | None = None
 
 

@@ -1,11 +1,11 @@
 from infrastructure.mongo import database as db
 from infrastructure.generators import news_generator
 from infrastructure.repositories import base_repository
-from typing import Generator
+from typing import Generator, Optional
 from domain.models.base_model import QueryParams
 
 
-def cc_from_person(person_id: str) -> str | None:
+def cc_from_person(person_id: str) -> Optional[str]:
     doc = db.person.find_one(
         {"_id": person_id, "external_ids.source": "Cédula de Ciudadanía"},
         {"external_ids.$": 1},

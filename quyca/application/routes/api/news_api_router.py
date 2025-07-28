@@ -7,5 +7,5 @@ bp = Blueprint("news", __name__, url_prefix="/person")
 
 @bp.get("/<person_id>/research/news")
 def news_for_person(person_id: str):
-    qp = QueryParams.model_validate(request.args.to_dict(flat=True), context={"default_max": 25})
+    qp = QueryParams.model_validate(request.args.to_dict(), context={"default_max": 25})
     return jsonify(news_service.get_news_by_person(person_id, qp))

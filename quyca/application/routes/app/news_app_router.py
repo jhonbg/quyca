@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response
 from domain.models.base_model import QueryParams
 from domain.services import news_service
 
@@ -6,7 +6,7 @@ bp = Blueprint("news_app", __name__)
 
 
 @bp.get("/<person_id>/research/news")
-def news_for_person_app(person_id: str):
+def news_for_person_app(person_id: str) -> Response:
     qp = QueryParams.model_validate(
         request.args.to_dict(),
         context={"default_max": 25},

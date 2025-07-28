@@ -14,6 +14,7 @@ def cc_from_person(person_id: str) -> str | None:
         return doc["external_ids"][0]["id"]
     return None
 
+
 def get_news_by_person(person_id: str, query_params: QueryParams) -> Generator:
     cc = cc_from_person(person_id)
     if not cc:
@@ -26,28 +27,32 @@ def get_news_by_person(person_id: str, query_params: QueryParams) -> Generator:
     pipeline = [
         {"$match": {"professor_id": cc}},
         {"$unwind": "$classified_urls_ids"},
-        {"$lookup": {
-            "from": "news_urls_collection",
-            "localField": "classified_urls_ids",
-            "foreignField": "url_id",
-            "as": "url_docs"}},
+        {
+            "$lookup": {
+                "from": "news_urls_collection",
+                "localField": "classified_urls_ids",
+                "foreignField": "url_id",
+                "as": "url_docs",
+            }
+        },
         {"$unwind": "$url_docs"},
-        {"$lookup": {
-            "from": "news_media_collection",
-            "localField": "url_docs.medium_id",
-            "foreignField": "medium_id",
-            "as": "medium_docs"}},
+        {
+            "$lookup": {
+                "from": "news_media_collection",
+                "localField": "url_docs.medium_id",
+                "foreignField": "medium_id",
+                "as": "medium_docs",
+            }
+        },
         {"$unwind": "$medium_docs"},
-        {"$replaceRoot": {"newRoot": {
-            "$mergeObjects": ["$url_docs", {"medium": "$medium_docs.medium"}]}}},
+        {"$replaceRoot": {"newRoot": {"$mergeObjects": ["$url_docs", {"medium": "$medium_docs.medium"}]}}},
         {"$skip": skip},
         {"$limit": limit},
     ]
     if sort := query_params.sort:
         base_repository.set_sort(sort, pipeline)
     base_repository.set_pagination(pipeline, query_params)
-    cursor = db.news_professors_collection.aggregate(
-        pipeline, allowDiskUse=True)
+    cursor = db.news_professors_collection.aggregate(pipeline, allowDiskUse=True)
     return news_generator.get(cursor)
 
 
@@ -59,19 +64,25 @@ def news_count_by_person(person_id: str) -> int:
     pipeline = [
         {"$match": {"professor_id": cc}},
         {"$unwind": "$classified_urls_ids"},
-        {"$lookup": {
-            "from": "news_urls_collection",
-            "localField": "classified_urls_ids",
-            "foreignField": "url_id",
-            "as": "url_docs"}},
+        {
+            "$lookup": {
+                "from": "news_urls_collection",
+                "localField": "classified_urls_ids",
+                "foreignField": "url_id",
+                "as": "url_docs",
+            }
+        },
         {"$unwind": "$url_docs"},
-        {"$lookup": {
-            "from": "news_media_collection",
-            "localField": "url_docs.medium_id",
-            "foreignField": "medium_id",
-            "as": "medium_docs"}},
+        {
+            "$lookup": {
+                "from": "news_media_collection",
+                "localField": "url_docs.medium_id",
+                "foreignField": "medium_id",
+                "as": "medium_docs",
+            }
+        },
         {"$unwind": "$medium_docs"},
-        {"$count": "total"}
+        {"$count": "total"},
     ]
     result = list(db.news_professors_collection.aggregate(pipeline))
     return result[0]["total"] if result else 0

@@ -15,10 +15,12 @@ def cc_from_person(person_id: str) -> Optional[str]:
         return doc["external_ids"][0]["id"]
     return None
 
+
 def _empty_iter() -> Generator[News, None, None]:
     if False:
         yield News()
     return
+
 
 def get_news_by_person(person_id: str, query_params: QueryParams) -> Generator:
     cc = cc_from_person(person_id)

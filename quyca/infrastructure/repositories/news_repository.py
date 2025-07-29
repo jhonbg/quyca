@@ -3,7 +3,6 @@ from infrastructure.generators import news_generator
 from infrastructure.repositories import base_repository
 from typing import Generator, Optional
 from domain.models.base_model import QueryParams
-from domain.models.news_model import News
 
 
 def cc_from_person(person_id: str) -> Optional[str]:
@@ -16,16 +15,10 @@ def cc_from_person(person_id: str) -> Optional[str]:
     return None
 
 
-def _empty_iter() -> Generator[News, None, None]:
-    if False:
-        yield News()
-    return
-
-
 def get_news_by_person(person_id: str, query_params: QueryParams) -> Generator:
     cc = cc_from_person(person_id)
     if not cc:
-        return _empty_iter()
+        yield []
 
     page = query_params.page or 1
     limit = query_params.limit or 10
@@ -60,7 +53,7 @@ def get_news_by_person(person_id: str, query_params: QueryParams) -> Generator:
         base_repository.set_sort(sort, pipeline)
     base_repository.set_pagination(pipeline, query_params)
     cursor = db.news_professors_collection.aggregate(pipeline, allowDiskUse=True)
-    return news_generator.get(cursor)
+    yield from news_generator.get(cursor)
 
 
 def news_count_by_person(person_id: str) -> int:

@@ -28,5 +28,5 @@ build-local:
 tests-dev:
 	docker compose exec dev pytest
 
-tests-dev:
+tests-prod:
 	docker compose exec prod pytest

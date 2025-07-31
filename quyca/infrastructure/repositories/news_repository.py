@@ -53,10 +53,6 @@ def get_news_by_person(person_id: str, query_params: QueryParams) -> Generator:
     if not cc:
         yield []
 
-    page = query_params.page or 1
-    limit = query_params.limit or 10
-    skip = (page - 1) * limit
-
     pipeline = [
         {"$match": {"professor_id": cc}},
         {"$unwind": "$classified_urls_ids"},
@@ -79,11 +75,14 @@ def get_news_by_person(person_id: str, query_params: QueryParams) -> Generator:
         },
         {"$unwind": "$medium_docs"},
         {"$replaceRoot": {"newRoot": {"$mergeObjects": ["$url_docs", {"medium": "$medium_docs.medium"}]}}},
-        {"$skip": skip},
-        {"$limit": limit},
     ]
+
     if sort := query_params.sort:
-        base_repository.set_sort(sort, pipeline)
+        if sort == "alphabetical_asc":
+            pipeline.append({"$sort": {"url_title": 1}})
+        if sort == "year_desc":
+            pipeline.append({"$sort": {"url_date": -1}})
+
     base_repository.set_pagination(pipeline, query_params)
     cursor = db.news_professors_collection.aggregate(pipeline, allowDiskUse=True)
     yield from news_generator.get(cursor)

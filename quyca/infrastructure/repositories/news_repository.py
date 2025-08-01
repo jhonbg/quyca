@@ -22,7 +22,10 @@ def cc_from_person(person_id: str) -> Optional[str]:
         The national ID (CC) if found, otherwise None.
     """
     doc = db.person.find_one(
-        {"_id": person_id, "external_ids.source": "Cédula de Ciudadanía"},
+        {
+            "_id": person_id,
+            "external_ids.source": {"$in": ["Cédula de Ciudadanía", "Cédula de Extranjería", "Pasaporte", "Passport"]},
+        },
         {"external_ids.$": 1},
     )
     if doc and doc.get("external_ids"):

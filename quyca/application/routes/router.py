@@ -21,14 +21,15 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from config import settings
 
-limiter = Limiter(get_remote_address, default_limits=settings.API_LIMITS)
+limiter = Limiter(get_remote_address)
 
-limiter.limit(settings.API_LIMITS)(person_api_router)
-limiter.limit(settings.API_LIMITS)(search_api_router)
-limiter.limit(settings.API_LIMITS)(affiliation_api_router)
-limiter.limit(settings.API_LIMITS)(apc_api_router)
-limiter.limit(settings.API_LIMITS)(ping_router)
-limiter.limit(settings.API_LIMITS)(docs_router)
+for limit in settings.API_LIMITS.split(","):
+    limiter.limit(limit)(person_api_router)
+    limiter.limit(limit)(search_api_router)
+    limiter.limit(limit)(affiliation_api_router)
+    limiter.limit(limit)(apc_api_router)
+    limiter.limit(limit)(ping_router)
+    limiter.limit(limit)(docs_router)
 
 router = Blueprint("router", __name__)
 

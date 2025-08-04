@@ -17,6 +17,19 @@ from application.routes.ping_router import ping_router
 
 from application.routes.app.completer_app_router import completer_app_router
 
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from config import settings
+
+limiter = Limiter(get_remote_address, default_limits=settings.API_LIMITS)
+
+limiter.limit(settings.API_LIMITS)(person_api_router)
+limiter.limit(settings.API_LIMITS)(search_api_router)
+limiter.limit(settings.API_LIMITS)(affiliation_api_router)
+limiter.limit(settings.API_LIMITS)(apc_api_router)
+limiter.limit(settings.API_LIMITS)(ping_router)
+limiter.limit(settings.API_LIMITS)(docs_router)
+
 router = Blueprint("router", __name__)
 
 router.register_blueprint(ping_router)

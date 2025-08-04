@@ -1,7 +1,7 @@
 import os
 from typing import Optional
 from typing_extensions import Self
-from pydantic import model_validator, MongoDsn
+from pydantic import model_validator, computed_field, MongoDsn
 from pydantic_settings import BaseSettings
 
 
@@ -45,6 +45,13 @@ class Settings(BaseSettings):
     ES_GROUP_COMPLETER_INDEX: str
     ES_DEPARTMENT_COMPLETER_INDEX: str
     ES_FACULTY_COMPLETER_INDEX: str
+
+    API_LIMITS: str = "100000 per day,10 per second"
+
+    @computed_field
+    @property
+    def parsed_api_limits(self) -> list[str]:
+        return [limit.strip() for limit in self.API_LIMITS.split(",")]
 
     SENTRY_DSN: str
 

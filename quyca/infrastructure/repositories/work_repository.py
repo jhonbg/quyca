@@ -219,6 +219,30 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
     ]
     authors_ranking = database["works"].aggregate(authors_ranking_pipeline)
     available_filters["authors_ranking"] = list(authors_ranking)
+
+    topics_pipeline = pipeline.copy() + [
+        {"$match": {"primary_topic": {"$ne": {}}}},
+        {
+            "$group": {
+                "_id": {
+                    "id": "$primary_topic.id",
+                    "display_name": "$primary_topic.display_name",
+                },
+                "count": {"$sum": 1},
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "id": "$_id.id",
+                "display_name": "$_id.display_name",
+                "count": 1,
+            }
+        },
+        {"$sort": {"count": -1}},  # de mayor a menor
+    ]
+    topics = database["works"].aggregate(topics_pipeline)
+    available_filters["topics"] = list(topics)
     return available_filters
 
 
@@ -227,6 +251,7 @@ def set_product_filters(pipeline: list, query_params: QueryParams) -> None:
     set_year_filters(pipeline, query_params.years)
     set_status_filters(pipeline, query_params.status)
     set_subject_filters(pipeline, query_params.subjects)
+    set_topic_filters(pipeline, query_params.topics)
     set_country_filters(pipeline, query_params.countries)
     set_groups_ranking_filters(pipeline, query_params.groups_ranking)
     set_authors_ranking_filters(pipeline, query_params.authors_ranking)
@@ -282,6 +307,15 @@ def set_subject_filters(pipeline: list, subjects: str | None) -> None:
             return
         match_filters.append({"subjects.subjects": {"$elemMatch": {"level": int(params[0]), "name": params[1]}}})
     pipeline += [{"$match": {"$or": match_filters}}]
+
+
+def set_topic_filters(pipeline: list, topics: str | None) -> None:
+    if not topics:
+        return
+    match_filters = []
+    for topic in topics.split(","):
+        match_filters.append(topic.strip())
+    pipeline += [{"$match": {"primary_topic.id": {"$in": match_filters}}}]
 
 
 def set_country_filters(pipeline: list, countries: str | None) -> None:

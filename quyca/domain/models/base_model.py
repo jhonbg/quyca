@@ -150,6 +150,7 @@ class QueryParams(BaseModel):
     years: str | None = None
     status: str | None = None
     subjects: str | None = None
+    topics: str | None = None
     countries: str | None = None
     groups_ranking: str | None = None
     authors_ranking: str | None = None

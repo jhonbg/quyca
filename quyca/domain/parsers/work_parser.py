@@ -106,6 +106,8 @@ def parse_available_filters(filters: dict) -> dict:
         available_filters["status"] = parse_status_filter(status)
     if subjects := filters.get("subjects"):
         available_filters["subjects"] = parse_subject_filter(subjects)
+    if topics := filters.get("topics"):
+        available_filters["topics"] = parse_topic_filter(topics)
     if countries := filters.get("countries"):
         available_filters["countries"] = parse_country_filter(countries)
     if groups_ranking := filters.get("groups_ranking"):
@@ -131,6 +133,19 @@ def parse_groups_ranking_filter(groups_ranking: list) -> list:
             parsed_groups_ranking.append({"value": ranking.get("_id"), "label": ranking.get("_id")})
     parsed_groups_ranking.sort(key=lambda x: x.get("label"))  # type: ignore
     return parsed_groups_ranking
+
+
+def parse_topic_filter(topics: list) -> list:
+    parsed_topics = []
+    for topic in topics:
+        parsed_topics.append(
+            {
+                "value": topic.get("id"),
+                "label": topic.get("display_name"),
+                "count": topic.get("count"),
+            }
+        )
+    return parsed_topics
 
 
 def parse_country_filter(countries: list) -> list:

@@ -14,6 +14,8 @@ from application.routes.api.person_api_router import person_api_router
 from application.routes.app.work_app_router import work_app_router
 from application.routes.docs_router import router as docs_router
 from application.routes.ping_router import ping_router
+from application.routes.api.news_api_router import bp as news_api_router
+from application.routes.app.news_app_router import bp as news_app_router
 
 from application.routes.app.completer_app_router import completer_app_router
 
@@ -46,6 +48,9 @@ router.register_blueprint(affiliation_api_router, url_prefix=f"{settings.API_URL
 
 router.register_blueprint(person_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/person")
 router.register_blueprint(person_api_router, url_prefix=f"{settings.API_URL_PREFIX}/person")
+
+router.register_blueprint(news_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/person")
+router.register_blueprint(news_api_router, url_prefix=f"{settings.API_URL_PREFIX}/person")
 
 router.register_blueprint(work_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/work")
 

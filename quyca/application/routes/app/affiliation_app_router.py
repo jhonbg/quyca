@@ -220,7 +220,7 @@ def get_affiliation_research_projects(affiliation_id: str, affiliation_type: str
 
 
 @affiliation_app_router.route("/<affiliation_type>/<affiliation_id>/research/news")
-def get_affiliation_research_news(affiliation_id: str, affiliation_type: str) -> Response:
+def get_affiliation_research_news(affiliation_id: str, affiliation_type: str) -> Response | Tuple[Response, int]:
     """
     Flask route to retrieve news for a given affiliation ID.
 

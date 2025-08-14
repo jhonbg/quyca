@@ -32,5 +32,5 @@ class News(BaseModel):
     url: HttpUrl | None = None
     url_title: str | None = None
     url_language: str | None = None
-    url_date: datetime | None = None
+    url_date: str | datetime | None = None
     medium: HttpUrl | None = None

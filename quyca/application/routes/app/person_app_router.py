@@ -12,6 +12,7 @@ from domain.services import (
     person_plot_service,
     csv_service,
     patent_service,
+    news_service,
 )
 
 person_app_router = Blueprint("person_app_router", __name__)
@@ -172,3 +173,42 @@ def get_person_research_projects(person_id: str) -> Response | Tuple[Response, i
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400
+
+
+"""
+@api {get} /app/person/:person_id/research/news Get person research news
+@apiName GetPersonResearchNews
+@apiGroup Person
+@apiVersion 1.0.0
+@apiDescription Obtiene las noticias relacionadas con un autor.
+@apiParam {String} person_id ID del autor.
+"""
+
+
+@person_app_router.route("/<person_id>/research/news")
+def news_for_person_app(person_id: str) -> Response:
+    """
+    Flask route to retrieve news for a given person ID.
+
+    Validates and parses query parameters, invokes the service layer to get the
+    related news data, and returns a JSON response.
+
+    Route:
+    ------
+    GET /<person_id>/research/news
+
+    Parameters:
+    -----------
+    person_id : str
+        The ID of the person whose news entries are to be retrieved.
+
+    Returns:
+    --------
+    Response
+        Flask JSON response containing news data and total result count.
+    """
+    qp = QueryParams.model_validate(
+        request.args.to_dict(),
+        context={"default_max": 25},
+    )
+    return jsonify(news_service.get_news_by_person(person_id, qp))

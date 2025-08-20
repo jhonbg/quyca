@@ -1,5 +1,5 @@
 from typing import Generator
-
+from datetime import datetime, timezone
 from pydantic import BaseModel, field_validator, Field, conint, model_validator
 from bson import ObjectId
 
@@ -225,6 +225,21 @@ class Author(BaseModel):
                 value,
             )
         )
+
+    @model_validator(mode="after")
+    def compute_age_and_remove_birthdate(self):
+        print("bday", self.birthdate)
+        if self.birthdate:
+            try:
+                birth_ts = int(self.birthdate)
+                birth_date = datetime.fromtimestamp(birth_ts, tz=timezone.utc).date()
+                today = datetime.now(tz=timezone.utc).date()
+                age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+                self.age = age
+            except Exception:
+                self.age = None
+        self.birthdate = None
+        return self
 
     class Config:
         json_encoders = {ObjectId: str}

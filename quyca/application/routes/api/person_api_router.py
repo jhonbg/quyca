@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify, Response
 from sentry_sdk import capture_exception
 
 from domain.models.base_model import QueryParams
-from domain.services import api_expert_service, news_service
+from domain.services import api_expert_service, news_service, person_service
 
 person_api_router = Blueprint("person_api_router", __name__)
 
@@ -262,3 +262,46 @@ def news_for_person(person_id: str) -> Response:
     """
     qp = QueryParams.model_validate(request.args.to_dict(), context={"default_max": 25})
     return jsonify(news_service.get_news_by_person(person_id, qp))
+
+
+"""
+@api {get} /api/person/:person_id Get person by id
+@apiName GetPersonById
+@apiGroup Person
+@apiVersion 1.0.0
+@apiDescription Obtiene un autor por su ID.
+
+@apiParam {String} person_id ID del autor.
+"""
+
+
+@person_api_router.route("/<person_id>", methods=["GET"])
+def get_person_by_id(person_id: str) -> Response | Tuple[Response, int]:
+    try:
+        pipeline_params = {
+            "project": [
+                "_id",
+                "full_name",
+                "first_names",
+                "last_names",
+                "initials",
+                "affiliations",
+                "external_ids",
+                "citations_count",
+                "products_count",
+                "affiliations_data",
+                "age",
+                "birthplace",
+                "degrees",
+                "updated",
+                "sex",
+                "subjects",
+                "ranking",
+                "birthdate",
+            ]
+        }
+        data = person_service.get_person_by_id(person_id, pipeline_params)
+        return jsonify(data)
+    except Exception as e:
+        capture_exception(e)
+        return jsonify({"error": str(e)}), 400

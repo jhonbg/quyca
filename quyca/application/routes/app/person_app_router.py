@@ -3,8 +3,8 @@ from typing import Tuple
 from flask import Blueprint, request, Response, jsonify
 from sentry_sdk import capture_exception
 
-from domain.models.base_model import QueryParams
-from domain.services import (
+from quyca.domain.models.base_model import QueryParams
+from quyca.domain.services import (
     work_service,
     person_service,
     project_service,
@@ -28,9 +28,9 @@ person_app_router = Blueprint("person_app_router", __name__)
 
 
 @person_app_router.route("/<person_id>", methods=["GET"])
-def get_person_by_id(person_id: str) -> Response | Tuple[Response, int]:
+def get_person_by_id(person_id: str, pipeline_params: dict = {}) -> Response | Tuple[Response, int]:
     try:
-        data = person_service.get_person_by_id(person_id)
+        data = person_service.get_person_by_id(person_id, pipeline_params)
         return jsonify(data)
     except Exception as e:
         capture_exception(e)

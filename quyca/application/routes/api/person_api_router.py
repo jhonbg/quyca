@@ -291,7 +291,6 @@ def get_person_by_id(person_id: str) -> Response | Tuple[Response, int]:
                 "products_count",
                 "affiliations_data",
                 "age",
-                "birthplace",
                 "degrees",
                 "updated",
                 "sex",

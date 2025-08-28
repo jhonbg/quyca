@@ -130,6 +130,7 @@ class Work(BaseModel):
     publisher: str | None = None
     openalex_types: str | None = None
     scienti_types: str | None = None
+    impactu_types: str | None = None
     scimago_quartile: str | None = None
     source_apc: str | None = None
     source_data: Source | list[Source] | None = None

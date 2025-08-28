@@ -70,13 +70,18 @@ def set_doi(work: Work) -> None:
 def set_csv_types(work: Work) -> None:
     openalex_types = []
     scienti_types = []
+    impactu_types = []
     for work_type in work.types:
         if work_type.source == "openalex" and work_type.type in openalex_types_dict.keys():
             openalex_types.append(openalex_types_dict.get(work_type.type))
         elif work_type.source == "scienti":
             scienti_types.append(str(work_type.type))
+        elif work_type.source == "impactu":
+            impactu_types.append(str(work_type.type))
+
     work.openalex_types = " | ".join(set(openalex_types))
     work.scienti_types = " | ".join(set(scienti_types))
+    work.impactu_types = " | ".join(set(impactu_types))
 
 
 def set_csv_subjects(work: Work) -> None:

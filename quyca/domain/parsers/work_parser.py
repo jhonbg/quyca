@@ -36,6 +36,7 @@ def parse_csv(works: list) -> str:
         "publisher",
         "openalex_types",
         "scienti_types",
+        "impactu_types",
         "source_name",
         "source_apc",
         "source_urls",

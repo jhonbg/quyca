@@ -56,6 +56,7 @@ def get_works_csv_by_person(person_id: str, query_params: QueryParams) -> Genera
                 "year_published": 1,  # type: ignore
                 "ranking": 1,  # type: ignore
                 "abstract": 1,  # type: ignore
+                "primary_topic": 1,  # type: ignore
             }
         },
     ]
@@ -112,6 +113,7 @@ def get_works_csv_by_affiliation(affiliation_id: str, query_params: QueryParams)
                 "year_published": 1,  # type: ignore
                 "ranking": 1,  # type: ignore
                 "abstract": 1,  # type: ignore
+                "primary_topic": 1,  # type: ignore
             }
         },
     ]

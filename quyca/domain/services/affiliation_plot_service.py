@@ -1,14 +1,20 @@
 from pymongo.command_cursor import CommandCursor
 
-from domain.constants.articles_types import articles_types_list
-from domain.models.base_model import QueryParams
-from infrastructure.repositories import (
+from quyca.domain.constants.articles_types import articles_types_list
+from quyca.domain.models.base_model import QueryParams
+from quyca.infrastructure.repositories import (
     work_repository,
     plot_repository,
     calculations_repository,
     affiliation_repository,
 )
-from domain.parsers import pie_parser, map_parser, venn_parser, bar_parser, network_parser
+from quyca.domain.parsers import (
+    pie_parser,
+    map_parser,
+    venn_parser,
+    bar_parser,
+    network_parser,
+)
 
 
 def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict | None:

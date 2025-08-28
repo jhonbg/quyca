@@ -3,7 +3,7 @@ from typing import Any
 from bson import ObjectId
 from pydantic import BaseModel, Field
 
-from domain.models.base_model import (
+from quyca.domain.models.base_model import (
     PyObjectId,
     CitationsCount,
     Type,
@@ -130,6 +130,7 @@ class Work(BaseModel):
     publisher: str | None = None
     openalex_types: str | None = None
     scienti_types: str | None = None
+    impactu_types: str | None = None
     scimago_quartile: str | None = None
     source_apc: str | None = None
     source_data: Source | list[Source] | None = None
@@ -138,7 +139,7 @@ class Work(BaseModel):
     title: str | None = None
     volume: str | int | None = None
     topics: list[Topic] | None = None
-    primary_topic: Topic | None = None
+    primary_topic: Topic | str | None = None
 
     class Config:
         json_encoders = {ObjectId: str}

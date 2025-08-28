@@ -8,7 +8,6 @@ from domain.services import (
     work_service,
     person_service,
     affiliation_service,
-    other_work_service,
     project_service,
     patent_service,
 )
@@ -95,27 +94,6 @@ def search_affiliations(affiliation_type: str) -> Response | Tuple[Response, int
     try:
         query_params = QueryParams(**request.args)
         data = affiliation_service.search_affiliations(affiliation_type, query_params)
-        return jsonify(data)
-    except Exception as e:
-        capture_exception(e)
-        return jsonify({"error": str(e)}), 400
-
-
-"""
-@api {get} /app/search/other_works Search other works
-@apiName SearchOtherWorks
-@apiGroup Search
-@apiVersion 1.0.0
-
-@apiDescription Búsqueda de productos de otro tipo por palabra clave.
-"""
-
-
-@search_app_router.route("/other_works", methods=["GET"])
-def search_other_works() -> Response | Tuple[Response, int]:
-    try:
-        query_params = QueryParams(**request.args)
-        data = other_work_service.search_other_works(query_params)
         return jsonify(data)
     except Exception as e:
         capture_exception(e)

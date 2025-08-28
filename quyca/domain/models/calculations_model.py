@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from domain.models.base_model import PyObjectId
+from quyca.domain.models.base_model import PyObjectId
 
 
 class Node(BaseModel):

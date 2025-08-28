@@ -3,11 +3,10 @@ from typing import Tuple
 from flask import Blueprint, request, Response, jsonify
 from sentry_sdk import capture_exception
 
-from domain.models.base_model import QueryParams
-from domain.services import (
+from quyca.domain.models.base_model import QueryParams
+from quyca.domain.services import (
     work_service,
     person_service,
-    other_work_service,
     project_service,
     person_plot_service,
     csv_service,
@@ -29,9 +28,9 @@ person_app_router = Blueprint("person_app_router", __name__)
 
 
 @person_app_router.route("/<person_id>", methods=["GET"])
-def get_person_by_id(person_id: str) -> Response | Tuple[Response, int]:
+def get_person_by_id(person_id: str, pipeline_params: dict = {}) -> Response | Tuple[Response, int]:
     try:
-        data = person_service.get_person_by_id(person_id)
+        data = person_service.get_person_by_id(person_id, pipeline_params)
         return jsonify(data)
     except Exception as e:
         capture_exception(e)
@@ -104,28 +103,6 @@ def get_works_csv_by_person(person_id: str) -> Response | Tuple[Response, int]:
         response = Response(data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response
-    except Exception as e:
-        capture_exception(e)
-        return jsonify({"error": str(e)}), 400
-
-
-"""
-@api {get} /app/person/:person_id/research/other_works Get person research other works
-@apiName GetPersonResearchOtherWorks
-@apiGroup Person
-@apiVersion 1.0.0
-@apiDescription Obtiene los productos de otro tipo de un autor.
-
-@apiParam {String} person_id ID del autor.
-"""
-
-
-@person_app_router.route("/<person_id>/research/other_works", methods=["GET"])
-def get_person_research_other_works(person_id: str) -> Response | Tuple[Response, int]:
-    try:
-        query_params = QueryParams(**request.args)
-        data = other_work_service.get_other_works_by_person(person_id, query_params)
-        return jsonify(data)
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400

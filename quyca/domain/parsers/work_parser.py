@@ -31,6 +31,7 @@ def parse_csv(works: list) -> str:
         "openalex_citations_count",
         "scholar_citations_count",
         "subjects",
+        "primary_topic",
         "year_published",
         "doi",
         "publisher",

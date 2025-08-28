@@ -36,9 +36,20 @@ def get_csv_data(works: Generator) -> list:
         set_csv_subjects(work)
         set_title_and_language(work)
         set_csv_types(work)
+        set_primary_topic(work)
         source_service.update_csv_work_source(work)
         data.append(work)
     return data
+
+
+def set_primary_topic(work: Work) -> None:
+    if work.primary_topic and work.primary_topic.id:
+        topic = f"topic: {work.primary_topic.display_name} | "
+        topic += f"subfield: {work.primary_topic.subfield.display_name} | "
+        topic += f"field: {work.primary_topic.field.display_name} | "
+        topic += f"domain: {work.primary_topic.domain.display_name}"
+
+        work.primary_topic = topic
 
 
 def set_open_access_status(work: Work) -> None:

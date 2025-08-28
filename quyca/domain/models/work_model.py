@@ -139,7 +139,7 @@ class Work(BaseModel):
     title: str | None = None
     volume: str | int | None = None
     topics: list[Topic] | None = None
-    primary_topic: Topic | None = None
+    primary_topic: Topic | str | None = None
 
     class Config:
         json_encoders = {ObjectId: str}

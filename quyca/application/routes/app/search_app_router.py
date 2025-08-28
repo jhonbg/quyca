@@ -12,6 +12,7 @@ from domain.services import (
     project_service,
     patent_service,
 )
+from quyca.domain.services import source_service
 
 search_app_router = Blueprint("search_app_router", __name__)
 
@@ -161,4 +162,23 @@ def search_projects() -> Response | Tuple[Response, int]:
         return jsonify(data)
     except Exception as e:
         capture_exception(e)
+        return jsonify({"error": str(e)}), 400
+
+"""
+@api {get} /app/search/sources Search sources
+@apiName SearchSources
+@apiGroup Search
+@apiVersion 1.0.0
+
+@apiDescription Búsqueda de fuentes por nombre.
+"""
+
+
+@search_app_router.route("/sources", methods=["GET"])
+def search_sources() -> Response | Tuple[Response, int]:
+    try:
+        query_params = QueryParams(**request.args)
+        data = source_service.search_sources(query_params)
+        return jsonify(data), 200
+    except Exception as e:
         return jsonify({"error": str(e)}), 400

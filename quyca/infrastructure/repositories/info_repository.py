@@ -1,5 +1,5 @@
-from domain.constants.institutions import institutions_list
-from infrastructure.mongo import database
+from quyca.domain.constants.institutions import institutions_list
+from quyca.infrastructure.mongo import database
 
 
 def get_last_db_update() -> int:

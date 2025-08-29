@@ -2,11 +2,11 @@ from typing import Generator, Tuple
 
 from pymongo.command_cursor import CommandCursor
 
-from domain.models.base_model import QueryParams
-from infrastructure.generators import work_generator
-from infrastructure.mongo import database, calculations_database
-from infrastructure.repositories import work_repository
-from infrastructure.repositories import affiliation_repository
+from quyca.domain.models.base_model import QueryParams
+from quyca.infrastructure.generators import work_generator
+from quyca.infrastructure.mongo import database, calculations_database
+from quyca.infrastructure.repositories import work_repository
+from quyca.infrastructure.repositories import affiliation_repository
 
 
 def get_affiliations_scienti_works_count_by_institution(

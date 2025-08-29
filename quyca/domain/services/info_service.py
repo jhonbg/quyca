@@ -1,4 +1,4 @@
-from infrastructure.repositories import (
+from quyca.infrastructure.repositories import (
     info_repository,
 )
 

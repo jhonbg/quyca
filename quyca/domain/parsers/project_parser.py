@@ -1,4 +1,4 @@
-from domain.models.project_model import Project
+from quyca.domain.models.project_model import Project
 
 
 def parse_search_results(projects: list) -> list:

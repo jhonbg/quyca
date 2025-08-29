@@ -1,4 +1,4 @@
-from infrastructure.mongo import database
+from quyca.infrastructure.mongo import database
 
 
 def set_works_authors_affiliations_country():  # type: ignore

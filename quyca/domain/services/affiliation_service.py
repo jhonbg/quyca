@@ -1,8 +1,8 @@
-from domain.models.base_model import ExternalUrl, QueryParams
-from domain.constants.institutions import institutions_list
-from domain.parsers import affiliation_parser
-from domain.models.affiliation_model import Affiliation, Relation
-from infrastructure.repositories import (
+from quyca.domain.models.base_model import ExternalUrl, QueryParams
+from quyca.domain.constants.institutions import institutions_list
+from quyca.domain.parsers import affiliation_parser
+from quyca.domain.models.affiliation_model import Affiliation, Relation
+from quyca.infrastructure.repositories import (
     person_repository,
     affiliation_repository,
 )

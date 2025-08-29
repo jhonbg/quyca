@@ -7,12 +7,16 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     class Config:
+        env_file = os.getenv("QUYCA_CONFIG_FILE")
         if os.getenv("ENVIRONMENT") == "dev":
-            env_file = "../.env.dev"
+            if not env_file:
+                env_file = ".env.dev"
         elif os.getenv("ENVIRONMENT") == "prod":
-            env_file = "../.env.prod"
+            if not env_file:
+                env_file = ".env.prod"
         else:
-            env_file = "../.env.local"
+            if not env_file:
+                env_file = ".env.local"
 
     environment: str = "local"
 
@@ -41,6 +45,8 @@ class Settings(BaseSettings):
     ES_GROUP_COMPLETER_INDEX: str
     ES_DEPARTMENT_COMPLETER_INDEX: str
     ES_FACULTY_COMPLETER_INDEX: str
+
+    API_LIMITS: str
 
     SENTRY_DSN: str
 

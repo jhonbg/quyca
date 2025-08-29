@@ -15,6 +15,7 @@ def get_source_by_id(source_id: str) -> Source:
         raise NotEntityException(f"The source with id {source_id} does not exist.")
     return Source(**source_data)
 
+
 def search_sources(query_params: QueryParams, pipeline_params: Dict) -> Tuple[Generator, int]:
     """
     Parameters:

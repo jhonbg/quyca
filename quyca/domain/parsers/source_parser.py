@@ -1,5 +1,6 @@
 from typing import List
 
+
 def parse_sources_by_entity(sources: List) -> List:
     source_fields = [
         "_id",

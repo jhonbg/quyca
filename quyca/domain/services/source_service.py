@@ -68,6 +68,7 @@ def set_serials(work: Work, source: Source) -> None:
             external_ids[external_id.source] = external_id.id
         work.source.external_ids = external_ids
 
+
 def search_sources(query_params: QueryParams) -> Dict:
     """
     Searches for sources based on the provided query parameters. Parameter keyword inside the query parameters is used for search by name.
@@ -91,6 +92,7 @@ def search_sources(query_params: QueryParams) -> Dict:
     data = source_parser.parse_sources_by_entity(source_list)
 
     return {"data": data, "total_results": total_sources}
+
 
 def get_sources_by_entity_pipeline_params() -> Dict:
     """
@@ -122,8 +124,8 @@ def get_sources_by_entity_pipeline_params() -> Dict:
             "licenses",
             "subjects",
             "ranking",
-            "review_process"
+            "review_process",
         ]
     }
-    
+
     return pipeline_source_params

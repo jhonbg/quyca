@@ -164,6 +164,7 @@ def search_projects() -> Response | Tuple[Response, int]:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400
 
+
 """
 @api {get} /app/search/sources Search sources
 @apiName SearchSources

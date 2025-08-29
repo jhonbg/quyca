@@ -11,6 +11,7 @@ Assert: Check the response from the search source endpoint.
 
 ENDPOINT = "/app/search/sources"
 
+
 @pytest.mark.parametrize(
     "query, status_code",
     [
@@ -23,12 +24,13 @@ def test_search_sources_parametrize(client, query, status_code):
     url = f"{ENDPOINT}/{query}"
 
     response = client.get(url)
-    
+
     assert response.status_code == status_code
     data = response.get_json()
     assert "data" in data
     assert "total_results" in data
     assert isinstance(data["data"], List)
+
 
 def test_search_sources_empty(client):
     url = f"{ENDPOINT}/?keywords=Th1sSourc3sDoesNotExist"
@@ -42,11 +44,12 @@ def test_search_sources_empty(client):
     assert "total_results" in data
     assert data["total_results"] == 0
 
+
 def test_search_sources_invalid_params(client):
     url = f"{ENDPOINT}?max=invalid&page=invalid"
 
     response = client.get(url)
-    
+
     assert response.status_code == 400
     data = response.get_json()
     assert "error" in data

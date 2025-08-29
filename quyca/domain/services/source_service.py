@@ -99,32 +99,18 @@ def get_sources_by_entity_pipeline_params() -> Dict:
     Returns:
     --------
     Dictionary
-    This function retrieves a Dictionary with the params that must include each document
+    This function retrieves a Dictionary with the params that gonna be used for searching.
     """
     pipeline_source_params = {
         "source": [
-            "_id",
-            "updated",
             "names",
-            "abbreviations",
             "types",
             "keywords",
-            "languages",
             "publisher",
-            "relations",
-            "addresses",
             "external_ids",
             "external_urls",
-            "waiver",
-            "plagiarism_detection",
-            "open_access_start_year",
-            "publication_time_weeks",
-            "apc",
-            "copyright",
-            "licenses",
             "subjects",
             "ranking",
-            "review_process",
         ]
     }
 

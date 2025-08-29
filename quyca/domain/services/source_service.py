@@ -6,7 +6,6 @@ from typing import Dict
 from quyca.domain.parsers import source_parser
 
 
-
 def update_work_source(work: Work) -> None:
     if work.source.id:
         source = source_repository.get_source_by_id(work.source.id)

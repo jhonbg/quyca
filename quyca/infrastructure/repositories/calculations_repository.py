@@ -1,5 +1,5 @@
-from domain.models.calculations_model import Calculations
-from infrastructure.mongo import calculations_database
+from quyca.domain.models.calculations_model import Calculations
+from quyca.infrastructure.mongo import calculations_database
 
 
 def get_person_calculations(person_id: str) -> Calculations:

@@ -1,43 +1,45 @@
 from typing import Generator, Tuple
 
 
-from infrastructure.generators import person_generator
-from domain.models.base_model import QueryParams
-from infrastructure.repositories import base_repository
-from domain.exceptions.not_entity_exception import NotEntityException
-from domain.models.person_model import Person
-from infrastructure.mongo import database
+from quyca.infrastructure.generators import person_generator
+from quyca.domain.models.base_model import QueryParams
+from quyca.infrastructure.repositories import base_repository
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
+from quyca.domain.models.person_model import Person
+from quyca.infrastructure.mongo import database
 
 
-def get_person_by_id(person_id: str) -> Person:
-    person_data = database["person"].aggregate(
-        [
-            {"$match": {"_id": person_id}},
-            {
-                "$addFields": {
-                    "filtered_affiliations": {
-                        "$filter": {
-                            "input": "$affiliations",
-                            "as": "affiliation",
-                            "cond": {"$eq": ["$$affiliation.end_date", -1]},
-                        }
+def get_person_by_id(person_id: str, pipeline_params: dict = {}) -> Person:
+    pipeline = [
+        {"$match": {"_id": person_id}},
+        {
+            "$addFields": {
+                "filtered_affiliations": {
+                    "$filter": {
+                        "input": "$affiliations",
+                        "as": "affiliation",
+                        "cond": {"$eq": ["$$affiliation.end_date", -1]},
                     }
                 }
-            },
-            {
-                "$lookup": {
-                    "from": "affiliations",
-                    "localField": "filtered_affiliations.id",
-                    "foreignField": "_id",
-                    "as": "affiliations_data",
-                    "pipeline": [
-                        {"$match": {"external_urls.source": "logo"}},
-                        {"$project": {"_id": 0, "external_urls": 1}},
-                    ],
-                }
-            },
-        ]
-    )
+            }
+        },
+        {
+            "$lookup": {
+                "from": "affiliations",
+                "localField": "filtered_affiliations.id",
+                "foreignField": "_id",
+                "as": "affiliations_data",
+                "pipeline": [
+                    {"$match": {"external_urls.source": "logo"}},
+                    {"$project": {"_id": 0, "external_urls": 1}},
+                ],
+            }
+        },
+    ]
+
+    base_repository.set_project(pipeline, pipeline_params.get("project"))
+
+    person_data = database["person"].aggregate(pipeline)
     person_data = next(person_data, None)
     if not person_data:
         raise NotEntityException(f"The person with id {person_id} does not exist.")

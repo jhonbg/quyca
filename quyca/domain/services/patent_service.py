@@ -1,8 +1,8 @@
 from typing import Generator
 
-from domain.models.base_model import QueryParams
-from infrastructure.repositories import patent_repository
-from domain.services.base_service import (
+from quyca.domain.models.base_model import QueryParams
+from quyca.infrastructure.repositories import patent_repository
+from quyca.domain.services.base_service import (
     set_external_ids,
     set_external_urls,
     set_authors_external_ids,
@@ -10,7 +10,7 @@ from domain.services.base_service import (
     set_product_types,
     set_title_and_language,
 )
-from domain.parsers import patent_parser
+from quyca.domain.parsers import patent_parser
 
 
 def get_patent_by_id(patent_id: str) -> dict:

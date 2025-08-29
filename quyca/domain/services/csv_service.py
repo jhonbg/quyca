@@ -1,14 +1,14 @@
 from datetime import datetime
 from typing import Generator
 
-from domain.models.base_model import ExternalId, QueryParams
-from domain.models.work_model import Work, Affiliation
-from infrastructure.repositories import csv_repository
-from domain.constants.institutions import institutions_list
-from domain.constants.openalex_types import openalex_types_dict
-from domain.services import source_service
-from domain.services.work_service import set_title_and_language
-from domain.parsers import work_parser
+from quyca.domain.models.base_model import ExternalId, QueryParams
+from quyca.domain.models.work_model import Work, Affiliation
+from quyca.infrastructure.repositories import csv_repository
+from quyca.domain.constants.institutions import institutions_list
+from quyca.domain.constants.openalex_types import openalex_types_dict
+from quyca.domain.services import source_service
+from quyca.domain.services.work_service import set_title_and_language
+from quyca.domain.parsers import work_parser
 
 
 def get_works_csv_by_affiliation(affiliation_id: str, query_params: QueryParams) -> str:
@@ -36,9 +36,20 @@ def get_csv_data(works: Generator) -> list:
         set_csv_subjects(work)
         set_title_and_language(work)
         set_csv_types(work)
+        set_primary_topic(work)
         source_service.update_csv_work_source(work)
         data.append(work)
     return data
+
+
+def set_primary_topic(work: Work) -> None:
+    if work.primary_topic and work.primary_topic.id:
+        topic = f"topic: {work.primary_topic.display_name} | "
+        topic += f"subfield: {work.primary_topic.subfield.display_name} | "
+        topic += f"field: {work.primary_topic.field.display_name} | "
+        topic += f"domain: {work.primary_topic.domain.display_name}"
+
+        work.primary_topic = topic
 
 
 def set_open_access_status(work: Work) -> None:
@@ -70,13 +81,18 @@ def set_doi(work: Work) -> None:
 def set_csv_types(work: Work) -> None:
     openalex_types = []
     scienti_types = []
+    impactu_types = []
     for work_type in work.types:
         if work_type.source == "openalex" and work_type.type in openalex_types_dict.keys():
             openalex_types.append(openalex_types_dict.get(work_type.type))
         elif work_type.source == "scienti":
             scienti_types.append(str(work_type.type))
+        elif work_type.source == "impactu":
+            impactu_types.append(str(work_type.type))
+
     work.openalex_types = " | ".join(set(openalex_types))
     work.scienti_types = " | ".join(set(scienti_types))
+    work.impactu_types = " | ".join(set(impactu_types))
 
 
 def set_csv_subjects(work: Work) -> None:

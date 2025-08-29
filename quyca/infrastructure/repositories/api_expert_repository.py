@@ -1,10 +1,10 @@
 from typing import Generator
 
 
-from infrastructure.generators import work_generator
-from domain.models.base_model import QueryParams
-from infrastructure.repositories import base_repository, work_repository
-from infrastructure.mongo import database
+from quyca.infrastructure.generators import work_generator
+from quyca.domain.models.base_model import QueryParams
+from quyca.infrastructure.repositories import base_repository, work_repository
+from quyca.infrastructure.mongo import database
 
 
 def get_works_by_affiliation_for_api_expert(

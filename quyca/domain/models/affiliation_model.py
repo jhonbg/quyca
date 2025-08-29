@@ -1,7 +1,7 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field, model_validator, field_validator
 
-from domain.models.base_model import (
+from quyca.domain.models.base_model import (
     Type,
     Updated,
     ExternalUrl,

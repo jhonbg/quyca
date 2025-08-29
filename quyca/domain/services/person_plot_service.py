@@ -1,13 +1,19 @@
-from domain.constants.articles_types import articles_types_list
-from domain.models.base_model import QueryParams
-from infrastructure.repositories import (
+from quyca.domain.constants.articles_types import articles_types_list
+from quyca.domain.models.base_model import QueryParams
+from quyca.infrastructure.repositories import (
     plot_repository,
     work_repository,
     calculations_repository,
     person_repository,
     affiliation_repository,
 )
-from domain.parsers import pie_parser, map_parser, venn_parser, bar_parser, network_parser
+from quyca.domain.parsers import (
+    pie_parser,
+    map_parser,
+    venn_parser,
+    bar_parser,
+    network_parser,
+)
 
 
 def get_person_plot(person_id: str, query_params: QueryParams) -> dict:

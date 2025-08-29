@@ -2,12 +2,12 @@ from typing import Generator, Tuple
 
 from bson import ObjectId
 
-from infrastructure.generators import patent_generator
-from domain.models.base_model import QueryParams
-from domain.models.patent_model import Patent
-from infrastructure.repositories import base_repository
-from infrastructure.mongo import database
-from domain.exceptions.not_entity_exception import NotEntityException
+from quyca.infrastructure.generators import patent_generator
+from quyca.domain.models.base_model import QueryParams
+from quyca.domain.models.patent_model import Patent
+from quyca.infrastructure.repositories import base_repository
+from quyca.infrastructure.mongo import database
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
 
 
 def get_patent_by_id(patent_id: str) -> Patent:

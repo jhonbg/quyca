@@ -19,4 +19,4 @@ def parse_news(news: Iterable[News]) -> List[Dict]:
     List[Dict]
         A list of dictionaries representing the serialized News objects.
     """
-    return [item.model_dump(mode="json") for item in news]
+    return [item.model_dump(mode="json") for item in news if item]

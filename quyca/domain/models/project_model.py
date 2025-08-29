@@ -1,7 +1,7 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field
 
-from domain.models.base_model import (
+from quyca.domain.models.base_model import (
     PyObjectId,
     Type,
     ExternalId,

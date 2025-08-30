@@ -21,7 +21,7 @@ ENDPOINT = "/app/search/sources"
     ],
 )
 def test_search_sources_parametrize(client, query, status_code):
-    url = f"{ENDPOINT}/{query}"
+    url = f"{ENDPOINT}{query}"
 
     response = client.get(url)
 
@@ -33,7 +33,7 @@ def test_search_sources_parametrize(client, query, status_code):
 
 
 def test_search_sources_empty(client):
-    url = f"{ENDPOINT}/?keywords=Th1sSourc3sDoesNotExist"
+    url = f"{ENDPOINT}?keywords=Th1sSourc3sDoesNotExist"
 
     response = client.get(url)
 

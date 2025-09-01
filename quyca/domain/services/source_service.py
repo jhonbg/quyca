@@ -1,6 +1,9 @@
-from quyca.domain.models.source_model import Source
-from quyca.domain.models.work_model import Work
-from quyca.infrastructure.repositories import source_repository
+from domain.models.source_model import Source
+from domain.models.work_model import Work
+from infrastructure.repositories import source_repository
+from quyca.domain.models.base_model import QueryParams
+from typing import Dict
+from quyca.domain.parsers import source_parser
 
 
 def update_work_source(work: Work) -> None:
@@ -64,3 +67,51 @@ def set_serials(work: Work, source: Source) -> None:
         for external_id in source.external_ids:
             external_ids[external_id.source] = external_id.id
         work.source.external_ids = external_ids
+
+
+def search_sources(query_params: QueryParams) -> Dict:
+    """
+    Searches for sources based on the provided query parameters. Parameter keyword inside the query parameters is used for search by name.
+
+    Parameters:
+    -----------
+    query_params : QueryParams
+        The query parameters to filter the sources.
+
+    Returns:
+    --------
+    Dict
+        A dictionary containing the search data and the total number of results.
+    """
+    pipeline_params = get_sources_by_entity_pipeline_params()
+    sources, total_sources = source_repository.search_sources(query_params, pipeline_params)
+    source_list = []
+    for source in sources:
+        source_list.append(source)
+
+    data = source_parser.parse_sources_by_entity(source_list)
+
+    return {"data": data, "total_results": total_sources}
+
+
+def get_sources_by_entity_pipeline_params() -> Dict:
+    """
+    Returns:
+    --------
+    Dictionary
+    This function retrieves a Dictionary with the params that gonna be used for searching.
+    """
+    pipeline_source_params = {
+        "source": [
+            "names",
+            "types",
+            "keywords",
+            "publisher",
+            "external_ids",
+            "external_urls",
+            "subjects",
+            "ranking",
+        ]
+    }
+
+    return pipeline_source_params

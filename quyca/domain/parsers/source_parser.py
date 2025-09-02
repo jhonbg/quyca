@@ -1,7 +1,7 @@
 from typing import List
 
 
-def parse_sources_by_entity(sources: List) -> List:
+def parse_search_result(sources: List) -> List:
     """
     This function use model dumping to extract relevant fields from source entities.
 

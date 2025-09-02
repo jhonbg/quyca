@@ -166,6 +166,7 @@ class QueryParams(BaseModel):
     countries: str | None = None
     groups_ranking: str | None = None
     authors_ranking: str | None = None
+    source_types: str | None = None
 
     @model_validator(mode="after")
     def validate_pagination_and_sort(self) -> "QueryParams":

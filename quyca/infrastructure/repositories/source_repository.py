@@ -42,18 +42,20 @@ def search_sources(query_params: QueryParams, pipeline_params: Dict) -> Tuple[Ge
     total_results = next(database["sources"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
     return source_generator.get(sources), total_results
 
+
 def set_source_filters(pipeline: List, query_params: QueryParams) -> None:
     set_source_types(pipeline, query_params.source_types)
 
+
 def set_source_types(pipeline: List, type_filters: str | None) -> None:
     """
-    It takes a comma-separated string of source types, splits it into a list, and adds a match stage to the pipeline. 
-    
+    It takes a comma-separated string of source types, splits it into a list, and adds a match stage to the pipeline.
+
     E.g {"$match": {"types.type": {"$in": ["journal", "repository"]}}}
     """
     if not type_filters:
         return
-    
+
     source_types = [type.strip() for type in type_filters.split(",") if type.strip()]
     if source_types:
         pipeline.append({"$match": {"types.type": {"$in": source_types}}})

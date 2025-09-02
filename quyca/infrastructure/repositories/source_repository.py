@@ -1,4 +1,4 @@
-from typing import Dict, Generator, Tuple
+from typing import Dict, Generator, List, Tuple
 from bson import ObjectId
 
 from infrastructure.mongo import database
@@ -31,11 +31,29 @@ def search_sources(query_params: QueryParams, pipeline_params: Dict) -> Tuple[Ge
         A tuple containing a generator for the search results and the total number of results.
     """
     pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    set_source_filters(pipeline, query_params)
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     sources = database["sources"].aggregate(pipeline)
 
     count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    set_source_filters(count_pipeline, query_params)
 
     count_pipeline += [{"$count": "total_results"}]
     total_results = next(database["sources"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
     return source_generator.get(sources), total_results
+
+def set_source_filters(pipeline: List, query_params: QueryParams) -> None:
+    set_source_types(pipeline, query_params.source_types)
+
+def set_source_types(pipeline: List, type_filters: str | None) -> None:
+    """
+    It takes a comma-separated string of source types, splits it into a list, and adds a match stage to the pipeline. 
+    
+    E.g {"$match": {"types.type": {"$in": ["journal", "repository"]}}}
+    """
+    if not type_filters:
+        return
+    
+    source_types = [type.strip() for type in type_filters.split(",") if type.strip()]
+    if source_types:
+        pipeline.append({"$match": {"types.type": {"$in": source_types}}})

@@ -89,7 +89,7 @@ def search_sources(query_params: QueryParams) -> Dict:
     for source in sources:
         source_list.append(source)
 
-    data = source_parser.parse_sources_by_entity(source_list)
+    data = source_parser.parse_search_result(source_list)
 
     return {"data": data, "total_results": total_sources}
 

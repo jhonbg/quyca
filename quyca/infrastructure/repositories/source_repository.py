@@ -7,6 +7,7 @@ from infrastructure.generators import source_generator
 from domain.models.source_model import Source
 from domain.exceptions.not_entity_exception import NotEntityException
 from quyca.domain.models.base_model import QueryParams
+from quyca.domain.constants.clean_source import source_type_mapping
 
 
 def get_source_by_id(source_id: str) -> Source:
@@ -56,6 +57,14 @@ def set_source_types(pipeline: List, type_filters: str | None) -> None:
     if not type_filters:
         return
 
-    source_types = [type.strip() for type in type_filters.split(",") if type.strip()]
+    source_types = []
+    for type in type_filters.split(","):
+        type = type.strip().lower()
+        if not type:
+            continue
+        mapped = source_type_mapping.get(type, None)
+        if mapped:
+            source_types.append(mapped)
+
     if source_types:
         pipeline.append({"$match": {"types.type": {"$in": source_types}}})

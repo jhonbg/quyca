@@ -16,3 +16,24 @@ def clean_nan(value):
     if isinstance(value, float) and math.isnan(value):
         return None
     return value
+
+
+source_type_mapping = {
+    # Alias que apuntan a 'journal'
+    "E": "journal",
+    "EL": "journal",
+    "IE": "journal",
+    "IM": "journal",
+    "L": "journal",
+    "P": "journal",
+    # Tipos normalizados
+    "book series": "book series",
+    "conference": "conference",
+    "conference and proceedings": "conference",
+    "ebook platform": "ebook platform",
+    "journal": "journal",
+    "metadata": "metadata",
+    "other": "other",
+    "repository": "repository",
+    "trade journal": "trade journal",
+}

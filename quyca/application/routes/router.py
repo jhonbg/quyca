@@ -10,6 +10,7 @@ from application.routes.app.search_app_router import search_app_router
 from application.routes.api.search_api_router import search_api_router
 from application.routes.app.affiliation_app_router import affiliation_app_router
 from application.routes.api.affiliation_api_router import affiliation_api_router
+from application.routes.app.user_auth_app_router import user_auth_app_router
 from application.routes.app.person_app_router import person_app_router
 from application.routes.api.person_api_router import person_api_router
 from application.routes.app.work_app_router import work_app_router
@@ -45,3 +46,5 @@ router.register_blueprint(project_app_router, url_prefix=f"{settings.APP_URL_PRE
 router.register_blueprint(apc_api_router, url_prefix=f"{settings.API_URL_PREFIX}/apc")
 
 router.register_blueprint(completer_app_router, url_prefix=f"{settings.APP_URL_PREFIX}/completer")
+
+router.register_blueprint(user_auth_app_router, url_prefix=f"{settings.APP_URL_PREFIX}")

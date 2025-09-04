@@ -44,6 +44,9 @@ class Settings(BaseSettings):
 
     SENTRY_DSN: str
 
+    JWT_SECRET_KEY: str
+    JWT_ACCESS_TOKEN_EXPIRES: int
+
     @model_validator(mode="after")
     def validate_mongo_uri(self) -> Self:
         self.MONGO_URI = MongoDsn.build(

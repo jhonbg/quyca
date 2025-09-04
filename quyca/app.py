@@ -2,6 +2,7 @@ import os
 
 import sentry_sdk
 from flask import Flask
+from flask_jwt_extended import JWTManager
 from flask_compress import Compress
 from flask_cors import CORS
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -22,6 +23,12 @@ def create_app() -> Flask:
     project_dir = os.path.dirname(os.path.abspath(__file__))
     static_dir = os.path.join(project_dir, "application", "static")
     app_factory = Flask(__name__, static_folder=static_dir)
+
+    app_factory.config["JWT_SECRET_KEY"] = app_settings.JWT_SECRET_KEY
+    app_factory.config["JWT_ACCESS_TOKEN_EXPIRES"] = app_settings.JWT_ACCESS_TOKEN_EXPIRES
+
+    JWTManager(app_factory)
+
     CORS(app_factory)
     app_factory.register_blueprint(router)
     Compress(app_factory)

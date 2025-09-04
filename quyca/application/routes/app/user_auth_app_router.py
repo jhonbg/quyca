@@ -45,6 +45,8 @@ HTTP/1.1 400 Bad Request
     "msg": "correo y contraseña requeridos"
 }
 """
+
+
 @user_auth_app_router.route("/login", methods=["POST"])
 def login():
     try:
@@ -85,6 +87,8 @@ HTTP/1.1 200 OK
     "msg": "Sesión cerrada correctamente"
 }
 """
+
+
 @user_auth_app_router.route("/logout", methods=["POST"])
 def logout():
     try:

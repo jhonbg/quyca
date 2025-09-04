@@ -1,8 +1,8 @@
 from bson import ObjectId
 
-from domain.models.source_model import Source
-from infrastructure.mongo import database
-from domain.exceptions.not_entity_exception import NotEntityException
+from quyca.domain.models.source_model import Source
+from quyca.infrastructure.mongo import database
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
 
 
 def get_source_by_id(source_id: str) -> Source:

@@ -1,6 +1,6 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field, field_validator, model_validator
-from domain.models.base_model import (
+from quyca.domain.models.base_model import (
     PyObjectId,
     CitationsCount,
     Updated,
@@ -12,6 +12,7 @@ from domain.models.base_model import (
     ExternalUrl,
     BirthPlace,
 )
+from datetime import datetime, date
 
 
 class Affiliation(BaseModel):
@@ -93,6 +94,7 @@ class Person(BaseModel):
 
     affiliations_data: list[Affiliation] | None = None
     logo: str | None = None
+    age: int | None = None
 
     @field_validator("external_ids")
     @classmethod
@@ -104,6 +106,30 @@ class Person(BaseModel):
                 value,
             )
         )
+
+    @model_validator(mode="after")
+    def calculate_age(self) -> "Person":
+        print(self.birthdate)
+        if self.birthdate:
+            try:
+                if isinstance(self.birthdate, int):
+                    # Si es timestamp en segundos
+                    birth_date = datetime.fromtimestamp(self.birthdate).date()
+                elif isinstance(self.birthdate, str):
+                    # Intentar parsear como fecha YYYY-MM-DD
+                    birth_date = datetime.fromisoformat(self.birthdate).date()
+                else:
+                    return self
+
+                today = date.today()
+                self.age = (
+                    today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+                )
+            except Exception as e:
+                print(e)
+                self.age = None
+        self.birthdate = None  # delete birthdate to avoid sensitive data exposure
+        return self
 
     class Config:
         json_encoders = {ObjectId: str}

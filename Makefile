@@ -24,5 +24,8 @@ shell-local:
 	docker compose exec local bash
 build-local:
 	docker build --file Dockerfile -t colav/quyca-local:local --target local .
-dinamic-test:
-	docker compose exec -e PYTHONPATH=/app/quyca dev pytest $(TESTPATH) $(PYARGS)
+tests-dev:
+	docker compose exec dev pytest
+
+tests-prod:
+	docker compose exec prod pytest

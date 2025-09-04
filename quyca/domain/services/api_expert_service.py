@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Generator
 
-from domain.models.base_model import QueryParams, Affiliation, Author, ExternalId
-from domain.models.work_model import Work, Source
-from infrastructure.repositories import api_expert_repository
-from domain.parsers import work_parser
-from domain.services import source_service
+from quyca.domain.models.base_model import QueryParams, Affiliation, Author, ExternalId
+from quyca.domain.models.work_model import Work, Source
+from quyca.infrastructure.repositories import api_expert_repository
+from quyca.domain.parsers import work_parser
+from quyca.domain.services import source_service
 
 
 def get_works_by_person(person_id: str, query_params: QueryParams) -> dict:

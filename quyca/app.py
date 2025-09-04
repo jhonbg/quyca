@@ -7,7 +7,7 @@ from flask_compress import Compress
 from flask_cors import CORS
 from sentry_sdk.integrations.flask import FlaskIntegration
 
-from application.routes.router import router
+from application.routes.router import router, limiter
 from config import Settings
 
 
@@ -38,4 +38,5 @@ def create_app() -> Flask:
 if __name__ == "__main__":
     settings = Settings()
     app = create_app()
+    limiter.init_app(app)
     app.run(host="0.0.0.0", port=settings.APP_PORT, debug=settings.APP_DEBUG, threaded=True)

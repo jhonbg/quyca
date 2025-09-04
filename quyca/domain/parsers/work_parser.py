@@ -1,10 +1,10 @@
 import csv
 import io
 
-from domain.constants import countries_iso
-from domain.constants.open_access_status import open_access_status_dict
-from domain.constants.product_types import source_titles
-from domain.models.work_model import Work
+from quyca.domain.constants import countries_iso
+from quyca.domain.constants.open_access_status import open_access_status_dict
+from quyca.domain.constants.product_types import source_titles
+from quyca.domain.models.work_model import Work
 
 
 def parse_csv(works: list) -> str:
@@ -31,11 +31,13 @@ def parse_csv(works: list) -> str:
         "openalex_citations_count",
         "scholar_citations_count",
         "subjects",
+        "primary_topic",
         "year_published",
         "doi",
         "publisher",
         "openalex_types",
         "scienti_types",
+        "impactu_types",
         "source_name",
         "source_apc",
         "source_urls",
@@ -106,6 +108,8 @@ def parse_available_filters(filters: dict) -> dict:
         available_filters["status"] = parse_status_filter(status)
     if subjects := filters.get("subjects"):
         available_filters["subjects"] = parse_subject_filter(subjects)
+    if topics := filters.get("topics"):
+        available_filters["topics"] = parse_topic_filter(topics)
     if countries := filters.get("countries"):
         available_filters["countries"] = parse_country_filter(countries)
     if groups_ranking := filters.get("groups_ranking"):
@@ -131,6 +135,19 @@ def parse_groups_ranking_filter(groups_ranking: list) -> list:
             parsed_groups_ranking.append({"value": ranking.get("_id"), "label": ranking.get("_id")})
     parsed_groups_ranking.sort(key=lambda x: x.get("label"))  # type: ignore
     return parsed_groups_ranking
+
+
+def parse_topic_filter(topics: list) -> list:
+    parsed_topics = []
+    for topic in topics:
+        parsed_topics.append(
+            {
+                "value": topic.get("id"),
+                "label": topic.get("display_name"),
+                "count": topic.get("count"),
+            }
+        )
+    return parsed_topics
 
 
 def parse_country_filter(countries: list) -> list:

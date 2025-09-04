@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from pydantic import BaseModel, field_validator, Field, conint, model_validator
 from bson import ObjectId
 
+from quyca.domain.constants.clean_source import clean_nan
+
 
 class PyObjectId(ObjectId):
     @classmethod
@@ -88,6 +90,11 @@ class Ranking(BaseModel):
     to_date: int | str | None = None
     level: int | None = None
 
+    @field_validator("rank", mode="before")
+    @classmethod
+    def replace_nan_in_rank(cls, v):
+        return clean_nan(v)
+
 
 class Status(BaseModel):
     source: str | None
@@ -125,6 +132,11 @@ class Publisher(BaseModel):
     country_code: str | None = None
     name: str | float | None = None
 
+    @field_validator("name", mode="before")
+    @classmethod
+    def replace_nan_in_name(cls, v):
+        return clean_nan(v)
+
 
 class Paid(BaseModel):
     currency: str | None = None
@@ -154,6 +166,7 @@ class QueryParams(BaseModel):
     countries: str | None = None
     groups_ranking: str | None = None
     authors_ranking: str | None = None
+    source_types: str | None = None
 
     @model_validator(mode="after")
     def validate_pagination_and_sort(self) -> "QueryParams":

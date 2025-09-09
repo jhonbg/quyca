@@ -241,7 +241,6 @@ class Author(BaseModel):
 
     @model_validator(mode="after")
     def compute_age_and_remove_birthdate(self):
-        print("bday", self.birthdate)
         if self.birthdate:
             try:
                 birth_ts = int(self.birthdate)

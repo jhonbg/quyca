@@ -25,7 +25,7 @@ def set_match(pipeline: list, match: dict | None) -> None:
 def set_project(pipeline: list, project: list | dict | None) -> None:
     if not project:
         return
-    
+
     pipeline.append({"$project": {"_id": 1, **{p: 1 for p in project}}})
 
 

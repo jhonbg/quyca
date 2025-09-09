@@ -34,40 +34,6 @@ def set_sort(sort: str | None, pipeline: list) -> None:
     sort_field, direction_str = sort.split("_")
     direction = -1 if direction_str == "desc" else 1
     if sort_field == "citations":
-        pipeline += [
-            {
-                "$addFields": {
-                    "openalex_citations_count": {
-                        "$ifNull": [
-                            {
-                                "$arrayElemAt": [
-                                    {
-                                        "$map": {
-                                            "input": {
-                                                "$filter": {
-                                                    "input": "$citations_count",
-                                                    "as": "citation",
-                                                    "cond": {
-                                                        "$eq": [
-                                                            "$$citation.source",
-                                                            "openalex",
-                                                        ]
-                                                    },
-                                                }
-                                            },
-                                            "as": "filtered",
-                                            "in": "$$filtered.count",
-                                        }
-                                    },
-                                    0,
-                                ]
-                            },
-                            0,
-                        ]
-                    }
-                }
-            }
-        ]
         sort_field = "openalex_citations_count"
     elif sort_field == "alphabetical":
         pipeline += [

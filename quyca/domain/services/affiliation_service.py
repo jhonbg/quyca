@@ -48,18 +48,24 @@ def get_related_affiliations_by_affiliation(affiliation_id: str, affiliation_typ
 
 def search_affiliations(affiliation_type: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "project": [
-            "_id",
-            "names",
-            "addresses.country_code",
-            "external_ids",
-            "external_urls",
-            "relations",
-            "types",
-            "citations_count",
-            "products_count",
-            "relations_data",
-        ]
+        "project": {
+            "_id": 1,
+            "names": 1,
+            "external_ids": 1,
+            "external_urls": 1,
+            "relations": 1,
+            "types": 1,
+            "citations_count": 1,
+            "products_count": 1,
+            "relations_data": 1,
+            "addresses": {
+                "$map": {
+                    "input": "$addresses",
+                    "as": "addr",
+                    "in": {"country": "$$addr.country", "country_code": "$$addr.country_code"},
+                }
+            },
+        }
     }
     affiliations, total_results = affiliation_repository.search_affiliations(
         affiliation_type, query_params, pipeline_params

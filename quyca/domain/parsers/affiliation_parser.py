@@ -1,4 +1,9 @@
-def parse_search_result(affiliations: list) -> list:
+from typing import List
+
+from quyca.domain.models.base_model import Affiliation
+
+
+def parse_search_result(affiliations: List) -> List[Affiliation]:
     include = [
         "id",
         "addresses",

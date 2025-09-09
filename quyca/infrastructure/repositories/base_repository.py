@@ -25,10 +25,8 @@ def set_match(pipeline: list, match: dict | None) -> None:
 def set_project(pipeline: list, project: list | dict | None) -> None:
     if not project:
         return
-    if isinstance(project, dict):
-        pipeline.append({"$project": project})
-    elif isinstance(project, list):
-        pipeline.append({"$project": {"_id": 1, **{p: 1 for p in project}}})
+    
+    pipeline.append({"$project": {"_id": 1, **{p: 1 for p in project}}})
 
 
 def set_sort(sort: str | None, pipeline: list) -> None:

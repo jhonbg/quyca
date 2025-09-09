@@ -109,7 +109,6 @@ class Person(BaseModel):
 
     @model_validator(mode="after")
     def calculate_age(self) -> "Person":
-        print(self.birthdate)
         if self.birthdate:
             try:
                 if isinstance(self.birthdate, int):

@@ -19,26 +19,26 @@ def apc_search() -> Response | Tuple[Response, int]:
         pipeline += [
             {
                 "$lookup": {
-                    "from": "sources",  # type: ignore
-                    "localField": "source.id",  # type: ignore
-                    "foreignField": "_id",  # type: ignore
-                    "as": "source_data",  # type: ignore
-                    "pipeline": [  # type: ignore
+                    "from": "sources",
+                    "localField": "source.id",
+                    "foreignField": "_id",
+                    "as": "source_data",
+                    "pipeline": [
                         {"$project": {"_id": 0, "apc": 1, "names": 1}},
                     ],
                 }
             },
-            {"$unwind": "$source_data"},  # type: ignore
+            {"$unwind": "$source_data"},
             {
                 "$project": {
-                    "_id": 0,  # type: ignore
-                    "work_doi": "$doi",  # type: ignore
-                    "work_title": {"$first": "$titles.title"},  # type: ignore
-                    "source_name": {"$first": "$source_data.names.name"},  # type: ignore
-                    "source_apc_value": "$source_data.apc.charges",  # type: ignore
-                    "source_apc_currency": "$source_data.apc.currency",  # type: ignore
-                    "work_apc_currency": "$apc.paid.currency",  # type: ignore
-                    "work_apc_value": "$apc.paid.value",  # type: ignore
+                    "_id": 0,
+                    "work_doi": "$doi",
+                    "work_title": {"$first": "$titles.title"},
+                    "source_name": {"$first": "$source_data.names.name"},
+                    "source_apc_value": "$source_data.apc.charges",
+                    "source_apc_currency": "$source_data.apc.currency",
+                    "work_apc_currency": "$apc.paid.currency",
+                    "work_apc_value": "$apc.paid.value",
                 }
             },
         ]
@@ -125,24 +125,23 @@ def apc_affiliation(affiliation_id: str) -> Response | Tuple[Response, int]:
     try:
         pipeline = [
             {"$match": {"authors.affiliations.id": affiliation_id}},
+            {"$project": {"doi": 1, "titles": 1, "source.id": 1, "apc": 1}},
             {
                 "$lookup": {
-                    "from": "sources",  # type: ignore
-                    "localField": "source.id",  # type: ignore
-                    "foreignField": "_id",  # type: ignore
-                    "as": "source_data",  # type: ignore
-                    "pipeline": [  # type: ignore
-                        {"$project": {"_id": 0, "apc": 1, "names": 1}},
-                    ],  # type: ignore
+                    "from": "sources",
+                    "localField": "source.id",
+                    "foreignField": "_id",
+                    "as": "source_data",
+                    "pipeline": [{"$project": {"apc": 1, "names": 1}}],
                 }
             },
-            {"$unwind": "$source_data"},  # type: ignore
+            {"$set": {"source_data": {"$first": "$source_data"}}},
             {
                 "$project": {
                     "_id": 0,
                     "work_doi": "$doi",
-                    "work_title": {"$first": "$titles.title"},  # type: ignore
-                    "source_name": {"$first": "$source_data.names.name"},  # type: ignore
+                    "work_title": {"$first": "$titles.title"},
+                    "source_name": {"$first": "$source_data.names.name"},
                     "source_apc_value": "$source_data.apc.charges",
                     "source_apc_currency": "$source_data.apc.currency",
                     "work_apc_currency": "$apc.paid.currency",
@@ -150,7 +149,9 @@ def apc_affiliation(affiliation_id: str) -> Response | Tuple[Response, int]:
                 }
             },
         ]
-        data = database["works"].aggregate(pipeline)
+
+        cursor = database["works"].aggregate(pipeline)
+
         fieldnames = [
             "work_doi",
             "work_title",
@@ -160,15 +161,19 @@ def apc_affiliation(affiliation_id: str) -> Response | Tuple[Response, int]:
             "work_apc_value",
             "work_apc_currency",
         ]
-        data = list(data)
-        output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=fieldnames, escapechar="\\", quoting=csv.QUOTE_MINIMAL)
-        writer.writeheader()
-        writer.writerows(data)
-        data = output.getvalue()
-        response = Response(data, content_type="text/csv")
-        response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
-        return response
+
+        def generate_csv(cursor, fieldnames):
+            yield ",".join(fieldnames) + "\n"
+            for doc in cursor:
+                row = {field: doc.get(field, "") for field in fieldnames}
+                yield ",".join(map(str, row.values())) + "\n"
+
+        return Response(
+            generate_csv(cursor, fieldnames),
+            content_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=affiliation.csv"},
+        )
+
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400

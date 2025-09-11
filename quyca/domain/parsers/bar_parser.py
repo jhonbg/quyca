@@ -88,8 +88,9 @@ def parse_annual_apc_expenses(works: Generator) -> dict:
     currency_converter = CurrencyConverter()
     for work in works:
         total_results += 1
-        apc_charges = work.source.apc.charges
-        apc_currency = work.source.apc.currency
+        source_apc = getattr(work.source, "apc", None)
+        apc_charges = getattr(source_apc, "charges", None)
+        apc_currency = getattr(source_apc, "currency", None)
         if not apc_charges or not apc_currency or apc_currency in ["IRR", "NGN"]:
             continue
         usd_charges = currency_converter.convert(apc_charges, apc_currency, "USD")

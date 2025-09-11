@@ -161,10 +161,11 @@ def parse_articles_by_scimago_quartile(works: Generator) -> list:
     total_articles = 0
     for work in works:
         total_articles += 1
-        work_date = work.date_published
+        work_date = getattr(work, "date_published", None)
         if not work_date:
             continue
-        for ranking in work.source.ranking:
+        source_rankings = getattr(work.source, "ranking", None) or []
+        for ranking in source_rankings:
             if (
                 ranking.source in valid_sources
                 and ranking.rank != "-"

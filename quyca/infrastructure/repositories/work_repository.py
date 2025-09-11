@@ -46,23 +46,10 @@ def get_works_with_source_by_affiliation(
 ) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
-    source_project = pipeline_params.get("source_project", [])
     pipeline = [
         {"$match": {"authors.affiliations.id": affiliation_id}},
     ]
     set_product_filters(pipeline, query_params)
-    pipeline += [
-        {
-            "$lookup": {
-                "from": "sources",  # type: ignore
-                "localField": "source.id",  # type: ignore
-                "foreignField": "_id",  # type: ignore
-                "as": "source",  # type: ignore
-                "pipeline": [{"$project": {"_id": 1, **{p: 1 for p in source_project}}}],  # type: ignore
-            }
-        },
-        {"$unwind": "$source"},  # type: ignore
-    ]
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     base_repository.set_project(pipeline, pipeline_params.get("work_project"))
     cursor = database["works"].aggregate(pipeline)
@@ -78,7 +65,7 @@ def get_works_count_by_affiliation(affiliation_id: str, query_params: QueryParam
         },
     ]
     set_product_filters(pipeline, query_params)
-    pipeline += [{"$count": "total"}]  # type: ignore
+    pipeline += [{"$count": "total"}]
     return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
 
@@ -103,23 +90,10 @@ def get_works_with_source_by_person(
 ) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
-    source_project = pipeline_params.get("source_project", [])
     pipeline = [
         {"$match": {"authors.id": person_id}},
     ]
     set_product_filters(pipeline, query_params)
-    pipeline += [
-        {
-            "$lookup": {
-                "from": "sources",  # type: ignore
-                "localField": "source.id",  # type: ignore
-                "foreignField": "_id",  # type: ignore
-                "as": "source",  # type: ignore
-                "pipeline": [{"$project": {"_id": 1, **{p: 1 for p in source_project}}}],  # type: ignore
-            }
-        },
-        {"$unwind": "$source"},  # type: ignore
-    ]
     base_repository.set_match(pipeline, pipeline_params.get("match"))
     base_repository.set_project(pipeline, pipeline_params.get("work_project"))
     cursor = database["works"].aggregate(pipeline)
@@ -129,7 +103,7 @@ def get_works_with_source_by_person(
 def get_works_count_by_person(person_id: str, query_params: QueryParams) -> int:
     pipeline = [{"$match": {"authors.id": person_id}}]
     set_product_filters(pipeline, query_params)
-    pipeline += [{"$count": "total"}]  # type: ignore
+    pipeline += [{"$count": "total"}]
     return next(database["works"].aggregate(pipeline), {"total": 0}).get("total", 0)
 
 
@@ -141,7 +115,7 @@ def search_works(query_params: QueryParams, pipeline_params: dict | None = None)
     count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     set_product_filters(count_pipeline, query_params)
     count_pipeline += [
-        {"$count": "total_results"},  # type: ignore
+        {"$count": "total_results"},
     ]
     total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0}).get("total_results", 0)
     return work_generator.get(works), total_results
@@ -269,7 +243,7 @@ def set_product_type_filters(pipeline: list, type_filters: str | None) -> None:
             match_filters.append({"types": {"$elemMatch": {"source": params[0], "type": params[1]}}})
         elif len(params) == 3 and params[0] == "scienti":
             match_filters.append(
-                {"types": {"$elemMatch": {"source": params[0], "type": params[1], "code": {"$regex": "^" + params[2]}}}}  # type: ignore
+                {"types": {"$elemMatch": {"source": params[0], "type": params[1], "code": {"$regex": "^" + params[2]}}}}
             )
     pipeline += [{"$match": {"$or": match_filters}}]
 
@@ -291,9 +265,9 @@ def set_status_filters(pipeline: list, status: str | None) -> None:
         if single_status == "unknown":
             match_filters.append({"open_access.open_access_status": None})
         elif single_status == "open":
-            match_filters.append({"open_access.open_access_status": {"$nin": [None, "closed"]}})  # type: ignore
+            match_filters.append({"open_access.open_access_status": {"$nin": [None, "closed"]}})
         else:
-            match_filters.append({"open_access.open_access_status": single_status})  # type: ignore
+            match_filters.append({"open_access.open_access_status": single_status})
     pipeline += [{"$match": {"$or": match_filters}}]
 
 

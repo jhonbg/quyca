@@ -128,11 +128,10 @@ def plot_annual_articles_open_access(affiliation_id: str, query_params: QueryPar
 
 def plot_annual_articles_by_top_publishers(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "source_project": ["publisher"],
-        "work_project": ["source", "year_published", "types"],
+        "work_project": ["source.name", "source.publisher.name", "source.id", "year_published", "types"],
         "match": {
             "types.type": {"$in": articles_types_list},
-            "source.publisher.name": {"$ne": float("nan")},
+            "source.publisher.name": {"$ne": None},
         },
     }
     works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
@@ -146,8 +145,7 @@ def plot_most_used_title_words(affiliation_id: str, query_params: QueryParams) -
 
 def plot_articles_by_publisher(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "source_project": ["publisher"],
-        "work_project": ["source"],
+        "work_project": ["source.id", "source.publisher.name", "source.name"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
@@ -198,8 +196,7 @@ def plot_articles_by_scienti_category(affiliation_id: str, query_params: QueryPa
 
 def plot_articles_by_scimago_quartile(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "source_project": ["ranking"],
-        "work_project": ["source", "date_published"],
+        "work_project": ["source.id", "source.name", "date_published", "source.ranking"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
@@ -209,8 +206,7 @@ def plot_articles_by_scimago_quartile(affiliation_id: str, query_params: QueryPa
 def plot_articles_by_publishing_institution(affiliation_id: str, query_params: QueryParams) -> dict:
     institution = affiliation_repository.get_affiliation_by_id(affiliation_id)
     pipeline_params = {
-        "source_project": ["publisher"],
-        "work_project": ["source"],
+        "work_project": ["source.id", "source.name", "source.publisher.name"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
@@ -233,6 +229,6 @@ def plot_institutional_coauthorship_network(affiliation_id: str, query_params: Q
 
 
 def plot_annual_apc_expenses(affiliation_id: str, query_params: QueryParams) -> dict:
-    pipeline_params = {"source_project": ["apc"], "work_project": ["source", "year_published"]}
+    pipeline_params = {"work_project": ["source.id", "source.name", "source.apc", "year_published"]}
     works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
     return bar_parser.parse_annual_apc_expenses(works)

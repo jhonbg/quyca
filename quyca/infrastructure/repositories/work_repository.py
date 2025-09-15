@@ -141,82 +141,90 @@ def get_search_works_available_filters(query_params: QueryParams, pipeline_param
 
 
 def get_works_available_filters(pipeline: list, query_params: QueryParams) -> dict:
-    set_product_filters(pipeline, query_params)
-    available_filters: dict = {}
-    product_types_pipeline = pipeline.copy() + [
-        {"$unwind": "$types"},
-        {"$project": {"types.provenance": 0}},
-        {"$group": {"_id": "$types.source", "types": {"$addToSet": "$types"}}},
-    ]
-    product_types = database["works"].aggregate(product_types_pipeline)
-    available_filters["product_types"] = list(product_types)
-    years_pipeline = pipeline.copy() + [
-        {"$match": {"year_published": {"$type": "number"}}},
-        {"$group": {"_id": None, "min_year": {"$min": "$year_published"}, "max_year": {"$max": "$year_published"}}},
-        {"$project": {"_id": 0, "min_year": 1, "max_year": 1}},
-    ]
-    years = database["works"].aggregate(years_pipeline)
-    available_filters["years"] = next(years, {"min_year": None, "max_year": None})
-    status_pipeline = pipeline.copy() + [
-        {"$group": {"_id": "$open_access.open_access_status"}},
-    ]
-    status = database["works"].aggregate(status_pipeline)
-    available_filters["status"] = list(status)
-    subjects_pipeline = pipeline.copy() + [
-        {"$unwind": "$subjects"},
-        {"$unwind": "$subjects.subjects"},
-        {"$match": {"subjects.subjects.level": {"$in": [0, 1]}}},
-        {"$group": {"_id": "$subjects.source", "subjects": {"$addToSet": "$subjects.subjects"}}},
-    ]
-    subjects = database["works"].aggregate(subjects_pipeline)
-    available_filters["subjects"] = list(next(subjects, {"subjects": []}).get("subjects"))  # type: ignore
-    countries_pipeline = pipeline.copy() + [
-        {"$unwind": "$authors"},
-        {"$unwind": "$authors.affiliations"},
-        {
-            "$group": {
-                "_id": "$authors.affiliations.country_code",
-            }
-        },
-    ]
-    countries = database["works"].aggregate(countries_pipeline)
-    available_filters["countries"] = list(countries)
-    groups_ranking_pipeline = pipeline.copy() + [
-        {"$unwind": "$groups"},
-        {"$group": {"_id": "$groups.ranking"}},
-    ]
-    groups_ranking = database["works"].aggregate(groups_ranking_pipeline)
-    available_filters["groups_ranking"] = list(groups_ranking)
-    authors_ranking_pipeline = pipeline.copy() + [
-        {"$unwind": "$authors"},
-        {"$group": {"_id": "$authors.ranking"}},
-    ]
-    authors_ranking = database["works"].aggregate(authors_ranking_pipeline)
-    available_filters["authors_ranking"] = list(authors_ranking)
+    """
+    This function builds and execute an aggregation pipeline to retrieve available filters.
 
-    topics_pipeline = pipeline.copy() + [
-        {"$match": {"primary_topic": {"$ne": {}}}},
-        {
-            "$group": {
-                "_id": {
-                    "id": "$primary_topic.id",
-                    "display_name": "$primary_topic.display_name",
+    Parameters
+    ----------
+    pipeline: list
+        List of agregation stages to filter the works before calculating available filters.
+    query_params: QueryParams
+        Query parameters containing the filters to apply.
+
+    Returns
+    -------
+    available_filters: dict
+        A dictionary with the different categories of available filters,
+        each one computed using a `$facet` stage in the aggregation:
+    """
+    set_product_filters(pipeline, query_params)
+    facet_stage = {
+        "$facet": {
+            "product_types": [
+                {"$unwind": "$types"},
+                {"$project": {"types.provenance": 0}},
+                {"$group": {"_id": "types.source", "types": {"$addToSet": "$types"}}},
+            ],
+            "years": [
+                {"$match": {"year_published": {"$type": "number"}}},
+                {
+                    "$group": {
+                        "_id": None,
+                        "min_year": {"$min": "$year_published"},
+                        "max_year": {"$max": "$year_published"},
+                    }
                 },
-                "count": {"$sum": 1},
-            }
-        },
-        {
-            "$project": {
-                "_id": 0,
-                "id": "$_id.id",
-                "display_name": "$_id.display_name",
-                "count": 1,
-            }
-        },
-        {"$sort": {"count": -1}},  # de mayor a menor
-    ]
-    topics = database["works"].aggregate(topics_pipeline)
-    available_filters["topics"] = list(topics)
+                {"$project": {"_id": 0, "min_year": 1, "max_year": 1}},
+            ],
+            "status": [
+                {"$group": {"_id": "$open_access.open_access_status"}},
+            ],
+            "subjects": [
+                {"$unwind": "$subjects"},
+                {"$unwind": "$subjects.subjects"},
+                {"$match": {"subjects.subjects.level": {"$in": [0, 1]}}},
+                {"$group": {"_id": "$subjects.source", "subjects": {"$addToSet": "$subjects.subjects"}}},
+            ],
+            "countries": [
+                {"$unwind": "$authors"},
+                {"$unwind": "$authors.affiliations"},
+                {"$group": {"_id": "$authors.affiliations.country_code"}},
+            ],
+            "groups_ranking": [
+                {"$unwind": "$groups"},
+                {"$group": {"_id": "$groups.ranking"}},
+            ],
+            "authors_ranking": [
+                {"$unwind": "$authors"},
+                {"$group": {"_id": "$authors.ranking"}},
+            ],
+            "topics": [
+                {"$match": {"primary_topic": {"$ne": {}}}},
+                {
+                    "$group": {
+                        "_id": {"id": "$primary_topic.id", "display_name": "$primary_topic.display_name"},
+                        "count": {"$sum": 1},
+                    }
+                },
+                {"$project": {"_id": 0, "id": "$_id.id", "display_name": "$_id.display_name", "count": 1}},
+                {"$sort": {"count": -1}},
+            ],
+        }
+    }
+
+    results = list(database["works"].aggregate(pipeline + [facet_stage]))[0]
+
+    available_filters = {
+        "product_types": results.get("product_types", []),
+        "years": results.get("years", [{}])[0] if results.get("years") else {"min_year": None, "max_year": None},
+        "status": results.get("status", []),
+        "subjects": results.get("subjects", []),
+        "countries": results.get("countries", []),
+        "groups_ranking": results.get("groups_ranking", []),
+        "authors_ranking": results.get("authors_ranking", []),
+        "topics": results.get("topics", []),
+    }
+
     return available_filters
 
 

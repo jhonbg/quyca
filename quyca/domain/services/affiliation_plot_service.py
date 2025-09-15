@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from pymongo.command_cursor import CommandCursor
 
 from quyca.domain.constants.articles_types import articles_types_list
@@ -18,37 +19,38 @@ from quyca.domain.parsers import (
 
 
 def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict | None:
+    """
+    Get the affiliation plot data based on the affiliation ID, type, and query parameters. Using a mapping that associates plot types to their corresponding functions and whether they require relation_type.
+    """
     plot_type = query_params.plot
-    plot_type_dict = {
-        "faculties_by_product_type": "faculty",
-        "departments_by_product_type": "department",
-        "research_groups_by_product_type": "group",
+
+    plot_map: dict[str, tuple[Callable, bool]] = {
+        "faculties_by_product_type": (plot_affiliations_by_product_type, True),
+        "departments_by_product_type": (plot_affiliations_by_product_type, True),
+        "research_groups_by_product_type": (plot_affiliations_by_product_type, True),
+        "citations_by_faculty": (plot_citations_by_affiliations, True),
+        "citations_by_department": (plot_citations_by_affiliations, True),
+        "citations_by_research_group": (plot_citations_by_affiliations, True),
+        "apc_expenses_by_faculty": (plot_apc_expenses_by_affiliation, True),
+        "apc_expenses_by_department": (plot_apc_expenses_by_affiliation, True),
+        "apc_expenses_by_group": (plot_apc_expenses_by_affiliation, True),
+        "h_index_by_faculty": (plot_h_index_by_affiliation, True),
+        "h_index_by_department": (plot_h_index_by_affiliation, True),
+        "h_index_by_research_group": (plot_h_index_by_affiliation, True),
     }
-    if plot_type in plot_type_dict.keys():
-        relation_type = plot_type_dict[plot_type]
-        return plot_affiliations_by_product_type(affiliation_id, affiliation_type, relation_type, query_params)
-    if plot_type in [
-        "citations_by_faculty",
-        "citations_by_department",
-        "citations_by_research_group",
-    ]:
-        relation_type = plot_type.split("_")[-1]
-        return plot_citations_by_affiliations(affiliation_id, affiliation_type, relation_type)
-    if plot_type in [
-        "apc_expenses_by_faculty",
-        "apc_expenses_by_department",
-        "apc_expenses_by_group",
-    ]:
-        relation_type = plot_type.split("_")[-1]
-        return plot_apc_expenses_by_affiliation(affiliation_id, affiliation_type, relation_type, query_params)
-    if plot_type in [
-        "h_index_by_faculty",
-        "h_index_by_department",
-        "h_index_by_research_group",
-    ]:
-        relation_type = plot_type.split("_")[-1]
-        return plot_h_index_by_affiliation(affiliation_id, affiliation_type, relation_type, query_params)
-    return globals()["plot_" + plot_type](affiliation_id, query_params)
+
+    if plot_type in plot_map:
+        func, need_relation = plot_map[plot_type]
+        relation_type = plot_type.split("_")[-1] if need_relation else None
+
+        if func is plot_affiliations_by_product_type:
+            return func(affiliation_id, affiliation_type, relation_type, query_params)
+        if func in (plot_apc_expenses_by_affiliation, plot_h_index_by_affiliation):
+            return func(affiliation_id, affiliation_type, relation_type, query_params)
+        if func is plot_citations_by_affiliations:
+            return func(affiliation_id, affiliation_type, relation_type)
+
+    return globals().get(f"plot_{plot_type}", lambda *_: None)(affiliation_id, query_params)
 
 
 def plot_affiliations_by_product_type(

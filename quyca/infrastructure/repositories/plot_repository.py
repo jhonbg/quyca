@@ -619,27 +619,25 @@ def get_works_rankings_by_person(person_id: str, query_params: QueryParams) -> T
     work_repository.set_product_filters(pipeline, query_params)
     pipeline += [
         {
-            "$lookup": {
-                "from": "sources",  # type: ignore
-                "localField": "source.id",  # type: ignore
-                "foreignField": "_id",  # type: ignore
-                "as": "source_data",  # type: ignore
-                "pipeline": [  # type: ignore
-                    {"$project": {"_id": 1, "ranking": 1}},
-                ],
+            "$project": {
+                "_id": 1,
+                "source.id": 1,
+                "date_published": 1,
+                "source.ranking": 1,
             }
         },
-        {"$unwind": "$source_data"},  # type: ignore
-        {"$project": {"_id": 1, "source_data": 1, "date_published": 1}},  # type: ignore
     ]
     count_pipeline = [
         {"$match": {"authors.id": person_id}},
     ]
     work_repository.set_product_filters(count_pipeline, query_params)
+
     count_pipeline += [
-        {"$count": "total_results"},  # type: ignore
+        {"$count": "total_results"},
     ]
+
     total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
+
     works = database["works"].aggregate(pipeline)
     return work_generator.get(works), total_results
 

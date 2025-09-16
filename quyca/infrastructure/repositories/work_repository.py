@@ -137,6 +137,7 @@ def get_works_available_filters_by_affiliation(affiliation_id: str, query_params
 
 def get_search_works_available_filters(query_params: QueryParams, pipeline_params: dict | None = None) -> dict:
     pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    set_product_filters(pipeline, query_params)
     return get_works_available_filters(pipeline, query_params)
 
 
@@ -157,13 +158,12 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
         A dictionary with the different categories of available filters,
         each one computed using a `$facet` stage in the aggregation:
     """
-    set_product_filters(pipeline, query_params)
     facet_stage = {
         "$facet": {
             "product_types": [
                 {"$unwind": "$types"},
                 {"$project": {"types.provenance": 0}},
-                {"$group": {"_id": "types.source", "types": {"$addToSet": "$types"}}},
+                {"$group": {"_id": "$types.source", "types": {"$addToSet": "$types"}}},
             ],
             "years": [
                 {"$match": {"year_published": {"$type": "number"}}},
@@ -180,23 +180,38 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
                 {"$group": {"_id": "$open_access.open_access_status"}},
             ],
             "subjects": [
+                {"$project": {"subjects.source": 1, "subjects.subjects.name": 1, "subjects.subjects.level": 1}},
                 {"$unwind": "$subjects"},
                 {"$unwind": "$subjects.subjects"},
                 {"$match": {"subjects.subjects.level": {"$in": [0, 1]}}},
-                {"$group": {"_id": "$subjects.source", "subjects": {"$addToSet": "$subjects.subjects"}}},
+                {
+                    "$group": {
+                        "_id": "$subjects.source",
+                        "subjects": {
+                            "$addToSet": {"name": "$subjects.subjects.name", "level": "$subjects.subjects.level"}
+                        },
+                    }
+                },
             ],
             "countries": [
                 {"$unwind": "$authors"},
                 {"$unwind": "$authors.affiliations"},
-                {"$group": {"_id": "$authors.affiliations.country_code"}},
+                {
+                    "$group": {
+                        "_id": "$authors.affiliations.country_code",
+                    }
+                },
             ],
             "groups_ranking": [
-                {"$unwind": "$groups"},
-                {"$group": {"_id": "$groups.ranking"}},
+                {"$project": {"ranking": "$groups.ranking"}},
+                {"$unwind": "$ranking"},
+                {"$group": {"_id": "$ranking"}},
             ],
             "authors_ranking": [
                 {"$unwind": "$authors"},
-                {"$group": {"_id": "$authors.ranking"}},
+                {"$unwind": "$authors.ranking"},
+                {"$project": {"rank": "$authors.ranking.rank", "id": "$authors.ranking.id"}},
+                {"$group": {"_id": {"id": "$id", "rank": "$rank"}}},
             ],
             "topics": [
                 {"$match": {"primary_topic": {"$ne": {}}}},

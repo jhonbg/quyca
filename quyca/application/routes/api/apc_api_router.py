@@ -18,29 +18,17 @@ def apc_search() -> Response | Tuple[Response, int]:
         pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
         pipeline += [
             {
-                "$lookup": {
-                    "from": "sources",
-                    "localField": "source.id",
-                    "foreignField": "_id",
-                    "as": "source_data",
-                    "pipeline": [
-                        {"$project": {"_id": 0, "apc": 1, "names": 1}},
-                    ],
-                }
-            },
-            {"$unwind": "$source_data"},
-            {
                 "$project": {
                     "_id": 0,
                     "work_doi": "$doi",
                     "work_title": {"$first": "$titles.title"},
-                    "source_name": {"$first": "$source_data.names.name"},
-                    "source_apc_value": "$source_data.apc.charges",
-                    "source_apc_currency": "$source_data.apc.currency",
+                    "source_name": "$source.name",
+                    "source_apc_value": "$source.apc.charges",
+                    "source_apc_currency": "$source.apc.currency",
                     "work_apc_currency": "$apc.paid.currency",
                     "work_apc_value": "$apc.paid.value",
                 }
-            },
+            }
         ]
         data = database["works"].aggregate(pipeline)
         fieldnames = [
@@ -59,7 +47,7 @@ def apc_search() -> Response | Tuple[Response, int]:
         writer.writerows(data)
         data = output.getvalue()
         response = Response(data, content_type="text/csv")
-        response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
+        response.headers["Content-Disposition"] = "attachment; filename=search.csv"
         return response
     except Exception as e:
         capture_exception(e)
@@ -72,31 +60,21 @@ def apc_person(person_id: str) -> Response | Tuple[Response, int]:
         pipeline = [
             {"$match": {"authors.id": person_id}},
             {
-                "$lookup": {
-                    "from": "sources",  # type: ignore
-                    "localField": "source.id",  # type: ignore
-                    "foreignField": "_id",  # type: ignore
-                    "as": "source_data",  # type: ignore
-                    "pipeline": [  # type: ignore
-                        {"$project": {"_id": 0, "apc": 1, "names": 1}},
-                    ],  # type: ignore
-                }
-            },
-            {"$unwind": "$source_data"},  # type: ignore
-            {
                 "$project": {
                     "_id": 0,
                     "work_doi": "$doi",
-                    "work_title": {"$first": "$titles.title"},  # type: ignore
-                    "source_name": {"$first": "$source_data.names.name"},  # type: ignore
-                    "source_apc_value": "$source_data.apc.charges",
-                    "source_apc_currency": "$source_data.apc.currency",
+                    "work_title": {"$first": "$titles.title"},
+                    "source_name": "$source.name",
+                    "source_apc_value": "$source.apc.charges",
+                    "source_apc_currency": "$source.apc.currency",
                     "work_apc_currency": "$apc.paid.currency",
                     "work_apc_value": "$apc.paid.value",
                 }
             },
         ]
+
         data = database["works"].aggregate(pipeline)
+
         fieldnames = [
             "work_doi",
             "work_title",
@@ -106,15 +84,23 @@ def apc_person(person_id: str) -> Response | Tuple[Response, int]:
             "work_apc_value",
             "work_apc_currency",
         ]
+
         data = list(data)
         output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=fieldnames, escapechar="\\", quoting=csv.QUOTE_MINIMAL)
+        writer = csv.DictWriter(
+            output,
+            fieldnames=fieldnames,
+            escapechar="\\",
+            quoting=csv.QUOTE_MINIMAL,
+        )
         writer.writeheader()
         writer.writerows(data)
+
         data = output.getvalue()
         response = Response(data, content_type="text/csv")
-        response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
+        response.headers["Content-Disposition"] = "attachment; filename=person.csv"
         return response
+
     except Exception as e:
         capture_exception(e)
         return jsonify({"error": str(e)}), 400
@@ -125,25 +111,14 @@ def apc_affiliation(affiliation_id: str) -> Response | Tuple[Response, int]:
     try:
         pipeline = [
             {"$match": {"authors.affiliations.id": affiliation_id}},
-            {"$project": {"doi": 1, "titles": 1, "source.id": 1, "apc": 1}},
-            {
-                "$lookup": {
-                    "from": "sources",
-                    "localField": "source.id",
-                    "foreignField": "_id",
-                    "as": "source_data",
-                    "pipeline": [{"$project": {"apc": 1, "names": 1}}],
-                }
-            },
-            {"$set": {"source_data": {"$first": "$source_data"}}},
             {
                 "$project": {
                     "_id": 0,
                     "work_doi": "$doi",
                     "work_title": {"$first": "$titles.title"},
-                    "source_name": {"$first": "$source_data.names.name"},
-                    "source_apc_value": "$source_data.apc.charges",
-                    "source_apc_currency": "$source_data.apc.currency",
+                    "source_name": "$source.name",
+                    "source_apc_value": "$source.apc.charges",
+                    "source_apc_currency": "$source.apc.currency",
                     "work_apc_currency": "$apc.paid.currency",
                     "work_apc_value": "$apc.paid.value",
                 }

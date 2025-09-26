@@ -1,5 +1,7 @@
-def get_works_h_index_by_scholar_citations(works: list) -> int:
-    citations = sorted([work.get("scholar_citations_count") for work in works], reverse=True)
+def get_works_h_index_by_scholar_citations(distribution: list[int]) -> int:
+    if not distribution:
+        return 0
+    citations = sorted(distribution, reverse=True)
     h_index = 0
     for i, cites in enumerate(citations):
         current_index = i + 1

@@ -1,6 +1,5 @@
 from typing import Generator
 
-
 from quyca.infrastructure.generators import work_generator
 from quyca.domain.models.base_model import QueryParams
 from quyca.infrastructure.repositories import base_repository, work_repository
@@ -48,58 +47,40 @@ def get_works_for_api_expert(pipeline: list, pipeline_params: dict, query_params
 
     pipeline += [
         {
-            "$lookup": {
-                "from": "person",
-                "localField": "authors.id",
-                "foreignField": "_id",
-                "as": "authors_data",
-                "pipeline": [
-                    {
-                        "$project": {
-                            "id": "$_id",
-                            "sex": 1,
-                            "birthplace.country": 1,
-                            "birthdate": 1,
-                            "first_names": 1,
-                            "last_names": 1,
-                            "affiliations.id": 1,
-                            "affiliations.start_date": 1,
-                            "affiliations.end_date": 1,
-                            "affiliations.name": 1,
-                            "affiliations.types": 1,
-                            "ranking": 1,
-                            "external_ids": 1,
+            "$project": {
+                "_id": 1,
+                "titles": 1,
+                "year_published": 1,
+                "doi": 1,
+                "authors": {
+                    "id": 1,
+                    "full_name": 1,
+                    "sex": 1,
+                    "first_names": 1,
+                    "last_names": 1,
+                    "external_ids": 1,
+                    "ranking": 1,
+                    "affiliations": {
+                        "$map": {
+                            "input": "$authors.affiliations",
+                            "as": "aff",
+                            "in": {
+                                "id": "$$aff.id",
+                                "name": "$$aff.name",
+                                "types": "$$aff.types",
+                                "addresses": "$$aff.addresses",
+                                "external_ids": "$$aff.external_ids",
+                            },
                         }
                     },
-                ],
-            }
-        },
-        {
-            "$lookup": {
-                "from": "sources",
-                "localField": "source.id",
-                "foreignField": "_id",
-                "as": "source_data",
-                "pipeline": [
-                    {
-                        "$project": {
-                            "names": 1,
-                            "id": "$_id",
-                            "types": 1,
-                            "external_ids": 1,
-                            "updated": 1,
-                        }
-                    }
-                ],
-            }
-        },
-        {
-            "$lookup": {
-                "from": "affiliations",
-                "localField": "authors.affiliations.id",
-                "foreignField": "_id",
-                "as": "affiliations_data",
-                "pipeline": [{"$project": {"id": "$_id", "addresses": 1, "external_ids": 1}}],
+                },
+                "source": {
+                    "id": 1,
+                    "name": 1,
+                    "types": 1,
+                    "external_ids": 1,
+                    "updated": 1,
+                },
             },
         },
     ]

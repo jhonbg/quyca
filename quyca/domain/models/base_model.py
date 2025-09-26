@@ -239,6 +239,15 @@ class Author(BaseModel):
             )
         )
 
+    @field_validator("affiliations", mode="before")
+    @classmethod
+    def ensure_list_affiliations(cls, value):
+        if value is None:
+            return []
+        if isinstance(value, dict):
+            return [value]
+        return value
+
     @model_validator(mode="after")
     def compute_age_and_remove_birthdate(self):
         if self.birthdate:
@@ -260,6 +269,8 @@ class Author(BaseModel):
 class Group(BaseModel):
     id: str | None = None
     name: str | None
+    ranking: str | None = None
+    citations_count: list[CitationsCount] | None = None
 
     class Config:
         json_encoders = {ObjectId: str}

@@ -24,15 +24,22 @@ def get_person_by_id(person_id: str, pipeline_params: dict = {}) -> Person:
             }
         },
         {
-            "$lookup": {
-                "from": "affiliations",
-                "localField": "filtered_affiliations.id",
-                "foreignField": "_id",
-                "as": "affiliations_data",
-                "pipeline": [
-                    {"$match": {"external_urls.source": "logo"}},
-                    {"$project": {"_id": 0, "external_urls": 1}},
-                ],
+            "$addFields": {
+                "affiliations_data": {
+                    "$map": {
+                        "input": "$filtered_affiliations",
+                        "as": "filtered_aff",
+                        "in": {
+                            "external_urls": {
+                                "$filter": {
+                                    "input": "$$filtered_aff.external_urls",
+                                    "as": "external_url",
+                                    "cond": {"$eq": ["$$external_url.source", "logo"]},
+                                }
+                            }
+                        },
+                    }
+                }
             }
         },
     ]
@@ -46,7 +53,7 @@ def get_person_by_id(person_id: str, pipeline_params: dict = {}) -> Person:
     return Person(**person_data)
 
 
-def get_persons_by_affiliation(affiliation_id: str) -> list:
+def get_persons_by_affiliation(affiliation_id: str) -> Generator:
     pipeline = [
         {"$match": {"affiliations.id": affiliation_id}},
         {"$sort": {"products_count": -1}},
@@ -73,15 +80,22 @@ def search_persons(query_params: QueryParams, pipeline_params: dict | None = Non
             }
         },
         {
-            "$lookup": {
-                "from": "affiliations",  # type: ignore
-                "localField": "filtered_affiliations.id",  # type: ignore
-                "foreignField": "_id",  # type: ignore
-                "as": "affiliations_data",  # type: ignore
-                "pipeline": [  # type: ignore
-                    {"$match": {"external_urls.source": "logo"}},
-                    {"$project": {"_id": 0, "external_urls": 1}},
-                ],
+            "$addFields": {
+                "affiliations_data": {
+                    "$map": {
+                        "input": "$filtered_affiliations",
+                        "as": "filtered_aff",
+                        "in": {
+                            "external_urls": {
+                                "$filter": {
+                                    "input": "$$filtered_aff.external_urls",
+                                    "as": "external_url",
+                                    "cond": {"$eq": ["$$external_url.source", "logo"]},
+                                }
+                            }
+                        },
+                    }
+                }
             }
         },
     ]
@@ -89,7 +103,7 @@ def search_persons(query_params: QueryParams, pipeline_params: dict | None = Non
     persons = database["person"].aggregate(pipeline)
     count_pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
     count_pipeline += [
-        {"$count": "total_results"},  # type: ignore
+        {"$count": "total_results"},
     ]
     total_results = next(database["person"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
     return person_generator.get(persons), total_results

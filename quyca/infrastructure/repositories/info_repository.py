@@ -14,8 +14,10 @@ def get_entity_count(entity: str, affiliation_type: str | None = None) -> int:
         return database[entity].count_documents({"types.type": affiliation_type})
     return database[entity].estimated_document_count({})
 
+
 def get_open_access_count() -> int:
     return database["works"].count_documents({"open_access.is_open_access": True})
+
 
 def get_news_count() -> int:
     return database["news_urls_collection"].estimated_document_count({})

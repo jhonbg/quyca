@@ -35,7 +35,7 @@ def set_sort(sort: str | None, pipeline: list) -> None:
     sort_field, direction_str = sort.split("_")
     direction = -1 if direction_str == "desc" else 1
     if sort_field == "citations":
-        sort_field = "openalex_citations_count"
+        sort_field = "citations_count_openalex"
     elif sort_field == "alphabetical":
         pipeline += [
             {

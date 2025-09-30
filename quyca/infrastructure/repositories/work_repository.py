@@ -129,9 +129,7 @@ def get_works_available_filters_by_person(person_id: str, query_params: QueryPar
 
 
 def get_works_available_filters_by_affiliation(affiliation_id: str, query_params: QueryParams) -> dict:
-    pipeline = [
-        {"$match": {"authors.affiliations.id": affiliation_id}},
-    ]
+    pipeline = [{"$match": {"authors.affiliations.id": affiliation_id}}]
     return get_works_available_filters(pipeline, query_params)
 
 
@@ -158,11 +156,41 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
         A dictionary with the different categories of available filters,
         each one computed using a `$facet` stage in the aggregation:
     """
+    pipeline += [
+        {
+            "$project": {
+                "types": 1,
+                "year_published": 1,
+                "open_access.open_access_status": 1,
+                "subjects": {
+                    "$map": {
+                        "input": "$subjects",
+                        "as": "s",
+                        "in": {
+                            "source": "$$s.source",
+                            "subjects": {
+                                "$filter": {
+                                    "input": "$$s.subjects",
+                                    "as": "subj",
+                                    "cond": {"$in": ["$$subj.level", [0, 1]]},
+                                }
+                            },
+                        },
+                    }
+                },
+                "authors.affiliations.id": 1,
+                "authors.affiliations.addresses.country_code": 1,
+                "groups.ranking": 1,
+                "authors.ranking": 1,
+                "primary_topic": 1,
+            }
+        }
+    ]
+
     facet_stage = {
         "$facet": {
             "product_types": [
                 {"$unwind": "$types"},
-                {"$project": {"types.provenance": 0}},
                 {"$group": {"_id": "$types.source", "types": {"$addToSet": "$types"}}},
             ],
             "years": [
@@ -183,7 +211,6 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
                 {"$project": {"subjects.source": 1, "subjects.subjects.name": 1, "subjects.subjects.level": 1}},
                 {"$unwind": "$subjects"},
                 {"$unwind": "$subjects.subjects"},
-                {"$match": {"subjects.subjects.level": {"$in": [0, 1]}}},
                 {
                     "$group": {
                         "_id": "$subjects.source",
@@ -194,13 +221,10 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
                 },
             ],
             "countries": [
-                {"$unwind": "$authors"},
-                {"$unwind": "$authors.affiliations"},
-                {
-                    "$group": {
-                        "_id": "$authors.affiliations.country_code",
-                    }
-                },
+                {"$project": {"country_codes": "$authors.affiliations.addresses.country_code"}},
+                {"$unwind": "$country_codes"},
+                {"$unwind": "$country_codes"},
+                {"$group": {"_id": "$country_codes"}},
             ],
             "groups_ranking": [
                 {"$project": {"ranking": "$groups.ranking"}},
@@ -210,11 +234,10 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
             "authors_ranking": [
                 {"$unwind": "$authors"},
                 {"$unwind": "$authors.ranking"},
-                {"$project": {"rank": "$authors.ranking.rank", "id": "$authors.ranking.id"}},
-                {"$group": {"_id": {"id": "$id", "rank": "$rank"}}},
+                {"$group": {"_id": {"id": "$authors.ranking.id", "rank": "$authors.ranking.rank"}}},
             ],
             "topics": [
-                {"$match": {"primary_topic": {"$ne": {}}}},
+                {"$match": {"primary_topic.id": {"$exists": True}}},
                 {
                     "$group": {
                         "_id": {"id": "$primary_topic.id", "display_name": "$primary_topic.display_name"},

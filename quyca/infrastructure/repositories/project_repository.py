@@ -11,7 +11,7 @@ from quyca.domain.exceptions.not_entity_exception import NotEntityException
 
 
 def get_project_by_id(project_id: str) -> Project:
-    project = database["projects"].find_one(ObjectId(project_id))
+    project = database["projects"].find_one({"_id": ObjectId(project_id)})
     if not project:
         raise NotEntityException(f"The project with id {project_id} does not exist.")
     return Project(**project)

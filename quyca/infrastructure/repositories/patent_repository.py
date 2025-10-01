@@ -11,7 +11,7 @@ from quyca.domain.exceptions.not_entity_exception import NotEntityException
 
 
 def get_patent_by_id(patent_id: str) -> Patent:
-    patent = database["patents"].find_one(ObjectId(patent_id))
+    patent = database["patents"].find_one({"_id": ObjectId(patent_id)})
     if not patent:
         raise NotEntityException(f"The patent with id {patent_id} does not exist.")
     return Patent(**patent)

@@ -1,5 +1,5 @@
 from typing import Generator, Tuple
-
+from bson import ObjectId
 
 from quyca.infrastructure.generators import person_generator
 from quyca.domain.models.base_model import QueryParams
@@ -10,8 +10,20 @@ from quyca.infrastructure.mongo import database
 
 
 def get_person_by_id(person_id: str, pipeline_params: dict = {}) -> Person:
+    old_id = None
+    try:
+        old_id = ObjectId(person_id)
+    except Exception:
+        pass
+
+    match_stage = {
+        "$match": {
+            "$or": [{"_id": person_id}] + ([{"_id_old": old_id}] if old_id else [])
+        }
+    }
+
     pipeline = [
-        {"$match": {"_id": person_id}},
+        match_stage,
         {
             "$addFields": {
                 "filtered_affiliations": {

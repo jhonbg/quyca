@@ -13,6 +13,8 @@ def get_info() -> dict:
         "total_groups": info_repository.get_entity_count("affiliations", "group"),
         "total_patents": info_repository.get_entity_count("patents"),
         "total_projects": info_repository.get_entity_count("projects"),
-        "total_other_products": info_repository.get_entity_count("works_misc"),
         "total_authors": info_repository.get_entity_count("person"),
+        "total_news": info_repository.get_news_count(),
+        "total_open_access": info_repository.get_open_access_count(),
+        "total_sources": info_repository.get_entity_count("sources"),
     }

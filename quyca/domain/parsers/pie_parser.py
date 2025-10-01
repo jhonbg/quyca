@@ -37,26 +37,31 @@ def parse_citations_by_affiliations(data: CommandCursor) -> list:
 
 @get_percentage
 def parse_apc_expenses_by_affiliations(data: CommandCursor) -> list:
-    result: defaultdict = defaultdict(int)
+    result: defaultdict[str, int] = defaultdict(int)
     currency_converter = CurrencyConverter()
+
     for item in data:
-        apc_charges = item.get("source").get("apc").get("charges", 0)
-        apc_currency = item.get("source").get("apc").get("currency", "USD")
+        apc = item.get("apc", {})
+        apc_charges = apc.get("charges", 0)
+        apc_currency = apc.get("currency", "USD")
         if apc_currency in ["IRR", "NGN"]:
             continue
         usd_charges = currency_converter.convert(apc_charges, apc_currency, "USD")
         result[item.get("names", [{"name": "No name"}])[0].get("name")] += int(usd_charges)
-    plot = []
-    for name, value in result.items():
-        plot.append({"name": name, "value": value})
-    return sorted(plot, key=lambda x: x.get("value"), reverse=True)
+
+    return sorted([{"name": n, "value": v} for n, v in result.items()], key=lambda x: x["value"], reverse=True)
 
 
 @get_percentage
 def parse_h_index_by_affiliation(data: CommandCursor) -> list:
     plot = []
     for item in data:
-        plot.append({"name": item.get("name"), "value": get_works_h_index_by_scholar_citations(item.get("works"))})
+        plot.append(
+            {
+                "name": item.get("name"),
+                "value": get_works_h_index_by_scholar_citations(item.get("scholar_distribution")),
+            }
+        )
     return sorted(plot, key=lambda x: x.get("value"), reverse=True)
 
 
@@ -161,10 +166,11 @@ def parse_articles_by_scimago_quartile(works: Generator) -> list:
     total_articles = 0
     for work in works:
         total_articles += 1
-        work_date = work.date_published
+        work_date = getattr(work, "date_published", None)
         if not work_date:
             continue
-        for ranking in work.source.ranking:
+        source_rankings = getattr(work.source, "ranking", None) or []
+        for ranking in source_rankings:
             if (
                 ranking.source in valid_sources
                 and ranking.rank != "-"

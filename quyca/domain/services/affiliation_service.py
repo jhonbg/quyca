@@ -52,6 +52,7 @@ def search_affiliations(affiliation_type: str, query_params: QueryParams) -> dic
             "_id",
             "names",
             "addresses.country_code",
+            "addresses.country",
             "external_ids",
             "external_urls",
             "relations",

@@ -16,7 +16,7 @@ def parse_search_result(sources: List) -> List:
         A list of dictionaries containing the relevant fields from each source entity.
     """
     source_fields = [
-        "_id",
+        "id",
         "updated",
         "names",
         "abbreviations",

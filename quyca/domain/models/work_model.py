@@ -87,7 +87,7 @@ class Work(BaseModel):
     abstracts: list[Abstract] | None = None
     apc: APC | None = Field(default_factory=APC)
     authors_count: int | None = Field(default_factory=int, alias="author_count")
-    authors: list[AutorWork] | str | None = Field(default_factory=list[AutorWork])
+    authors: list[Author] = Field(default_factory=list)
     bibliographic_info: BiblioGraphicInfo | None = None
     citations: list | None = Field(default_factory=list)
     citations_by_year: list[CitationByYear] | None = None

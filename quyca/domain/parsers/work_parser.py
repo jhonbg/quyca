@@ -121,10 +121,20 @@ def parse_available_filters(filters: dict) -> dict:
 
 def parse_authors_ranking_filter(authors_ranking: list) -> list:
     parsed_authors_ranking = []
+
     for ranking in authors_ranking:
-        if ranking.get("_id"):
-            parsed_authors_ranking.append({"value": ranking.get("_id"), "label": ranking.get("_id")})
-    parsed_authors_ranking.sort(key=lambda x: x.get("label"))  # type: ignore
+        _id = ranking.get("_id")
+
+        if isinstance(_id, dict):
+            label = (_id.get("rank") or "").strip()
+            if label:
+                parsed_authors_ranking.append({"value": label, "label": label})
+        elif _id:
+            label = str(_id).strip()
+            if label:
+                parsed_authors_ranking.append({"value": label, "label": label})
+
+    parsed_authors_ranking.sort(key=lambda x: x.get("label") or "")
     return parsed_authors_ranking
 
 
@@ -132,8 +142,8 @@ def parse_groups_ranking_filter(groups_ranking: list) -> list:
     parsed_groups_ranking = []
     for ranking in groups_ranking:
         if ranking.get("_id"):
-            parsed_groups_ranking.append({"value": ranking.get("_id"), "label": ranking.get("_id")})
-    parsed_groups_ranking.sort(key=lambda x: x.get("label"))  # type: ignore
+            parsed_groups_ranking.append({"value": ranking.get("_id") or "", "label": ranking.get("_id") or ""})
+    parsed_groups_ranking.sort(key=lambda x: x.get("label") or "")  # type: ignore
     return parsed_groups_ranking
 
 
@@ -157,25 +167,29 @@ def parse_country_filter(countries: list) -> list:
             parsed_countries.append(
                 {"value": country.get("_id"), "label": countries_iso.countries_dict.get(country.get("_id"), "Sin País")}
             )
-    parsed_countries.sort(key=lambda x: x.get("label"))  # type: ignore
+    parsed_countries.sort(key=lambda x: x.get("label") or "")
     return parsed_countries
 
 
 def parse_subject_filter(subjects: list) -> list:
+    groups = {
+        0: {"value": "0", "title": "Gran área de conocimiento", "children": []},
+        1: {"value": "1", "title": "Áreas de especialidad", "children": []},
+    }
+
+    for entry in subjects:
+        for subject in entry.get("subjects", []):
+            level = subject.get("level")
+            name = subject.get("name")
+            if level in groups and name:
+                groups[level]["children"].append({"value": f"{level}_{name}", "title": name})
+
     parsed_subjects = []
-    first_level_children = []
-    second_level_children = []
-    for subject in subjects:
-        if subject.get("level") == 0:
-            first_level_children.append({"value": "0_" + subject.get("name"), "title": subject.get("name")})
-        elif subject.get("level") == 1:
-            second_level_children.append({"value": "1_" + subject.get("name"), "title": subject.get("name")})
-    if len(first_level_children) > 0:
-        first_level_children.sort(key=lambda x: x.get("title"))  # type: ignore
-        parsed_subjects.append({"value": "0", "title": "Gran área de conocimiento", "children": first_level_children})  # type: ignore
-    if len(second_level_children) > 0:
-        second_level_children.sort(key=lambda x: x.get("title"))  # type: ignore
-        parsed_subjects.append({"value": "1", "title": "Áreas de especialidad", "children": second_level_children})  # type: ignore
+    for level, group in groups.items():
+        if group["children"]:
+            group["children"].sort(key=lambda x: x["title"])
+            parsed_subjects.append(group)
+
     return parsed_subjects
 
 
@@ -192,9 +206,9 @@ def parse_status_filter(status: list) -> list:
         else:
             statuses.append({"value": "closed", "title": "Cerrado"})
     if len(open_children) > 0:
-        open_children.sort(key=lambda x: x.get("title"))  # type: ignore
+        open_children.sort(key=lambda x: x.get("title") or "")  # type: ignore
         statuses.append({"value": "open", "title": "Abierto", "children": open_children})  # type: ignore
-    statuses.sort(key=lambda x: x.get("title"))  # type: ignore
+    statuses.sort(key=lambda x: x.get("title") or "")  # type: ignore
     return statuses
 
 
@@ -247,8 +261,8 @@ def parse_product_type_filter(product_types: list) -> list:
                             "code": inner_type.get("code"),
                         }
                     )
-            second_level_children.sort(key=lambda x: x.get("title"))  # type: ignore
-            third_level_children.sort(key=lambda x: x.get("title"))  # type: ignore
+            second_level_children.sort(key=lambda x: x.get("title") or "")
+            third_level_children.sort(key=lambda x: x.get("title") or "")
             for child in second_level_children:
                 child["children"] = list(
                     filter(lambda x: str(x.get("code")).startswith(str(child.get("code"))), third_level_children)
@@ -265,7 +279,7 @@ def parse_product_type_filter(product_types: list) -> list:
                         "title": inner_type.get("type"),
                     }
                 )
-        children.sort(key=lambda x: x.get("title"))  # type: ignore
+        children.sort(key=lambda x: x.get("title") or "")
         types.append(
             {
                 "value": product_type.get("_id"),

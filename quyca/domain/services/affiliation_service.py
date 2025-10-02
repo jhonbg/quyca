@@ -1,4 +1,4 @@
-from quyca.domain.models.base_model import ExternalUrl, QueryParams
+from quyca.domain.models.base_model import QueryParams
 from quyca.domain.constants.institutions import institutions_list
 from quyca.domain.parsers import affiliation_parser
 from quyca.domain.models.affiliation_model import Affiliation, Relation

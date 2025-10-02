@@ -14,7 +14,9 @@ def get_works_by_person(person_id: str, query_params: QueryParams) -> dict:
 def get_works_by_affiliation(affiliation_id: str, query_params: QueryParams, affiliation_type: str) -> dict:
     if affiliation_type == "institution":
         affiliation_type = "education"
-    works = api_expert_repository.get_works_by_affiliation_for_api_expert(affiliation_id, query_params, affiliation_type)
+    works = api_expert_repository.get_works_by_affiliation_for_api_expert(
+        affiliation_id, query_params, affiliation_type
+    )
     data = process_works(works)
     return {"data": data}
 

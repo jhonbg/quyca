@@ -88,9 +88,6 @@ def set_relation_external_urls(affiliation: Affiliation) -> None:
 
 
 def set_upper_affiliations_and_logo(affiliation: Affiliation, affiliation_type: str) -> None:
-    if not affiliation.relations:
-        return
-
     if affiliation_type == "institution" and affiliation.external_urls:
         logo_url = next(
             (x.url for x in affiliation.external_urls if x.source == "logo"),
@@ -99,6 +96,10 @@ def set_upper_affiliations_and_logo(affiliation: Affiliation, affiliation_type: 
         affiliation.logo = str(logo_url)
 
     upper_affiliations = []
+    if not affiliation.relations:
+        affiliation.affiliations = []
+        return
+
     for relation in affiliation.relations:
         if not relation.types:
             continue

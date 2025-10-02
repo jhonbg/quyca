@@ -16,11 +16,7 @@ def get_person_by_id(person_id: str, pipeline_params: dict = {}) -> Person:
     except Exception:
         pass
 
-    match_stage = {
-        "$match": {
-            "$or": [{"_id": person_id}] + ([{"_id_old": old_id}] if old_id else [])
-        }
-    }
+    match_stage = {"$match": {"$or": [{"_id": person_id}] + ([{"_id_old": old_id}] if old_id else [])}}
 
     pipeline = [
         match_stage,

@@ -9,13 +9,14 @@ from quyca.infrastructure.mongo import database
 def get_works_by_affiliation_for_api_expert(
     affiliation_id: str,
     query_params: QueryParams,
+    affiliation_type: str,
     pipeline_params: dict | None = None,
 ) -> Generator:
     if pipeline_params is None:
         pipeline_params = {}
     pipeline = [
         {
-            "$match": {"authors.affiliations.id": affiliation_id},
+            "$match": {"authors.affiliations.id": affiliation_id, "authors.affiliations.types.type": affiliation_type},
         }
     ]
     return get_works_for_api_expert(pipeline, pipeline_params, query_params)

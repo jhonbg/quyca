@@ -88,6 +88,7 @@ class Work(BaseModel):
     apc: APC | None = Field(default_factory=APC)
     authors_count: int | None = Field(default_factory=int, alias="author_count")
     authors: list[Author] = Field(default_factory=list)
+    authors_csv: str | None = None
     bibliographic_info: BiblioGraphicInfo | None = None
     citations: list | None = Field(default_factory=list)
     citations_by_year: list[CitationByYear] | None = None
@@ -139,7 +140,8 @@ class Work(BaseModel):
     title: str | None = None
     volume: str | int | None = None
     topics: list[Topic] | None = None
-    primary_topic: Topic | str | None = None
+    primary_topic: Topic | None = None
+    primary_topic_csv: str | None = None
 
     class Config:
         json_encoders = {ObjectId: str}

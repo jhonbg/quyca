@@ -129,7 +129,7 @@ def get_affiliation_research_products_filters(
 def get_works_csv_by_affiliation(affiliation_type: str, affiliation_id: str) -> Response | Tuple[Response, int]:
     try:
         query_params = QueryParams(**request.args)
-        data = csv_service.get_works_csv_by_affiliation(affiliation_id, query_params)
+        data = csv_service.get_works_csv_by_affiliation(affiliation_id, query_params, affiliation_type)
         response = Response(data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=affiliation.csv"
         return response

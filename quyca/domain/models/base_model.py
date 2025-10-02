@@ -298,3 +298,10 @@ class Topic(TopicBase):
     field: TopicBase | None = None
     domain: TopicBase | None = None
     score: float | None = None
+
+    @field_validator("subfield", "field", "domain", mode="before")
+    def normalize_subobjects(cls, value):
+        # Sometimes these fields come as unknown strings
+        if isinstance(value, str):
+            return None
+        return value

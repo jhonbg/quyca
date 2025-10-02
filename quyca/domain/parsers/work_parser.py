@@ -11,8 +11,7 @@ def parse_csv(works: list) -> str:
     include = [
         "title",
         "language",
-        "abstract",
-        "authors",
+        "authors_csv",
         "institutions",
         "faculties",
         "departments",
@@ -31,7 +30,7 @@ def parse_csv(works: list) -> str:
         "openalex_citations_count",
         "scholar_citations_count",
         "subjects",
-        "primary_topic",
+        "primary_topic_csv",
         "year_published",
         "doi",
         "publisher",

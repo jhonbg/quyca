@@ -9,13 +9,19 @@ from quyca.infrastructure.repositories import person_repository
 
 
 def set_title_and_language(workable: Work | Patent | Project) -> None:
+    if not workable.titles:
+        workable.title = None
+        workable.language = None
+        return
+
+    hierarchy = ["openalex", "scienti", "minciencias", "ranking", "scholar"]
+
     def order(title: Title) -> float:
-        hierarchy = ["openalex", "scienti", "minciencias", "ranking", "scholar"]
         return hierarchy.index(title.source) if title.source in hierarchy else float("inf")
 
-    first_title = sorted(workable.titles, key=order)[0]
-    workable.language = first_title.lang
+    first_title = min(workable.titles, key=order)
     workable.title = first_title.title
+    workable.language = first_title.lang
 
 
 def set_product_types(workable: Work | Patent | Project) -> None:

@@ -12,10 +12,7 @@ from domain.exceptions.not_entity_exception import NotEntityException
 
 
 def get_affiliation_by_id(affiliation_id: str) -> Affiliation:
-    pipeline = [
-        {"$match": {"_id": affiliation_id}},
-        {"$project": {"works": 0}}
-    ]
+    pipeline = [{"$match": {"_id": affiliation_id}}, {"$project": {"works": 0}}]
     try:
         affiliation_data = database["affiliations"].aggregate(pipeline).next()
     except:

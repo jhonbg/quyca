@@ -154,8 +154,8 @@ def plot_articles_by_publisher(affiliation_id: str, query_params: QueryParams) -
 
 def plot_products_by_subject(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {"subjects": {"$ne": []}},
-        "project": ["subjects"],
+        "topic_project": ["primary_topic.display_name"],
+        "match": {"primary_topic.display_name": {"$exists": True, "$ne": None}},
     }
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     return pie_parser.parse_products_by_subject(works)

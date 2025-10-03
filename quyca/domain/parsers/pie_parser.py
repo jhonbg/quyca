@@ -84,17 +84,13 @@ def parse_articles_by_publisher(works: Generator) -> list:
 
 @get_percentage
 def parse_products_by_subject(works: Generator) -> list:
-    data = chain.from_iterable(
-        map(
-            lambda x: [sub for subject in x.subjects for sub in subject.subjects if subject.source == "openalex"],
-            works,
-        )
-    )
-    results = Counter(subject.name for subject in data)
-    plot = []
-    for name, value in results.items():
-        plot.append({"name": name, "value": value})
-    return sorted(plot, key=lambda x: x.get("value"), reverse=True)
+    names = [
+        work.primary_topic.display_name for work in works if work.primary_topic and work.primary_topic.display_name
+    ]
+
+    results = Counter(names)
+    plot = [{"name": name, "value": value} for name, value in results.items()]
+    return sorted(plot, key=lambda x: x["value"], reverse=True)
 
 
 @get_percentage

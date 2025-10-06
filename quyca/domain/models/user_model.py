@@ -4,5 +4,6 @@ class User(BaseModel):
     email: str
     password: str
     institution: str
-    rolID: str | None = None
+    ror_id: str | None = None
+    rol: str
     token: str

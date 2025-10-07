@@ -30,7 +30,6 @@ def create_app() -> Flask:
     app_factory.config["GOOGLE_CREDENTIALS"] = app_settings.GOOGLE_CREDENTIALS
     app_factory.config["GOOGLE_PARENT_ID"] = app_settings.GOOGLE_PARENT_ID
 
-
     JWTManager(app_factory)
 
     CORS(app_factory)

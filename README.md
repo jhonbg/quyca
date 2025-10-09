@@ -59,6 +59,17 @@ ES_GROUP_COMPLETER_INDEX=kahi_dev_group
 ES_DEPARTMENT_COMPLETER_INDEX=kahi_dev_department
 ES_FACULTY_COMPLETER_INDEX=kahi_dev_faculty
 
+JWT_SECRET_KEY=123aabbcc
+JWT_ACCESS_TOKEN_EXPIRES=3600
+
+LOCAL_STORAGE_PATH=/app # ruta para guardar el archivo si hay problemas con google drive
+
+GOOGLE_CREDENTIALS=/app # ruta para guardar el .pickle
+
+GOOGLE_PARENT_ID= # ID de la carpetade GoogleDrive
+
+API_LIMITS=100000 per day,10 per second
+
 SENTRY_DSN=
 ```
 

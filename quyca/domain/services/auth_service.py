@@ -1,7 +1,7 @@
 from flask_jwt_extended import create_access_token, decode_token
 from domain.repositories.user_repository_interface import IUserRepository
 from domain.exceptions.not_entity_exception import NotEntityException
-from domain.parsers.user_parser import user_rolID
+from domain.parsers.user_parser import user_ror_id_and_institution
 
 """
 verifies user credentials using the repository, generates a JWT access token with the 
@@ -14,9 +14,13 @@ def authenticate_user(email: str, password: str, repo: IUserRepository) -> dict:
     try:
         user = repo.get_by_email_and_pass(email, password)
 
-        parse_user = user_rolID(user)
+        parse_user = user_ror_id_and_institution(user)
 
-        additional_claims = {"rolID": parse_user["rolID"]}
+        additional_claims = {
+            "ror_id": parse_user["ror_id"],
+            "institution": parse_user["institution"],
+            "rol": parse_user["rol"],
+        }
 
         token = create_access_token(identity=user.email, additional_claims=additional_claims)
 

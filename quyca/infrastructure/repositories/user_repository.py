@@ -1,12 +1,12 @@
 from domain.models.user_model import User
-from infrastructure.mongo import database
+from infrastructure.mongo import impactu_database
 from domain.exceptions.not_entity_exception import NotEntityException
 from domain.repositories.user_repository_interface import IUserRepository
 
 
 class UserRepositoryMongo(IUserRepository):
     def __init__(self):
-        self.collection = database["users"]
+        self.collection = impactu_database["users"]
 
     """
     The get_by_email_and_pass method retrieves a user by email and password,
@@ -21,7 +21,8 @@ class UserRepositoryMongo(IUserRepository):
             email=user_data["email"],
             password=user_data["password"],
             institution=user_data["institution"],
-            rolID=user_data["rolID"],
+            ror_id=user_data["ror_id"],
+            rol=user_data["rol"],
             token=user_data["token"],
         )
 
@@ -40,3 +41,9 @@ class UserRepositoryMongo(IUserRepository):
             self.collection.update_one({"email": email.strip().lower()}, {"$set": {"token": ""}})
             return True
         return False
+
+    """valid token"""
+
+    def is_token_valid(self, email: str, token: str) -> bool:
+        user = self.collection.find_one({"email": email.strip().lower()})
+        return user is not None and user.get("token") == token

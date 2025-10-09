@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     MONGO_DATABASE: str
     MONGO_PORT: int
     MONGO_CALCULATIONS_DATABASE: str
+    MONGO_IMPACTU_DATABASE: str
     MONGO_URI: Optional[MongoDsn] = None
 
     ES_SERVER: str
@@ -49,6 +50,12 @@ class Settings(BaseSettings):
     API_LIMITS: str
 
     SENTRY_DSN: str
+
+    LOCAL_STORAGE_PATH: str
+
+    GOOGLE_CREDENTIALS: str
+
+    GOOGLE_PARENT_ID: str
 
     JWT_SECRET_KEY: str
     JWT_ACCESS_TOKEN_EXPIRES: int

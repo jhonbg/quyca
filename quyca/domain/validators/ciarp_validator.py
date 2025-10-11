@@ -6,17 +6,18 @@ from domain.validators.document_validator import DocumentValidator
 from domain.validators.year_validator import YearValidator
 from domain.validators.language_validator import LanguageValidator
 from domain.validators.country_validator import CountryValidator
-from domain.validators.identifier_validator import IdentifierValidator
 from domain.validators.unit_validator import UnitValidator
 from domain.validators.error_grouper import ErrorGrouper
 
+EXTRA_ALLOWED = {"estado_de_validación", "observación"}
+
 REQUIRED_COLUMNS = [
-    "codigo_unidad_academica",
-    "codigo_subunidad_academica",
+    "código_unidad_académica",
+    "código_subunidad_académica",
     "tipo_documento",
-    "identificacion",
+    "identificación",
     "año",
-    "titulo",
+    "título",
     "idioma",
     "revista",
     "editorial",
@@ -25,8 +26,8 @@ REQUIRED_COLUMNS = [
     "isbn",
     "volumen",
     "issue",
-    "primera_pagina",
-    "ultima_pagina",
+    "primera_página",
+    "última_página",
     "pais_producto",
     "entidad_premiadora",
     "ranking",
@@ -36,13 +37,35 @@ class CiarpValidator:
     @staticmethod
     def validate_columns(df: pd.DataFrame) -> Tuple[bool, List[str], List[str]]:
         raw_cols = [str(c).lower().strip() for c in df.columns]
-        missing = [c for c in REQUIRED_COLUMNS if c not in raw_cols]
-        extra = [c for c in raw_cols if c not in REQUIRED_COLUMNS]
-        errors = []
+        errors: List[str] = []
+        usecols: List[str] = []
+
+        expected = list(REQUIRED_COLUMNS)
+
+        for idx, c in enumerate(raw_cols):
+            col = str(c).strip()
+
+            if idx == 0 and (
+                col == "" or col.lower() == "index" or col.lower().startswith("unnamed")
+            ):
+                continue
+
+            if col == "" or col.lower().startswith("unnamed"):
+                if not df.iloc[:, idx].dropna(how="all").empty:
+                    errors.append(f"Columna sin nombre en posición {idx+1}")
+                continue
+
+            usecols.append(col)
+        missing = [c for c in expected if c not in usecols]
+        extra = [c for c in usecols if c not in expected and c not in EXTRA_ALLOWED]
+        
         if missing:
             errors.append(f"Columna faltantes: {', '.join(missing)}")
         if extra:
             errors.append(f"Columnas no permitidas: {', '.join(extra)}")
+            
+        business_cols = [c for c in usecols if c not in EXTRA_ALLOWED]
+        
         return (len(errors) == 0, errors, raw_cols)
     
     @staticmethod
@@ -57,8 +80,7 @@ class CiarpValidator:
             errors.append(year_err)
         
         warnings.extend(LanguageValidator.validator(row, index))
-        errors.extend(CountryValidator.validator(row, index))
-        warnings.extend(IdentifierValidator.validate(row, index))
+        warnings.extend(CountryValidator.validator(row, index))
         errors.extend(UnitValidator.validate(row, index))
         
         return {"errores": errors, "advertencias": warnings}
@@ -67,7 +89,10 @@ class CiarpValidator:
     def validate_dataframe(df: pd.DataFrame) -> StaffReport:
         errors, warnings = [], []
         
+        print(f"[DEBUG] Total filas: {len(df)}")
         for idx, row in df.iterrows():
+            if idx % 100 == 0:
+                print(f"[DEBUG] Procesando fila {idx}")
             result = CiarpValidator.validate_row(row.to_dict(), idx)
             errors.extend(result["errores"])
             warnings.extend(result["advertencias"])

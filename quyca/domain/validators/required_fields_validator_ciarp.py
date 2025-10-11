@@ -4,10 +4,9 @@ from domain.validators.base_validator import BaseValidator
 REQUIRED_FIELDS_CIARP = [
     "código_unidad_académica",
     "tipo_documento",
-    "identivicación",
+    "identificación",
     "año",
     "título",
-    "pais_producto",
 ]
 
 class RequiredFieldsCiarpValidator:

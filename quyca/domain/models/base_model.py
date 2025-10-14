@@ -1,3 +1,4 @@
+import json
 from typing import Generator
 from datetime import datetime, timezone
 from pydantic import BaseModel, field_validator, Field, conint, model_validator
@@ -246,6 +247,8 @@ class Author(BaseModel):
             return []
         if isinstance(value, dict):
             return [value]
+        if isinstance(value, list):
+            return [v for v in value if isinstance(v, dict) and v is not None]
         return value
 
     @model_validator(mode="after")
@@ -269,7 +272,7 @@ class Author(BaseModel):
 class Group(BaseModel):
     id: str | None = None
     name: str | None
-    ranking: str | None = None
+    ranking: list[Ranking] | None = None
     citations_count: list[CitationsCount] | None = None
 
     class Config:

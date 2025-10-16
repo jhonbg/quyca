@@ -108,17 +108,24 @@ def get_works_count_by_person(person_id: str, query_params: QueryParams) -> int:
 
 
 def search_works(query_params: QueryParams, pipeline_params: dict | None = None) -> Tuple[Generator, int]:
-    pipeline = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+    pipeline = []
+    if query_params.keywords:
+        pipeline.append({"$match": {"$text": {"$search": query_params.keywords}}})
     set_product_filters(pipeline, query_params)
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     works = database["works"].aggregate(pipeline)
-    if query_params.keywords:
-        count_pipeline: list[dict[str, Any]] = [{"$match": {"$text": {"$search": query_params.keywords}}}]
+
+    query_dict = query_params.model_dump(exclude_none=True)
+    base_params = {"page", "limit", "sort"}
+    is_full_scan = set(query_dict.keys()) == base_params
+
+    if is_full_scan:
+        total_results = database["works"].estimated_document_count()
+    else:
+        count_pipeline: list[dict[str, Any]] = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
         set_product_filters(count_pipeline, query_params)
         count_pipeline.append({"$count": "total_results"})
         total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0}).get("total_results", 0)
-    else:
-        total_results = database["works"].estimated_document_count()
 
     return work_generator.get(works), total_results
 
@@ -335,4 +342,19 @@ def set_authors_ranking_filters(pipeline: list, authors_ranking: str | None) -> 
         return
 
     rankings = [ranking.strip() for ranking in authors_ranking.split(",") if ranking.strip()]
-    pipeline.append({"$match": {"authors.ranking.rank": {"$in": rankings}}})
+
+    rankings = [r.strip() for r in authors_ranking.split(",") if r.strip()]
+    pipeline.append({
+        "$match": {
+            "authors": {
+                "$elemMatch": {
+                    "ranking": {
+                        "$elemMatch": {
+                            "rank": {"$in": rankings}
+                        }
+                    }
+                }
+            }
+        }
+    })
+

@@ -1,14 +1,14 @@
 from quyca.infrastructure.mongo import database
-
+from quyca.domain.constants.institutions import institutions_list
 
 def test_get_works_by_institution_api_expert(client):
     random_institution_id = (
         database["affiliations"]
-        .aggregate([{"$match": {"types.type": "education"}}, {"$sample": {"size": 1}}])
+        .aggregate([{"$match": {"types.type": {"$in": institutions_list}}}, {"$sample": {"size": 1}}])
         .next()["_id"]
     )
     response = client.get(
-        f"/api/affiliation/institution/{random_institution_id}/research/products?max=10&page=1&sort=citations_desc"
+        f"/affiliation/institution/{random_institution_id}/research/products?max=10&page=1&sort=citations_desc"
     )
     assert response.status_code == 200
 
@@ -20,7 +20,7 @@ def test_get_works_by_faculty_api_expert(client):
         .next()["_id"]
     )
     response = client.get(
-        f"/api/affiliation/faculty/{random_faculty_id}/research/products?max=10&page=1&sort=citations_desc"
+        f"/affiliation/faculty/{random_faculty_id}/research/products?max=10&page=1&sort=citations_desc"
     )
     assert response.status_code == 200
 
@@ -32,7 +32,7 @@ def test_get_works_by_department_api_expert(client):
         .next()["_id"]
     )
     response = client.get(
-        f"/api/affiliation/department/{random_department_id}/research/products?max=10&page=1&sort=citations_desc"
+        f"/affiliation/department/{random_department_id}/research/products?max=10&page=1&sort=citations_desc"
     )
     assert response.status_code == 200
 
@@ -44,6 +44,6 @@ def test_get_works_by_group_api_expert(client):
         .next()["_id"]
     )
     response = client.get(
-        f"/api/affiliation/group/{random_group_id}/research/products?max=10&page=1&sort=citations_desc"
+        f"/affiliation/group/{random_group_id}/research/products?max=10&page=1&sort=citations_desc"
     )
     assert response.status_code == 200

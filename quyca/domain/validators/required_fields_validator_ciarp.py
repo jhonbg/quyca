@@ -10,6 +10,9 @@ REQUIRED_FIELDS_CIARP = [
 ]
 
 class RequiredFieldsCiarpValidator:
+    """
+    Ensures minimal required fields for CIARP are present.
+    """
     @staticmethod
     def validate(row: dict, index: int) -> List[Dict[str, Any]]:
         errors = []

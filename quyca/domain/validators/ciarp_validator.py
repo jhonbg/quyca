@@ -38,21 +38,14 @@ REQUIRED_COLUMNS = [
 
 class CiarpValidator:
     """
-    This adjustment accounts for the header row in Excel files, ensuring
-    that reported row numbers in validation results match those visible
-    to the user in the exported Excel report.
+    Maps DataFrame index to Excel row number (header=1 → first row=2).
     """
     @staticmethod
     def excel_row_index(idx: int) -> int:
         return idx + 2
     
     """
-    Validates the structure of the CIARP DataFrame columns.
-
-    Ensures that all required columns are present, identifies extra
-    or missing columns, and ignores unnamed or index-like columns
-    (such as 'Unnamed: 0' or 'index'). This step is critical for
-    preventing schema mismatches before applying row-level validation.
+    Verifies schema: required columns present, extra columns flagged, ignores unnamed/index columns.
     """
     @staticmethod
     def validate_columns(df: pd.DataFrame) -> Tuple[bool, List[str], List[str]]:
@@ -87,16 +80,7 @@ class CiarpValidator:
         return (len(errors) == 0, errors, raw_cols)
     
     """
-    Validates a single CIARP row for required and business logic rules.
-
-    Performs the following checks:
-    - Required field presence using RequiredFieldsCiarpValidator.
-    - Validity of document type and ID.
-    - Year format and logical validity.
-    - Language and country consistency.
-    - Academic unit structure (via UnitValidator).
-    - Generates warnings for empty but non-critical fields such as
-    'código_unidad_académica' and 'ranking'.
+    Applies CIARP row validations: required, document, year, language, country, units + empties as warnings.
     """
     @staticmethod
     def validate_row(row: dict, index: int) -> Dict[str, List[Dict[str, Any]]]:
@@ -130,15 +114,7 @@ class CiarpValidator:
         return {"errores": errors, "advertencias": warnings}
     
     """
-    Performs full DataFrame validation for the CIARP dataset.
-
-    This method iterates over all rows, applying `validate_row` to
-    accumulate errors and warnings. It also detects duplicate entries
-    based on the defined set of key columns and compiles all validation
-    outcomes into a unified `StaffReport` object.
-
-    The resulting report is later used to generate PDF and Excel
-    outputs for data quality feedback.
+    Validates the whole DataFrame (clean blanks, normalize cells, detect duplicates).
     """
     @staticmethod
     def validate_dataframe(df: pd.DataFrame) -> StaffReport:

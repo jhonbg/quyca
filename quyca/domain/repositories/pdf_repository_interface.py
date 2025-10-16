@@ -4,8 +4,9 @@ from typing import List, Dict, Any
 
 
 class IPDFRepository(ABC):
-    """Generates a PDF with errors, warnings, and duplicates found in the uploaded file"""
-
+    """
+    Abstraction to generate PDF reports for Staff/CIARP validation results.
+    """
     @abstractmethod
     def generate_quality_report(
         self,

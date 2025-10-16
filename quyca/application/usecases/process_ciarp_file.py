@@ -6,10 +6,16 @@ from domain.services.ciarp_report_service import CiarpReportService
 from infrastructure.notifications.staff_notification import StaffNotification
 
 class ProcessCiarpFileUseCase:
+    """
+    Use case: validate, report and notify for CIARP Excel uploads.
+    """
     def __init__(self, report_service: CiarpReportService, notification_service: StaffNotification):
         self.report_service = report_service
         self.notification_service = notification_service
         
+    """
+    Reads Excel, validates schema/data (CIARP), generates attachments, sends email, returns summary.
+    """
     def execute(self, file: io.BytesIO, institution: str, filename: str, upload_date: str, user: str, email: str) -> dict:
         df = pd.read_excel(file)
         valid, errors_columns, _ = CiarpValidator.validate_columns(df)

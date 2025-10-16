@@ -8,8 +8,6 @@ verifies user credentials using the repository, generates a JWT access token wit
 users rolID, stores the token in the database, and returns authentication details. If 
 credentials are invalid
 """
-
-
 def authenticate_user(email: str, password: str, repo: IUserRepository) -> dict:
     try:
         user = repo.get_by_email_and_pass(email, password)
@@ -36,8 +34,6 @@ invalidates a given JWT token by decoding it to find the users email, removing t
 from the database, and returning a success message. 
 If the token is invalid or expired
 """
-
-
 def logout_user(token: str, repo: IUserRepository) -> dict:
     try:
         decode = decode_token(token)

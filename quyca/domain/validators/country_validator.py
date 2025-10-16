@@ -5,6 +5,10 @@ from domain.validators.base_validator import BaseValidator
 COUNTRY_RE = re.compile(r"^[A-z]{2}$")
 
 class CountryValidator:
+    """
+    Warns when country code is not ISO 3166-1 alpha-2 (e.g., 'CO', 'US').
+    """
+    @staticmethod
     def validator(row: dict, index: int) -> List[Dict[str, Any]]:
         warning = []
         country = row.get("pais_producto")

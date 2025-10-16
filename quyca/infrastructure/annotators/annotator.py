@@ -4,11 +4,8 @@ from domain.models.staff_report_model import StaffReport
 
 class Annotator:
     """
-    Infrastructure annotator: enriches the DataFrame with validation states and observations.
-    StaffAnnotator is generic and can be reused for CIARP.
-    If specific observations or columns are needed in the future, create a CiarpAnnotator class inheriting from this one.
+    Adds validation state/notes to the DataFrame for Excel export.
     """
-
     @staticmethod
     def annotate(df: pd.DataFrame, staff_report: StaffReport) -> pd.DataFrame:
         df_copy = df.copy()

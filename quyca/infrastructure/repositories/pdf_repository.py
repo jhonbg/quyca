@@ -7,11 +7,12 @@ from domain.repositories.pdf_repository_interface import IPDFRepository
 
 
 """
-Infrastructure repository to generate PDF reports.
+Infrastructure adapter to render HTML validation summaries into PDF.
 """
-
-
 class PDFRepository(IPDFRepository):
+    """
+    Renders Staff report PDF (errors, warnings, duplicates) with metadata header.
+    """
     def generate_quality_report(
         self,
         errors: List[Dict[str, Any]],
@@ -251,6 +252,9 @@ class PDFRepository(IPDFRepository):
         pdf_bytes.seek(0)
         return pdf_bytes
     
+    """
+    Renders CIARP report PDF (errors + warnings summary + duplicates) with metadata header.
+    """
     def generate_quality_report_ciarp(
         self,
         errors: List[Dict[str, Any]],

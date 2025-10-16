@@ -5,6 +5,9 @@ from domain.validators.base_validator import BaseValidator
 LANG_RE = re.compile(r"^[a-z]{2}$")
 
 class LanguageValidator:
+    """
+    Warns when language code is not ISO 639-1 (two lowercase letters).
+    """
     @staticmethod
     def validator(row: dict, index: int) -> List[Dict[str, Any]]:
         warnings = []

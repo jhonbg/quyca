@@ -10,8 +10,10 @@ class FileRepository:
     def __init__(self, drive_repo: GoogleDriveRepository):
         self.drive_repo = drive_repo
 
-    """Saves a file locally, uploads it to Drive in the proper folder, then deletes it from 
-    the temporary server"""
+    """
+    Saves a file locally, uploads it to Drive in the proper folder, then deletes it from 
+    the temporary server
+    """
 
     def save_file(self, file, ror_id: str, institution: str, file_type: str):
         timestamp = datetime.now(ZoneInfo("America/Bogota")).strftime("%d_%m_%Y_%H:%M")

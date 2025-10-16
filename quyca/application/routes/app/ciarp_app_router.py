@@ -7,6 +7,9 @@ from domain.services.ciarp_service import CiarpService
 
 ciarp_app_router = Blueprint("ciarp_app_router", __name__)
 
+"""
+Authenticates JWT, delegates to CiarpService, and returns JSON response.
+"""
 @ciarp_app_router.route("/ciarp", methods=["POST"])
 def submit_ciarp():
     try:

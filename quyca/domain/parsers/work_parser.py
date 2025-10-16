@@ -51,23 +51,37 @@ def parse_csv(works: list) -> str:
 
 
 def parse_search_results(works: list) -> list:
-    include = [
-        "id",
-        "authors",
-        "authors_count",
-        "open_access",
-        "citations_count",
-        "product_types",
-        "year_published",
-        "title",
-        "subjects",
-        "source",
-        "external_ids",
-        "external_urls",
-        "ranking",
-        "topics",
-    ]
-    return [work.model_dump(include=include, exclude_none=True) for work in works]
+    nested_include = {
+        "id": ...,
+        "authors": {
+            "__all__": {
+                "id": ...,
+                "full_name": ...,
+                "affiliations": {
+                    "__all__": {
+                        "id": ...,
+                        "name": ...,
+                        "types": ...,
+                    }
+                },
+            }
+        },
+        "authors_count": ...,
+        "open_access": ...,
+        "citations_count": ...,
+        "product_types": ...,
+        "year_published": ...,
+        "title": ...,
+        "source": {
+            "id": ...,
+            "name": ...
+        },
+        "external_ids": ...,
+        "ranking": ...,
+        "topics": ...,
+        "citations_count_openalex": ...,
+    }
+    return [work.model_dump(include=nested_include, exclude_none=True) for work in works]
 
 
 def parse_works_by_entity(works: list) -> list:
@@ -145,7 +159,7 @@ def parse_groups_ranking_filter(groups_ranking: list) -> list:
     parsed_groups_ranking.sort(key=lambda x: x.get("label") or "")  # type: ignore
     return parsed_groups_ranking
 
-
+    
 def parse_topic_filter(topics: list) -> list:
     parsed_topics = []
     for topic in topics:

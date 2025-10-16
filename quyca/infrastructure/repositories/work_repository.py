@@ -156,7 +156,7 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
 
     product_types_pipeline = pipeline.copy() + [
         {"$project": {"types": 1}},
-        {"$project": {"types.provenance": 0, "types.level": 0}},
+        {"$project": {"types.provenance": 0}},
         {"$unwind": "$types"},
         {"$group": {"_id": "$types.source", "types": {"$addToSet": "$types"}}},
     ]
@@ -245,6 +245,21 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
     ]
     groups_ranking = database["works"].aggregate(groups_ranking_pipeline)
     available_filters["groups_ranking"] = list(groups_ranking)
+
+    topics_pipeline = pipeline.copy() + [
+        {"$match": {"primary_topic.id": {"$exists": True}}},
+        {"$project": {"primary_topic.id": 1, "primary_topic.display_name": 1}},
+        {
+            "$group": {
+                "_id": {"id": "$primary_topic.id", "display_name": "$primary_topic.display_name"},
+                        "count": {"$sum": 1},
+            }
+        },
+        {"$project": {"_id": 0, "id": "$_id.id", "display_name": "$_id.display_name", "count": 1}},
+        {"$sort": {"count": -1}},
+    ]
+    topics = database["works"].aggregate(topics_pipeline)
+    available_filters["topics"] = list(topics)
 
     return available_filters
 

@@ -3,9 +3,10 @@ from infrastructure.email_templates.staff_report_templates import build_email_te
 from domain.models.staff_report_model import StaffReport
 
 """
-    Service responsible for sending staff validation reports via email.
-    Uses a GmailRepository to deliver messages with appropriate templates
-    depending on the validation outcome (accepted, warnings, or rejected).
+Service responsible for sending validation reports via email.
+Uses a GmailRepository to deliver messages with context-aware templates
+based on the validation outcome (accepted, warnings, or rejected).
+Currently used for staff and CIARP reports.
 """
 
 

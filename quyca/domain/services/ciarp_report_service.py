@@ -5,7 +5,7 @@ from domain.validators.ciarp_validator import CiarpValidator
 from domain.repositories.pdf_repository_interface import IPDFRepository
 from infrastructure.repositories.gmail_repository import GmailRepository
 from infrastructure.exporters.xlsx_writer_exporter import XlsxWriteExporter
-from quyca.infrastructure.annotators.staff_annotator import StaffAnnotator
+from quyca.infrastructure.annotators.annotator import Annotator
 
 class CiarpReportService:
     """Generates PDF + Excel reports for CIARP validation results."""
@@ -39,7 +39,7 @@ class CiarpReportService:
 
             attachments = [{"bytes": pdf_bytes, "filename": "reporte_ciarp.pdf", "mime": "application/pdf"}]
 
-            annotated_df = StaffAnnotator.annotate(df, ciarp_report)
+            annotated_df = Annotator.annotate(df, ciarp_report)
             excel_bytes = XlsxWriteExporter.to_excel_bytes(annotated_df)
             attachments.append(
                 {

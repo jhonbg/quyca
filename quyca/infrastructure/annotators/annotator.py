@@ -2,9 +2,11 @@ import pandas as pd
 from domain.models.staff_report_model import StaffReport
 
 
-class StaffAnnotator:
+class Annotator:
     """
     Infrastructure annotator: enriches the DataFrame with validation states and observations.
+    StaffAnnotator is generic and can be reused for CIARP.
+    If specific observations or columns are needed in the future, create a CiarpAnnotator class inheriting from this one.
     """
 
     @staticmethod

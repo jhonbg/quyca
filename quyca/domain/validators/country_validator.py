@@ -12,7 +12,7 @@ class CountryValidator:
             warning.append({
                 "fila": index,
                 "columna": "pais_producto",
-                "detalle": "Formato inválido (debe ser ISO 3166-1 alfa-2, ej: 'CO', 'US')",
+                "detalle": "Formato de pais_producto inválido (debe ser ISO 3166-1 alfa-2, ej: 'CO', 'US')",
                 "valor": country
             })
         

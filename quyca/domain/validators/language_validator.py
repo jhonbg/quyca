@@ -14,7 +14,7 @@ class LanguageValidator:
             warnings.append({
                 "fila": index,
                 "columna": "idioma",
-                "detalle": "Formato inválido (debe ser ISO 639-1, ej: 'es', 'en')",
+                "detalle": "Formato de idioma inválido (debe ser ISO 639-1, ej: 'es', 'en')",
                 "valor": language
             })
         

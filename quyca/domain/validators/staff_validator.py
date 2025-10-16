@@ -34,7 +34,7 @@ EXTRA_ALLOWED = {"estado_de_validación", "observación"}
 
 class StaffValidator:
     """Convert DataFrame index to real Excel row number (header=1, first data row=2)."""
-
+    @staticmethod
     def excel_row_index(idx: int) -> int:
         return idx + 2
 

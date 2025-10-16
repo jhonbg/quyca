@@ -281,31 +281,37 @@ class PDFRepository(IPDFRepository):
                 <p>La siguiente tabla describe el formato estándar que debe seguirse al cargar los datos:</p>
                 <table>
                     <tr><th>Columna</th><th>Valores admitidos / Observaciones</th></tr>
-                    <tr><td>tipo_documento</td><td>cédula de ciudadanía, cédula de extranjería, pasaporte</td></tr>
-                    <tr><td>identificación</td><td>Número de identificación según tipo</td></tr>
-                    <tr><td>primer_apellido</td><td>Primer apellido del autor</td></tr>
-                    <tr><td>segundo_apellido</td><td>Segundo apellido del autor</td></tr>
-                    <tr><td>nombres</td><td>Todos los nombres del autor</td></tr>
-                    <tr><td>nivel_académico</td><td>técnico, pregrado, maestría, doctorado, especialización, especialización médica</td></tr>
-                    <tr><td>tipo_contrato</td><td>vinculado, ocasional, cátedra, prestación de servicios, postdoc</td></tr>
-                    <tr><td>jornada_laboral</td><td>medio tiempo, tiempo completo, tiempo parcial</td></tr>
-                    <tr><td>categoría_laboral</td><td>auxiliar, asociado, titular</td></tr>
-                    <tr><td>sexo</td><td>hombre, mujer, intersexual (vacío si no se tiene)</td></tr>
-                    <tr><td>fechas (nacimiento / inicial vinculación / final vinculación)</td><td>Formato DD/MM/YYYY (fecha corta de Excel)</td></tr>
-                    <tr><td>código_unidad_académica</td><td>Código único (fijo en futuras actualizaciones)</td></tr>
-                    <tr><td>unidad_académica</td><td>Nombre completo de la facultad o dependencia</td></tr>
-                    <tr><td>código_subunidad_académica</td><td>Código único de subunidad (si existe)</td></tr>
-                    <tr><td>subunidad_académica</td><td>Nombre del departamento o subunidad</td></tr>
+                    <tr><td>código_unidad_académica</td><td>Código único de la unidad académica (si no tiene un
+                    código asignado, se le debe asignar y nunca se debe
+                    cambiar en futuras actualizaciones)</td></tr>
+                    <tr><td>código_subunidad_académica</td><td>Código único de la subunidad académica si existe (si no
+                    tiene un código asignado, se le debe asignar y nunca se
+                    debe cambiar en futuras actualizaciones)</td></tr>
+                    <tr><td>tipo_documento</td><td>Cédula de ciudadanía, cédula de extranjería, pasaporte
+                    (Si hay otro tipo, informar para reorganizar el estándar
+                    de este formato)</td></tr>
+                    <tr><td>identificación</td><td>Del autor</td></tr>
+                    <tr><td>año</td><td>Del producto</td></tr>
+                    <tr><td>título</td><td>Del producto</td></tr>
+                    <tr><td>idioma</td><td>Del producto en formato ISO 639-1 (dos caracteres ej:
+                    "es", "en", "fr", "it")</td></tr>
+                    <tr><td>revista</td><td>Del producto</td></tr>
+                    <tr><td>editorial</td><td>Del producto</td></tr>
+                    <tr><td>doi</td><td>Del producto</td></tr>
+                    <tr><td>issn</td><td>Del artículo si es artículo</td></tr>
+                    <tr><td>isbn</td><td>Del libro si es libro</td></tr>
+                    <tr><td>volumen</td><td>Del producto</td></tr>
+                    <tr><td>issue</td><td>Del producto</td></tr>
+                    <tr><td>primera_página</td><td>Del producto</td></tr>
+                    <tr><td>pais_producto</td><td>Pais donde se publico (ISO 3166-1 alfa-2)
+                    (Si hay otro tipo, informar para reorganizar el estándar
+                    de este formato)</td></tr>
+                    <tr><td>última_página</td><td>Del producto</td></tr>
+                    <tr><td>entidad_premiadora</td><td>Nombre de la entidad que dió el premio</td></tr>
+                    <tr><td>ranking</td><td>Los ejemplos de los ranking están listados a
+                    continuación, donde va el tipo de documento y
+                    ranking.</td></tr>
                 </table>
-
-                <h2><li> Recomendaciones Adicionales</li></h2>
-                <ul>
-                    <li>Evitar <b>abreviaciones</b>. Ejemplo: <i>Fac Med</i> → <i>Facultad de Medicina</i> </li>
-                    <li><b>unidad_académica</b> puede equivaler a facultad en algunas instituciones.</li>
-                    <li><b>subunidad_académica</b> puede equivaler a departamento.</li>
-                    <li>Revisar que no existan <b>caracteres extraños</b> o problemas de codificación.</li>
-                    <li>Si la institución solo maneja <b>un nivel</b>, se diligencian únicamente las unidades académicas y se deja vacío el campo de subunidades.</li>
-                </ul>
 
                 <p class="note">
                     Documento de referencia: 
@@ -436,23 +442,10 @@ class PDFRepository(IPDFRepository):
 
             html += "</table>"
         if warnings:
-            html += """
-                <h2><li> Advertencias Encontradas</li></h2>
-                <table>
-                    <tr>
-                        <th>Columna</th>
-                        <th>Detalle</th>
-                        <th>Valor</th>
-                        <th>Ejemplos (máx. 3)</th>
-                        <th>Número de filas con la advertencias</th>
-                    </tr>
-            """
-
             html += f"""
                 <h3>Advertencias</h3>
                 <p><strong>Total de advertencias:</strong> {warnings["total_advertencias"]}</p>
             """
-            html += "</table>"
 
         if duplicados and len(duplicados) > 0:
             html += f"<h2><li>Duplicados</li></h2><p>Se detectaron {len(duplicados)} registros duplicados.</p>"

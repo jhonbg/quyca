@@ -252,7 +252,7 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
         {
             "$group": {
                 "_id": {"id": "$primary_topic.id", "display_name": "$primary_topic.display_name"},
-                        "count": {"$sum": 1},
+                "count": {"$sum": 1},
             }
         },
         {"$project": {"_id": 0, "id": "$_id.id", "display_name": "$_id.display_name", "count": 1}},

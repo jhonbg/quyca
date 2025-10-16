@@ -61,19 +61,7 @@ def get_works_for_api_expert(pipeline: list, pipeline_params: dict, query_params
                     "last_names": 1,
                     "external_ids": 1,
                     "ranking": 1,
-                    "affiliations": {
-                        "$map": {
-                            "input": "$authors.affiliations",
-                            "as": "aff",
-                            "in": {
-                                "id": "$$aff.id",
-                                "name": "$$aff.name",
-                                "types": "$$aff.types",
-                                "addresses": "$$aff.addresses",
-                                "external_ids": "$$aff.external_ids",
-                            },
-                        }
-                    },
+                    "affiliations": 1,
                 },
                 "source": {
                     "id": 1,

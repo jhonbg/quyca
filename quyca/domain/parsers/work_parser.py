@@ -72,10 +72,7 @@ def parse_search_results(works: list) -> list:
         "product_types": ...,
         "year_published": ...,
         "title": ...,
-        "source": {
-            "id": ...,
-            "name": ...
-        },
+        "source": {"id": ..., "name": ...},
         "external_ids": ...,
         "ranking": ...,
         "topics": ...,
@@ -159,7 +156,7 @@ def parse_groups_ranking_filter(groups_ranking: list) -> list:
     parsed_groups_ranking.sort(key=lambda x: x.get("label") or "")  # type: ignore
     return parsed_groups_ranking
 
-    
+
 def parse_topic_filter(topics: list) -> list:
     parsed_topics = []
     for topic in topics:

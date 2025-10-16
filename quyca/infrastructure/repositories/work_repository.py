@@ -122,7 +122,9 @@ def search_works(query_params: QueryParams, pipeline_params: dict | None = None)
     if is_full_scan:
         total_results = database["works"].estimated_document_count()
     else:
-        count_pipeline: list[dict[str, Any]] = [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+        count_pipeline: list[dict[str, Any]] = (
+            [{"$match": {"$text": {"$search": query_params.keywords}}}] if query_params.keywords else []
+        )
         set_product_filters(count_pipeline, query_params)
         count_pipeline.append({"$count": "total_results"})
         total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0}).get("total_results", 0)
@@ -344,17 +346,4 @@ def set_authors_ranking_filters(pipeline: list, authors_ranking: str | None) -> 
     rankings = [ranking.strip() for ranking in authors_ranking.split(",") if ranking.strip()]
 
     rankings = [r.strip() for r in authors_ranking.split(",") if r.strip()]
-    pipeline.append({
-        "$match": {
-            "authors": {
-                "$elemMatch": {
-                    "ranking": {
-                        "$elemMatch": {
-                            "rank": {"$in": rankings}
-                        }
-                    }
-                }
-            }
-        }
-    })
-
+    pipeline.append({"$match": {"authors": {"$elemMatch": {"ranking": {"$elemMatch": {"rank": {"$in": rankings}}}}}}})

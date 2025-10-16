@@ -84,6 +84,7 @@ def test_search_sources_with_multiple_source_types(client):
         for source in data["data"]
     )
 
+
 def test_search_sources_with_source_type_and_keywords(client):
     url = f"{ENDPOINT}?source_types=journal&keywords=philosophy&max=3&page=1"
 

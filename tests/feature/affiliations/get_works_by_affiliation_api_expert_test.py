@@ -1,6 +1,7 @@
 from quyca.infrastructure.mongo import database
 from quyca.domain.constants.institutions import institutions_list
 
+
 def test_get_works_by_institution_api_expert(client):
     random_institution_id = (
         database["affiliations"]
@@ -43,7 +44,5 @@ def test_get_works_by_group_api_expert(client):
         .aggregate([{"$match": {"types.type": "group"}}, {"$sample": {"size": 1}}])
         .next()["_id"]
     )
-    response = client.get(
-        f"/affiliation/group/{random_group_id}/research/products?max=10&page=1&sort=citations_desc"
-    )
+    response = client.get(f"/affiliation/group/{random_group_id}/research/products?max=10&page=1&sort=citations_desc")
     assert response.status_code == 200

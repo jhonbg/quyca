@@ -350,7 +350,7 @@ def set_groups_ranking_filters(pipeline: list, groups_ranking: str | None) -> No
         return
     match_filters = []
     for ranking in groups_ranking.split(","):
-        match_filters.append({"groups": {"$elemMatch": {"ranking": ranking}}})
+        match_filters.append({"groups": {"$elemMatch": {"ranking.rank": ranking}}})
     pipeline += [{"$match": {"$or": match_filters}}]
 
 

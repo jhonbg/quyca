@@ -1,3 +1,4 @@
+import os
 import io
 import pandas as pd
 import base64
@@ -17,7 +18,19 @@ class ProcessCiarpFileUseCase:
     Reads Excel, validates schema/data (CIARP), generates attachments, sends email, returns summary.
     """
     def execute(self, file: io.BytesIO, institution: str, filename: str, upload_date: str, user: str, email: str) -> dict:
-        df = pd.read_excel(file)
+        extension = os.path.splitext(filename)[1].lower()
+        if extension != ".xlsx":
+            return {
+                "success": False,
+                "msg": f"Formato de archivo no permitido ({extension}). Solo se admiten archivos .xlsx.",
+            }
+        try:
+            df = pd.read_excel(file, engine="openpyxl")
+        except Exception as e:
+            return {
+                "success": False,
+                "msg": f"Error al leer el archivo Excel: {str(e)}",
+            }
         valid, errors_columns, _ = CiarpValidator.validate_columns(df)
         if not valid:
             return {

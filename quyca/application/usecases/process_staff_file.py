@@ -1,3 +1,4 @@
+import os
 import io
 import base64
 import pandas as pd
@@ -20,7 +21,19 @@ class ProcessStaffFileUseCase:
     def execute(
         self, file: io.BytesIO, institution: str, filename: str, upload_date: str, user: str, email: str
     ) -> dict:
-        df = pd.read_excel(file)
+        extension = os.path.splitext(filename)[1].lower()
+        if extension != ".xlsx":
+            return {
+                "success": False,
+                "msg": f"Formato de archivo no permitido ({extension}). Solo se admiten archivos .xlsx.",
+            }
+        try:
+            df = pd.read_excel(file, engine="openpyxl")
+        except Exception as e:
+            return {
+                "success": False,
+                "msg": f"Error al leer el archivo Excel: {str(e)}",
+            }
 
         valid, errores_columnas, _ = StaffValidator.validate_columns(df)
 

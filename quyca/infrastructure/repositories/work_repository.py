@@ -247,7 +247,7 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
     available_filters["groups_ranking"] = list(groups_ranking)
 
     topics_pipeline = pipeline.copy() + [
-        {"$match": {"primary_topic.id": {"$exists": True}}},
+        {"$match": {"primary_topic": {"$ne": {}}}},
         {"$project": {"primary_topic.id": 1, "primary_topic.display_name": 1}},
         {
             "$group": {

@@ -194,7 +194,6 @@ class Affiliation(BaseModel):
     end_date: int | str | None = None
 
     ror: str | None = None
-    geo: Geography | None = Field(default_factory=Geography)
     addresses: list[Address] | None = None
     position: str | None = None
     ranking: list[Ranking] | None = None

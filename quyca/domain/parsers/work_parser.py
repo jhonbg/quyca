@@ -251,7 +251,6 @@ def parse_product_type_filter(product_types: list) -> list:
                             "value": "scienti_" + inner_type.get("type") + "_" + inner_type.get("code"),
                             "title": inner_type.get("code") + " " + inner_type.get("type"),
                             "code": inner_type.get("code"),
-                            "children": [],
                         }
                     )
                 elif inner_type.get("level") == 1:
@@ -260,7 +259,6 @@ def parse_product_type_filter(product_types: list) -> list:
                             "value": "scienti_" + inner_type.get("type") + "_" + inner_type.get("code"),
                             "title": inner_type.get("code") + " " + inner_type.get("type"),
                             "code": inner_type.get("code"),
-                            "children": [],
                         }
                     )
                 elif inner_type.get("level") == 2:

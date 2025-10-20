@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Generator, Tuple
 
 from bson import ObjectId
@@ -153,113 +154,111 @@ def get_search_works_available_filters(query_params: QueryParams, pipeline_param
 def get_works_available_filters(pipeline: list, query_params: QueryParams) -> dict:
     set_product_filters(pipeline, query_params)
     available_filters = {}
+    collection = database["works"]
 
-    product_types_pipeline = pipeline.copy() + [
-        {"$project": {"types": 1}},
-        {"$project": {"types.provenance": 0}},
-        {"$unwind": "$types"},
-        {"$group": {"_id": "$types.source", "types": {"$addToSet": "$types"}}},
-    ]
-    product_types = database["works"].aggregate(product_types_pipeline)
-    available_filters["product_types"] = list(product_types)
-
-    years_pipeline = pipeline.copy() + [
-        {"$project": {"year_published": 1}},
-        {"$match": {"year_published": {"$type": "number"}}},
-        {"$group": {"_id": None, "min_year": {"$min": "$year_published"}, "max_year": {"$max": "$year_published"}}},
-        {"$project": {"_id": 0, "min_year": 1, "max_year": 1}},
-    ]
-    years = database["works"].aggregate(years_pipeline)
-    available_filters["years"] = next(years, {"min_year": None, "max_year": None})
-
-    status_pipeline = pipeline.copy() + [
-        {"$group": {"_id": "$open_access.open_access_status"}},
-    ]
-    status = database["works"].aggregate(status_pipeline)
-    available_filters["status"] = list(status)
-
-    subjects_pipeline = pipeline.copy() + [
-        {
-            "$project": {
-                "subjects.source": 1,
-                "subjects.subjects.id": 1,
-                "subjects.subjects.name": 1,
-                "subjects.subjects.level": 1,
-            }
-        },
-        {"$unwind": "$subjects"},
-        {"$unwind": "$subjects.subjects"},
-        {
-            "$group": {
-                "_id": "$subjects.source",
-                "subjects": {
-                    "$addToSet": {
-                        "id": "$subjects.subjects.id",
-                        "name": "$subjects.subjects.name",
-                        "level": "$subjects.subjects.level",
-                    }
-                },
-            }
-        },
-    ]
-    subjects = list(database["works"].aggregate(subjects_pipeline))
-    available_filters["subjects"] = subjects
-
-    countries_pipeline = pipeline.copy() + [
-        {"$project": {"authors.affiliations.addresses.country_code": 1}},
-        {"$unwind": "$authors"},
-        {"$unwind": "$authors.affiliations"},
-        {"$unwind": "$authors.affiliations.addresses"},
-        {"$group": {"_id": "$authors.affiliations.addresses.country_code"}},
-    ]
-    countries = database["works"].aggregate(countries_pipeline)
-    available_filters["countries"] = list(countries)
-
-    authors_ranking_pipeline = pipeline.copy() + [
-        {"$project": {"authors.ranking.source": 1, "authors.ranking.rank": 1}},
-        {"$unwind": "$authors"},
-        {"$unwind": "$authors.ranking"},
-        {"$match": {"authors.ranking.source": "minciencias"}},
-        {"$group": {"_id": "$authors.ranking"}},
-    ]
-    authors_ranking = database["works"].aggregate(authors_ranking_pipeline)
-    available_filters["authors_ranking"] = list(authors_ranking)
-
-    groups_ranking_pipeline = pipeline.copy() + [
-        {"$project": {"groups.ranking.rank": 1, "groups.ranking.source": 1}},
-        {"$unwind": "$groups"},
-        {"$project": {"rank_val": "$groups.ranking.rank", "source_val": "$groups.ranking.source"}},
-        {"$match": {"source_val": "minciencias"}},
-        {
-            "$project": {
-                "rank_val": {
-                    "$cond": {
-                        "if": {"$isArray": "$rank_val"},
-                        "then": {"$arrayElemAt": ["$rank_val", 0]},
-                        "else": "$rank_val",
+    pipelines = {
+        "product_types": pipeline.copy()
+        + [
+            {"$project": {"types": 1}},
+            {"$project": {"types.provenance": 0}},
+            {"$unwind": "$types"},
+            {"$group": {"_id": "$types.source", "types": {"$addToSet": "$types"}}},
+        ],
+        "years": pipeline.copy()
+        + [
+            {"$project": {"year_published": 1}},
+            {"$match": {"year_published": {"$type": "number"}}},
+            {"$group": {"_id": None, "min_year": {"$min": "$year_published"}, "max_year": {"$max": "$year_published"}}},
+            {"$project": {"_id": 0, "min_year": 1, "max_year": 1}},
+        ],
+        "status": pipeline.copy()
+        + [
+            {"$group": {"_id": "$open_access.open_access_status"}},
+        ],
+        "subjects": pipeline.copy()
+        + [
+            {
+                "$project": {
+                    "subjects.source": 1,
+                    "subjects.subjects.id": 1,
+                    "subjects.subjects.name": 1,
+                    "subjects.subjects.level": 1,
+                }
+            },
+            {"$unwind": "$subjects"},
+            {"$unwind": "$subjects.subjects"},
+            {
+                "$group": {
+                    "_id": "$subjects.source",
+                    "subjects": {
+                        "$addToSet": {
+                            "id": "$subjects.subjects.id",
+                            "name": "$subjects.subjects.name",
+                            "level": "$subjects.subjects.level",
+                        }
+                    },
+                }
+            },
+        ],
+        "countries": pipeline.copy()
+        + [
+            {"$unwind": "$countries"},
+            {"$group": {"_id": "$countries"}},
+        ],
+        "authors_ranking": pipeline.copy()
+        + [
+            {"$project": {"authors.ranking.source": 1, "authors.ranking.rank": 1}},
+            {"$unwind": "$authors"},
+            {"$unwind": "$authors.ranking"},
+            {"$match": {"authors.ranking.source": "minciencias"}},
+            {"$group": {"_id": "$authors.ranking"}},
+        ],
+        "groups_ranking": pipeline.copy()
+        + [
+            {"$project": {"groups.ranking.rank": 1, "groups.ranking.source": 1}},
+            {"$unwind": "$groups"},
+            {"$project": {"rank_val": "$groups.ranking.rank", "source_val": "$groups.ranking.source"}},
+            {"$match": {"source_val": "minciencias"}},
+            {
+                "$project": {
+                    "rank_val": {
+                        "$cond": {
+                            "if": {"$isArray": "$rank_val"},
+                            "then": {"$arrayElemAt": ["$rank_val", 0]},
+                            "else": "$rank_val",
+                        }
                     }
                 }
-            }
-        },
-        {"$group": {"_id": "$rank_val"}},
-    ]
-    groups_ranking = database["works"].aggregate(groups_ranking_pipeline)
-    available_filters["groups_ranking"] = list(groups_ranking)
+            },
+            {"$group": {"_id": "$rank_val"}},
+        ],
+        "topics": pipeline.copy()
+        + [
+            {"$match": {"primary_topic": {"$ne": {}}}},
+            {"$project": {"primary_topic.id": 1, "primary_topic.display_name": 1}},
+            {
+                "$group": {
+                    "_id": {"id": "$primary_topic.id", "display_name": "$primary_topic.display_name"},
+                    "count": {"$sum": 1},
+                }
+            },
+            {"$project": {"_id": 0, "id": "$_id.id", "display_name": "$_id.display_name", "count": 1}},
+            {"$sort": {"count": -1}},
+        ],
+    }
 
-    topics_pipeline = pipeline.copy() + [
-        {"$match": {"primary_topic": {"$ne": {}}}},
-        {"$project": {"primary_topic.id": 1, "primary_topic.display_name": 1}},
-        {
-            "$group": {
-                "_id": {"id": "$primary_topic.id", "display_name": "$primary_topic.display_name"},
-                "count": {"$sum": 1},
-            }
-        },
-        {"$project": {"_id": 0, "id": "$_id.id", "display_name": "$_id.display_name", "count": 1}},
-        {"$sort": {"count": -1}},
-    ]
-    topics = database["works"].aggregate(topics_pipeline)
-    available_filters["topics"] = list(topics)
+    def run_pipeline(key: str, pipe: list):
+        if key == "years":
+            cursor = collection.aggregate(pipe)
+            return key, next(cursor, {"min_year": None, "max_year": None})
+        else:
+            return key, list(collection.aggregate(pipe))
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = [executor.submit(run_pipeline, k, v) for k, v in pipelines.items()]
+        for future in as_completed(futures):
+            key, result = future.result()
+            available_filters[key] = result
 
     return available_filters
 

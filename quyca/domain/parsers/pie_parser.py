@@ -7,6 +7,7 @@ from collections import Counter, defaultdict
 from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
 
+from quyca.domain.constants.apc_currencies import available_currencies
 from quyca.domain.constants.open_access_status import open_access_status_dict
 from quyca.domain.models.affiliation_model import Affiliation
 from quyca.domain.helpers import get_works_h_index_by_scholar_citations
@@ -44,7 +45,7 @@ def parse_apc_expenses_by_affiliations(data: CommandCursor) -> list:
         apc = item.get("apc", {})
         apc_charges = apc.get("charges", 0)
         apc_currency = apc.get("currency", "USD")
-        if apc_currency in ["IRR", "NGN", "ARS"]:
+        if apc_currency not in available_currencies:
             continue
         usd_charges = currency_converter.convert(apc_charges, apc_currency, "USD")
         result[item.get("names", [{"name": "No name"}])[0].get("name")] += int(usd_charges)

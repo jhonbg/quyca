@@ -51,23 +51,34 @@ def parse_csv(works: list) -> str:
 
 
 def parse_search_results(works: list) -> list:
-    include = [
-        "id",
-        "authors",
-        "authors_count",
-        "open_access",
-        "citations_count",
-        "product_types",
-        "year_published",
-        "title",
-        "subjects",
-        "source",
-        "external_ids",
-        "external_urls",
-        "ranking",
-        "topics",
-    ]
-    return [work.model_dump(include=include, exclude_none=True) for work in works]
+    nested_include = {
+        "id": ...,
+        "authors": {
+            "__all__": {
+                "id": ...,
+                "full_name": ...,
+                "affiliations": {
+                    "__all__": {
+                        "id": ...,
+                        "name": ...,
+                        "types": ...,
+                    }
+                },
+            }
+        },
+        "authors_count": ...,
+        "open_access": ...,
+        "citations_count": ...,
+        "product_types": ...,
+        "year_published": ...,
+        "title": ...,
+        "source": {"id": ..., "name": ...},
+        "external_ids": ...,
+        "ranking": ...,
+        "topics": ...,
+        "citations_count_openalex": ...,
+    }
+    return [work.model_dump(include=nested_include, exclude_none=True) for work in works]
 
 
 def parse_works_by_entity(works: list) -> list:
@@ -215,7 +226,7 @@ def parse_product_type_filter(product_types: list) -> list:
     types = []
     for product_type in product_types:
         children = []
-        ignore = ["crossref", "ciarp", "eu-repo", "redcol", "dspace"]
+        ignore = ["crossref", "ciarp", "eu-repo", "redcol", "dspace", "coar"]
         if product_type.get("_id") in ignore:
             continue
 
@@ -240,7 +251,6 @@ def parse_product_type_filter(product_types: list) -> list:
                             "value": "scienti_" + inner_type.get("type") + "_" + inner_type.get("code"),
                             "title": inner_type.get("code") + " " + inner_type.get("type"),
                             "code": inner_type.get("code"),
-                            "children": [],
                         }
                     )
                 elif inner_type.get("level") == 1:
@@ -249,7 +259,6 @@ def parse_product_type_filter(product_types: list) -> list:
                             "value": "scienti_" + inner_type.get("type") + "_" + inner_type.get("code"),
                             "title": inner_type.get("code") + " " + inner_type.get("type"),
                             "code": inner_type.get("code"),
-                            "children": [],
                         }
                     )
                 elif inner_type.get("level") == 2:

@@ -483,144 +483,30 @@ def get_works_rankings_by_person(person_id: str, query_params: QueryParams) -> T
 
 
 def get_products_by_database_by_affiliation(affiliation_id: str) -> dict:
+    base_match = {"authors.affiliations.id": affiliation_id}
+    valid_sources = ["minciencias", "openalex", "scholar", "scienti"]
+
+    def count_sources(sources):
+        return database["works"].count_documents(
+            {**base_match, "$expr": {"$setEquals": [{"$setIntersection": ["$updated.source", valid_sources]}, sources]}}
+        )
+
     return {
-        "minciencias": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                ]
-            }
-        ),
-        "openalex": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "openalex"},
-                ]
-            }
-        ),
-        "scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "scholar"},
-                ]
-            }
-        ),
-        "scienti": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "scienti_minciencias": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "scienti_openalex": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "openalex"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "scienti_scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "scholar"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "minciencias_openalex": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "openalex"},
-                ]
-            }
-        ),
-        "minciencias_scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "scholar"},
-                ]
-            }
-        ),
-        "openalex_scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "openalex"},
-                    {"updated.source": "scholar"},
-                ]
-            }
-        ),
-        "scienti_minciencias_openalex": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "openalex"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "scienti_minciencias_scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "scholar"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "scienti_openalex_scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "openalex"},
-                    {"updated.source": "scholar"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "minciencias_openalex_scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "openalex"},
-                    {"updated.source": "scholar"},
-                ]
-            }
-        ),
-        "minciencias_openalex_scholar_scienti": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "openalex"},
-                    {"updated.source": "scholar"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
+        "minciencias": count_sources(["minciencias"]),
+        "openalex": count_sources(["openalex"]),
+        "scholar": count_sources(["scholar"]),
+        "scienti": count_sources(["scienti"]),
+        "scienti_minciencias": count_sources(["scienti", "minciencias"]),
+        "scienti_openalex": count_sources(["scienti", "openalex"]),
+        "scienti_scholar": count_sources(["scienti", "scholar"]),
+        "minciencias_openalex": count_sources(["minciencias", "openalex"]),
+        "minciencias_scholar": count_sources(["minciencias", "scholar"]),
+        "openalex_scholar": count_sources(["openalex", "scholar"]),
+        "scienti_minciencias_openalex": count_sources(["scienti", "minciencias", "openalex"]),
+        "scienti_minciencias_scholar": count_sources(["scienti", "minciencias", "scholar"]),
+        "scienti_openalex_scholar": count_sources(["scienti", "openalex", "scholar"]),
+        "minciencias_openalex_scholar": count_sources(["minciencias", "openalex", "scholar"]),
+        "minciencias_openalex_scholar_scienti": count_sources(["minciencias", "openalex", "scholar", "scienti"]),
     }
 
 
@@ -826,7 +712,7 @@ def set_plot_country_filters(pipeline: list, countries: str | None) -> None:
         return
     match_filters = []
     for country in countries.split(","):
-        match_filters.append({"works.authors.affiliations": {"$elemMatch": {"country_code": country}}})
+        match_filters.append({"authors.affiliations": {"$elemMatch": {"country_code": country}}})
     pipeline += [{"$match": {"$or": match_filters}}]
 
 

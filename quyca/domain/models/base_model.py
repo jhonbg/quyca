@@ -194,7 +194,6 @@ class Affiliation(BaseModel):
     end_date: int | str | None = None
 
     ror: str | None = None
-    geo: Geography | None = Field(default_factory=Geography)
     addresses: list[Address] | None = None
     position: str | None = None
     ranking: list[Ranking] | None = None
@@ -246,6 +245,8 @@ class Author(BaseModel):
             return []
         if isinstance(value, dict):
             return [value]
+        if isinstance(value, list):
+            return [v for v in value if isinstance(v, dict) and v is not None]
         return value
 
     @model_validator(mode="after")
@@ -269,7 +270,7 @@ class Author(BaseModel):
 class Group(BaseModel):
     id: str | None = None
     name: str | None
-    ranking: str | None = None
+    ranking: list[Ranking] | None = None
     citations_count: list[CitationsCount] | None = None
 
     class Config:

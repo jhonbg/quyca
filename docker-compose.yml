@@ -29,7 +29,7 @@ services:
     image: colav/quyca-prod:latest
     volumes:
       - .:/app
-    working_dir: /app/quyca
+    working_dir: /app
     environment:
       PYTHONPATH: /quyca
     entrypoint:

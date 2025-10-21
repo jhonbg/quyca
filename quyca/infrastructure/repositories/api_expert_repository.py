@@ -46,6 +46,7 @@ def get_works_for_api_expert(pipeline: list, pipeline_params: dict, query_params
     if query_params.page and query_params.limit:
         base_repository.set_pagination(pipeline, query_params)
 
+    work_repository.set_product_filters(pipeline, query_params)
     pipeline += [
         {
             "$project": {
@@ -73,8 +74,6 @@ def get_works_for_api_expert(pipeline: list, pipeline_params: dict, query_params
             },
         },
     ]
-
-    work_repository.set_product_filters(pipeline, query_params)
     base_repository.set_project(pipeline, pipeline_params.get("project"))
     cursor = database["works"].aggregate(pipeline)
     return work_generator.get(cursor)

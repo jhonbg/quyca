@@ -1,13 +1,19 @@
-from domain.constants.articles_types import articles_types_list
-from domain.models.base_model import QueryParams
-from infrastructure.repositories import (
+from quyca.domain.constants.articles_types import articles_types_list
+from quyca.domain.models.base_model import QueryParams
+from quyca.infrastructure.repositories import (
     plot_repository,
     work_repository,
     calculations_repository,
     person_repository,
     affiliation_repository,
 )
-from domain.parsers import pie_parser, map_parser, venn_parser, bar_parser, network_parser
+from quyca.domain.parsers import (
+    pie_parser,
+    map_parser,
+    venn_parser,
+    bar_parser,
+    network_parser,
+)
 
 
 def get_person_plot(person_id: str, query_params: QueryParams) -> dict:
@@ -27,7 +33,14 @@ def plot_annual_citation_count(person_id: str, query_params: QueryParams) -> dic
 
 
 def plot_annual_apc_expenses(person_id: str, query_params: QueryParams) -> dict:
-    pipeline_params = {"source_project": ["apc"], "work_project": ["source", "year_published"]}
+    pipeline_params = {
+        "work_project": [
+            "source.id",
+            "source.name",
+            "year_published",
+            "source.apc",
+        ]
+    }
     works = work_repository.get_works_with_source_by_person(person_id, query_params, pipeline_params)
     return bar_parser.parse_annual_apc_expenses(works)
 
@@ -43,11 +56,17 @@ def plot_annual_articles_open_access(person_id: str, query_params: QueryParams) 
 
 def plot_annual_articles_by_top_publishers(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "source_project": ["publisher", "apc"],
-        "work_project": ["source", "year_published", "types"],
+        "work_project": [
+            "source.id",
+            "source.name",
+            "source.publisher.name",
+            "year_published",
+            "types",
+            "source.apc",
+        ],
         "match": {
             "types.type": {"$in": articles_types_list},
-            "source.publisher.name": {"$ne": float("nan")},
+            "source.publisher.name": {"$ne": None},
         },
     }
     works = work_repository.get_works_with_source_by_person(person_id, query_params, pipeline_params)
@@ -61,8 +80,7 @@ def plot_most_used_title_words(person_id: str, query_params: QueryParams) -> dic
 
 def plot_articles_by_publisher(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "source_project": ["publisher"],
-        "work_project": ["source"],
+        "work_project": ["source.id", "source.name", "source.publisher.name"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_with_source_by_person(person_id, query_params, pipeline_params)
@@ -71,8 +89,8 @@ def plot_articles_by_publisher(person_id: str, query_params: QueryParams) -> dic
 
 def plot_products_by_subject(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {"subjects": {"$ne": []}},
-        "project": ["subjects"],
+        "match": {"primary_topic.display_name": {"$exists": True, "$ne": None}},
+        "project": ["primary_topic.display_name"],
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     return pie_parser.parse_products_by_subject(works)
@@ -103,8 +121,12 @@ def plot_articles_by_scienti_category(person_id: str, query_params: QueryParams)
 
 def plot_articles_by_scimago_quartile(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "source_project": ["ranking"],
-        "work_project": ["source", "date_published"],
+        "work_project": [
+            "source.id",
+            "source.name",
+            "date_published",
+            "source.ranking",
+        ],
         "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_with_source_by_person(person_id, query_params, pipeline_params)
@@ -121,8 +143,7 @@ def plot_articles_by_publishing_institution(person_id: str, query_params: QueryP
             institution = affiliation_repository.get_affiliation_by_id(str(affiliation.id))
             break
     pipeline_params = {
-        "source_project": ["publisher"],
-        "work_project": ["source"],
+        "work_project": ["source.id", "source.name", "source.publisher.name"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_with_source_by_person(person_id, query_params, pipeline_params)

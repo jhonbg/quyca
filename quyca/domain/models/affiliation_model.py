@@ -1,7 +1,7 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field, model_validator, field_validator
 
-from domain.models.base_model import (
+from quyca.domain.models.base_model import (
     Type,
     Updated,
     ExternalUrl,
@@ -42,6 +42,18 @@ class Relation(BaseModel):
         return value
 
 
+class WorkType(BaseModel):
+    source: str | None = None
+    level: int | None = None
+    count: int | None = None
+
+
+class Work(BaseModel):
+    types: list[WorkType] | None = None
+    scholar_distribution: list[int] | None = Field(default=0)
+    source: list[dict] | None = None
+
+
 class Status(BaseModel):
     source: str | None
     status: str | None
@@ -52,7 +64,6 @@ class Affiliation(BaseModel):
     abbreviations: list[str] | None = None
     addresses: list[Address] | Address | None = None
     aliases: list[str] | None = None
-    birthdate: str | int | None = None
     citations_count: list[CitationsCount] | None = None
     description: list[Description] | None = None
     external_ids: list[ExternalId] | None = None
@@ -71,11 +82,31 @@ class Affiliation(BaseModel):
     logo: str | None = None
     affiliations: list[dict | Relation] | None = None
     relations_data: list[Relation] | None = None
+    works: list[Work] | None = None
+
+    @field_validator("names", mode="before")
+    @classmethod
+    def normalize_names(cls, value):
+        if not value:
+            return value
+
+        normalized = []
+        for item in value:
+            if isinstance(item, str):
+                normalized.append(Name(name=item, lang=None, source=None))
+            elif isinstance(item, dict):
+                normalized.append(Name(**item))
+            elif isinstance(item, Name):
+                normalized.append(item)
+        return normalized
 
     @model_validator(mode="after")
-    def get_name(self):  # type: ignore
-        es_name = next(filter(lambda x: x.lang == "es", self.names), None)
-        self.name = es_name.name if es_name else self.names[0].name
+    def get_name(self):
+        if self.names:
+            es_name = next(filter(lambda x: x.lang == "es", self.names), None)
+            self.name = es_name.name if es_name else self.names[0].name
+        else:
+            self.name = None
         return self
 
     class Config:

@@ -1,8 +1,8 @@
-from domain.models.base_model import ExternalUrl, QueryParams
-from domain.constants.institutions import institutions_list
-from domain.parsers import affiliation_parser
-from domain.models.affiliation_model import Affiliation, Relation
-from infrastructure.repositories import (
+from quyca.domain.models.base_model import QueryParams
+from quyca.domain.constants.institutions import institutions_list
+from quyca.domain.parsers import affiliation_parser
+from quyca.domain.models.affiliation_model import Affiliation, Relation
+from quyca.infrastructure.repositories import (
     person_repository,
     affiliation_repository,
 )
@@ -52,6 +52,7 @@ def search_affiliations(affiliation_type: str, query_params: QueryParams) -> dic
             "_id",
             "names",
             "addresses.country_code",
+            "addresses.country",
             "external_ids",
             "external_urls",
             "relations",
@@ -74,37 +75,77 @@ def search_affiliations(affiliation_type: str, query_params: QueryParams) -> dic
 
 
 def set_relation_external_urls(affiliation: Affiliation) -> None:
+    if not affiliation.relations:
+        return
+
     for relation in affiliation.relations:
-        relation_data = next(
-            filter(lambda x: x.id == relation.id, affiliation.relations_data),
-            Relation(),
-        )
-        relation.external_urls = relation_data.external_urls
+        if getattr(relation, "external_urls", None):
+            continue
+
+        relation_external_urls = None
+
+        if getattr(affiliation, "relations_data", None):
+            relation_data = next(
+                (x for x in affiliation.relations_data if x.id == relation.id),
+                None,
+            )
+            if relation_data and getattr(relation_data, "external_urls", None):
+                relation_external_urls = relation_data.external_urls
+
+        if not relation_external_urls and getattr(relation, "id", None):
+            try:
+                # In this case use the logo from the related affiliation
+                related_aff = affiliation_repository.get_affiliation_by_id(str(relation.id))
+                if getattr(related_aff, "external_urls", None):
+                    relation_external_urls = related_aff.external_urls
+            except Exception:
+                relation_external_urls = None
+
+        relation.external_urls = relation_external_urls or []
 
 
 def set_upper_affiliations_and_logo(affiliation: Affiliation, affiliation_type: str) -> None:
-    if affiliation_type == "institution":
-        affiliation.logo = next(
-            filter(lambda x: x.source == "logo", affiliation.external_urls),
-            ExternalUrl(),
-        ).url
+    if affiliation_type == "institution" and affiliation.external_urls:
+        logo_url = next(
+            (x.url for x in affiliation.external_urls if x.source == "logo"),
+            None,
+        )
+        if logo_url:
+            affiliation.logo = str(logo_url)
+
     upper_affiliations = []
+    if not affiliation.relations:
+        affiliation.affiliations = []
+        return
+
     for relation in affiliation.relations:
-        if affiliation_type == "faculty" and relation.types[0].type in institutions_list:
+        if not relation.types:
+            continue
+
+        first_type = relation.types[0].type
+
+        if affiliation_type == "faculty" and first_type in institutions_list:
             set_logo(affiliation, relation)
             upper_affiliations.append(relation)
-        elif affiliation_type == "department" and relation.types[0].type in institutions_list + ["faculty"]:
+
+        elif affiliation_type == "department" and first_type in institutions_list + ["faculty"]:
             set_logo(affiliation, relation)
             upper_affiliations.append(relation)
-        elif affiliation_type == "group" and relation.types[0].type in institutions_list + [
-            "department",
-            "faculty",
-        ]:
+
+        elif affiliation_type == "group" and first_type in institutions_list + ["department", "faculty"]:
             set_logo(affiliation, relation)
             upper_affiliations.append(relation)
-    affiliation.affiliations = upper_affiliations
+
+    affiliation.affiliations = upper_affiliations or []
 
 
 def set_logo(affiliation: Affiliation, relation: Relation) -> None:
+    if not relation.types or not relation.external_urls:
+        return
     if relation.types[0].type in institutions_list:
-        affiliation.logo = next(filter(lambda x: x.source == "logo", relation.external_urls), ExternalUrl()).url
+        logo_url = next(
+            (x.url for x in relation.external_urls if x.source == "logo"),
+            None,
+        )
+        if logo_url:
+            affiliation.logo = str(logo_url)

@@ -3,7 +3,7 @@ from typing import Any
 from bson import ObjectId
 from pydantic import BaseModel, Field
 
-from domain.models.base_model import (
+from quyca.domain.models.base_model import (
     PyObjectId,
     CitationsCount,
     Type,
@@ -20,6 +20,7 @@ from domain.models.base_model import (
     Affiliation,
     ProductType,
     Name,
+    Topic,
 )
 
 
@@ -86,7 +87,8 @@ class Work(BaseModel):
     abstracts: list[Abstract] | None = None
     apc: APC | None = Field(default_factory=APC)
     authors_count: int | None = Field(default_factory=int, alias="author_count")
-    authors: list[AutorWork] | str | None = Field(default_factory=list[AutorWork])
+    authors: list[Author] = Field(default_factory=list)
+    authors_csv: str | None = None
     bibliographic_info: BiblioGraphicInfo | None = None
     citations: list | None = Field(default_factory=list)
     citations_by_year: list[CitationByYear] | None = None
@@ -94,7 +96,7 @@ class Work(BaseModel):
     date_published: int | None = None
     external_ids: list[ExternalId] | None = None
     external_urls: list[ExternalUrl] | None = None
-    groups: list[Group] | str | None = None
+    groups: list[Group] | None = None
     keywords: list | None = None
     open_access: OpenAccess | None = Field(default_factory=OpenAccess)
     ranking: list[Ranking] | str | None = None
@@ -129,6 +131,7 @@ class Work(BaseModel):
     publisher: str | None = None
     openalex_types: str | None = None
     scienti_types: str | None = None
+    impactu_types: str | None = None
     scimago_quartile: str | None = None
     source_apc: str | None = None
     source_data: Source | list[Source] | None = None
@@ -136,6 +139,9 @@ class Work(BaseModel):
     source_urls: str | None = None
     title: str | None = None
     volume: str | int | None = None
+    topics: list[Topic] | None = None
+    primary_topic: Topic | None = None
+    primary_topic_csv: str | None = None
 
     class Config:
         json_encoders = {ObjectId: str}

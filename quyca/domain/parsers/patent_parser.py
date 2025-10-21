@@ -1,4 +1,4 @@
-from domain.models.patent_model import Patent
+from quyca.domain.models.patent_model import Patent
 
 
 def parse_search_results(patents: list) -> list:

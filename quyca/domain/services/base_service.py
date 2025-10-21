@@ -1,25 +1,30 @@
 from urllib.parse import urlparse
 
-from domain.constants.external_urls import external_urls_dict
-from domain.models.base_model import Title, ProductType, ExternalUrl
-from domain.models.other_work_model import OtherWork
-from domain.models.patent_model import Patent
-from domain.models.project_model import Project
-from domain.models.work_model import Work
-from infrastructure.repositories import person_repository
+from quyca.domain.constants.external_urls import external_urls_dict
+from quyca.domain.models.base_model import Title, ProductType, ExternalUrl
+from quyca.domain.models.patent_model import Patent
+from quyca.domain.models.project_model import Project
+from quyca.domain.models.work_model import Work
+from quyca.infrastructure.repositories import person_repository
 
 
-def set_title_and_language(workable: Work | OtherWork | Patent | Project) -> None:
+def set_title_and_language(workable: Work | Patent | Project) -> None:
+    if not workable.titles:
+        workable.title = None
+        workable.language = None
+        return
+
+    hierarchy = ["openalex", "scienti", "minciencias", "ranking", "scholar"]
+
     def order(title: Title) -> float:
-        hierarchy = ["openalex", "scienti", "minciencias", "ranking", "scholar"]
         return hierarchy.index(title.source) if title.source in hierarchy else float("inf")
 
-    first_title = sorted(workable.titles, key=order)[0]
-    workable.language = first_title.lang
+    first_title = min(workable.titles, key=order)
     workable.title = first_title.title
+    workable.language = first_title.lang
 
 
-def set_product_types(workable: Work | OtherWork | Patent | Project) -> None:
+def set_product_types(workable: Work | Patent | Project) -> None:
     def order(product_type: ProductType) -> float:
         hierarchy = ["openalex", "scienti", "minciencias", "scholar"]
         return hierarchy.index(product_type.source) if product_type.source in hierarchy else float("inf")
@@ -41,7 +46,7 @@ def set_product_types(workable: Work | OtherWork | Patent | Project) -> None:
     workable.product_types = sorted(product_types, key=order)
 
 
-def set_authors_external_ids(workable: Work | OtherWork | Patent | Project) -> None:
+def set_authors_external_ids(workable: Work | Patent | Project) -> None:
     if not workable.authors:
         return
     for author in workable.authors:
@@ -49,14 +54,14 @@ def set_authors_external_ids(workable: Work | OtherWork | Patent | Project) -> N
             author.external_ids = person_repository.get_person_by_id(str(author.id)).external_ids
 
 
-def limit_authors(workable: Work | OtherWork | Patent | Project, limit: int = 10) -> None:
+def limit_authors(workable: Work | Patent | Project, limit: int = 10) -> None:
     if not workable.authors:
         return
     if len(workable.authors) > limit:
         workable.authors = workable.authors[:limit]
 
 
-def set_external_ids(workable: Work | OtherWork | Patent | Project) -> None:
+def set_external_ids(workable: Work | Patent | Project) -> None:
     if not workable.external_ids:
         return
     new_external_ids = []
@@ -68,7 +73,7 @@ def set_external_ids(workable: Work | OtherWork | Patent | Project) -> None:
     workable.external_ids = list(set(new_external_ids))
 
 
-def set_external_urls(workable: Work | OtherWork | Patent | Project) -> None:
+def set_external_urls(workable: Work | Patent | Project) -> None:
     if not workable.external_urls:
         return
     new_external_urls = []

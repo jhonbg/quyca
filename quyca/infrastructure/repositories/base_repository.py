@@ -1,4 +1,4 @@
-from domain.models.base_model import QueryParams
+from quyca.domain.models.base_model import QueryParams
 
 
 def set_search_end_stages(pipeline: list, query_params: QueryParams, pipeline_params: dict | None = None) -> list:
@@ -22,10 +22,11 @@ def set_match(pipeline: list, match: dict | None) -> None:
     pipeline += [{"$match": match}]
 
 
-def set_project(pipeline: list, project: list | None) -> None:
+def set_project(pipeline: list, project: list | dict | None) -> None:
     if not project:
         return
-    pipeline += [{"$project": {"_id": 1, **{p: 1 for p in project}}}]
+
+    pipeline.append({"$project": {"_id": 1, **{p: 1 for p in project}}})
 
 
 def set_sort(sort: str | None, pipeline: list) -> None:
@@ -34,41 +35,7 @@ def set_sort(sort: str | None, pipeline: list) -> None:
     sort_field, direction_str = sort.split("_")
     direction = -1 if direction_str == "desc" else 1
     if sort_field == "citations":
-        pipeline += [
-            {
-                "$addFields": {
-                    "openalex_citations_count": {
-                        "$ifNull": [
-                            {
-                                "$arrayElemAt": [
-                                    {
-                                        "$map": {
-                                            "input": {
-                                                "$filter": {
-                                                    "input": "$citations_count",
-                                                    "as": "citation",
-                                                    "cond": {
-                                                        "$eq": [
-                                                            "$$citation.source",
-                                                            "openalex",
-                                                        ]
-                                                    },
-                                                }
-                                            },
-                                            "as": "filtered",
-                                            "in": "$$filtered.count",
-                                        }
-                                    },
-                                    0,
-                                ]
-                            },
-                            0,
-                        ]
-                    }
-                }
-            }
-        ]
-        sort_field = "openalex_citations_count"
+        sort_field = "citations_count_openalex"
     elif sort_field == "alphabetical":
         pipeline += [
             {

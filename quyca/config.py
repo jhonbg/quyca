@@ -7,12 +7,16 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     class Config:
+        env_file = os.getenv("QUYCA_CONFIG_FILE")
         if os.getenv("ENVIRONMENT") == "dev":
-            env_file = "../.env.dev"
+            if not env_file:
+                env_file = ".env.dev"
         elif os.getenv("ENVIRONMENT") == "prod":
-            env_file = "../.env.prod"
+            if not env_file:
+                env_file = ".env.prod"
         else:
-            env_file = "../.env.local"
+            if not env_file:
+                env_file = ".env.local"
 
     environment: str = "local"
 
@@ -31,6 +35,7 @@ class Settings(BaseSettings):
     MONGO_DATABASE: str
     MONGO_PORT: int
     MONGO_CALCULATIONS_DATABASE: str
+    MONGO_IMPACTU_DATABASE: str
     MONGO_URI: Optional[MongoDsn] = None
 
     ES_SERVER: str
@@ -42,7 +47,18 @@ class Settings(BaseSettings):
     ES_DEPARTMENT_COMPLETER_INDEX: str
     ES_FACULTY_COMPLETER_INDEX: str
 
+    API_LIMITS: str
+
     SENTRY_DSN: str
+
+    LOCAL_STORAGE_PATH: str
+
+    GOOGLE_CREDENTIALS: str
+
+    GOOGLE_PARENT_ID: str
+
+    JWT_SECRET_KEY: str
+    JWT_ACCESS_TOKEN_EXPIRES: int
 
     @model_validator(mode="after")
     def validate_mongo_uri(self) -> Self:

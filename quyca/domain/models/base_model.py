@@ -1,7 +1,9 @@
 from typing import Generator
-
+from datetime import datetime, timezone
 from pydantic import BaseModel, field_validator, Field, conint, model_validator
 from bson import ObjectId
+
+from quyca.domain.constants.clean_source import clean_nan
 
 
 class PyObjectId(ObjectId):
@@ -88,6 +90,11 @@ class Ranking(BaseModel):
     to_date: int | str | None = None
     level: int | None = None
 
+    @field_validator("rank", mode="before")
+    @classmethod
+    def replace_nan_in_rank(cls, v):
+        return clean_nan(v)
+
 
 class Status(BaseModel):
     source: str | None
@@ -125,6 +132,11 @@ class Publisher(BaseModel):
     country_code: str | None = None
     name: str | float | None = None
 
+    @field_validator("name", mode="before")
+    @classmethod
+    def replace_nan_in_name(cls, v):
+        return clean_nan(v)
+
 
 class Paid(BaseModel):
     currency: str | None = None
@@ -150,9 +162,11 @@ class QueryParams(BaseModel):
     years: str | None = None
     status: str | None = None
     subjects: str | None = None
+    topics: str | None = None
     countries: str | None = None
     groups_ranking: str | None = None
     authors_ranking: str | None = None
+    source_types: str | None = None
 
     @model_validator(mode="after")
     def validate_pagination_and_sort(self) -> "QueryParams":
@@ -180,7 +194,6 @@ class Affiliation(BaseModel):
     end_date: int | str | None = None
 
     ror: str | None = None
-    geo: Geography | None = Field(default_factory=Geography)
     addresses: list[Address] | None = None
     position: str | None = None
     ranking: list[Ranking] | None = None
@@ -225,6 +238,31 @@ class Author(BaseModel):
             )
         )
 
+    @field_validator("affiliations", mode="before")
+    @classmethod
+    def ensure_list_affiliations(cls, value):
+        if value is None:
+            return []
+        if isinstance(value, dict):
+            return [value]
+        if isinstance(value, list):
+            return [v for v in value if isinstance(v, dict) and v is not None]
+        return value
+
+    @model_validator(mode="after")
+    def compute_age_and_remove_birthdate(self):
+        if self.birthdate:
+            try:
+                birth_ts = int(self.birthdate)
+                birth_date = datetime.fromtimestamp(birth_ts, tz=timezone.utc).date()
+                today = datetime.now(tz=timezone.utc).date()
+                age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+                self.age = age
+            except Exception:
+                self.age = None
+        self.birthdate = None
+        return self
+
     class Config:
         json_encoders = {ObjectId: str}
 
@@ -232,6 +270,8 @@ class Author(BaseModel):
 class Group(BaseModel):
     id: str | None = None
     name: str | None
+    ranking: list[Ranking] | None = None
+    citations_count: list[CitationsCount] | None = None
 
     class Config:
         json_encoders = {ObjectId: str}
@@ -247,3 +287,22 @@ class Title(BaseModel):
 class ProductType(BaseModel):
     name: str | None = None
     source: str | None = None
+
+
+class TopicBase(BaseModel):
+    id: str | int | None = None
+    display_name: str | None = None
+
+
+class Topic(TopicBase):
+    subfield: TopicBase | None = None
+    field: TopicBase | None = None
+    domain: TopicBase | None = None
+    score: float | None = None
+
+    @field_validator("subfield", "field", "domain", mode="before")
+    def normalize_subobjects(cls, value):
+        # Sometimes these fields come as unknown strings
+        if isinstance(value, str):
+            return None
+        return value

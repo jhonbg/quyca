@@ -1,10 +1,10 @@
 from typing import Generator
 
 
-from domain.models.base_model import QueryParams
-from infrastructure.generators import work_generator
-from infrastructure.mongo import database
-from infrastructure.repositories import work_repository
+from quyca.domain.models.base_model import QueryParams
+from quyca.infrastructure.generators import work_generator
+from quyca.infrastructure.mongo import database
+from quyca.infrastructure.repositories import work_repository
 
 
 def get_works_csv_by_person(person_id: str, query_params: QueryParams) -> Generator:
@@ -14,48 +14,21 @@ def get_works_csv_by_person(person_id: str, query_params: QueryParams) -> Genera
     work_repository.set_product_filters(pipeline, query_params)
     pipeline += [
         {
-            "$lookup": {
-                "from": "affiliations",  # type: ignore
-                "localField": "authors.affiliations.id",  # type: ignore
-                "foreignField": "_id",  # type: ignore
-                "as": "affiliations_data",  # type: ignore
-                "pipeline": [{"$project": {"id": "$_id", "addresses.country": 1, "ranking": 1}}],  # type: ignore
-            }
-        },
-        {
-            "$lookup": {
-                "from": "sources",  # type: ignore
-                "localField": "source.id",  # type: ignore
-                "foreignField": "_id",  # type: ignore
-                "as": "source_data",  # type: ignore
-                "pipeline": [  # type: ignore
-                    {
-                        "$project": {
-                            "external_urls": 1,
-                            "ranking": 1,
-                            "publisher": 1,
-                            "apc": 1,
-                        }
-                    }
-                ],
-            }
-        },
-        {
             "$project": {
-                "external_ids": 1,  # type: ignore
-                "authors": 1,  # type: ignore
-                "affiliations_data": 1,  # type: ignore
-                "bibliographic_info": 1,  # type: ignore
-                "citations_count": 1,  # type: ignore
-                "open_access": 1,  # type: ignore
-                "subjects": 1,  # type: ignore
-                "titles": 1,  # type: ignore
-                "types": 1,  # type: ignore
-                "source": 1,  # type: ignore
-                "source_data": 1,  # type: ignore
-                "year_published": 1,  # type: ignore
-                "ranking": 1,  # type: ignore
-                "abstract": 1,  # type: ignore
+                "external_ids": 1,
+                "authors": 1,
+                "bibliographic_info": 1,
+                "open_access": 1,
+                "citations_count": 1,
+                "subjects": 1,
+                "titles": 1,
+                "types": 1,
+                "source": 1,
+                "groups": 1,
+                "year_published": 1,
+                "ranking": 1,
+                "primary_topic": 1,
+                "doi": 1,
             }
         },
     ]
@@ -63,57 +36,30 @@ def get_works_csv_by_person(person_id: str, query_params: QueryParams) -> Genera
     return work_generator.get(cursor)
 
 
-def get_works_csv_by_affiliation(affiliation_id: str, query_params: QueryParams) -> Generator:
+def get_works_csv_by_affiliation(affiliation_id: str, query_params: QueryParams, affiliation_type: str) -> Generator:
     pipeline = [
-        {"$match": {"authors.affiliations.id": affiliation_id}},
+        {"$match": {"authors.affiliations.id": affiliation_id, "authors.affiliations.types.type": affiliation_type}},
     ]
     work_repository.set_product_filters(pipeline, query_params)
     pipeline += [
         {
-            "$lookup": {
-                "from": "affiliations",  # type: ignore
-                "localField": "authors.affiliations.id",  # type: ignore
-                "foreignField": "_id",  # type: ignore
-                "as": "affiliations_data",  # type: ignore
-                "pipeline": [{"$project": {"id": "$_id", "addresses.country": 1, "ranking": 1}}],  # type: ignore
-            }
-        },
-        {
-            "$lookup": {
-                "from": "sources",  # type: ignore
-                "localField": "source.id",  # type: ignore
-                "foreignField": "_id",  # type: ignore
-                "as": "source_data",  # type: ignore
-                "pipeline": [  # type: ignore
-                    {
-                        "$project": {
-                            "external_urls": 1,
-                            "ranking": 1,
-                            "publisher": 1,
-                            "apc": 1,
-                        }
-                    }
-                ],
-            }
-        },
-        {
             "$project": {
-                "external_ids": 1,  # type: ignore
-                "authors": 1,  # type: ignore
-                "affiliations_data": 1,  # type: ignore
-                "bibliographic_info": 1,  # type: ignore
-                "open_access": 1,  # type: ignore
-                "citations_count": 1,  # type: ignore
-                "subjects": 1,  # type: ignore
-                "titles": 1,  # type: ignore
-                "types": 1,  # type: ignore
-                "source": 1,  # type: ignore
-                "source_data": 1,  # type: ignore
-                "year_published": 1,  # type: ignore
-                "ranking": 1,  # type: ignore
-                "abstract": 1,  # type: ignore
+                "external_ids": 1,
+                "authors": 1,
+                "bibliographic_info": 1,
+                "open_access": 1,
+                "citations_count": 1,
+                "subjects": 1,
+                "titles": 1,
+                "types": 1,
+                "source": 1,
+                "groups": 1,
+                "year_published": 1,
+                "ranking": 1,
+                "primary_topic": 1,
+                "doi": 1,
             }
-        },
+        }
     ]
     cursor = database["works"].aggregate(pipeline)
     return work_generator.get(cursor)

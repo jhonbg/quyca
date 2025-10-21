@@ -1,6 +1,6 @@
 from bson import ObjectId
 from pydantic import BaseModel, Field, field_validator, model_validator
-from domain.models.base_model import (
+from quyca.domain.models.base_model import (
     PyObjectId,
     CitationsCount,
     Updated,
@@ -12,6 +12,7 @@ from domain.models.base_model import (
     ExternalUrl,
     BirthPlace,
 )
+from datetime import datetime, date
 
 
 class Affiliation(BaseModel):
@@ -93,6 +94,7 @@ class Person(BaseModel):
 
     affiliations_data: list[Affiliation] | None = None
     logo: str | None = None
+    age: int | None = None
 
     @field_validator("external_ids")
     @classmethod
@@ -105,11 +107,41 @@ class Person(BaseModel):
             )
         )
 
+    @model_validator(mode="after")
+    def calculate_age(self) -> "Person":
+        if self.birthdate:
+            try:
+                if isinstance(self.birthdate, int):
+                    # If it is a timestamp in seconds
+                    birth_date = datetime.fromtimestamp(self.birthdate).date()
+                elif isinstance(self.birthdate, str):
+                    # Try to parse as date YYYY-MM-DD
+                    birth_date = datetime.fromisoformat(self.birthdate).date()
+                else:
+                    return self
+
+                today = date.today()
+                self.age = (
+                    today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+                )
+            except Exception as e:
+                print(e)
+                self.age = None
+        self.birthdate = None  # delete birthdate to avoid sensitive data exposure
+        return self
+
     class Config:
         json_encoders = {ObjectId: str}
 
     @model_validator(mode="after")
     def get_logo(self) -> "Person":
         if self.affiliations_data:
-            self.logo = next(filter(lambda x: x.source == "logo", self.affiliations_data[0].external_urls)).url  # type: ignore
+            external_urls = (
+                self.affiliations_data[0].external_urls
+                if self.affiliations_data[0] and self.affiliations_data[0].external_urls
+                else []
+            )
+            logo = next((x for x in external_urls if x.source == "logo"), None)
+            if logo:
+                self.logo = str(logo.url)
         return self

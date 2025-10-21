@@ -1,10 +1,10 @@
 from typing import Generator
 
-from domain.models.base_model import QueryParams
-from domain.models.work_model import Work, Abstract
-from infrastructure.repositories import work_repository
-from domain.services import source_service
-from domain.services.base_service import (
+from quyca.domain.models.base_model import QueryParams
+from quyca.domain.models.work_model import Work, Abstract
+from quyca.infrastructure.repositories import work_repository
+from quyca.domain.services import source_service
+from quyca.domain.services.base_service import (
     limit_authors,
     set_title_and_language,
     set_product_types,
@@ -12,7 +12,7 @@ from domain.services.base_service import (
     set_external_urls,
     set_external_ids,
 )
-from domain.parsers import work_parser
+from quyca.domain.parsers import work_parser
 
 
 def get_work_by_id(work_id: str) -> dict:
@@ -103,7 +103,11 @@ def get_works_by_entity_pipeline_params() -> dict:
             "_id",
             "author_count",
             "open_access",
-            "authors",
+            "authors.full_name",
+            "authors.id",
+            "authors.affiliations.id",
+            "authors.affiliations.name",
+            "authors.affiliations.types",
             "citations_count",
             "bibliographic_info",
             "types",
@@ -113,8 +117,8 @@ def get_works_by_entity_pipeline_params() -> dict:
             "year_published",
             "external_ids",
             "external_urls",
-            "authors_data",
             "ranking",
+            "topics",
         ]
     }
     return pipeline_params

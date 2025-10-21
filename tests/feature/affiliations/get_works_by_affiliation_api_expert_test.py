@@ -1,10 +1,11 @@
 from quyca.infrastructure.mongo import database
+from quyca.domain.constants.institutions import institutions_list
 
 
 def test_get_works_by_institution_api_expert(client):
     random_institution_id = (
         database["affiliations"]
-        .aggregate([{"$match": {"types.type": "education"}}, {"$sample": {"size": 1}}])
+        .aggregate([{"$match": {"types.type": {"$in": institutions_list}}}, {"$sample": {"size": 1}}])
         .next()["_id"]
     )
     response = client.get(

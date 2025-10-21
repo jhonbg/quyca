@@ -1,10 +1,10 @@
-from domain.constants.institutions import institutions_list
-from infrastructure.mongo import database
+from quyca.domain.constants.institutions import institutions_list
+from quyca.infrastructure.mongo import database
 
 
 def get_last_db_update() -> int:
-    pipeline = [{"$group": {"_id": None, "max_time": {"$max": "$time"}}}]
-    return next(database["log"].aggregate(pipeline), {"max_time": 0}).get("max_time", 0)
+    doc = database["log"].find_one(sort=[("time", -1)], projection={"time": 1})
+    return doc["time"] if doc else 0
 
 
 def get_entity_count(entity: str, affiliation_type: str | None = None) -> int:
@@ -12,4 +12,12 @@ def get_entity_count(entity: str, affiliation_type: str | None = None) -> int:
         if affiliation_type == "institution":
             return database[entity].count_documents({"types.type": {"$in": institutions_list}})
         return database[entity].count_documents({"types.type": affiliation_type})
-    return database[entity].count_documents({})
+    return database[entity].estimated_document_count()
+
+
+def get_open_access_count() -> int:
+    return database["works"].count_documents({"open_access.is_open_access": True})
+
+
+def get_news_count() -> int:
+    return database["news_urls_collection"].estimated_document_count()

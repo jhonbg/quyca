@@ -1,14 +1,20 @@
 from pymongo.command_cursor import CommandCursor
 
-from domain.constants.articles_types import articles_types_list
-from domain.models.base_model import QueryParams
-from infrastructure.repositories import (
+from quyca.domain.constants.articles_types import articles_types_list
+from quyca.domain.models.base_model import QueryParams
+from quyca.infrastructure.repositories import (
     work_repository,
     plot_repository,
     calculations_repository,
     affiliation_repository,
 )
-from domain.parsers import pie_parser, map_parser, venn_parser, bar_parser, network_parser
+from quyca.domain.parsers import (
+    pie_parser,
+    map_parser,
+    venn_parser,
+    bar_parser,
+    network_parser,
+)
 
 
 def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_params: QueryParams) -> dict | None:
@@ -18,7 +24,7 @@ def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_param
         "departments_by_product_type": "department",
         "research_groups_by_product_type": "group",
     }
-    if plot_type in plot_type_dict.keys():
+    if plot_type is not None and plot_type in plot_type_dict.keys():
         relation_type = plot_type_dict[plot_type]
         return plot_affiliations_by_product_type(affiliation_id, affiliation_type, relation_type, query_params)
     if plot_type in [
@@ -42,7 +48,7 @@ def get_affiliation_plot(affiliation_id: str, affiliation_type: str, query_param
     ]:
         relation_type = plot_type.split("_")[-1]
         return plot_h_index_by_affiliation(affiliation_id, affiliation_type, relation_type, query_params)
-    return globals()["plot_" + plot_type](affiliation_id, query_params)
+    return globals().get(f"plot_{plot_type}", lambda *_: None)(affiliation_id, query_params)
 
 
 def plot_affiliations_by_product_type(
@@ -122,11 +128,10 @@ def plot_annual_articles_open_access(affiliation_id: str, query_params: QueryPar
 
 def plot_annual_articles_by_top_publishers(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "source_project": ["publisher"],
-        "work_project": ["source", "year_published", "types"],
+        "work_project": ["source.name", "source.publisher.name", "source.id", "year_published", "types"],
         "match": {
             "types.type": {"$in": articles_types_list},
-            "source.publisher.name": {"$ne": float("nan")},
+            "source.publisher.name": {"$ne": None},
         },
     }
     works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
@@ -140,8 +145,7 @@ def plot_most_used_title_words(affiliation_id: str, query_params: QueryParams) -
 
 def plot_articles_by_publisher(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "source_project": ["publisher"],
-        "work_project": ["source"],
+        "work_project": ["source.id", "source.publisher.name", "source.name"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
@@ -150,8 +154,8 @@ def plot_articles_by_publisher(affiliation_id: str, query_params: QueryParams) -
 
 def plot_products_by_subject(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {"subjects": {"$ne": []}},
-        "project": ["subjects"],
+        "project": ["primary_topic.display_name"],
+        "match": {"primary_topic.display_name": {"$exists": True, "$ne": None}},
     }
     works = work_repository.get_works_by_affiliation(affiliation_id, query_params, pipeline_params)
     return pie_parser.parse_products_by_subject(works)
@@ -192,8 +196,7 @@ def plot_articles_by_scienti_category(affiliation_id: str, query_params: QueryPa
 
 def plot_articles_by_scimago_quartile(affiliation_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "source_project": ["ranking"],
-        "work_project": ["source", "date_published"],
+        "work_project": ["source.id", "source.name", "date_published", "source.ranking"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
@@ -203,8 +206,7 @@ def plot_articles_by_scimago_quartile(affiliation_id: str, query_params: QueryPa
 def plot_articles_by_publishing_institution(affiliation_id: str, query_params: QueryParams) -> dict:
     institution = affiliation_repository.get_affiliation_by_id(affiliation_id)
     pipeline_params = {
-        "source_project": ["publisher"],
-        "work_project": ["source"],
+        "work_project": ["source.id", "source.name", "source.publisher.name"],
         "match": {"types.type": {"$in": articles_types_list}},
     }
     works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
@@ -227,6 +229,6 @@ def plot_institutional_coauthorship_network(affiliation_id: str, query_params: Q
 
 
 def plot_annual_apc_expenses(affiliation_id: str, query_params: QueryParams) -> dict:
-    pipeline_params = {"source_project": ["apc"], "work_project": ["source", "year_published"]}
+    pipeline_params = {"work_project": ["source.id", "source.name", "source.apc", "year_published"]}
     works = work_repository.get_works_with_source_by_affiliation(affiliation_id, query_params, pipeline_params)
     return bar_parser.parse_annual_apc_expenses(works)

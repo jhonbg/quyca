@@ -1,6 +1,6 @@
-from infrastructure.elasticsearch import es_database
+from quyca.infrastructure.elasticsearch import es_database
 from typing import Any, Dict, List
-from config import settings
+from quyca.config import settings
 
 
 def person_completer(text: str) -> List[Dict[str, Any]]:

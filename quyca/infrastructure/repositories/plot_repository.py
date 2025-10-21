@@ -2,11 +2,11 @@ from typing import Generator, Tuple
 
 from pymongo.command_cursor import CommandCursor
 
-from domain.models.base_model import QueryParams
-from infrastructure.generators import work_generator
-from infrastructure.mongo import database, calculations_database
-from infrastructure.repositories import work_repository
-from infrastructure.repositories import affiliation_repository
+from quyca.domain.models.base_model import QueryParams
+from quyca.infrastructure.generators import work_generator
+from quyca.infrastructure.mongo import database, calculations_database
+from quyca.infrastructure.repositories import work_repository
+from quyca.infrastructure.repositories import affiliation_repository
 
 
 def get_affiliations_scienti_works_count_by_institution(
@@ -14,15 +14,6 @@ def get_affiliations_scienti_works_count_by_institution(
 ) -> CommandCursor:
     pipeline = [
         {"$match": {"relations.id": institution_id, "types.type": relation_type}},
-        {
-            "$lookup": {
-                "from": "works",
-                "localField": "_id",
-                "foreignField": "authors.affiliations.id",
-                "as": "works",
-                "pipeline": [{"$project": {"types": 1}}],
-            }
-        },
         {"$unwind": "$works"},
         {"$unwind": "$works.types"},
         {"$match": {"works.types.source": "scienti", "works.types.level": 2}},
@@ -32,7 +23,7 @@ def get_affiliations_scienti_works_count_by_institution(
         {
             "$group": {
                 "_id": {"id": "$_id", "type": "$works.types.type", "name": "$names.name"},
-                "works_count": {"$sum": 1},
+                "works_count": {"$sum": "$works.types.count"},
             }
         },
         {"$project": {"_id": 0, "type": "$_id.type", "works_count": 1, "name": {"$first": "$_id.name"}}},
@@ -68,20 +59,10 @@ def get_groups_scienti_works_count_by_faculty_or_department(
                 "types.type": "group",
             }
         },
-        {
-            "$lookup": {
-                "from": "works",
-                "localField": "_id",
-                "foreignField": "authors.affiliations.id",
-                "as": "works",
-                "pipeline": [{"$project": {"types": 1, "authors": 1}}],
-            }
-        },
         {"$unwind": "$works"},
         {"$unwind": "$works.types"},
         {
             "$match": {
-                "works.authors.affiliations.id": affiliation_id,
                 "works.types.source": "scienti",
                 "works.types.level": 2,
             }
@@ -92,12 +73,18 @@ def get_groups_scienti_works_count_by_faculty_or_department(
         {
             "$group": {
                 "_id": {"id": "$_id", "type": "$works.types.type", "name": "$names.name"},
-                "works_count": {"$sum": 1},
+                "works_count": {"$sum": "$works.types.count"},
             }
         },
-        {"$project": {"_id": 0, "type": "$_id.type", "works_count": 1, "name": {"$first": "$_id.name"}}},
+        {
+            "$project": {
+                "_id": 0,
+                "type": "$_id.type",
+                "works_count": 1,
+                "name": {"$first": "$_id.name"},
+            }
+        },
     ]
-
     return database["affiliations"].aggregate(pipeline)
 
 
@@ -114,47 +101,16 @@ def get_departments_citations_count_by_faculty(affiliation_id: str) -> CommandCu
 
 
 def get_groups_citations_count_by_faculty_or_department(affiliation_id: str) -> CommandCursor:
-    institution_id = (
-        database["affiliations"]
-        .aggregate(
-            [
-                {"$match": {"_id": affiliation_id}},
-                {"$unwind": "$relations"},
-                {"$match": {"relations.types.type": "Education"}},
-            ]
-        )
-        .next()
-        .get("relations", {})
-        .get("id", None)
-    )
     groups_ids = [group.id for group in affiliation_repository.get_groups_by_faculty_or_department(affiliation_id)]
     pipeline = [
-        {"$unwind": "$groups"},
         {"$match": {"groups.id": {"$in": groups_ids}}},
-        {
-            "$lookup": {
-                "from": "affiliations",
-                "localField": "groups.id",
-                "foreignField": "_id",
-                "as": "group",
-                "pipeline": [
-                    {
-                        "$match": {
-                            "relations.id": institution_id,
-                            "types.type": "group",
-                        },
-                    },
-                    {"$project": {"_id": 1, "name": {"$first": "$names.name"}, "citations_count": 1}},
-                ],
-            }
-        },
-        {"$unwind": "$group"},
-        {"$replaceRoot": {"newRoot": "$group"}},
+        {"$project": {"groups": 1}},
+        {"$unwind": "$groups"},
         {
             "$group": {
-                "_id": "$_id",
-                "name": {"$first": "$name"},
-                "citations_count": {"$first": "$citations_count"},
+                "_id": "$groups.id",
+                "name": {"$first": "$groups.name"},
+                "citations_count": {"$first": "$groups.citations_count"},
             }
         },
     ]
@@ -166,31 +122,11 @@ def get_affiliations_apc_expenses_by_institution(
 ) -> CommandCursor:
     pipeline = [
         {"$match": {"relations.id": institution_id, "types.type": relation_type}},
-        {
-            "$lookup": {
-                "from": "works",
-                "localField": "_id",
-                "foreignField": "authors.affiliations.id",
-                "as": "works",
-                "pipeline": [{"$project": {"source": 1}}],
-            }
-        },
         {"$unwind": "$works"},
+        {"$unwind": "$works.source"},
     ]
     set_plot_product_filters(pipeline, query_params)
-    pipeline += [
-        {
-            "$lookup": {
-                "from": "sources",
-                "localField": "works.source.id",
-                "foreignField": "_id",
-                "as": "source",
-                "pipeline": [{"$project": {"apc": 1}}],
-            }
-        },
-        {"$unwind": "$source"},
-        {"$project": {"_id": 0, "source": 1, "names": 1}},
-    ]
+    pipeline += [{"$project": {"names": 1, "apc": "$works.source"}}]
     return database["affiliations"].aggregate(pipeline)
 
 
@@ -219,34 +155,11 @@ def get_groups_apc_expenses_by_faculty_or_department(affiliation_id: str, query_
                 "types.type": "group",
             }
         },
-        {
-            "$lookup": {
-                "from": "works",
-                "localField": "_id",
-                "foreignField": "authors.affiliations.id",
-                "as": "works",
-                "pipeline": [
-                    {"$match": {"authors.affiliations.id": affiliation_id}},
-                    {"$project": {"source": 1, "authors": 1}},
-                ],
-            }
-        },
         {"$unwind": "$works"},
+        {"$unwind": "$works.source"},
     ]
     set_plot_product_filters(pipeline, query_params)
-    pipeline += [
-        {
-            "$lookup": {
-                "from": "sources",
-                "localField": "works.source.id",
-                "foreignField": "_id",
-                "as": "source",
-                "pipeline": [{"$project": {"apc": 1}}],
-            }
-        },
-        {"$unwind": "$source"},
-        {"$project": {"_id": 0, "source": 1, "names": 1}},
-    ]
+    pipeline += [{"$project": {"names": 1, "apc": "$works.source"}}]
     return database["affiliations"].aggregate(pipeline)
 
 
@@ -255,53 +168,17 @@ def get_affiliations_works_citations_count_by_institution(
 ) -> CommandCursor:
     pipeline = [
         {"$match": {"relations.id": institution_id, "types.type": relation_type}},
-        {
-            "$lookup": {
-                "from": "works",
-                "localField": "_id",
-                "foreignField": "authors.affiliations.id",
-                "as": "works",
-                "pipeline": [
-                    {
-                        "$addFields": {
-                            "scholar_citations_count": {
-                                "$ifNull": [
-                                    {
-                                        "$arrayElemAt": [
-                                            {
-                                                "$map": {
-                                                    "input": {
-                                                        "$filter": {
-                                                            "input": "$citations_count",
-                                                            "as": "citation",
-                                                            "cond": {
-                                                                "$eq": [
-                                                                    "$$citation.source",
-                                                                    "scholar",
-                                                                ]
-                                                            },
-                                                        }
-                                                    },
-                                                    "as": "filtered",
-                                                    "in": "$$filtered.count",
-                                                }
-                                            },
-                                            0,
-                                        ]
-                                    },
-                                    0,
-                                ]
-                            }
-                        }
-                    },
-                    {"$project": {"scholar_citations_count": 1}},
-                ],
-            }
-        },
+        {"$unwind": "$works"},
     ]
     set_plot_product_filters(pipeline, query_params)
     pipeline += [
-        {"$project": {"_id": 0, "works": 1, "name": {"$first": "$names.name"}}},
+        {
+            "$project": {
+                "_id": 0,
+                "scholar_distribution": "$works.scholar_distribution",
+                "name": {"$first": "$names.name"},
+            }
+        },
     ]
     return database["affiliations"].aggregate(pipeline)
 
@@ -333,54 +210,17 @@ def get_groups_works_citations_count_by_faculty_or_department(
                 "types.type": "group",
             }
         },
-        {
-            "$lookup": {
-                "from": "works",
-                "localField": "_id",
-                "foreignField": "authors.affiliations.id",
-                "as": "works",
-                "pipeline": [
-                    {"$match": {"authors.affiliations.id": affiliation_id}},
-                    {
-                        "$addFields": {
-                            "scholar_citations_count": {
-                                "$ifNull": [
-                                    {
-                                        "$arrayElemAt": [
-                                            {
-                                                "$map": {
-                                                    "input": {
-                                                        "$filter": {
-                                                            "input": "$citations_count",
-                                                            "as": "citation",
-                                                            "cond": {
-                                                                "$eq": [
-                                                                    "$$citation.source",
-                                                                    "scholar",
-                                                                ]
-                                                            },
-                                                        }
-                                                    },
-                                                    "as": "filtered",
-                                                    "in": "$$filtered.count",
-                                                }
-                                            },
-                                            0,
-                                        ]
-                                    },
-                                    0,
-                                ]
-                            }
-                        }
-                    },
-                    {"$project": {"scholar_citations_count": 1}},
-                ],
-            }
-        },
+        {"$unwind": "$works"},
     ]
     set_plot_product_filters(pipeline, query_params)
     pipeline += [
-        {"$project": {"_id": 0, "works": 1, "name": {"$first": "$names.name"}}},
+        {
+            "$project": {
+                "_id": 0,
+                "scholar_distribution": "$works.scholar_distribution",
+                "name": {"$first": "$names.name"},
+            }
+        }
     ]
     return database["affiliations"].aggregate(pipeline)
 
@@ -619,170 +459,54 @@ def get_works_rankings_by_person(person_id: str, query_params: QueryParams) -> T
     work_repository.set_product_filters(pipeline, query_params)
     pipeline += [
         {
-            "$lookup": {
-                "from": "sources",  # type: ignore
-                "localField": "source.id",  # type: ignore
-                "foreignField": "_id",  # type: ignore
-                "as": "source_data",  # type: ignore
-                "pipeline": [  # type: ignore
-                    {"$project": {"_id": 1, "ranking": 1}},
-                ],
+            "$project": {
+                "_id": 1,
+                "source.id": 1,
+                "date_published": 1,
+                "source.ranking": 1,
             }
         },
-        {"$unwind": "$source_data"},  # type: ignore
-        {"$project": {"_id": 1, "source_data": 1, "date_published": 1}},  # type: ignore
     ]
     count_pipeline = [
         {"$match": {"authors.id": person_id}},
     ]
     work_repository.set_product_filters(count_pipeline, query_params)
+
     count_pipeline += [
-        {"$count": "total_results"},  # type: ignore
+        {"$count": "total_results"},
     ]
+
     total_results = next(database["works"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
+
     works = database["works"].aggregate(pipeline)
     return work_generator.get(works), total_results
 
 
 def get_products_by_database_by_affiliation(affiliation_id: str) -> dict:
+    base_match = {"authors.affiliations.id": affiliation_id}
+    valid_sources = ["minciencias", "openalex", "scholar", "scienti"]
+
+    def count_sources(sources):
+        return database["works"].count_documents(
+            {**base_match, "$expr": {"$setEquals": [{"$setIntersection": ["$updated.source", valid_sources]}, sources]}}
+        )
+
     return {
-        "minciencias": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                ]
-            }
-        ),
-        "openalex": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "openalex"},
-                ]
-            }
-        ),
-        "scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "scholar"},
-                ]
-            }
-        ),
-        "scienti": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "scienti_minciencias": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "scienti_openalex": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "openalex"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "scienti_scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "scholar"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "minciencias_openalex": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "openalex"},
-                ]
-            }
-        ),
-        "minciencias_scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "scholar"},
-                ]
-            }
-        ),
-        "openalex_scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "openalex"},
-                    {"updated.source": "scholar"},
-                ]
-            }
-        ),
-        "scienti_minciencias_openalex": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "openalex"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "scienti_minciencias_scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "scholar"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "scienti_openalex_scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "openalex"},
-                    {"updated.source": "scholar"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
-        "minciencias_openalex_scholar": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "openalex"},
-                    {"updated.source": "scholar"},
-                ]
-            }
-        ),
-        "minciencias_openalex_scholar_scienti": database["works"].count_documents(
-            {
-                "$and": [
-                    {"authors.affiliations.id": affiliation_id},
-                    {"updated.source": "minciencias"},
-                    {"updated.source": "openalex"},
-                    {"updated.source": "scholar"},
-                    {"updated.source": "scienti"},
-                ]
-            }
-        ),
+        "minciencias": count_sources(["minciencias"]),
+        "openalex": count_sources(["openalex"]),
+        "scholar": count_sources(["scholar"]),
+        "scienti": count_sources(["scienti"]),
+        "scienti_minciencias": count_sources(["scienti", "minciencias"]),
+        "scienti_openalex": count_sources(["scienti", "openalex"]),
+        "scienti_scholar": count_sources(["scienti", "scholar"]),
+        "minciencias_openalex": count_sources(["minciencias", "openalex"]),
+        "minciencias_scholar": count_sources(["minciencias", "scholar"]),
+        "openalex_scholar": count_sources(["openalex", "scholar"]),
+        "scienti_minciencias_openalex": count_sources(["scienti", "minciencias", "openalex"]),
+        "scienti_minciencias_scholar": count_sources(["scienti", "minciencias", "scholar"]),
+        "scienti_openalex_scholar": count_sources(["scienti", "openalex", "scholar"]),
+        "minciencias_openalex_scholar": count_sources(["minciencias", "openalex", "scholar"]),
+        "minciencias_openalex_scholar_scienti": count_sources(["minciencias", "openalex", "scholar", "scienti"]),
     }
 
 
@@ -988,7 +712,7 @@ def set_plot_country_filters(pipeline: list, countries: str | None) -> None:
         return
     match_filters = []
     for country in countries.split(","):
-        match_filters.append({"works.authors.affiliations": {"$elemMatch": {"country_code": country}}})
+        match_filters.append({"authors.affiliations": {"$elemMatch": {"country_code": country}}})
     pipeline += [{"$match": {"$or": match_filters}}]
 
 

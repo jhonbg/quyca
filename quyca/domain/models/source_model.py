@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 
-from domain.models.base_model import (
+from quyca.domain.models.base_model import (
     Type,
     Updated,
     ExternalId,

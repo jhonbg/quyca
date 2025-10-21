@@ -202,8 +202,12 @@ def get_works_available_filters(pipeline: list, query_params: QueryParams) -> di
         ],
         "countries": pipeline.copy()
         + [
-            {"$unwind": "$countries"},
-            {"$group": {"_id": "$countries"}},
+            {"$match": {"authors.affiliations.addresses.country_code": {"$ne": None}}},
+            {"$project": {"authors.affiliations.addresses.country_code": 1}},
+            {"$unwind": "$authors"},
+            {"$unwind": "$authors.affiliations"},
+            {"$unwind": "$authors.affiliations.addresses"},
+            {"$group": {"_id": "$authors.affiliations.addresses.country_code"}},
         ],
         "authors_ranking": pipeline.copy()
         + [

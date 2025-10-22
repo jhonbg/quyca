@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 
+"""
+Domain entity for CIARP records (research products metadata).
+"""
 @dataclass
 class CIARP:
     codigo_unidad_academica: str

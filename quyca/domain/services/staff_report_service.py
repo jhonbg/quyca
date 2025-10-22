@@ -4,7 +4,7 @@ from domain.models.staff_report_model import StaffReport
 from domain.validators.staff_validator import StaffValidator
 from domain.repositories.pdf_repository_interface import IPDFRepository
 from infrastructure.repositories.gmail_repository import GmailRepository
-from quyca.infrastructure.annotators.staff_annotator import StaffAnnotator
+from quyca.infrastructure.annotators.annotator import Annotator
 from infrastructure.exporters.xlsx_writer_exporter import XlsxWriteExporter
 
 
@@ -36,7 +36,7 @@ class StaffReportService:
 
             attachments = [{"bytes": pdf_bytes, "filename": "reporte_staff.pdf", "mime": "application/pdf"}]
 
-            annotated_df = StaffAnnotator.annotate(df, staff_report)
+            annotated_df = Annotator.annotate(df, staff_report)
             excel_bytes = XlsxWriteExporter.to_excel_bytes(annotated_df)
 
             attachments.append(

@@ -1,6 +1,9 @@
 from datetime import datetime
 
 class YearValidator:
+    """
+    Validates that the provided year is numeric and not in the future.
+    """
     @staticmethod
     def validate(value, field: str, index: int):
         if value is None or str(value).strip() == "":

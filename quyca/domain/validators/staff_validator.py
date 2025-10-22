@@ -33,13 +33,16 @@ EXTRA_ALLOWED = {"estado_de_validación", "observación"}
 
 
 class StaffValidator:
-    """Convert DataFrame index to real Excel row number (header=1, first data row=2)."""
-
+    """
+    Convert DataFrame index to real Excel row number (header=1, first data row=2).
+    """
+    @staticmethod
     def excel_row_index(idx: int) -> int:
         return idx + 2
 
-    """Validates if the DataFrame has the expected columns."""
-
+    """
+    Validates if the DataFrame has the expected columns.
+    """
     @staticmethod
     def validate_columns(df: pd.DataFrame) -> Tuple[bool, List[str], List[str]]:
         raw_cols = [str(c).strip() for c in df.columns]
@@ -72,8 +75,9 @@ class StaffValidator:
 
         return (len(errores) == 0, errores, usecols)
 
-    """Validates a single row of the DataFrame."""
-
+    """
+    Validates a single row of the DataFrame.
+    """
     @staticmethod
     def validate_row(row: dict, index: int) -> dict:
         errors: List[Dict[str, Any]] = []
@@ -98,13 +102,19 @@ class StaffValidator:
 
         return {"errores": errors, "advertencias": warnings}
 
-    """Validates the entire DataFrame, checking rows and duplicates."""
-
+    """
+    Validates the entire DataFrame, checking rows and duplicates.
+    """
     @staticmethod
     def validate_dataframe(df: pd.DataFrame) -> StaffReport:
         errors: List[Dict[str, Any]] = []
         warnings: List[Dict[str, Any]] = []
 
+        df = df.dropna(how="all").reset_index(drop=True)
+        df = df[~df.apply(lambda row: row.astype(str).str.strip().eq("").all(), axis=1)]
+        df = df.applymap(lambda x: str(x).strip() if isinstance(x, str) else x)
+        df = df.applymap(lambda x: str(int(x)) if isinstance(x, float) and x.is_integer() else x)
+    
         for idx, row in df.iterrows():
             r = StaffValidator.validate_row(row.to_dict(), idx)
             errors.extend(r["errores"])

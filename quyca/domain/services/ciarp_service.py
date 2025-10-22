@@ -3,11 +3,17 @@ from application.usecases.save_ciarp_file import SaveCiarpFileUseCase
 from infrastructure.repositories.user_repository import UserRepositoryMongo
 
 class CiarpService:
+    """
+    Injects use cases and user repository.
+    """
     def __init__(self, process_usecase: ProcessCiarpFileUseCase, save_usecase: SaveCiarpFileUseCase, user_repo: UserRepositoryMongo):
         self.process_usecase = process_usecase
         self.save_usecase = save_usecase
         self.user_repo = user_repo
         
+    """
+    Validates token, processes file, emails report, saves file, and returns HTTP result tuple.
+    """
     def handle_ciarp_upload(self, file, claims, token, upload_date):
         email = claims.get("sub")
         ror_id = claims.get("ror_id")

@@ -7,11 +7,12 @@ from domain.repositories.pdf_repository_interface import IPDFRepository
 
 
 """
-Infrastructure repository to generate PDF reports.
+Infrastructure adapter to render HTML validation summaries into PDF.
 """
-
-
 class PDFRepository(IPDFRepository):
+    """
+    Renders Staff report PDF (errors, warnings, duplicates) with metadata header.
+    """
     def generate_quality_report(
         self,
         errors: List[Dict[str, Any]],
@@ -176,7 +177,6 @@ class PDFRepository(IPDFRepository):
                         <tr>
                             <th>Columna</th>
                             <th>Detalle</th>
-                            <th>Ejemplos (máx. 3)</th>
                             <th>Número de filas con el error</th>
                         </tr>
             """
@@ -190,7 +190,6 @@ class PDFRepository(IPDFRepository):
                     <tr>
                         <td> {columna_e} </td>
                         <td> {detalle_e} </td>
-                        <td> {ejemplos_e} </td>
                         <td> {total_e} </td>
                     </tr>
                 """
@@ -204,7 +203,6 @@ class PDFRepository(IPDFRepository):
                         <th>Columna</th>
                         <th>Detalle</th>
                         <th>Valor</th>
-                        <th>Ejemplos (máx. 3)</th>
                         <th>Número de filas con la advertencias</th>
                     </tr>
             """
@@ -213,14 +211,12 @@ class PDFRepository(IPDFRepository):
                 columna_w = warn.get("columna", "")
                 detalle_w = warn.get("detalle", "")
                 valor_w = warn.get("valor", "")
-                ejemplos_W = ", ".join(map(str, warn.get("ejemplos", [])))
                 total_w = warn.get("total_filas", 0)
                 html += f"""
                     <tr>
                         <td> {columna_w} </td>
                         <td> {detalle_w} </td>
                         <td> {valor_w} </td>
-                        <td> {ejemplos_W} </td>
                         <td> {total_w} </td>
                     </tr>
                 """
@@ -244,13 +240,68 @@ class PDFRepository(IPDFRepository):
                 html += f"<li>{preview}</li>"
             html += "</ul>"
 
-        html += "</body></html>"
+        html += """
+        <h2><li>Uso de los filtros en la columna <i>estado_de_validación</i></li></h2>
+        <p>
+            En el archivo Excel adjunto, cada fila tiene un estado que indica el resultado de su validación.
+            Puedes utilizar los <b>filtros del encabezado</b> de la columna <b>estado_de_validación</b> para visualizar
+            los registros según su tipo de observación.
+        </p>
+
+        <table>
+            <tr>
+                <th>Filtro</th>
+                <th>Significado</th>
+                <th>Acción recomendada</th>
+            </tr>
+            <tr>
+                <td><b>Error</b></td>
+                <td>La fila contiene uno o más errores que impiden su carga en el sistema.</td>
+                <td>Debe corregirse antes de volver a enviar el archivo.</td>
+            </tr>
+            <tr>
+                <td><b>Advertencia</b></td>
+                <td>La fila presenta observaciones leves o inconsistencias no críticas.</td>
+                <td>Se recomienda revisar y corregir para mantener la calidad del dato.</td>
+            </tr>
+            <tr>
+                <td><b>Duplicado</b></td>
+                <td>El registro está repetido con respecto a otro del mismo archivo.</td>
+                <td>Elimina duplicados antes de volver a cargar.</td>
+            </tr>
+            <tr>
+                <td><b>Error | Advertencia</b></td>
+                <td>La fila contiene tanto errores como advertencias.</td>
+                <td>Debe corregirse completamente antes de la nueva carga.</td>
+            </tr>
+            <tr>
+                <td><b>Error | Advertencia | Duplicado</b></td>
+                <td>La fila presenta todos los tipos de observación.</td>
+                <td>Corregir todos los aspectos para garantizar consistencia.</td>
+            </tr>
+            <tr>
+                <td><b>(Vacías)</b></td>
+                <td>Filas sin errores, advertencias ni duplicados.</td>
+                <td>No requieren ninguna acción; son registros válidos.</td>
+            </tr>
+        </table>
+
+        <p class="note">
+            <b>Consejo:</b> usa estos filtros para revisar rápidamente las filas afectadas.  
+            Al seleccionar únicamente un tipo de estado (por ejemplo “Advertencia”), podrás identificar
+            los registros que necesitan revisión sin alterar los demás.
+        </p>
+        </body></html>
+        """
 
         pdf_bytes = io.BytesIO()
         pisa.CreatePDF(io.StringIO(html), dest=pdf_bytes)
         pdf_bytes.seek(0)
         return pdf_bytes
     
+    """
+    Renders CIARP report PDF (errors + warnings summary + duplicates) with metadata header.
+    """
     def generate_quality_report_ciarp(
         self,
         errors: List[Dict[str, Any]],
@@ -281,31 +332,37 @@ class PDFRepository(IPDFRepository):
                 <p>La siguiente tabla describe el formato estándar que debe seguirse al cargar los datos:</p>
                 <table>
                     <tr><th>Columna</th><th>Valores admitidos / Observaciones</th></tr>
-                    <tr><td>tipo_documento</td><td>cédula de ciudadanía, cédula de extranjería, pasaporte</td></tr>
-                    <tr><td>identificación</td><td>Número de identificación según tipo</td></tr>
-                    <tr><td>primer_apellido</td><td>Primer apellido del autor</td></tr>
-                    <tr><td>segundo_apellido</td><td>Segundo apellido del autor</td></tr>
-                    <tr><td>nombres</td><td>Todos los nombres del autor</td></tr>
-                    <tr><td>nivel_académico</td><td>técnico, pregrado, maestría, doctorado, especialización, especialización médica</td></tr>
-                    <tr><td>tipo_contrato</td><td>vinculado, ocasional, cátedra, prestación de servicios, postdoc</td></tr>
-                    <tr><td>jornada_laboral</td><td>medio tiempo, tiempo completo, tiempo parcial</td></tr>
-                    <tr><td>categoría_laboral</td><td>auxiliar, asociado, titular</td></tr>
-                    <tr><td>sexo</td><td>hombre, mujer, intersexual (vacío si no se tiene)</td></tr>
-                    <tr><td>fechas (nacimiento / inicial vinculación / final vinculación)</td><td>Formato DD/MM/YYYY (fecha corta de Excel)</td></tr>
-                    <tr><td>código_unidad_académica</td><td>Código único (fijo en futuras actualizaciones)</td></tr>
-                    <tr><td>unidad_académica</td><td>Nombre completo de la facultad o dependencia</td></tr>
-                    <tr><td>código_subunidad_académica</td><td>Código único de subunidad (si existe)</td></tr>
-                    <tr><td>subunidad_académica</td><td>Nombre del departamento o subunidad</td></tr>
+                    <tr><td>código_unidad_académica</td><td>Código único de la unidad académica (si no tiene un
+                    código asignado, se le debe asignar y nunca se debe
+                    cambiar en futuras actualizaciones)</td></tr>
+                    <tr><td>código_subunidad_académica</td><td>Código único de la subunidad académica si existe (si no
+                    tiene un código asignado, se le debe asignar y nunca se
+                    debe cambiar en futuras actualizaciones)</td></tr>
+                    <tr><td>tipo_documento</td><td>Cédula de ciudadanía, cédula de extranjería, pasaporte
+                    (Si hay otro tipo, informar para reorganizar el estándar
+                    de este formato)</td></tr>
+                    <tr><td>identificación</td><td>Del autor</td></tr>
+                    <tr><td>año</td><td>Del producto</td></tr>
+                    <tr><td>título</td><td>Del producto</td></tr>
+                    <tr><td>idioma</td><td>Del producto en formato ISO 639-1 (dos caracteres ej:
+                    "es", "en", "fr", "it")</td></tr>
+                    <tr><td>revista</td><td>Del producto</td></tr>
+                    <tr><td>editorial</td><td>Del producto</td></tr>
+                    <tr><td>doi</td><td>Del producto</td></tr>
+                    <tr><td>issn</td><td>Del artículo si es artículo</td></tr>
+                    <tr><td>isbn</td><td>Del libro si es libro</td></tr>
+                    <tr><td>volumen</td><td>Del producto</td></tr>
+                    <tr><td>issue</td><td>Del producto</td></tr>
+                    <tr><td>primera_página</td><td>Del producto</td></tr>
+                    <tr><td>pais_producto</td><td>Pais donde se publico (ISO 3166-1 alfa-2)
+                    (Si hay otro tipo, informar para reorganizar el estándar
+                    de este formato)</td></tr>
+                    <tr><td>última_página</td><td>Del producto</td></tr>
+                    <tr><td>entidad_premiadora</td><td>Nombre de la entidad que dió el premio</td></tr>
+                    <tr><td>ranking</td><td>Los ejemplos de los ranking están listados a
+                    continuación, donde va el tipo de documento y
+                    ranking.</td></tr>
                 </table>
-
-                <h2><li> Recomendaciones Adicionales</li></h2>
-                <ul>
-                    <li>Evitar <b>abreviaciones</b>. Ejemplo: <i>Fac Med</i> → <i>Facultad de Medicina</i> </li>
-                    <li><b>unidad_académica</b> puede equivaler a facultad en algunas instituciones.</li>
-                    <li><b>subunidad_académica</b> puede equivaler a departamento.</li>
-                    <li>Revisar que no existan <b>caracteres extraños</b> o problemas de codificación.</li>
-                    <li>Si la institución solo maneja <b>un nivel</b>, se diligencian únicamente las unidades académicas y se deja vacío el campo de subunidades.</li>
-                </ul>
 
                 <p class="note">
                     Documento de referencia: 
@@ -414,8 +471,7 @@ class PDFRepository(IPDFRepository):
                     <table>
                         <tr>
                             <th>Columna</th>
-                            <th>Detalle</th>
-                            <th>Ejemplos (máx. 3)</th>
+                            <th>Detalle</th> 
                             <th>Número de filas con el error</th>
                         </tr>
             """
@@ -423,36 +479,21 @@ class PDFRepository(IPDFRepository):
             for err in errors:
                 columna_e = err.get("columna", "")
                 detalle_e = err.get("detalle", "")
-                ejemplos_e = ", ".join(map(str, err.get("ejemplos", [])))
                 total_e = err.get("total_filas", 0)
                 html += f"""
                     <tr>
                         <td> {columna_e} </td>
                         <td> {detalle_e} </td>
-                        <td> {ejemplos_e} </td>
                         <td> {total_e} </td>
                     </tr>
                 """
 
             html += "</table>"
         if warnings:
-            html += """
-                <h2><li> Advertencias Encontradas</li></h2>
-                <table>
-                    <tr>
-                        <th>Columna</th>
-                        <th>Detalle</th>
-                        <th>Valor</th>
-                        <th>Ejemplos (máx. 3)</th>
-                        <th>Número de filas con la advertencias</th>
-                    </tr>
-            """
-
             html += f"""
                 <h3>Advertencias</h3>
                 <p><strong>Total de advertencias:</strong> {warnings["total_advertencias"]}</p>
             """
-            html += "</table>"
 
         if duplicados and len(duplicados) > 0:
             html += f"<h2><li>Duplicados</li></h2><p>Se detectaron {len(duplicados)} registros duplicados.</p>"
@@ -472,7 +513,59 @@ class PDFRepository(IPDFRepository):
                 html += f"<li>{preview}</li>"
             html += "</ul>"
 
-        html += "</body></html>"
+        html += """
+        <h2><li>Uso de los filtros en la columna <i>estado_de_validación</i></li></h2>
+        <p>
+            En el archivo Excel adjunto, cada fila tiene un estado que indica el resultado de su validación.
+            Puedes utilizar los <b>filtros del encabezado</b> de la columna <b>estado_de_validación</b> para visualizar
+            los registros según su tipo de observación.
+        </p>
+
+        <table>
+            <tr>
+                <th>Filtro</th>
+                <th>Significado</th>
+                <th>Acción recomendada</th>
+            </tr>
+            <tr>
+                <td><b>Error</b></td>
+                <td>La fila contiene uno o más errores que impiden su carga en el sistema.</td>
+                <td>Debe corregirse antes de volver a enviar el archivo.</td>
+            </tr>
+            <tr>
+                <td><b>Advertencia</b></td>
+                <td>La fila presenta observaciones leves o inconsistencias no críticas.</td>
+                <td>Se recomienda revisar y corregir para mantener la calidad del dato.</td>
+            </tr>
+            <tr>
+                <td><b>Duplicado</b></td>
+                <td>El registro está repetido con respecto a otro del mismo archivo.</td>
+                <td>Elimina duplicados antes de volver a cargar.</td>
+            </tr>
+            <tr>
+                <td><b>Error | Advertencia</b></td>
+                <td>La fila contiene tanto errores como advertencias.</td>
+                <td>Debe corregirse completamente antes de la nueva carga.</td>
+            </tr>
+            <tr>
+                <td><b>Error | Advertencia | Duplicado</b></td>
+                <td>La fila presenta todos los tipos de observación.</td>
+                <td>Corregir todos los aspectos para garantizar consistencia.</td>
+            </tr>
+            <tr>
+                <td><b>(Vacías)</b></td>
+                <td>Filas sin errores, advertencias ni duplicados.</td>
+                <td>No requieren ninguna acción; son registros válidos.</td>
+            </tr>
+        </table>
+
+        <p class="note">
+            <b>Consejo:</b> usa estos filtros para revisar rápidamente las filas afectadas.  
+            Al seleccionar únicamente un tipo de estado (por ejemplo “Advertencia”), podrás identificar
+            los registros que necesitan revisión sin alterar los demás.
+        </p>
+        </body></html>
+        """
 
         pdf_bytes = io.BytesIO()
         pisa.CreatePDF(io.StringIO(html), dest=pdf_bytes)

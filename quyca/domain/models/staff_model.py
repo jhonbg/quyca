@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-
+"""Domain entity representing a staff member with identity and HR attributes."""
 @dataclass
 class Staff:
     tipo_documento: str

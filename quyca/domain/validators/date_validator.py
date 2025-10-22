@@ -6,7 +6,6 @@ from .base_validator import BaseValidator
 
 class DateValidator:
     """Validates if a field contains a valid date in DD/MM/YYYY format."""
-
     @staticmethod
     def validate(value, field: str, index: int) -> Optional[Dict[str, Any]]:
         if BaseValidator.is_empty(value):

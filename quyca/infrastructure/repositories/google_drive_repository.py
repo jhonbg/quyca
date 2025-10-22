@@ -7,10 +7,14 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 from google.auth.transport.requests import Request
 
-
+"""
+Google Drive API repository for folders resolution and file upload.
+"""
 class GoogleDriveRepository:
     SCOPES = ["https://www.googleapis.com/auth/drive"]
-
+    """
+    Loads credentials from config, validates Drive scope, builds v3 client.
+    """
     def __init__(self):
         credentials_path = current_app.config.get("GOOGLE_CREDENTIALS")
         if not credentials_path:
@@ -29,8 +33,9 @@ class GoogleDriveRepository:
 
         self.service = build("drive", "v3", credentials=creds)
 
-    "Resolves the Drive folder ID (handles shortcuts)"
-
+    """
+    Resolves shortcut folders to target IDs when necessary.
+    """
     def resolve_folder_id(self, folder_id: str) -> str:
         try:
             folder = (
@@ -45,8 +50,9 @@ class GoogleDriveRepository:
         except HttpError as e:
             raise ValueError(f"No se pudo acceder al folder_id { folder_id }: {e}")
 
-    "Gets or creates a folder in Drive by name and parent"
-
+    """
+    Finds or creates a Drive folder under an optional parent.
+    """
     def get_or_create_folder(self, folder_name: str, parent_id: Optional[str] = None) -> str:
         if parent_id is None:
             parent_id = current_app.config["GOOGLE_PARENT_ID"]
@@ -81,8 +87,9 @@ class GoogleDriveRepository:
         folder = self.service.files().create(body=folder_metadata, fields="id", supportsAllDrives=True).execute()
         return folder["id"]
 
-    "Uploads a file to Google Drive inside a specific folder"
-
+    """
+    Uploads a file into a target folder and returns its web view link.
+    """
     def upload_file(self, filepath: str, filename: str, folder_id: str) -> str:
         folder_id = self.resolve_folder_id(folder_id)
         file_metadata = {"name": filename, "parents": [folder_id]}

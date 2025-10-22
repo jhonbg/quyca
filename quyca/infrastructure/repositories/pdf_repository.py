@@ -177,7 +177,6 @@ class PDFRepository(IPDFRepository):
                         <tr>
                             <th>Columna</th>
                             <th>Detalle</th>
-                            <th>Ejemplos (máx. 3)</th>
                             <th>Número de filas con el error</th>
                         </tr>
             """
@@ -191,7 +190,6 @@ class PDFRepository(IPDFRepository):
                     <tr>
                         <td> {columna_e} </td>
                         <td> {detalle_e} </td>
-                        <td> {ejemplos_e} </td>
                         <td> {total_e} </td>
                     </tr>
                 """
@@ -205,7 +203,6 @@ class PDFRepository(IPDFRepository):
                         <th>Columna</th>
                         <th>Detalle</th>
                         <th>Valor</th>
-                        <th>Ejemplos (máx. 3)</th>
                         <th>Número de filas con la advertencias</th>
                     </tr>
             """
@@ -214,14 +211,12 @@ class PDFRepository(IPDFRepository):
                 columna_w = warn.get("columna", "")
                 detalle_w = warn.get("detalle", "")
                 valor_w = warn.get("valor", "")
-                ejemplos_W = ", ".join(map(str, warn.get("ejemplos", [])))
                 total_w = warn.get("total_filas", 0)
                 html += f"""
                     <tr>
                         <td> {columna_w} </td>
                         <td> {detalle_w} </td>
                         <td> {valor_w} </td>
-                        <td> {ejemplos_W} </td>
                         <td> {total_w} </td>
                     </tr>
                 """
@@ -245,7 +240,59 @@ class PDFRepository(IPDFRepository):
                 html += f"<li>{preview}</li>"
             html += "</ul>"
 
-        html += "</body></html>"
+        html += """
+        <h2><li>Uso de los filtros en la columna <i>estado_de_validación</i></li></h2>
+        <p>
+            En el archivo Excel adjunto, cada fila tiene un estado que indica el resultado de su validación.
+            Puedes utilizar los <b>filtros del encabezado</b> de la columna <b>estado_de_validación</b> para visualizar
+            los registros según su tipo de observación.
+        </p>
+
+        <table>
+            <tr>
+                <th>Filtro</th>
+                <th>Significado</th>
+                <th>Acción recomendada</th>
+            </tr>
+            <tr>
+                <td><b>Error</b></td>
+                <td>La fila contiene uno o más errores que impiden su carga en el sistema.</td>
+                <td>Debe corregirse antes de volver a enviar el archivo.</td>
+            </tr>
+            <tr>
+                <td><b>Advertencia</b></td>
+                <td>La fila presenta observaciones leves o inconsistencias no críticas.</td>
+                <td>Se recomienda revisar y corregir para mantener la calidad del dato.</td>
+            </tr>
+            <tr>
+                <td><b>Duplicado</b></td>
+                <td>El registro está repetido con respecto a otro del mismo archivo.</td>
+                <td>Elimina duplicados antes de volver a cargar.</td>
+            </tr>
+            <tr>
+                <td><b>Error | Advertencia</b></td>
+                <td>La fila contiene tanto errores como advertencias.</td>
+                <td>Debe corregirse completamente antes de la nueva carga.</td>
+            </tr>
+            <tr>
+                <td><b>Error | Advertencia | Duplicado</b></td>
+                <td>La fila presenta todos los tipos de observación.</td>
+                <td>Corregir todos los aspectos para garantizar consistencia.</td>
+            </tr>
+            <tr>
+                <td><b>(Vacías)</b></td>
+                <td>Filas sin errores, advertencias ni duplicados.</td>
+                <td>No requieren ninguna acción; son registros válidos.</td>
+            </tr>
+        </table>
+
+        <p class="note">
+            <b>Consejo:</b> usa estos filtros para revisar rápidamente las filas afectadas.  
+            Al seleccionar únicamente un tipo de estado (por ejemplo “Advertencia”), podrás identificar
+            los registros que necesitan revisión sin alterar los demás.
+        </p>
+        </body></html>
+        """
 
         pdf_bytes = io.BytesIO()
         pisa.CreatePDF(io.StringIO(html), dest=pdf_bytes)
@@ -424,8 +471,7 @@ class PDFRepository(IPDFRepository):
                     <table>
                         <tr>
                             <th>Columna</th>
-                            <th>Detalle</th>
-                            <th>Ejemplos (máx. 3)</th>
+                            <th>Detalle</th> 
                             <th>Número de filas con el error</th>
                         </tr>
             """
@@ -433,13 +479,11 @@ class PDFRepository(IPDFRepository):
             for err in errors:
                 columna_e = err.get("columna", "")
                 detalle_e = err.get("detalle", "")
-                ejemplos_e = ", ".join(map(str, err.get("ejemplos", [])))
                 total_e = err.get("total_filas", 0)
                 html += f"""
                     <tr>
                         <td> {columna_e} </td>
                         <td> {detalle_e} </td>
-                        <td> {ejemplos_e} </td>
                         <td> {total_e} </td>
                     </tr>
                 """
@@ -469,7 +513,59 @@ class PDFRepository(IPDFRepository):
                 html += f"<li>{preview}</li>"
             html += "</ul>"
 
-        html += "</body></html>"
+        html += """
+        <h2><li>Uso de los filtros en la columna <i>estado_de_validación</i></li></h2>
+        <p>
+            En el archivo Excel adjunto, cada fila tiene un estado que indica el resultado de su validación.
+            Puedes utilizar los <b>filtros del encabezado</b> de la columna <b>estado_de_validación</b> para visualizar
+            los registros según su tipo de observación.
+        </p>
+
+        <table>
+            <tr>
+                <th>Filtro</th>
+                <th>Significado</th>
+                <th>Acción recomendada</th>
+            </tr>
+            <tr>
+                <td><b>Error</b></td>
+                <td>La fila contiene uno o más errores que impiden su carga en el sistema.</td>
+                <td>Debe corregirse antes de volver a enviar el archivo.</td>
+            </tr>
+            <tr>
+                <td><b>Advertencia</b></td>
+                <td>La fila presenta observaciones leves o inconsistencias no críticas.</td>
+                <td>Se recomienda revisar y corregir para mantener la calidad del dato.</td>
+            </tr>
+            <tr>
+                <td><b>Duplicado</b></td>
+                <td>El registro está repetido con respecto a otro del mismo archivo.</td>
+                <td>Elimina duplicados antes de volver a cargar.</td>
+            </tr>
+            <tr>
+                <td><b>Error | Advertencia</b></td>
+                <td>La fila contiene tanto errores como advertencias.</td>
+                <td>Debe corregirse completamente antes de la nueva carga.</td>
+            </tr>
+            <tr>
+                <td><b>Error | Advertencia | Duplicado</b></td>
+                <td>La fila presenta todos los tipos de observación.</td>
+                <td>Corregir todos los aspectos para garantizar consistencia.</td>
+            </tr>
+            <tr>
+                <td><b>(Vacías)</b></td>
+                <td>Filas sin errores, advertencias ni duplicados.</td>
+                <td>No requieren ninguna acción; son registros válidos.</td>
+            </tr>
+        </table>
+
+        <p class="note">
+            <b>Consejo:</b> usa estos filtros para revisar rápidamente las filas afectadas.  
+            Al seleccionar únicamente un tipo de estado (por ejemplo “Advertencia”), podrás identificar
+            los registros que necesitan revisión sin alterar los demás.
+        </p>
+        </body></html>
+        """
 
         pdf_bytes = io.BytesIO()
         pisa.CreatePDF(io.StringIO(html), dest=pdf_bytes)

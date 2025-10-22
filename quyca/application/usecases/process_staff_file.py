@@ -34,9 +34,7 @@ class ProcessStaffFileUseCase:
                 "success": False,
                 "msg": f"Error al leer el archivo Excel: {str(e)}",
             }
-
         valid, errores_columnas, _ = StaffValidator.validate_columns(df)
-
         if not valid:
             return {
                 "success": False,

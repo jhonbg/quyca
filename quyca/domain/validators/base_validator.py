@@ -4,7 +4,7 @@ import pandas as pd
 class BaseValidator:
     """
     Lightweight utility to determine if a value is empty/blank.
-    Returns True when value is None, NaN or empty string (trimmed).    
+    Returns True when value is None, NaN or empty string (trimmed).
     """
 
     @staticmethod

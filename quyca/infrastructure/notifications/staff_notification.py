@@ -5,16 +5,20 @@ from domain.models.staff_report_model import StaffReport
 """
 Envía resultados de validación por Gmail usando plantillas según el contexto.
 """
+
+
 class StaffNotification:
     """
     Injects Gmail repository dependency.
     """
+
     def __init__(self, gmail_repo: GmailRepository):
         self.gmail_repo = gmail_repo
 
     """
     Chooses template (accepted/warnings/rejected) and sends email with attachments.
     """
+
     def send_report(
         self,
         staff_report: StaffReport,

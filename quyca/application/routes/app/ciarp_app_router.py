@@ -54,6 +54,8 @@ curl -X POST https://api.quyca.co/app/submit/ciarp \
     "detalles": ["Columna faltante: código_unidad_académica"]
 }
 """
+
+
 @ciarp_app_router.route("/ciarp", methods=["POST"])
 def submit_ciarp():
     try:
@@ -61,17 +63,17 @@ def submit_ciarp():
         claims = get_jwt()
     except Exception:
         return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
-    
+
     auth_header = request.headers.get("Authorization", None)
     if not auth_header or not auth_header.startswith("Bearer "):
         return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
-    
+
     token_from_header = auth_header.split(" ")[1]
     file = request.files.get("file")
     upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
-    
+
     process_usecase, save_usecase, user_repo = build_ciarp_service()
     service = CiarpService(process_usecase, save_usecase, user_repo)
-    
+
     result, status = service.handle_ciarp_upload(file, claims, token_from_header, upload_date)
     return jsonify(result), status

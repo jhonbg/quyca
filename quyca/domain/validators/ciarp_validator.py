@@ -36,17 +36,20 @@ REQUIRED_COLUMNS = [
     "ranking",
 ]
 
+
 class CiarpValidator:
     """
     Maps DataFrame index to Excel row number (header=1 → first row=2).
     """
+
     @staticmethod
     def excel_row_index(idx: int) -> int:
         return idx + 2
-    
+
     """
     Verifies schema: required columns present, extra columns flagged, ignores unnamed/index columns.
     """
+
     @staticmethod
     def validate_columns(df: pd.DataFrame) -> Tuple[bool, List[str], List[str]]:
         raw_cols = [str(c).lower().strip() for c in df.columns]
@@ -58,9 +61,7 @@ class CiarpValidator:
         for idx, c in enumerate(raw_cols):
             col = str(c).strip()
 
-            if idx == 0 and (
-                col == "" or col.lower() == "index" or col.lower().startswith("unnamed")
-            ):
+            if idx == 0 and (col == "" or col.lower() == "index" or col.lower().startswith("unnamed")):
                 continue
 
             if col == "" or col.lower().startswith("unnamed"):
@@ -71,73 +72,75 @@ class CiarpValidator:
             usecols.append(col)
         missing = [c for c in expected if c not in usecols]
         extra = [c for c in usecols if c not in expected and c not in EXTRA_ALLOWED]
-        
+
         if missing:
             errors.append(f"Columna faltantes: {', '.join(missing)}")
         if extra:
             errors.append(f"Columnas no permitidas: {', '.join(extra)}")
-        
+
         return (len(errors) == 0, errors, raw_cols)
-    
+
     """
     Applies CIARP row validations: required, document, year, language, country, units + empties as warnings.
     """
+
     @staticmethod
     def validate_row(row: dict, index: int) -> Dict[str, List[Dict[str, Any]]]:
         errors, warnings = [], []
-        
+
         if all(BaseValidator.is_empty(v) for v in row.values()):
             return {"errores": [], "advertencias": []}
-        
+
         errors.extend(RequiredFieldsCiarpValidator.validate(row, index))
         errors.extend(DocumentValidator.validate(row.get("tipo_documento"), row.get("identificación"), index))
-        
+
         year_err = YearValidator.validate(row.get("año"), "año", index)
         if year_err:
             errors.append(year_err)
-        
+
         warnings.extend(LanguageValidator.validator(row, index))
         warnings.extend(CountryValidator.validator(row, index))
-        
+
         errors.extend(UnitValidator.validate(row, index))
-        
+
         for field in WARNING_EMPTY_FIELDS:
             value = row.get(field)
             if BaseValidator.is_empty(value):
-                warnings.append({
-                    "fila": index,
-                    "columna": field,
-                    "detalle": f"El campo '{field}' está vacío.",
-                    "valor": "",
-                })
-        
+                warnings.append(
+                    {
+                        "fila": index,
+                        "columna": field,
+                        "detalle": f"El campo '{field}' está vacío.",
+                        "valor": "",
+                    }
+                )
+
         return {"errores": errors, "advertencias": warnings}
-    
+
     """
     Validates the whole DataFrame (clean blanks, normalize cells, detect duplicates).
     """
+
     @staticmethod
     def validate_dataframe(df: pd.DataFrame) -> StaffReport:
         errors, warnings = [], []
-        
+
         df = df.dropna(how="all").reset_index(drop=True)
-        
-        df = df.applymap(
-        lambda x: str(x).strip() if isinstance(x, str) else x)
-        
-        df = df.applymap(
-        lambda x: str(int(x)) if isinstance(x, float) and x.is_integer() else x)
-        
+
+        df = df.applymap(lambda x: str(x).strip() if isinstance(x, str) else x)
+
+        df = df.applymap(lambda x: str(int(x)) if isinstance(x, float) and x.is_integer() else x)
+
         for idx, row in df.iterrows():
             result = CiarpValidator.validate_row(row.to_dict(), idx)
             errors.extend(result["errores"])
             warnings.extend(result["advertencias"])
-        
+
         dedupe_cols = [c for c in df.columns if c in REQUIRED_COLUMNS]
-        
+
         duplicate_info: List[Dict[str, Any]] = []
         total_dups = 0
-        
+
         if dedupe_cols:
             dup_mask = df.duplicated(subset=dedupe_cols, keep=False)
 
@@ -151,7 +154,7 @@ class CiarpValidator:
                             "row": row.to_dict(),
                         }
                     )
-            
+
         return StaffReport(
             total_errores=len(errors),
             total_duplicados=total_dups,

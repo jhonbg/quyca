@@ -4,14 +4,19 @@ from unittest.mock import patch
 """
 Helper function to authenticate a test user and return a valid JWT token.
 """
+
+
 def get_auth_token(client):
     response = client.post("/app/login", json={"email": "test@test.com", "password": "123456"})
     assert response.status_code == 200, f"Login failed: {response.json}"
     return response.json["access_token"]
 
+
 """
 Test: Upload with an invalid or expired token should return 401.
 """
+
+
 def test_ciarp_upload_invalid_token(client):
     headers = {"Authorization": "Bearer invalid_token"}
 
@@ -25,9 +30,12 @@ def test_ciarp_upload_invalid_token(client):
     assert response.status_code == 401
     assert response.json["msg"] in ["Token inválido o expirado", "Token no encontrado en headers"]
 
+
 """
 Test: Upload with invalid or missing columns should return 422.
 """
+
+
 def test_ciarp_upload_with_invalid_columns(client):
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
@@ -51,9 +59,12 @@ def test_ciarp_upload_with_invalid_columns(client):
         assert response.json["success"] is False
         assert response.json["msg"].startswith("El archivo enviado no cumple con el formato requerido")
 
+
 """
 Test: Upload an empty file should return a 400 error message.
 """
+
+
 def test_ciarp_upload_empty_file(client):
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
@@ -70,9 +81,12 @@ def test_ciarp_upload_empty_file(client):
         assert response.status_code == 400
         assert response.json["msg"] == "El archivo cargado está vacío. Verifique que contenga información."
 
+
 """
 Test: Successful CIARP file upload should return 200 and success=True.
 """
+
+
 def test_ciarp_upload_success(client):
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
@@ -89,9 +103,12 @@ def test_ciarp_upload_success(client):
         assert response.status_code == 200
         assert response.json["success"] is True
 
+
 """
 Test: Upload request without a file should return 400 with proper message.
 """
+
+
 def test_ciarp_upload_no_file(client):
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
@@ -102,9 +119,12 @@ def test_ciarp_upload_no_file(client):
     assert response.json["success"] is False
     assert response.json["msg"] == "Archivo requerido"
 
+
 """
 Test: Upload with validation errors should return 400 and include error count.
 """
+
+
 def test_ciarp_upload_with_errors(client):
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
@@ -122,9 +142,12 @@ def test_ciarp_upload_with_errors(client):
         assert response.json["success"] is False
         assert response.json["errores"] == 3
 
+
 """
 Test: Upload with duplicate records should return 200 and include duplicate count.
 """
+
+
 def test_ciarp_upload_with_duplicates(client):
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
@@ -141,9 +164,12 @@ def test_ciarp_upload_with_duplicates(client):
         assert response.status_code == 200
         assert response.json["duplicados"] == 2
 
+
 """
 Test: Simulate email failure during report sending; should return 500.
 """
+
+
 def test_ciarp_upload_email_failed(client):
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}

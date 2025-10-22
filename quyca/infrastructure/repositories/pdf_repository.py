@@ -9,10 +9,13 @@ from domain.repositories.pdf_repository_interface import IPDFRepository
 """
 Infrastructure adapter to render HTML validation summaries into PDF.
 """
+
+
 class PDFRepository(IPDFRepository):
     """
     Renders Staff report PDF (errors, warnings, duplicates) with metadata header.
     """
+
     def generate_quality_report(
         self,
         errors: List[Dict[str, Any]],
@@ -184,7 +187,7 @@ class PDFRepository(IPDFRepository):
             for err in errors:
                 columna_e = err.get("columna", "")
                 detalle_e = err.get("detalle", "")
-                ejemplos_e = ", ".join(map(str, err.get("ejemplos", [])))
+                ", ".join(map(str, err.get("ejemplos", [])))
                 total_e = err.get("total_filas", 0)
                 html += f"""
                     <tr>
@@ -298,10 +301,11 @@ class PDFRepository(IPDFRepository):
         pisa.CreatePDF(io.StringIO(html), dest=pdf_bytes)
         pdf_bytes.seek(0)
         return pdf_bytes
-    
+
     """
     Renders CIARP report PDF (errors + warnings summary + duplicates) with metadata header.
     """
+
     def generate_quality_report_ciarp(
         self,
         errors: List[Dict[str, Any]],

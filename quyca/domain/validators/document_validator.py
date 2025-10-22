@@ -13,6 +13,7 @@ class DocumentValidator:
     that the identification value matches the expected format
     (numeric for IDs, alphanumeric for passports).
     """
+
     @staticmethod
     def validate(tipo_documento: str, identificacion: str, index: int) -> List[Dict[str, Any]]:
         errors: List[Dict[str, Any]] = []

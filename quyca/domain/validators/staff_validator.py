@@ -36,6 +36,7 @@ class StaffValidator:
     """
     Convert DataFrame index to real Excel row number (header=1, first data row=2).
     """
+
     @staticmethod
     def excel_row_index(idx: int) -> int:
         return idx + 2
@@ -43,6 +44,7 @@ class StaffValidator:
     """
     Validates if the DataFrame has the expected columns.
     """
+
     @staticmethod
     def validate_columns(df: pd.DataFrame) -> Tuple[bool, List[str], List[str]]:
         raw_cols = [str(c).strip() for c in df.columns]
@@ -78,6 +80,7 @@ class StaffValidator:
     """
     Validates a single row of the DataFrame.
     """
+
     @staticmethod
     def validate_row(row: dict, index: int) -> dict:
         errors: List[Dict[str, Any]] = []
@@ -105,6 +108,7 @@ class StaffValidator:
     """
     Validates the entire DataFrame, checking rows and duplicates.
     """
+
     @staticmethod
     def validate_dataframe(df: pd.DataFrame) -> StaffReport:
         errors: List[Dict[str, Any]] = []
@@ -114,7 +118,7 @@ class StaffValidator:
         df = df[~df.apply(lambda row: row.astype(str).str.strip().eq("").all(), axis=1)]
         df = df.applymap(lambda x: str(x).strip() if isinstance(x, str) else x)
         df = df.applymap(lambda x: str(int(x)) if isinstance(x, float) and x.is_integer() else x)
-    
+
         for idx, row in df.iterrows():
             r = StaffValidator.validate_row(row.to_dict(), idx)
             errors.extend(r["errores"])

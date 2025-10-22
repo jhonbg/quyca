@@ -2,10 +2,12 @@ from application.usecases.process_staff_file import ProcessStaffFileUseCase
 from application.usecases.save_staff_file import SaveStaffFileUseCase
 from infrastructure.repositories.user_repository import UserRepositoryMongo
 
+
 class StaffService:
     """
     Application service orchestrating Staff upload flow (auth → process → persist).
     """
+
     def __init__(
         self,
         process_usecase: ProcessStaffFileUseCase,
@@ -19,6 +21,7 @@ class StaffService:
         """
         Validates token, processes DataFrame, emails report, saves file, returns HTTP tuple.
         """
+
     def handle_staff_upload(self, file, claims, token: str, upload_date: str) -> tuple[dict, int]:
         email = claims.get("sub")
         ror_id = claims.get("ror_id")

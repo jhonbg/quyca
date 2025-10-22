@@ -7,6 +7,7 @@ from infrastructure.repositories.gmail_repository import GmailRepository
 from infrastructure.exporters.xlsx_writer_exporter import XlsxWriteExporter
 from quyca.infrastructure.annotators.annotator import Annotator
 
+
 class CiarpReportService:
     """Generates PDF + Excel reports for CIARP validation results."""
 
@@ -23,10 +24,8 @@ class CiarpReportService:
         pdf_bytes: io.BytesIO | None = None
 
         if ciarp_report.total_errores > 0 or len(ciarp_report.advertencias) > 0 or ciarp_report.total_duplicados > 0:
-            advertencias_resumen = {
-                "total_advertencias": len(ciarp_report.advertencias)
-            }
-            
+            advertencias_resumen = {"total_advertencias": len(ciarp_report.advertencias)}
+
             pdf_bytes = self.pdf_repo.generate_quality_report_ciarp(
                 ciarp_report.errores_agrupados,
                 advertencias_resumen,

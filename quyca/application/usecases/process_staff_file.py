@@ -11,6 +11,7 @@ class ProcessStaffFileUseCase:
     """
     Use case: validate, report and notify for Staff Excel uploads.
     """
+
     def __init__(self, report_service: StaffReportService, notification_service: StaffNotification):
         self.report_service = report_service
         self.notification_service = notification_service
@@ -18,6 +19,7 @@ class ProcessStaffFileUseCase:
     """
     Reads Excel, validates schema/data, generates attachments, sends email, returns summary.
     """
+
     def execute(
         self, file: io.BytesIO, institution: str, filename: str, upload_date: str, user: str, email: str
     ) -> dict:

@@ -9,20 +9,24 @@ REQUIRED_FIELDS_CIARP = [
     "título",
 ]
 
+
 class RequiredFieldsCiarpValidator:
     """
     Ensures minimal required fields for CIARP are present.
     """
+
     @staticmethod
     def validate(row: dict, index: int) -> List[Dict[str, Any]]:
         errors = []
         for field in REQUIRED_FIELDS_CIARP:
             value = row.get(field)
             if BaseValidator.is_empty(value):
-                errors.append({
-                    "fila": index,
-                    "columna": field,
-                    "detalle": "Campo obligatorio vacío",
-                    "valor": "Vacío",
-                })
+                errors.append(
+                    {
+                        "fila": index,
+                        "columna": field,
+                        "detalle": "Campo obligatorio vacío",
+                        "valor": "Vacío",
+                    }
+                )
         return errors

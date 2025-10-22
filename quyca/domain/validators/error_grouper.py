@@ -5,6 +5,7 @@ class ErrorGrouper:
     """
     Groups errors by column and detail, aggregating row numbers.
     """
+
     @staticmethod
     def group_errors(errors: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         grouped = {}
@@ -26,6 +27,7 @@ class ErrorGrouper:
     """
     Groups warnings by column, detail, and value, aggregating row numbers.
     """
+
     @staticmethod
     def group_warnings(warnings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         grouped = {}

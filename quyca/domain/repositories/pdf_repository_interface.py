@@ -7,6 +7,7 @@ class IPDFRepository(ABC):
     """
     Abstraction to generate PDF reports for Staff/CIARP validation results.
     """
+
     @abstractmethod
     def generate_quality_report(
         self,
@@ -19,7 +20,7 @@ class IPDFRepository(ABC):
         user: str,
     ) -> io.BytesIO:
         pass
-    
+
     @abstractmethod
     def generate_quality_report_ciarp(
         self,

@@ -10,6 +10,7 @@ class UnitValidator:
     """
     Validates unit/subunit codes and names (format + allowed characters).
     """
+
     @staticmethod
     def validate(row: dict, index: int) -> List[Dict[str, Any]]:
         errors: List[Dict[str, Any]] = []

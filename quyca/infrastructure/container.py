@@ -14,6 +14,8 @@ from infrastructure.repositories.user_repository import UserRepositoryMongo
 """
 DI composer for Staff: builds infrastructure, use cases and service.
 """
+
+
 def build_staff_service():
     pdf_repo = PDFRepository()
     gmail_repo = GmailRepository()
@@ -28,6 +30,7 @@ def build_staff_service():
     user_repo = UserRepositoryMongo()
 
     return process_usecase, save_usecase, user_repo
+
 
 def build_ciarp_service():
     pdf_repo = PDFRepository()

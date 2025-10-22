@@ -6,7 +6,6 @@ class Annotator:
     """
     Adds validation state/notes to the DataFrame for Excel export.
     """
-
     @staticmethod
     def annotate(df: pd.DataFrame, staff_report: StaffReport) -> pd.DataFrame:
         df_copy = df.copy()

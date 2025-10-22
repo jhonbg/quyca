@@ -89,8 +89,8 @@ def plot_articles_by_publisher(person_id: str, query_params: QueryParams) -> dic
 
 def plot_products_by_subject(person_id: str, query_params: QueryParams) -> dict:
     pipeline_params = {
-        "match": {"subjects": {"$ne": []}},
-        "project": ["subjects"],
+        "match": {"primary_topic.display_name": {"$exists": True, "$ne": None}},
+        "project": ["primary_topic.display_name"],
     }
     works = work_repository.get_works_by_person(person_id, query_params, pipeline_params)
     return pie_parser.parse_products_by_subject(works)

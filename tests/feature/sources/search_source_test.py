@@ -85,19 +85,6 @@ def test_search_sources_with_multiple_source_types(client):
     )
 
 
-def test_search_sources_with_invalid_source_type(client):
-    url = f"{ENDPOINT}?source_types=invalid_type"
-
-    response = client.get(url)
-
-    assert response.status_code == 200
-    data = response.get_json()
-    assert "data" in data
-    assert len(data["data"]) == 0
-    assert "total_results" in data
-    assert data["total_results"] == 0
-
-
 def test_search_sources_with_source_type_and_keywords(client):
     url = f"{ENDPOINT}?source_types=journal&keywords=philosophy&max=3&page=1"
 

@@ -136,4 +136,5 @@ mongo-data/
 db/
 storage/
 
+# Pickle
 token.pickle

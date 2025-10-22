@@ -172,7 +172,19 @@ def set_csv_affiliations(work: Work) -> None:
     if work.groups and isinstance(work.groups, list):
         for group in work.groups:
             if group.ranking:
-                groups_ranking.add(str(group.ranking))
+                for rank in group.ranking:
+                    if type(rank.from_date) == int and type(rank.to_date) == int:
+                        groups_ranking.add(
+                            str(rank.rank)
+                            + " / "
+                            + datetime.fromtimestamp(rank.from_date).strftime("%d-%m-%Y")
+                            + " - "
+                            + datetime.fromtimestamp(rank.to_date).strftime("%d-%m-%Y")
+                        )
+                    elif type(rank.date) == int:
+                        groups_ranking.add(
+                            str(rank.rank) + " / " + datetime.fromtimestamp(rank.date).strftime("%d-%m-%Y")
+                        )
 
     work.institutions = " | ".join(institutions) or None
     work.departments = " | ".join(departments) or None

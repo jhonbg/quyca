@@ -3,6 +3,7 @@ from typing import Generator
 
 from currency_converter import CurrencyConverter
 from pymongo.command_cursor import CommandCursor
+from quyca.domain.constants.apc_currencies import available_currencies
 
 
 def parse_annual_evolution_by_scienti_classification(works: Generator) -> dict:
@@ -91,7 +92,7 @@ def parse_annual_apc_expenses(works: Generator) -> dict:
         source_apc = getattr(work.source, "apc", None)
         apc_charges = getattr(source_apc, "charges", None)
         apc_currency = getattr(source_apc, "currency", None)
-        if not apc_charges or not apc_currency or apc_currency in ["IRR", "NGN"]:
+        if not apc_charges or not apc_currency or apc_currency not in available_currencies:
             continue
         usd_charges = currency_converter.convert(apc_charges, apc_currency, "USD")
         data[work.year_published] += int(usd_charges)

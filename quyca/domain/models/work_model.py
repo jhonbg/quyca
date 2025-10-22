@@ -96,7 +96,7 @@ class Work(BaseModel):
     date_published: int | None = None
     external_ids: list[ExternalId] | None = None
     external_urls: list[ExternalUrl] | None = None
-    groups: list[Group] | str | None = None
+    groups: list[Group] | None = None
     keywords: list | None = None
     open_access: OpenAccess | None = Field(default_factory=OpenAccess)
     ranking: list[Ranking] | str | None = None

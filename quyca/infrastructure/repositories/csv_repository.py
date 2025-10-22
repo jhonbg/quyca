@@ -28,6 +28,7 @@ def get_works_csv_by_person(person_id: str, query_params: QueryParams) -> Genera
                 "year_published": 1,
                 "ranking": 1,
                 "primary_topic": 1,
+                "doi": 1,
             }
         },
     ]
@@ -56,6 +57,7 @@ def get_works_csv_by_affiliation(affiliation_id: str, query_params: QueryParams,
                 "year_published": 1,
                 "ranking": 1,
                 "primary_topic": 1,
+                "doi": 1,
             }
         }
     ]

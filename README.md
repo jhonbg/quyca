@@ -23,6 +23,18 @@ pip install docker-compose
 * Deploy Elastic Search from Chia https://github.com/colav/Chia/tree/main/elasticsaerch
 
 
+To install the package, you can use the following command:
+```shell
+pip install quyca
+```
+
+But this package us deployed with docker, then you need to install docker and docker-compose to run the package.
+
+To deploy you need to edit .env.example file and rename it to:
+.env.local to test the code in your local machine.
+.env.prod to deploy the code in a production environment.
+.env.dev to deploy the code in a development environment.
+
 ## Data 
 Required data is stored in MongoDB, produced with kahi.
 usually  database named kahi or kahi_dev, please read 
@@ -73,6 +85,17 @@ API_LIMITS=100000 per day,10 per second
 SENTRY_DSN=
 ```
 
+Please read the Makefile to see the available commands to run the package.
+https://github.com/colav/quyca/blob/develop/Makefile
+
+To tests requests to the API, you can use the next urls:
+- :8010/app/your/endpoint/here
+- :8010/api/your/endpoint/here
+
+where /app is the endpoint for the web application and /api is the endpoint for the expert API.
+:8010 is the default port for the application but it can be changed in the .env file.
+
+
 # Start the application
 ```bash
 make up-dev  # to call "docker-compose up -d" for development
@@ -91,6 +114,18 @@ could be the same for prod with
 make tests-prod    # to run the tests
 ```
 
+### Format the code
+
+Dependencies:
+```shell
+pip install black poetry autoflake
+```
+
+To format the code, you can use the following command:
+```shell
+python format.py
+```
+
 # List of endpoints
 Run the next command to see the list of endpoints
 ```bash
@@ -106,6 +141,3 @@ BSD-3-Clause License
 
 # Links
 http://colav.udea.edu.co/
-
-
-

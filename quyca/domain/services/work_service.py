@@ -3,7 +3,6 @@ from typing import Generator
 from quyca.domain.models.base_model import QueryParams
 from quyca.domain.models.work_model import Work, Abstract
 from quyca.infrastructure.repositories import work_repository
-from quyca.domain.services import source_service
 from quyca.domain.services.base_service import (
     limit_authors,
     set_title_and_language,
@@ -22,7 +21,6 @@ def get_work_by_id(work_id: str) -> dict:
     set_external_urls(work)
     limit_authors(work)
     set_authors_external_ids(work)
-    source_service.update_work_source(work)
     set_title_and_language(work)
     set_product_types(work)
     data = work_parser.parse_work(work)

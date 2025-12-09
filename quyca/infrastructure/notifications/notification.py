@@ -1,6 +1,7 @@
 from typing import Any
 from infrastructure.repositories.gmail_repository import GmailRepository
 from infrastructure.email_templates.staff_report_templates import build_email_template
+from infrastructure.email_templates.scienti_upload_templeates import build_scienti_received_templete
 from domain.models.staff_report_model import StaffReport
 
 
@@ -129,4 +130,30 @@ class StaffNotification:
             ror_id=ror_id,
         )
 
+        return result
+    
+    def send_scienti_compressed_received(
+        self,
+        rol: str,
+        instution: str,
+        filename: str,
+        upload_date: str,
+        email: str,
+        ror_id: str,
+    ) -> dict[str, Any]:
+        """
+        Generic notification for SCIENTI when a compressed file is received.
+        """
+        subject, body_html = build_email_template(rol=rol, institution=instution, filename=filename, upload_date=upload_date)
+        
+        result: dict[str, Any] = self.gmail_repo.send_labeled_email(
+            to_email=email,
+            subject=subject,
+            body_html=body_html,
+            attachments=[],
+            institution=instution,
+            tipo="SCIENTI",
+            ror_id=ror_id,
+        )
+        
         return result

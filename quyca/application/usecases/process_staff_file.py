@@ -4,7 +4,7 @@ import base64
 import pandas as pd
 from domain.validators.staff_validator import StaffValidator
 from domain.services.staff_report_service import StaffReportService
-from infrastructure.notifications.staff_notification import StaffNotification
+from infrastructure.notifications.notification import StaffNotification
 
 
 class ProcessStaffFileUseCase:

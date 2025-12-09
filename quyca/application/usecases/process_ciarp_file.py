@@ -4,7 +4,7 @@ import pandas as pd
 import base64
 from domain.validators.ciarp_validator import CiarpValidator
 from domain.services.ciarp_report_service import CiarpReportService
-from infrastructure.notifications.staff_notification import StaffNotification
+from infrastructure.notifications.notification import StaffNotification
 
 
 class ProcessCiarpFileUseCase:

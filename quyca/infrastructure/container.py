@@ -3,7 +3,7 @@ from infrastructure.repositories.pdf_repository import PDFRepository
 from infrastructure.repositories.gmail_repository import GmailRepository
 from infrastructure.repositories.google_drive_repository import GoogleDriveRepository
 from infrastructure.repositories.file_repository import FileRepository
-from infrastructure.notifications.staff_notification import StaffNotification
+from infrastructure.notifications.notification import StaffNotification
 from application.usecases.process_staff_file import ProcessStaffFileUseCase
 from application.usecases.process_ciarp_file import ProcessCiarpFileUseCase
 from application.usecases.save_staff_file import SaveStaffFileUseCase

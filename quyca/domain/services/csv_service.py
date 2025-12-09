@@ -6,7 +6,7 @@ from quyca.domain.models.work_model import BiblioGraphicInfo, Work
 from quyca.infrastructure.repositories import csv_repository
 from quyca.domain.constants.institutions import institutions_list
 from quyca.domain.constants.openalex_types import openalex_types_dict
-from quyca.domain.services import work_service
+from quyca.domain.services import source_service, work_service
 from quyca.domain.parsers import work_parser
 
 
@@ -96,6 +96,7 @@ def get_csv_data(works: Generator) -> list:
         work_service.set_title_and_language(work)
         set_csv_types(work)
         set_primary_topic(work)
+        source_service.update_csv_work_source(work)
         data.append(work)
     return data
 

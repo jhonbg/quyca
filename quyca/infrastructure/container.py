@@ -8,6 +8,7 @@ from application.usecases.process_staff_file import ProcessStaffFileUseCase
 from application.usecases.process_ciarp_file import ProcessCiarpFileUseCase
 from application.usecases.save_staff_file import SaveStaffFileUseCase
 from application.usecases.save_ciarp_file import SaveCiarpFileUseCase
+from domain.services.scienti_service import ScientiService
 from domain.services.staff_report_service import StaffReportService
 from domain.services.ciarp_report_service import CiarpReportService
 from infrastructure.repositories.user_repository import UserRepositoryMongo
@@ -47,3 +48,13 @@ def build_ciarp_service() -> Tuple[ProcessCiarpFileUseCase, SaveCiarpFileUseCase
     user_repo = UserRepositoryMongo()
 
     return process_usecase, save_usecase, user_repo
+
+def build_scienti_service() -> ScientiService:
+    """
+    ScientiService builder for dependency injection.
+    """
+    gmail_repo = GmailRepository()
+    notification = StaffNotification(gmail_repo)
+    user_repo = UserRepositoryMongo()
+    
+    return ScientiService(notification=notification, user_repo=user_repo)

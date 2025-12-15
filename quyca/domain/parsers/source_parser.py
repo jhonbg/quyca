@@ -3,7 +3,6 @@ from typing import Any, Dict, List
 from quyca.domain.constants.source_types import (
     NORMALIZED_TYPE_MAPPING,
     QUARTILE_MAPPING,
-    SOURCE_TITLES,
     TYPE_DISPLAY_MAPPING,
 )
 from quyca.domain.models.source_model import Source
@@ -59,7 +58,6 @@ def parse_search_result(sources: List) -> List:
         "updated",
         "names",
         "abbreviations",
-        "types",
         "keywords",
         "languages",
         "publisher",
@@ -80,6 +78,7 @@ def parse_search_result(sources: List) -> List:
         "ranking",
         "review_process",
         "topics",
+        "type",
     ]
 
     return [
@@ -126,48 +125,33 @@ def parse_source_type_filter(source_types: List) -> List:
     List
         A List containing the parsed source type filter.
     """
-    parsed_sources: List = []
+    type_counts: Dict[str, int] = {}
 
-    for source_doc in source_types:
-        source_id = source_doc.get("_id")
-        if not source_id:
+    for type_doc in source_types:
+        raw_type = type_doc.get("_id")
+        count = type_doc.get("count", 0)
+
+        if not raw_type:
             continue
 
-        types = source_doc.get("types", [])
-        type_counts: Dict[str, int] = {}
+        normalized = NORMALIZED_TYPE_MAPPING.get(raw_type, "other")
+        type_counts[normalized] = type_counts.get(normalized, 0) + count
 
-        for t in types:
-            raw_type = t.get("type")
-            count = t.get("count", 0)
+    children: List[Dict[str, int | str]] = []
+    for normalized_type, total_count in type_counts.items():
+        title = TYPE_DISPLAY_MAPPING.get(normalized_type, normalized_type)
 
-            if not raw_type:
-                continue
-
-            normalized = NORMALIZED_TYPE_MAPPING.get(raw_type, "other")
-            type_counts[normalized] = type_counts.get(normalized, 0) + count
-
-        children: List[Dict[str, int | str]] = []
-        for normalized_type, total_count in type_counts.items():
-            title = TYPE_DISPLAY_MAPPING.get(normalized_type, normalized_type)
-            value = f"{source_id}_{title}"
-
-            children.append(
-                {
-                    "value": value,
-                    "title": title,
-                    "count": total_count,
-                }
-            )
-
-        children.sort(key=lambda c: c["count"], reverse=True)
-
-        parsed_sources.append(
-            {"value": source_id, "title": SOURCE_TITLES.get(source_id, source_id), "children": children}
+        children.append(
+            {
+                "value": normalized_type,
+                "title": title,
+                "count": total_count,
+            }
         )
 
-    parsed_sources.sort(key=lambda s: s["title"])
+    children.sort(key=lambda c: c["count"], reverse=True)
 
-    return parsed_sources
+    return children
 
 
 def parse_scimago_quartile_filter(quartiles: List) -> List:

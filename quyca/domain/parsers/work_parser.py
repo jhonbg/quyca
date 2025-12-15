@@ -102,14 +102,13 @@ def parse_works_by_entity(works: list) -> list:
 
 
 def parse_work(work: Work) -> dict:
-    return dict(work.model_dump(exclude_none=True))
+    fields_exclude = {"abstracts"}
+    return dict(work.model_dump(exclude=fields_exclude, exclude_none=True))
 
 
 def parse_api_expert(works: list) -> list:
-    field_exclude = {
-        "abstracts",
-    }
-    return [work.model_dump(exclude=field_exclude, exclude_none=True) for work in works]
+    fields_exclude = {"abstracts"}
+    return [work.model_dump(exclude=fields_exclude, exclude_none=True) for work in works]
 
 
 def parse_available_filters(filters: dict) -> dict:

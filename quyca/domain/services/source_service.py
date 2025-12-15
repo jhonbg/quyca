@@ -1,21 +1,7 @@
-from domain.models.source_model import Source
-from domain.models.work_model import Work
 from infrastructure.repositories import source_repository
 from quyca.domain.models.base_model import QueryParams
+from quyca.domain.models.work_model import Work, Source
 from quyca.domain.parsers import source_parser
-
-
-def update_work_source(work: Work) -> None:
-    if not work.source or not work.source.id:
-        return
-
-    source = source_repository.get_source_by_id(work.source.id)
-
-    if not source:
-        return
-
-    set_serials(work, source)
-    set_scimago_quartile(work, source)
 
 
 def update_csv_work_source(work: Work) -> None:
@@ -56,14 +42,6 @@ def set_scimago_quartile(work: Work, source: Source) -> None:
             if condition:
                 work.scimago_quartile = str(ranking.rank)
                 break
-
-
-def set_serials(work: Work, source: Source) -> None:
-    if source.external_ids:
-        external_ids = {}
-        for external_id in source.external_ids:
-            external_ids[external_id.source] = external_id.id
-        work.source.external_ids = external_ids
 
 
 def get_source_by_id(source_id: str) -> dict:

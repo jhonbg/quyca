@@ -6,8 +6,7 @@ from quyca.domain.models.work_model import BiblioGraphicInfo, Work
 from quyca.infrastructure.repositories import csv_repository
 from quyca.domain.constants.institutions import institutions_list
 from quyca.domain.constants.openalex_types import openalex_types_dict
-from quyca.domain.services import source_service
-from quyca.domain.services import work_service
+from quyca.domain.services import source_service, work_service
 from quyca.domain.parsers import work_parser
 
 

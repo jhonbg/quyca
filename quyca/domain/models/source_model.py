@@ -64,6 +64,7 @@ class Source(BaseModel):
     review_processes: list | None = None
     subjects: list[Subject] | None = None
     topics: list[Topic] | None = None
+    type: str | None = None
     types: list[Type] | None = None
     updated: list[Updated] | None = None
     waiver: Waiver | None = None

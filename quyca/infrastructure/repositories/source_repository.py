@@ -78,6 +78,7 @@ def search_sources(query_params: QueryParams, pipeline_params: dict) -> Tuple[Ge
     if query_params.keywords:
         pipeline.append({"$match": {"$text": {"$search": query_params.keywords}}})
     set_source_filters(pipeline, query_params)
+    set_source_type_pipeline(pipeline)
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     raw_sources = database["sources"].aggregate(pipeline)
 
@@ -141,8 +142,12 @@ def get_search_sources_available_filters(query_params: QueryParams) -> dict:
                 "source_types": [
                     {"$project": {"types": 1}},
                     {"$unwind": "$types"},
-                    {"$group": {"_id": {"source": "$types.source", "type": "$types.type"}, "count": {"$sum": 1}}},
-                    {"$group": {"_id": "$_id.source", "types": {"$push": {"type": "$_id.type", "count": "$count"}}}},
+                    {
+                        "$group": {
+                            "_id": {"doc_id": "$_id", "type": "$types.type"},
+                        }
+                    },
+                    {"$group": {"_id": "$_id.type", "count": {"$sum": 1}}},
                 ],
                 "scimago_quartiles": [
                     {"$project": {"ranking": 1}},
@@ -175,6 +180,46 @@ def get_search_sources_available_filters(query_params: QueryParams) -> dict:
 
     available_filters: dict = next(database["sources"].aggregate(pipeline), {})
     return available_filters
+
+
+def set_source_type_pipeline(pipeline: list) -> None:
+    pipeline.append(
+        {
+            "$addFields": {
+                "type": {
+                    "$switch": {
+                        "branches": [
+                            {
+                                "case": {"$in": ["scimago", "$types.source"]},
+                                "then": {
+                                    "$arrayElemAt": ["$types.type", {"$indexOfArray": ["$types.source", "scimago"]}]
+                                },
+                            },
+                            {
+                                "case": {"$in": ["doaj", "$types.source"]},
+                                "then": {"$arrayElemAt": ["$types.type", {"$indexOfArray": ["$types.source", "doaj"]}]},
+                            },
+                            {
+                                "case": {"$in": ["scienti", "$types.source"]},
+                                "then": {
+                                    "$arrayElemAt": ["$types.type", {"$indexOfArray": ["$types.source", "scienti"]}]
+                                },
+                            },
+                            {
+                                "case": {"$in": ["openalex", "$types.source"]},
+                                "then": {
+                                    "$arrayElemAt": ["$types.type", {"$indexOfArray": ["$types.source", "openalex"]}]
+                                },
+                            },
+                        ],
+                        "default": None,
+                    }
+                }
+            }
+        }
+    )
+
+    pipeline.append({"$unset": "types"})
 
 
 def set_source_filters(pipeline: list, query_params: QueryParams) -> None:

@@ -148,14 +148,16 @@ def get_search_sources_available_filters(query_params: QueryParams) -> dict:
         {
             "$facet": {
                 "source_types": [
-                    {"$project": {"types": 1}},
-                    {"$unwind": "$types"},
                     {
-                        "$group": {
-                            "_id": {"doc_id": "$_id", "type": "$types.type"},
+                        "$project": {
+                            "single_type": {
+                                "$first": {
+                                    "$filter": {"input": "$types.type", "as": "t", "cond": {"$ne": ["$$t", None]}}
+                                }
+                            }
                         }
                     },
-                    {"$group": {"_id": "$_id.type", "count": {"$sum": 1}}},
+                    {"$group": {"_id": "$single_type", "count": {"$sum": 1}}},
                 ],
                 "scimago_quartiles": [
                     {"$project": {"ranking": 1}},
@@ -237,8 +239,6 @@ def set_source_type_pipeline(pipeline: list) -> None:
             }
         }
     )
-
-    pipeline.append({"$unset": "types"})
 
 
 def set_source_filters(pipeline: list, query_params: QueryParams) -> None:

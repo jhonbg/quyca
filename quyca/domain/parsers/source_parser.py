@@ -131,10 +131,10 @@ def parse_source_type_filter(source_types: List) -> List:
         raw_type = type_doc.get("_id")
         count = type_doc.get("count", 0)
 
-        if not raw_type:
-            continue
-
-        normalized = NORMALIZED_TYPE_MAPPING.get(raw_type, "not_specified")
+        if raw_type is None:
+            normalized = "not_specified"
+        else:
+            normalized = NORMALIZED_TYPE_MAPPING.get(raw_type, "not_specified")
         type_counts[normalized] = type_counts.get(normalized, 0) + count
 
     children: List[Dict[str, int | str]] = []

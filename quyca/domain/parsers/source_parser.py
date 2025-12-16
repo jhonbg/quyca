@@ -14,7 +14,7 @@ def parse_source(source: Source) -> dict[str, Any]:
         "updated",
         "names",
         "abbreviations",
-        "types",
+        "type",
         "keywords",
         "languages",
         "publisher",
@@ -134,12 +134,12 @@ def parse_source_type_filter(source_types: List) -> List:
         if not raw_type:
             continue
 
-        normalized = NORMALIZED_TYPE_MAPPING.get(raw_type, "other")
+        normalized = NORMALIZED_TYPE_MAPPING.get(raw_type, "not_specified")
         type_counts[normalized] = type_counts.get(normalized, 0) + count
 
     children: List[Dict[str, int | str]] = []
     for normalized_type, total_count in type_counts.items():
-        title = TYPE_DISPLAY_MAPPING.get(normalized_type, normalized_type)
+        title = TYPE_DISPLAY_MAPPING.get(normalized_type, "not_specified")
 
         children.append(
             {

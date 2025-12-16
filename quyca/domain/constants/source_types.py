@@ -6,6 +6,7 @@ TYPE_DISPLAY_MAPPING = {
     "metadata": "Metadatos",
     "other": "Otro",
     "repository": "Repositorio",
+    "not_specified": "No especificado",
 }
 
 NORMALIZED_TYPE_MAPPING = {
@@ -36,3 +37,9 @@ SOURCE_TITLES = {
 }
 
 QUARTILE_MAPPING = {"-": "Sin cuartil"}
+
+
+def normalize_source_type(raw_type: str | None) -> str:
+    if not raw_type:
+        return "not_specified"
+    return NORMALIZED_TYPE_MAPPING.get(raw_type, "not_specified")

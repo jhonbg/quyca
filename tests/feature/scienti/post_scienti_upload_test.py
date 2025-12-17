@@ -1,11 +1,8 @@
 import io
 from unittest.mock import patch
-
 """
 Helper function to authenticate a test user and return a valid JWT token.
 """
-
-
 def get_auth_token(client):
     response = client.post(
         "/app/login",

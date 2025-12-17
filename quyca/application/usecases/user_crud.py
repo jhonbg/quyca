@@ -1,7 +1,7 @@
 from typing import Any, Optional, List, cast
 from domain.services.user_service import UserCrudService
 from infrastructure.repositories.user_crud_repository import UserCrudRepository
-from infrastructure.notifications.staff_notification import StaffNotification
+from infrastructure.notifications.notification import StaffNotification
 from infrastructure.repositories.gmail_repository import GmailRepository
 
 

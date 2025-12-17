@@ -1,6 +1,7 @@
 from typing import Any
 from infrastructure.repositories.gmail_repository import GmailRepository
 from infrastructure.email_templates.staff_report_templates import build_email_template
+from infrastructure.email_templates.scienti_upload_templeates import build_scienti_received_templete
 from domain.models.staff_report_model import StaffReport
 
 
@@ -50,12 +51,13 @@ class StaffNotification:
 
         return result
 
+    """
+    Sends a plain custom email — used for user account notifications.
+    """
+
     def send_custom_email(
         self, subject: str, rol: str, institution: str, email: str, password: str, ror_id: str
     ) -> dict[str, Any]:
-        """
-        Sends a plain custom email — used for user account notifications.
-        """
 
         body_html = f"""
             <html>
@@ -98,12 +100,13 @@ class StaffNotification:
 
         return result
 
+    """
+    Sends an email notifying the user that their password was reset.
+    """
+
     def send_email_change_password(
         self, email: str, subject: str, password: str, institution: str, ror_id: str
     ) -> dict[str, Any]:
-        """
-        Send a simple email — used for password change notifications.
-        """
         body_html = f"""
         <html>
             <body>
@@ -126,6 +129,35 @@ class StaffNotification:
             attachments=[],
             institution=institution,
             tipo="Usuarios",
+            ror_id=ror_id,
+        )
+
+        return result
+
+    """
+    Generic notification for SCIENTI when a compressed file is received.
+    """
+
+    def send_scienti_compressed_received(
+        self,
+        rol: str,
+        institution: str,
+        filename: str,
+        upload_date: str,
+        email: str,
+        ror_id: str,
+    ) -> dict[str, Any]:
+        subject, body_html = build_scienti_received_templete(
+            rol=rol, institution=institution, filename=filename, upload_date=upload_date
+        )
+
+        result: dict[str, Any] = self.gmail_repo.send_labeled_email(
+            to_email=email,
+            subject=subject,
+            body_html=body_html,
+            attachments=[],
+            institution=institution,
+            tipo="Scienti",
             ror_id=ror_id,
         )
 

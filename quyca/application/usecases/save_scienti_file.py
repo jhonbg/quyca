@@ -25,4 +25,5 @@ class SaveScientiFileUseCase:
         ror_id: str,
         institution: str,
     ) -> dict[str, Any]:
-        return self.file_repo.save_file(file=file, ror_id=ror_id, institution=institution, file_type="Scienti")
+        result: dict[str, Any] = self.file_repo.save_file(file=file, ror_id=ror_id, institution=institution, file_type="Scienti")
+        return result

@@ -95,7 +95,11 @@ class ScientiService:
         save_result = self.save_usecase.execute(file=file, ror_id=ror_id, institution=institution)
 
         if not save_result.get("success", False):
-            return {"success": False, "msg": "Archivo recibido pero falló el guardado", "storage_error": save_result}
+            return {
+                    "success": False, 
+                    "msg": "Archivo recibido pero falló el guardado", 
+                    "storage_error": save_result
+                    }, 500
 
         if not notify_result.get("success", False):
             return {

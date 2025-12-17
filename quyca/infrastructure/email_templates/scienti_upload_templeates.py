@@ -1,17 +1,13 @@
 from typing import Tuple
 
-def build_scienti_received_templete(
-    rol: str,
-    institution: str,
-    filename: str,
-    upload_date: str
-) -> Tuple[str, str]:
+
+def build_scienti_received_templete(rol: str, institution: str, filename: str, upload_date: str) -> Tuple[str, str]:
     """
     Email template to confirm receipt of compressed SCIENTI file.
     """
-    
+
     subject = f"Confirmación de recepción de datos SCIENTI - {institution} - {upload_date}"
-    
+
     body_html = f"""
     <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6;">
@@ -40,5 +36,5 @@ def build_scienti_received_templete(
         </body>
     </html>
     """
-    
+
     return subject, body_html

@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 
-from infrastructure.container import build_ciarp_service
+from infrastructure.container import build_scienti_service
 from domain.services.scienti_service import ScientiService
 
 scienti_app_router = Blueprint("scienti_app_router", __name__)
@@ -34,30 +34,28 @@ No se procesa ni valida el contenido del archivo en este endpoint.
 @apiSuccess {String} upload_date Fecha y hora de recepción (zona America/Bogota).
 """
 
+
 @scienti_app_router.route("/scienti", methods=["POST"])
 def submit_scienti() -> Tuple[Response, int]:
     try:
         verify_jwt_in_request()
         claims: dict[str, Any] = get_jwt()
     except Exception:
-        return jsonify({"success": False, "msg":"Token inválido o expirado"}), 401
-    
+        return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
+
     auth_header = request.headers.get("Authorization", None)
     if not auth_header or not auth_header.startswith("Bearer"):
         return jsonify({"success": False, "msg": "Token no encontrado en hearders"}), 401
-    
-    token_from_header = auth_header.split("")[1]
+
+    token_from_header = auth_header.split(" ")[1]
     file = request.files.get("file")
-    
+
     upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
-    
-    service: ScientiService = build_ciarp_service()
-    
+
+    service: ScientiService = build_scienti_service()
+
     result, status = service.handle_scienti_upload(
-        file=file,
-        claims=claims,
-        token=token_from_header,
-        upload_date=upload_date
+        file=file, claims=claims, token=token_from_header, upload_date=upload_date
     )
-    
+
     return jsonify(result), status

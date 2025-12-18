@@ -54,6 +54,7 @@ class Source(BaseModel):
     licenses: list[Licence] | None = None
     names: list[Name] | None = None
     open_access_start_year: int | None = None
+    open_access_status: str | None = None
     plagiarism_detection: bool | None = None
     products_count: int | None = None
     publication_time_weeks: int | None = None
@@ -63,6 +64,7 @@ class Source(BaseModel):
     review_process: list[str] | None = None
     review_processes: list | None = None
     subjects: list[Subject] | None = None
+    scimago_best_quartile: str | None = None
     topics: list[Topic] | None = None
     type: str | None = None
     types: list[Type] | None = None

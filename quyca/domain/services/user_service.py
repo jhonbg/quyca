@@ -48,7 +48,6 @@ class UserCrudService:
     """Validates that only email and rol are present."""
 
     def _validate_edit_user_payload(self, payload: dict[str, Any]) -> None:
-
         allowed = {"email", "rol"}
         received = set(payload.keys())
 

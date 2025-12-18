@@ -58,7 +58,6 @@ class StaffNotification:
     def send_custom_email(
         self, subject: str, rol: str, institution: str, email: str, password: str, ror_id: str
     ) -> dict[str, Any]:
-
         body_html = f"""
             <html>
                 <body style='font-family: Arial, sans-serif; line-height: 1.6;'>

@@ -1,18 +1,24 @@
 import io
 from unittest.mock import patch
+from typing import Any, cast
+from flask.testing import FlaskClient
+
 """
 Helper function to authenticate a test user and return a valid JWT token.
 """
-def get_auth_token(client):
+
+
+def get_auth_token(client: FlaskClient) -> str:
     response = client.post(
         "/app/login",
         json={"email": "test@test.com", "password": "123456"},
     )
     assert response.status_code == 200, f"Login failed: {response.json}"
-    return response.json["access_token"]
+    json_data = cast(dict[str, Any], response.json)
+    return str(json_data["access_token"])
 
 
-def test_scienti_upload_invalid_token(client):
+def test_scienti_upload_invalid_token(client: FlaskClient) -> None:
     headers = {"Authorization": "Bearer invalid_token"}
 
     response = client.post(
@@ -23,10 +29,11 @@ def test_scienti_upload_invalid_token(client):
     )
 
     assert response.status_code == 401
-    assert response.json["success"] is False
+    json_data = cast(dict[str, Any], response.json)
+    assert json_data["success"] is False
 
 
-def test_scienti_upload_invalid_jwt(client):
+def test_scienti_upload_invalid_jwt(client: FlaskClient) -> None:
     headers = {"Authorization": "Bearer invalid_token"}
 
     response = client.post(
@@ -37,10 +44,11 @@ def test_scienti_upload_invalid_jwt(client):
     )
 
     assert response.status_code == 401
-    assert response.json["msg"] == "Token inválido o expirado"
+    json_data = cast(dict[str, Any], response.json)
+    assert json_data["msg"] == "Token inválido o expirado"
 
 
-def test_scienti_upload_missing_authorization_header(client):
+def test_scienti_upload_missing_authorization_header(client: FlaskClient) -> None:
     response = client.post(
         "/app/submit/scienti",
         data={"file": (io.BytesIO(b"zip-content"), "data.zip")},
@@ -48,10 +56,11 @@ def test_scienti_upload_missing_authorization_header(client):
     )
 
     assert response.status_code == 401
-    assert response.json["msg"] == "Token inválido o expirado"
+    json_data = cast(dict[str, Any], response.json)
+    assert json_data["msg"] == "Token inválido o expirado"
 
 
-def test_scienti_upload_no_file(client):
+def test_scienti_upload_no_file(client: FlaskClient) -> None:
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -62,10 +71,11 @@ def test_scienti_upload_no_file(client):
     )
 
     assert response.status_code == 400
-    assert response.json["msg"] == "Archivo requerido"
+    json_data = cast(dict[str, Any], response.json)
+    assert json_data["msg"] == "Archivo requerido"
 
 
-def test_scienti_upload_empty_filename(client):
+def test_scienti_upload_empty_filename(client: FlaskClient) -> None:
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -78,10 +88,11 @@ def test_scienti_upload_empty_filename(client):
     )
 
     assert response.status_code == 400
-    assert response.json["msg"] == "No se seleccionó ningún archivo"
+    json_data = cast(dict[str, Any], response.json)
+    assert json_data["msg"] == "No se seleccionó ningún archivo"
 
 
-def test_scienti_upload_invalid_extension(client):
+def test_scienti_upload_invalid_extension(client: FlaskClient) -> None:
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -94,10 +105,11 @@ def test_scienti_upload_invalid_extension(client):
     )
 
     assert response.status_code == 415
-    assert response.json["success"] is False
+    json_data = cast(dict[str, Any], response.json)
+    assert json_data["success"] is False
 
 
-def test_scienti_upload_success(client):
+def test_scienti_upload_success(client: FlaskClient) -> None:
     token = get_auth_token(client)
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -122,5 +134,7 @@ def test_scienti_upload_success(client):
         )
 
         assert response.status_code == 200
-        assert response.json["success"] is True
-        assert response.json["filename"] == "data.zip"
+        json_data = cast(dict[str, Any], response.json)
+
+        assert json_data["success"] is True
+        assert json_data["filename"] == "data.zip"

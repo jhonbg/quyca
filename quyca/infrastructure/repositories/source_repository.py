@@ -38,6 +38,8 @@ def get_source_by_id(source_id: str) -> Source:
 
     raw_type = source_data.get("type")
     source_data["type"] = normalize_source_type(raw_type)
+    topics_data = source_data.get("topics", [])
+    source_data["topics"] = [Topic(**topic) for topic in topics_data[:5]] if topics_data else []
 
     return Source(**source_data)
 
@@ -79,7 +81,7 @@ def search_sources(query_params: QueryParams, pipeline_params: dict) -> Tuple[Ge
             source.type = "not_specified"
 
         topics_data = raw_source.get("topics", [])
-        source.topics = [Topic(**topic) for topic in topics_data] if topics_data else []
+        source.topics = [Topic(**topic) for topic in topics_data[:5]] if topics_data else []
 
         sources.append(source)
 

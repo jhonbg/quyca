@@ -7,7 +7,7 @@ from infrastructure.generators import source_generator
 from domain.models.source_model import Source
 from domain.exceptions.not_entity_exception import NotEntityException
 from quyca.domain.constants.source_types import NORMALIZED_TYPE_MAPPING, normalize_source_type
-from quyca.domain.models.base_model import QueryParams
+from quyca.domain.models.base_model import QueryParams, Topic
 
 
 def get_source_by_id(source_id: str) -> Source:
@@ -26,50 +26,26 @@ def get_source_by_id(source_id: str) -> Source:
         If no source with the given source_id exists in the database.
     """
     source_object_id = ObjectId(source_id)
+
     pipeline: list[dict[str, Any]] = [
         {"$match": {"_id": source_object_id}},
     ]
     set_source_type_pipeline(pipeline)
-
     source_data = next(database["sources"].aggregate(pipeline), None)
+
     if not source_data:
         raise NotEntityException(f"The source with id {source_id} does not exist.")
 
     raw_type = source_data.get("type")
     source_data["type"] = normalize_source_type(raw_type)
 
-    works_count = database["works"].count_documents({"source.id": source_object_id})
-    if works_count == 0:
-        source_data["topics"] = []
-        return Source(**source_data)
-
-    topics_limit = works_count * 0.02
-    pipeline = [
-        {"$match": {"source.id": source_object_id}},
-        {"$project": {"_id": 0, "primary_topic": 1}},
-        {"$match": {"primary_topic": {"$exists": True, "$ne": None}}},
-        {"$group": {"_id": "$primary_topic.id", "count": {"$sum": 1}, "topic": {"$first": "$primary_topic"}}},
-        {"$match": {"count": {"$gte": topics_limit}}},
-        {
-            "$project": {
-                "_id": 0,
-                "id": "$topic.id",
-                "display_name": "$topic.display_name",
-                "subfield": "$topic.subfield",
-                "field": "$topic.field",
-                "domain": "$topic.domain",
-            }
-        },
-    ]
-
-    topics = list(database["works"].aggregate(pipeline))
-    source_data["topics"] = topics
-
     return Source(**source_data)
 
 
 def search_sources(query_params: QueryParams, pipeline_params: dict) -> Tuple[Generator, int]:
     """
+    Search sources based on query parameters.
+
     Parameters:
     -----------
     query_params : QueryParams
@@ -88,42 +64,33 @@ def search_sources(query_params: QueryParams, pipeline_params: dict) -> Tuple[Ge
     set_source_filters(pipeline, query_params)
     set_source_type_pipeline(pipeline)
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
+
     raw_sources = database["sources"].aggregate(pipeline)
 
-    # Topics for each source
-    sources = [Source(**source) for source in raw_sources]
-    for source in sources:
-        s_id = ObjectId(source.id)
-        works_count = database["works"].count_documents({"source.id": s_id})
-        if works_count == 0:
-            source.topics = []
-            continue
-        topics_limit = works_count * 0.02
-        topic_pipeline = [
-            {"$match": {"source.id": s_id, "primary_topic.id": {"$exists": True, "$ne": None}}},
-            {"$project": {"_id": 0, "primary_topic": 1}},
-            {"$group": {"_id": "$primary_topic.id", "count": {"$sum": 1}, "topic": {"$first": "$primary_topic"}}},
-            {"$match": {"count": {"$gte": topics_limit}}},
-            {
-                "$project": {
-                    "_id": 0,
-                    "id": "$topic.id",
-                    "display_name": "$topic.display_name",
-                    "subfield": "$topic.subfield",
-                    "field": "$topic.field",
-                    "domain": "$topic.domain",
-                }
-            },
-        ]
-        source.topics = list(database["works"].aggregate(topic_pipeline))
+    sources = []
+    for raw_source in raw_sources:
+        source = Source(**raw_source)
+
+        raw_type = raw_source.get("type")
+        if raw_type:
+            normalized_type = normalize_source_type(raw_type)
+            source.type = normalized_type
+        else:
+            source.type = "not_specified"
+
+        topics_data = raw_source.get("topics", [])
+        source.topics = [Topic(**topic) for topic in topics_data] if topics_data else []
+
+        sources.append(source)
 
     count_pipeline: list[dict[str, Any]] = []
     if query_params.keywords:
         count_pipeline.append({"$match": {"$text": {"$search": query_params.keywords}}})
     set_source_filters(count_pipeline, query_params)
+    count_pipeline.append({"$count": "total_results"})
 
-    count_pipeline += [{"$count": "total_results"}]
     total_results = next(database["sources"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
+
     return source_generator.generate_sources(sources), total_results
 
 
@@ -147,6 +114,28 @@ def get_search_sources_available_filters(query_params: QueryParams) -> dict:
     pipeline += [
         {
             "$facet": {
+                "apc_range": [
+                    {"$project": {"apc.apc_usd": 1}},
+                    {"$match": {"apc.apc_usd": {"$exists": True, "$ne": None}}},
+                    {"$group": {"_id": None, "min_apc": {"$min": "$apc.apc_usd"}, "max_apc": {"$max": "$apc.apc_usd"}}},
+                    {"$project": {"_id": 0, "min_apc": 1, "max_apc": 1}},
+                ],
+                "license_type": [
+                    {"$unwind": "$licenses"},
+                    {"$group": {"_id": "$licenses.type", "count": {"$sum": 1}}},
+                    {"$sort": {"count": -1}},
+                ],
+                "publication_time": [
+                    {"$match": {"publication_time_weeks": {"$exists": True, "$ne": None, "$gt": 0}}},
+                    {
+                        "$group": {
+                            "_id": None,
+                            "min_weeks": {"$min": "$publication_time_weeks"},
+                            "max_weeks": {"$max": "$publication_time_weeks"},
+                        }
+                    },
+                    {"$project": {"_id": 0, "min_weeks": 1, "max_weeks": 1}},
+                ],
                 "source_types": [
                     {
                         "$project": {
@@ -160,29 +149,27 @@ def get_search_sources_available_filters(query_params: QueryParams) -> dict:
                     {"$group": {"_id": "$single_type", "count": {"$sum": 1}}},
                 ],
                 "scimago_quartiles": [
-                    {"$project": {"ranking": 1}},
-                    {
-                        "$match": {
-                            "ranking": {
-                                "$elemMatch": {
-                                    "source": {"$in": ["scimago Best Quartile", "Scimago Best Quartile"]},
-                                    "rank": {"$in": ["Q1", "Q2", "Q3", "Q4", "-"]},
-                                }
-                            }
-                        }
-                    },
-                    {"$unwind": "$ranking"},
-                    {
-                        "$match": {
-                            "ranking.source": {"$in": ["scimago Best Quartile", "Scimago Best Quartile"]},
-                            "ranking.rank": {"$exists": True, "$nin": [None, ""]},
-                        }
-                    },
-                    {"$sort": {"_id": 1, "ranking.to_date": -1}},
-                    {"$group": {"_id": "$_id", "current_quartile": {"$first": "$ranking.rank"}}},
-                    {"$match": {"current_quartile": {"$in": ["Q1", "Q2", "Q3", "Q4", "-"]}}},
-                    {"$group": {"_id": "$current_quartile", "count": {"$sum": 1}}},
+                    {"$match": {"scimago_best_quartile": {"$exists": True, "$ne": None}}},
+                    {"$group": {"_id": "$scimago_best_quartile", "count": {"$sum": 1}}},
                     {"$sort": {"_id": 1}},
+                ],
+                "status": [
+                    {"$match": {"open_access_status": {"$exists": True, "$ne": None}}},
+                    {"$group": {"_id": "$open_access_status", "count": {"$sum": 1}}},
+                    {"$sort": {"_id": 1}},
+                ],
+                "topics": [
+                    {"$match": {"topics": {"$exists": True, "$ne": None, "$ne": []}}},
+                    {"$project": {"topics": 1}},
+                    {"$unwind": "$topics"},
+                    {
+                        "$group": {
+                            "_id": "$topics.id",
+                            "count": {"$sum": 1},
+                            "display_name": {"$first": "$topics.display_name"},
+                        }
+                    },
+                    {"$sort": {"count": -1}},
                 ],
             }
         }
@@ -244,6 +231,11 @@ def set_source_type_pipeline(pipeline: list) -> None:
 def set_source_filters(pipeline: list, query_params: QueryParams) -> None:
     set_source_types(pipeline, query_params.source_types)
     set_scimago_quartiles(pipeline, query_params.scimago_quartiles)
+    set_apc_range(pipeline, query_params.apc_range)
+    set_open_access_routes(pipeline, query_params.status)
+    set_publication_time(pipeline, query_params.publication_time)
+    set_license_types(pipeline, query_params.license_type)
+    set_topics(pipeline, query_params.topics)
 
 
 def set_source_types(pipeline: list, type_filters: str | None) -> None:
@@ -271,6 +263,8 @@ def set_source_types(pipeline: list, type_filters: str | None) -> None:
 def set_scimago_quartiles(pipeline: list, quartile_filters: str | None) -> None:
     """
     Filters sources by their current Scimago Best Quartile ranking.
+    If a source has had Q1 in its history and currently has Q3, it will be returned
+    only for Q1 filter (based on best historical quartile, not current).
 
     E.g {"$match": {"ranking": {"$elemMatch": {"source": {"$in": ["scimago Best Quartile", "Scimago Best Quartile"]}, "rank": {"$in": ["Q1", "Q2"]}}}}}
     """
@@ -286,15 +280,164 @@ def set_scimago_quartiles(pipeline: list, quartile_filters: str | None) -> None:
     if not quartiles:
         return
 
-    pipeline.append(
-        {
-            "$match": {
-                "ranking": {
-                    "$elemMatch": {
-                        "source": {"$in": ["scimago Best Quartile", "Scimago Best Quartile"]},
-                        "rank": {"$in": quartiles},
-                    }
-                }
-            }
-        }
-    )
+    pipeline.append({"$match": {"scimago_best_quartile": {"$in": quartiles}}})
+
+
+def set_apc_range(pipeline: list, apc_range: str | None) -> None:
+    """
+    Filters sources by their APC (Article Processing Charge) in USD.
+
+    Parameters
+    ----------
+    - pipeline: MongoDB aggregation pipeline
+    - apc_max: Maximum APC value in USD (filters sources with APC <= this value)
+
+    E.g {"$match": {"apc.apc_usd": {"$gte": 100, "$lte": 2000}}}
+    """
+    if not apc_range:
+        return
+
+    try:
+        apc_list = [float(apc.strip()) for apc in apc_range.split(",") if apc.strip()]
+    except (ValueError, AttributeError):
+        return
+
+    if not apc_list:
+        return
+
+    match_condition = {}
+
+    if len(apc_list) == 1:
+        match_condition["$gte"] = apc_list[0]
+    elif len(apc_list) >= 2:
+        apc_min = min(apc_list)
+        apc_max = max(apc_list)
+
+        if apc_min >= 0:
+            match_condition["$gte"] = apc_min
+        if apc_max >= 0 and apc_max >= apc_min:
+            match_condition["$lte"] = apc_max
+
+    if match_condition:
+        pipeline.append({"$match": {"apc.apc_usd": match_condition}})
+
+
+def set_open_access_routes(pipeline: list, status: str | None) -> None:
+    """
+    Filters sources by their Open Access route.
+
+    Status values:
+    - diamond: Open Access + no APC charges
+    - gold: Open Access + APC charges > 0
+    - hybrid: Closed + APC charges > 0
+    - closed: Closed + no APC charges
+    - open: Any open access route (diamond or gold)
+
+    E.g status = "diamond,gold"
+    """
+    if not status:
+        return
+
+    statuses = [s.strip().lower() for s in status.split(",") if s.strip()]
+
+    if not statuses:
+        return
+
+    if "open" in statuses:
+        statuses.remove("open")
+        statuses.extend(["diamond", "gold"])
+        statuses = list(set(statuses))
+
+    pipeline.append({"$match": {"open_access_status": {"$in": statuses}}})
+
+
+def set_publication_time(pipeline: list, publication_time: str | None) -> None:
+    """
+    Filters sources by their publication time.
+
+    Parameters
+    ----------
+    - pipeline: MongoDB aggregation pipeline
+    - publication_time: Maximum publication time (filters sources with publication time <= this value)
+
+    E.g {"$match": {"publication_time_weeks": {"$gte": min_week, "$lte": max_week}}}
+    """
+    if not publication_time:
+        return
+
+    try:
+        publication_time_list = [int(week.strip()) for week in publication_time.split(",") if week.strip()]
+    except (ValueError, AttributeError):
+        return
+
+    if not publication_time_list:
+        return
+
+    match_condition = {}
+
+    if len(publication_time_list) == 1:
+        match_condition["$gte"] = publication_time_list[0]
+    elif len(publication_time_list) >= 2:
+        min_week = min(publication_time_list)
+        max_week = max(publication_time_list)
+
+        if min_week >= 0:
+            match_condition["$gte"] = min_week
+        if max_week >= 0 and max_week >= min_week:
+            match_condition["$lte"] = max_week
+
+    if match_condition:
+        pipeline.append({"$match": {"publication_time_weeks": match_condition}})
+
+
+def set_license_types(pipeline: list, license_filters: str | None) -> None:
+    """
+    Filters sources by their license types.
+
+    Parameters
+    ----------
+    - pipeline: MongoDB aggregation pipeline
+    - license_filters: Comma-separated string of license types
+
+    E.g license_filters = "CC BY,CC BY-NC"
+    Result: {"$match": {"licenses.type": {"$in": ["CC BY", "CC BY-NC"]}}}
+    """
+    if not license_filters:
+        return
+
+    license_types = []
+    for license_type in license_filters.split(","):
+        license_type = license_type.strip()
+        if license_type:
+            license_types.append(license_type)
+
+    if not license_types:
+        return
+
+    pipeline.append({"$match": {"licenses.type": {"$in": license_types}}})
+
+
+def set_topics(pipeline: list, topic_filters: str | None) -> None:
+    """
+    Filters sources by their primary topics (from works collection).
+
+    Parameters
+    ----------
+    - pipeline: MongoDB aggregation pipeline
+    - topic_filters: Comma-separated string of topic IDs (OpenAlex URLs)
+
+    E.g topic_filters = "https://openalex.org/T10017,https://openalex.org/T14434"
+    """
+    if not topic_filters:
+        return
+
+    topic_ids = []
+    for topic_id in topic_filters.split(","):
+        topic_id = topic_id.strip()
+        if topic_id:
+            topic_ids.append(topic_id)
+
+    if not topic_ids:
+        return
+
+    pipeline.append({"$match": {"topics.id": {"$in": topic_ids}}})

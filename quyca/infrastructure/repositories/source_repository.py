@@ -6,7 +6,7 @@ from infrastructure.repositories import base_repository
 from infrastructure.generators import source_generator
 from domain.models.source_model import Source
 from domain.exceptions.not_entity_exception import NotEntityException
-from quyca.domain.constants.source_types import NORMALIZED_TYPE_MAPPING
+from quyca.domain.constants.source_types import NORMALIZED_TYPE_MAPPING, normalize_source_type
 from quyca.domain.models.base_model import QueryParams
 
 
@@ -26,9 +26,17 @@ def get_source_by_id(source_id: str) -> Source:
         If no source with the given source_id exists in the database.
     """
     source_object_id = ObjectId(source_id)
-    source_data = database["sources"].find_one({"_id": source_object_id})
+    pipeline: list[dict[str, Any]] = [
+        {"$match": {"_id": source_object_id}},
+    ]
+    set_source_type_pipeline(pipeline)
+
+    source_data = next(database["sources"].aggregate(pipeline), None)
     if not source_data:
         raise NotEntityException(f"The source with id {source_id} does not exist.")
+
+    raw_type = source_data.get("type")
+    source_data["type"] = normalize_source_type(raw_type)
 
     works_count = database["works"].count_documents({"source.id": source_object_id})
     if works_count == 0:
@@ -78,6 +86,7 @@ def search_sources(query_params: QueryParams, pipeline_params: dict) -> Tuple[Ge
     if query_params.keywords:
         pipeline.append({"$match": {"$text": {"$search": query_params.keywords}}})
     set_source_filters(pipeline, query_params)
+    set_source_type_pipeline(pipeline)
     base_repository.set_search_end_stages(pipeline, query_params, pipeline_params)
     raw_sources = database["sources"].aggregate(pipeline)
 
@@ -91,7 +100,7 @@ def search_sources(query_params: QueryParams, pipeline_params: dict) -> Tuple[Ge
             continue
         topics_limit = works_count * 0.02
         topic_pipeline = [
-            {"$match": {"source.id": s_id, "primary_topic": {"$exists": True, "$ne": None}}},
+            {"$match": {"source.id": s_id, "primary_topic.id": {"$exists": True, "$ne": None}}},
             {"$project": {"_id": 0, "primary_topic": 1}},
             {"$group": {"_id": "$primary_topic.id", "count": {"$sum": 1}, "topic": {"$first": "$primary_topic"}}},
             {"$match": {"count": {"$gte": topics_limit}}},
@@ -139,10 +148,16 @@ def get_search_sources_available_filters(query_params: QueryParams) -> dict:
         {
             "$facet": {
                 "source_types": [
-                    {"$project": {"types": 1}},
-                    {"$unwind": "$types"},
-                    {"$group": {"_id": {"source": "$types.source", "type": "$types.type"}, "count": {"$sum": 1}}},
-                    {"$group": {"_id": "$_id.source", "types": {"$push": {"type": "$_id.type", "count": "$count"}}}},
+                    {
+                        "$project": {
+                            "single_type": {
+                                "$first": {
+                                    "$filter": {"input": "$types.type", "as": "t", "cond": {"$ne": ["$$t", None]}}
+                                }
+                            }
+                        }
+                    },
+                    {"$group": {"_id": "$single_type", "count": {"$sum": 1}}},
                 ],
                 "scimago_quartiles": [
                     {"$project": {"ranking": 1}},
@@ -175,6 +190,55 @@ def get_search_sources_available_filters(query_params: QueryParams) -> dict:
 
     available_filters: dict = next(database["sources"].aggregate(pipeline), {})
     return available_filters
+
+
+def set_source_type_pipeline(pipeline: list) -> None:
+    pipeline.append(
+        {
+            "$addFields": {
+                "type": {
+                    "$arrayElemAt": [
+                        {
+                            "$filter": {
+                                "input": {
+                                    "$map": {
+                                        "input": ["scimago", "doaj", "scienti", "openalex"],
+                                        "as": "src",
+                                        "in": {
+                                            "$arrayElemAt": [
+                                                {
+                                                    "$map": {
+                                                        "input": {
+                                                            "$filter": {
+                                                                "input": "$types",
+                                                                "as": "t",
+                                                                "cond": {
+                                                                    "$and": [
+                                                                        {"$eq": ["$$t.source", "$$src"]},
+                                                                        {"$ne": ["$$t.type", None]},
+                                                                    ]
+                                                                },
+                                                            }
+                                                        },
+                                                        "as": "t",
+                                                        "in": "$$t.type",
+                                                    }
+                                                },
+                                                0,
+                                            ]
+                                        },
+                                    }
+                                },
+                                "as": "item",
+                                "cond": {"$ne": ["$$item", None]},
+                            }
+                        },
+                        0,
+                    ]
+                }
+            }
+        }
+    )
 
 
 def set_source_filters(pipeline: list, query_params: QueryParams) -> None:

@@ -1,31 +1,33 @@
 TYPE_DISPLAY_MAPPING = {
-    "journal": "revista",
-    "trade journal": "revista especializada",
-    "book series": "serie de libros",
-    "conference": "conferencia",
-    "conference and proceedings": "conferencia y memorias de congreso",
-    "ebook platform": "plataforma de libros electrónicos",
-    "metadata": "metadatos",
-    "other": "otro",
-    "repository": "repositorio",
+    "journal": "Revista",
+    "book series": "Serie de libros",
+    "conference": "Conferencia",
+    "ebook platform": "Plataforma de libros electrónicos",
+    "metadata": "Metadatos",
+    "other": "Otro",
+    "repository": "Repositorio",
+    "not_specified": "No especificado",
 }
 
 NORMALIZED_TYPE_MAPPING = {
+    # Scienti types
     "E": "journal",
     "EL": "journal",
     "IE": "journal",
     "IM": "journal",
     "L": "journal",
     "P": "journal",
+    # OpenAlex types
     "journal": "journal",
-    "trade journal": "trade journal",
     "book series": "book series",
     "conference": "conference",
-    "conference and proceedings": "conference and proceedings",
     "ebook platform": "ebook platform",
     "metadata": "metadata",
     "repository": "repository",
     "other": "other",
+    # Scimago types
+    "trade journal": "journal",
+    "conference and proceedings": "conference",
 }
 
 SOURCE_TITLES = {
@@ -34,4 +36,10 @@ SOURCE_TITLES = {
     "scienti": "Scienti",
 }
 
-QUARTILE_MAPPING = {"Q1": "Q1", "Q2": "Q2", "Q3": "Q3", "Q4": "Q4", "-": "Sin cuartil"}
+QUARTILE_MAPPING = {"-": "Sin cuartil"}
+
+
+def normalize_source_type(raw_type: str | None) -> str:
+    if not raw_type:
+        return "not_specified"
+    return NORMALIZED_TYPE_MAPPING.get(raw_type, "not_specified")

@@ -69,3 +69,28 @@ def affiliations_completer(aff_type: str, text: str) -> List[Dict[str, Any]]:
         opt["name"] = name
 
     return options
+
+
+def source_completer(text: str) -> List[Dict[str, Any]]:
+    if es_database is None:
+        raise RuntimeError("Elasticsearch client is not initialized")
+
+    query = {
+        "suggest": {
+            "source_suggest": {
+                "prefix": text,
+                "completion": {"field": "name", "size": 10},
+            }
+        }
+    }
+
+    response = es_database.search(index=settings.ES_SOURCES_COMPLETER_INDEX, body=query)
+
+    options = cast(List[Dict[str, Any]], response["suggest"]["source_suggest"][0]["options"])
+
+    for opt in options:
+        opt["name"] = opt["_source"].get("name", {}).get("input", [""])[0]
+        opt["publisher"] = opt["_source"].get("publisher", "")
+        opt["products_count"] = opt["_source"].get("products_count", 0)
+
+    return options

@@ -154,7 +154,7 @@ def get_faculty_completion(text: str) -> Response | Tuple[Response, int]:
 """
 
 
-@completer_app_router.route("/source/<text>", methods=["GET"])
+@completer_app_router.route("/sources/<text>", methods=["GET"])
 def get_source_completion(text: str) -> Response | Tuple[Response, int]:
     try:
         data = completers.source_completer(text)

@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from infrastructure.repositories.file_repository import FileRepository
+from quyca.infrastructure.repositories.file_repository import FileRepository
 
 
 class SaveCiarpFileUseCase:

@@ -1,7 +1,7 @@
 from typing import Any
-from infrastructure.repositories.gmail_repository import GmailRepository
-from infrastructure.email_templates.staff_report_templates import build_email_template
-from domain.models.staff_report_model import StaffReport
+from quyca.infrastructure.repositories.gmail_repository import GmailRepository
+from quyca.infrastructure.email_templates.staff_report_templates import build_email_template
+from quyca.domain.models.staff_report_model import StaffReport
 
 
 class StaffNotification:

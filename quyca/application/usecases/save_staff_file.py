@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from infrastructure.repositories.file_repository import FileRepository
+from quyca.infrastructure.repositories.file_repository import FileRepository
 from werkzeug.datastructures import FileStorage
 
 

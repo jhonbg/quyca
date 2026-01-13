@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 from flask import current_app
-from infrastructure.repositories.google_drive_repository import GoogleDriveRepository
+from quyca.infrastructure.repositories.google_drive_repository import GoogleDriveRepository
 from werkzeug.datastructures import FileStorage
 
 

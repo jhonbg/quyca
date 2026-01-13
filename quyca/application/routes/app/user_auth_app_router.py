@@ -1,9 +1,9 @@
 from typing import Tuple
 from flask import Blueprint, request, jsonify, Response
 from sentry_sdk import capture_exception
-from domain.exceptions.not_entity_exception import NotEntityException
-from domain.services import auth_service
-from infrastructure.repositories.user_repository import UserRepositoryMongo
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
+from quyca.domain.services import auth_service
+from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
 
 user_auth_app_router = Blueprint("user_auth_app_router", __name__)
 

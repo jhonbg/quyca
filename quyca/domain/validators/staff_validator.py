@@ -1,6 +1,6 @@
 from typing import List, Dict, Any, Tuple
 from .required_fields_validator import RequiredFieldsValidator
-from domain.models.staff_report_model import StaffReport
+from quyca.domain.models.staff_report_model import StaffReport
 from .document_validator import DocumentValidator
 from .academic_validator import AcademicValidator
 from .name_validator import NameValidator

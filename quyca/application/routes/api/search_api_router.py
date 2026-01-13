@@ -4,8 +4,8 @@ from flask import Blueprint, url_for, redirect, request, Response, jsonify
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 from sentry_sdk import capture_exception
 
-from domain.models.base_model import QueryParams
-from domain.services import api_expert_service
+from quyca.domain.models.base_model import QueryParams
+from quyca.domain.services import api_expert_service
 
 search_api_router = Blueprint("search_api_router", __name__)
 

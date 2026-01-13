@@ -1,8 +1,8 @@
 from typing import Any
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import verify_jwt_in_request, get_jwt, get_jwt_identity
-from application.usecases.user_crud import UserCrudUseCase
-from domain.exceptions.not_entity_exception import NotEntityException
+from quyca.application.usecases.user_crud import UserCrudUseCase
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
 
 """
 HTTP routes for admin user management (JWT-protected).

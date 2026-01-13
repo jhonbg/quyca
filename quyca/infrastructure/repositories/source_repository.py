@@ -1,11 +1,11 @@
 from typing import Any, Generator, Tuple
 from bson import ObjectId
 
-from infrastructure.mongo import database
-from infrastructure.repositories import base_repository
-from infrastructure.generators import source_generator
-from domain.models.source_model import Source
-from domain.exceptions.not_entity_exception import NotEntityException
+from quyca.infrastructure.mongo import database
+from quyca.infrastructure.repositories import base_repository
+from quyca.infrastructure.generators import source_generator
+from quyca.domain.models.source_model import Source
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
 from quyca.domain.constants.source_types import NORMALIZED_TYPE_MAPPING, normalize_source_type
 from quyca.domain.models.base_model import QueryParams, Topic
 

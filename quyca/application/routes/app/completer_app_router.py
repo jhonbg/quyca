@@ -3,7 +3,7 @@ from typing import Tuple
 from flask import Blueprint, jsonify, Response
 from sentry_sdk import capture_exception
 
-from infrastructure.repositories import completers
+from quyca.infrastructure.repositories import completers
 
 completer_app_router = Blueprint("completer_app_router", __name__)
 

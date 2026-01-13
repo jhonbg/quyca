@@ -1,6 +1,6 @@
 import re
 from typing import List, Dict, Any
-from domain.validators.base_validator import BaseValidator
+from quyca.domain.validators.base_validator import BaseValidator
 
 LANG_RE = re.compile(r"^[a-z]{2}$")
 

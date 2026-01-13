@@ -1,14 +1,14 @@
 from typing import List, Dict, Any, Tuple
 import pandas as pd
-from domain.models.staff_report_model import StaffReport
-from domain.validators.required_fields_validator_ciarp import RequiredFieldsCiarpValidator
-from domain.validators.document_validator import DocumentValidator
-from domain.validators.base_validator import BaseValidator
-from domain.validators.year_validator import YearValidator
-from domain.validators.language_validator import LanguageValidator
-from domain.validators.country_validator import CountryValidator
-from domain.validators.unit_validator import UnitValidator
-from domain.validators.error_grouper import ErrorGrouper
+from quyca.domain.models.staff_report_model import StaffReport
+from quyca.domain.validators.required_fields_validator_ciarp import RequiredFieldsCiarpValidator
+from quyca.domain.validators.document_validator import DocumentValidator
+from quyca.domain.validators.base_validator import BaseValidator
+from quyca.domain.validators.year_validator import YearValidator
+from quyca.domain.validators.language_validator import LanguageValidator
+from quyca.domain.validators.country_validator import CountryValidator
+from quyca.domain.validators.unit_validator import UnitValidator
+from quyca.domain.validators.error_grouper import ErrorGrouper
 
 EXTRA_ALLOWED = {"estado_de_validación", "observación"}
 

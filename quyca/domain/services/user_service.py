@@ -1,10 +1,10 @@
 import hashlib
 import string, random, time
 from typing import List, Any
-from domain.models.user_model import User
-from domain.repositories.user_crud_repository_interface import IUserCrudRepository
-from domain.exceptions.not_entity_exception import NotEntityException
-from infrastructure.notifications.staff_notification import StaffNotification
+from quyca.domain.models.user_model import User
+from quyca.domain.repositories.user_crud_repository_interface import IUserCrudRepository
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
+from quyca.infrastructure.notifications.staff_notification import StaffNotification
 
 """
 Application service for admin user management (create, list, toggle, reset, edit).

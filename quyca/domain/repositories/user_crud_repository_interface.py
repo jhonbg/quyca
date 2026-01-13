@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Dict, Any
-from domain.models.user_model import User
+from quyca.domain.models.user_model import User
 
 
 class IUserCrudRepository(ABC):

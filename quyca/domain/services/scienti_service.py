@@ -1,9 +1,9 @@
 from typing import Any, Dict, Tuple
 
 from werkzeug.datastructures import FileStorage
-from infrastructure.notifications.notification import StaffNotification
-from application.usecases.save_scienti_file import SaveScientiFileUseCase
-from infrastructure.repositories.user_repository import UserRepositoryMongo
+from quyca.infrastructure.notifications.notification import StaffNotification
+from quyca.application.usecases.save_scienti_file import SaveScientiFileUseCase
+from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
 
 ALLOWED_COMPRESSED_EXTENSIONS = {
     ".zip",

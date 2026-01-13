@@ -1,7 +1,7 @@
 from flask_jwt_extended import create_access_token, decode_token
-from domain.repositories.user_repository_interface import IUserRepository
-from domain.exceptions.not_entity_exception import NotEntityException
-from domain.parsers.user_parser import user_ror_id_and_institution
+from quyca.domain.repositories.user_repository_interface import IUserRepository
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
+from quyca.domain.parsers.user_parser import user_ror_id_and_institution
 
 """
 verifies user credentials using the repository, generates a JWT access token with the 

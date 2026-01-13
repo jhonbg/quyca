@@ -1,8 +1,8 @@
 from typing import Any
-from infrastructure.repositories.gmail_repository import GmailRepository
-from infrastructure.email_templates.staff_report_templates import build_email_template
-from infrastructure.email_templates.scienti_upload_templeates import build_scienti_received_templete
-from domain.models.staff_report_model import StaffReport
+from quyca.infrastructure.repositories.gmail_repository import GmailRepository
+from quyca.infrastructure.email_templates.staff_report_templates import build_email_template
+from quyca.infrastructure.email_templates.scienti_upload_templeates import build_scienti_received_templete
+from quyca.domain.models.staff_report_model import StaffReport
 
 
 class StaffNotification:

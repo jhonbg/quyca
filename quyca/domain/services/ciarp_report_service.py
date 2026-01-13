@@ -1,10 +1,10 @@
 import io
 import pandas as pd
-from domain.models.staff_report_model import StaffReport
-from domain.validators.ciarp_validator import CiarpValidator
-from domain.repositories.pdf_repository_interface import IPDFRepository
-from infrastructure.repositories.gmail_repository import GmailRepository
-from infrastructure.exporters.xlsx_writer_exporter import XlsxWriteExporter
+from quyca.domain.models.staff_report_model import StaffReport
+from quyca.domain.validators.ciarp_validator import CiarpValidator
+from quyca.domain.repositories.pdf_repository_interface import IPDFRepository
+from quyca.infrastructure.repositories.gmail_repository import GmailRepository
+from quyca.infrastructure.exporters.xlsx_writer_exporter import XlsxWriteExporter
 from quyca.infrastructure.annotators.annotator import Annotator
 
 

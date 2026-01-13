@@ -1,5 +1,5 @@
 import pandas as pd
-from domain.models.staff_report_model import StaffReport
+from quyca.domain.models.staff_report_model import StaffReport
 
 
 class Annotator:

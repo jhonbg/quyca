@@ -1,5 +1,5 @@
 from typing import Any, Optional
-from domain.repositories.staff_repository_interface import IStaffRepository
+from quyca.domain.repositories.staff_repository_interface import IStaffRepository
 from pymongo.database import Database
 
 

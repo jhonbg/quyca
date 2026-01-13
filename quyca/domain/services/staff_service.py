@@ -1,7 +1,7 @@
 from typing import Any
-from application.usecases.process_staff_file import ProcessStaffFileUseCase
-from application.usecases.save_staff_file import SaveStaffFileUseCase
-from infrastructure.repositories.user_repository import UserRepositoryMongo
+from quyca.application.usecases.process_staff_file import ProcessStaffFileUseCase
+from quyca.application.usecases.save_staff_file import SaveStaffFileUseCase
+from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
 from werkzeug.datastructures import FileStorage
 
 

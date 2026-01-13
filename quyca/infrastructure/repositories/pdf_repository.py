@@ -3,7 +3,7 @@ from xhtml2pdf import pisa
 from datetime import datetime
 from typing import List, Dict, Any
 from zoneinfo import ZoneInfo
-from domain.repositories.pdf_repository_interface import IPDFRepository
+from quyca.domain.repositories.pdf_repository_interface import IPDFRepository
 
 
 """

@@ -155,19 +155,22 @@ class APC(BaseModel):
 class QueryParams(BaseModel):
     limit: conint(ge=1, le=250) | None = Field(default=None, alias="max")  # type: ignore
     page: conint(ge=1) | None = None  # type: ignore
-    keywords: str | None = None
-    plot: str | None = None
-    sort: str | None = None
-    product_types: str | None = None
-    years: str | None = None
-    status: str | None = None
-    subjects: str | None = None
-    topics: str | None = None
+    apc_range: str | None = None
+    authors_ranking: str | None = None
     countries: str | None = None
     groups_ranking: str | None = None
-    authors_ranking: str | None = None
-    source_types: str | None = None
+    keywords: str | None = None
+    license_type: str | None = None
+    plot: str | None = None
+    product_types: str | None = None
+    publication_time: str | None = None
+    sort: str | None = None
+    status: str | None = None
     scimago_quartiles: str | None = None
+    source_types: str | None = None
+    subjects: str | None = None
+    topics: str | None = None
+    years: str | None = None
 
     @model_validator(mode="after")
     def validate_pagination_and_sort(self) -> "QueryParams":

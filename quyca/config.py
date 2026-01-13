@@ -48,6 +48,7 @@ class Settings(BaseSettings):
     ES_GROUP_COMPLETER_INDEX: str
     ES_DEPARTMENT_COMPLETER_INDEX: str
     ES_FACULTY_COMPLETER_INDEX: str
+    ES_SOURCES_COMPLETER_INDEX: str
 
     API_LIMITS: str
 

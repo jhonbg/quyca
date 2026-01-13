@@ -41,15 +41,18 @@ def get_works_csv_by_source(source_id: str, query_params: QueryParams, pipeline_
     3. Applies additional filters from query_params (dates, types, etc.)
     4. Returns results as a generator
 
-    Args:
-        source_id: Source identifier to filter works
-        query_params: Additional filters (pagination, date ranges, etc.)
-        pipeline_params: Projection parameters defining which fields to retrieve
+    Parameters
+    ----------
+    - source_id: Source identifier to filter works
+    - query_params: Additional filters (pagination, date ranges, etc.)
+    - pipeline_params: Projection parameters defining which fields to retrieve
 
-    Returns:
+    Returns
+    -------
         Generator: Generator yielding Work objects from database cursor
 
-    Note:
+    Note
+    ----
         Uses generator to avoid loading all works into memory at once,
         which is critical for sources with thousands of publications
     """

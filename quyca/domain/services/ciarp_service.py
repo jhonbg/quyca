@@ -1,7 +1,7 @@
 from typing import Any
-from application.usecases.process_ciarp_file import ProcessCiarpFileUseCase
-from application.usecases.save_ciarp_file import SaveCiarpFileUseCase
-from infrastructure.repositories.user_repository import UserRepositoryMongo
+from quyca.application.usecases.process_ciarp_file import ProcessCiarpFileUseCase
+from quyca.application.usecases.save_ciarp_file import SaveCiarpFileUseCase
+from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
 
 
 class CiarpService:

@@ -7,8 +7,8 @@ from flask_compress import Compress
 from flask_cors import CORS
 from sentry_sdk.integrations.flask import FlaskIntegration
 
-from application.routes.router import router, limiter
-from config import Settings
+from quyca.application.routes.router import router, limiter
+from quyca.config import Settings
 
 
 def create_app() -> Flask:

@@ -1,8 +1,8 @@
 import hashlib
-from domain.models.user_model import User
-from infrastructure.mongo import impactu_database
-from domain.exceptions.not_entity_exception import NotEntityException
-from domain.repositories.user_repository_interface import IUserRepository
+from quyca.domain.models.user_model import User
+from quyca.infrastructure.mongo import impactu_database
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
+from quyca.domain.repositories.user_repository_interface import IUserRepository
 
 """
 MongoDB repository for login + token management.

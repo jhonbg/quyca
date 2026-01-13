@@ -1,16 +1,16 @@
 from typing import Tuple
-from infrastructure.repositories.pdf_repository import PDFRepository
-from infrastructure.repositories.gmail_repository import GmailRepository
-from infrastructure.repositories.google_drive_repository import GoogleDriveRepository
-from infrastructure.repositories.file_repository import FileRepository
-from infrastructure.notifications.staff_notification import StaffNotification
-from application.usecases.process_staff_file import ProcessStaffFileUseCase
-from application.usecases.process_ciarp_file import ProcessCiarpFileUseCase
-from application.usecases.save_staff_file import SaveStaffFileUseCase
-from application.usecases.save_ciarp_file import SaveCiarpFileUseCase
-from domain.services.staff_report_service import StaffReportService
-from domain.services.ciarp_report_service import CiarpReportService
-from infrastructure.repositories.user_repository import UserRepositoryMongo
+from quyca.infrastructure.repositories.pdf_repository import PDFRepository
+from quyca.infrastructure.repositories.gmail_repository import GmailRepository
+from quyca.infrastructure.repositories.google_drive_repository import GoogleDriveRepository
+from quyca.infrastructure.repositories.file_repository import FileRepository
+from quyca.infrastructure.notifications.staff_notification import StaffNotification
+from quyca.application.usecases.process_staff_file import ProcessStaffFileUseCase
+from quyca.application.usecases.process_ciarp_file import ProcessCiarpFileUseCase
+from quyca.application.usecases.save_staff_file import SaveStaffFileUseCase
+from quyca.application.usecases.save_ciarp_file import SaveCiarpFileUseCase
+from quyca.domain.services.staff_report_service import StaffReportService
+from quyca.domain.services.ciarp_report_service import CiarpReportService
+from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
 
 """
 DI composer for Staff: builds infrastructure, use cases and service.

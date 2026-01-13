@@ -1,8 +1,8 @@
 from typing import List, Optional, Dict, Any
-from domain.models.user_model import User
-from infrastructure.mongo import impactu_database
-from domain.repositories.user_crud_repository_interface import IUserCrudRepository
-from domain.exceptions.not_entity_exception import NotEntityException
+from quyca.domain.models.user_model import User
+from quyca.infrastructure.mongo import impactu_database
+from quyca.domain.repositories.user_crud_repository_interface import IUserCrudRepository
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
 
 
 class UserCrudRepository(IUserCrudRepository):

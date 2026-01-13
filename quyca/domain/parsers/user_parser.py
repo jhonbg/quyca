@@ -1,4 +1,4 @@
-from domain.models.user_model import User
+from quyca.domain.models.user_model import User
 
 """ This function extracts the rolID attribute from a User object and returns it inside a dictionary. """
 

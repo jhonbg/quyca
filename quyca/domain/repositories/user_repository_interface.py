@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from domain.models.user_model import User
+from quyca.domain.models.user_model import User
 
 
 class IUserRepository(ABC):

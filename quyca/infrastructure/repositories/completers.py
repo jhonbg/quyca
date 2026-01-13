@@ -79,7 +79,7 @@ def source_completer(text: str) -> List[Dict[str, Any]]:
         "suggest": {
             "source_suggest": {
                 "prefix": text,
-                "completion": {"field": "name", "size": 10},
+                "completion": {"field": "name", "size": 5},
             }
         }
     }

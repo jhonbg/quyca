@@ -1,13 +1,13 @@
 from typing import Any, Generator, Tuple
 
 
-from domain.models.base_model import QueryParams
-from domain.constants.institutions import institutions_list
-from domain.models.affiliation_model import Affiliation
-from infrastructure.repositories import base_repository
-from infrastructure.mongo import database
-from infrastructure.repositories.base_repository import set_project
-from domain.exceptions.not_entity_exception import NotEntityException
+from quyca.domain.models.base_model import QueryParams
+from quyca.domain.constants.institutions import institutions_list
+from quyca.domain.models.affiliation_model import Affiliation
+from quyca.infrastructure.repositories import base_repository
+from quyca.infrastructure.mongo import database
+from quyca.infrastructure.repositories.base_repository import set_project
+from quyca.domain.exceptions.not_entity_exception import NotEntityException
 from quyca.infrastructure.generators import affiliation_generator
 
 

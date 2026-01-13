@@ -3,8 +3,8 @@ from typing import Tuple
 from zoneinfo import ZoneInfo
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from flask import Blueprint, request, jsonify, Response
-from infrastructure.container import build_staff_service
-from domain.services.staff_service import StaffService
+from quyca.infrastructure.container import build_staff_service
+from quyca.domain.services.staff_service import StaffService
 
 staff_app_router = Blueprint("staff_app_router", __name__)
 """

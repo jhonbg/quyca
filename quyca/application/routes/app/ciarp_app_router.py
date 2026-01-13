@@ -3,8 +3,8 @@ from zoneinfo import ZoneInfo
 from typing import Any
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from flask import Blueprint, request, jsonify
-from infrastructure.container import build_ciarp_service
-from domain.services.ciarp_service import CiarpService
+from quyca.infrastructure.container import build_ciarp_service
+from quyca.domain.services.ciarp_service import CiarpService
 
 ciarp_app_router = Blueprint("ciarp_app_router", __name__)
 

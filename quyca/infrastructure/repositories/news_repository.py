@@ -1,8 +1,8 @@
-from infrastructure.mongo import database as db
-from infrastructure.generators import news_generator
-from infrastructure.repositories import base_repository
+from quyca.infrastructure.mongo import database as db
+from quyca.infrastructure.generators import news_generator
+from quyca.infrastructure.repositories import base_repository
 from typing import Generator, Optional, Set, Iterable, Any
-from domain.models.base_model import QueryParams
+from quyca.domain.models.base_model import QueryParams
 
 
 def cc_from_person(person_id: str) -> Optional[str]:

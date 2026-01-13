@@ -1,4 +1,4 @@
-from infrastructure.repositories import source_repository
+from quyca.infrastructure.repositories import source_repository
 from quyca.domain.models.base_model import QueryParams
 from quyca.domain.models.work_model import Work, Source
 from quyca.domain.parsers import source_parser

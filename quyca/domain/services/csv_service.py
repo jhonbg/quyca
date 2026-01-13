@@ -34,11 +34,13 @@ def get_works_csv_by_source(source_id: str, query_params: QueryParams) -> str:
     3. Process and transform raw data for CSV format
     4. Generate final CSV string
 
-    Args:
-        source_id: Unique identifier of the source (institution, journal, etc.)
-        query_params: Query parameters for filtering and pagination
+    Parameters
+    ----------
+    - source_id: Unique identifier of the source (institution, journal, etc.)
+    - query_params: Query parameters for filtering and pagination
 
-    Returns:
+    Returns
+    -------
         str: Complete CSV file content as string, ready for HTTP response
     """
     pipeline_params = get_works_project_pipeline_params()

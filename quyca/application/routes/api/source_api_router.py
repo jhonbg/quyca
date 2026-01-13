@@ -1,7 +1,7 @@
 from typing import Tuple
 from flask import Blueprint, request, jsonify, Response
 
-from domain.models.base_model import QueryParams
+from quyca.domain.models.base_model import QueryParams
 from quyca.domain.services import api_expert_service
 
 source_api_router = Blueprint("source_api_router", __name__)

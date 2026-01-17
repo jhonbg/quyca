@@ -1,10 +1,10 @@
-import hashlib
 import string, random, time
 from typing import List, Any
 from quyca.domain.models.user_model import User
+from quyca.infrastructure.security.password_hasher import hash_password
 from quyca.domain.repositories.user_crud_repository_interface import IUserCrudRepository
 from quyca.domain.exceptions.not_entity_exception import NotEntityException
-from quyca.infrastructure.notifications.staff_notification import StaffNotification
+from quyca.infrastructure.notifications.notification import StaffNotification
 
 """
 Application service for admin user management (create, list, toggle, reset, edit).
@@ -12,13 +12,15 @@ Application service for admin user management (create, list, toggle, reset, edit
 
 
 class UserCrudService:
+    """Wires repository and notifier for admin operations."""
+
     def __init__(self, user_repo: IUserCrudRepository, notifier: StaffNotification) -> None:
-        """Wires repository and notifier for admin operations."""
         self.user_repo = user_repo
         self.notifier = notifier
 
+    """Creates a random alphanumeric password."""
+
     def _generate_password(self, length: int = 10) -> str:
-        """Creates a random alphanumeric password."""
         characters = string.ascii_letters + string.digits
         return "".join(random.choice(characters) for _ in range(length))
 
@@ -26,12 +28,9 @@ class UserCrudService:
         chars = string.ascii_letters + string.digits
         return "".join(random.choice(chars) for _ in range(length))
 
-    def _encrypt_md5(self, password: str) -> str:
-        """Hashes a password with MD5 (legacy compatibility)."""
-        return hashlib.md5(password.encode("utf-8")).hexdigest()
+    """Validates that only required fields are present and none are missing."""
 
     def _validate_create_user_payload(self, payload: dict[str, Any]) -> None:
-        """Validates that only required fields are present and none are missing."""
         required = {"institution", "ror_id", "rol"}
         received = set(payload.keys())
 
@@ -46,9 +45,9 @@ class UserCrudService:
                 msg_parts.append("Sobran: " + ", ".join(sorted(extra)))
             raise NotEntityException(" | ".join(msg_parts))
 
-    def _validate_edit_user_payload(self, payload: dict[str, Any]) -> None:
-        """Validates that only email and rol are present."""
+    """Validates that only email and rol are present."""
 
+    def _validate_edit_user_payload(self, payload: dict[str, Any]) -> None:
         allowed = {"email", "rol"}
         received = set(payload.keys())
 
@@ -60,8 +59,9 @@ class UserCrudService:
         if extra:
             raise NotEntityException("Sobran: " + ", ".join(sorted(extra)))
 
+    """Validates that the API key expiration is a future timestamp and at least 1 day ahead."""
+
     def _validate_apikey_expiration(self, expires: int | None) -> None:
-        """Validates that the API key expiration is a future timestamp and at least 1 day ahead."""
         if expires is None:
             return
 
@@ -76,13 +76,14 @@ class UserCrudService:
         if expires - current < 86400:
             raise NotEntityException("La expiración mínima del API key es de 1 día")
 
+    """
+    Creates a user, validates payload strictly, enforces ROR uniqueness,
+    and emails credentials.
+    """
+
     def create_user(
         self, email: str, institution: str, ror_id: str, rol: str, raw_payload: dict[str, Any] | None = None
     ) -> dict[str, Any]:
-        """
-        Creates a user, validates payload strictly, enforces ROR uniqueness,
-        and emails credentials.
-        """
         if raw_payload is None:
             raise NotEntityException("Payload requerido: institution, ror_id y rol.")
 
@@ -102,12 +103,12 @@ class UserCrudService:
             }
 
         raw_password = self._generate_password()
-        hashed_password = self._encrypt_md5(raw_password)
+        hashe_password = hash_password(raw_password)
 
         user = User(
             id=ror_id,
             email=email.strip().lower(),
-            password=hashed_password,
+            password=hashe_password,
             institution=institution.strip(),
             rol=rol.strip(),
             token="",
@@ -158,7 +159,7 @@ class UserCrudService:
             raise NotEntityException(f"Cuenta desactivada para el usuario {email}")
 
         new_password = self._generate_password()
-        hashed = self._encrypt_md5(new_password)
+        hashed = hash_password(new_password)
 
         self.user_repo.update_password(email, hashed)
 
@@ -203,8 +204,6 @@ class UserCrudService:
 
         if correo_cambiado:
             new_password = self._generate_password()
-            hashed = self._encrypt_md5(new_password)
-            updated_user = self.user_repo.update_password(new_email, hashed)
 
             subject = "Tu cuenta en la plataforma ImpactU ha sido creada exitosamente."
             self.notifier.send_custom_email(

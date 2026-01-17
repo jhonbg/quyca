@@ -1,19 +1,20 @@
+from typing import Any
 from unittest.mock import patch, Mock
 
-ROUTER = "application.routes.app.user_crud_app_router"
+ROUTER = "quyca.application.routes.app.user_crud_app_router"
 
 
-def _headers():
+def _headers() -> dict[str, str]:
     return {"Authorization": "Bearer fake.jwt.token"}
 
 
-def test_regenerate_apikey_unauthorized(client):
+def test_regenerate_apikey_unauthorized(client: Any) -> None:
     """Should return 401 when no token is provided."""
     resp = client.post("/app/users/test@test.com/apikey")
     assert resp.status_code == 401
 
 
-def test_regenerate_apikey_wrong_user(client):
+def test_regenerate_apikey_wrong_user(client: Any) -> None:
     """Should return 403 when token identity does not match URL email."""
     with patch(f"{ROUTER}.verify_jwt_in_request", return_value=True), patch(
         f"{ROUTER}.get_jwt_identity", return_value="other@email.com"
@@ -23,7 +24,7 @@ def test_regenerate_apikey_wrong_user(client):
         assert resp.json["success"] is False
 
 
-def test_regenerate_apikey_success(client):
+def test_regenerate_apikey_success(client: Any) -> None:
     """Should regenerate API key correctly."""
     usecase_mock = Mock()
     usecase_mock.create_or_regenerate_apikey.return_value = {

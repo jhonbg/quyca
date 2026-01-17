@@ -20,11 +20,11 @@ class PDFRepository(IPDFRepository):
         self,
         errors: List[Dict[str, Any]],
         warnings: List[Dict[str, Any]],
-        duplicados: List[Dict[str, Any]] | None = None,
-        institution: str = "",
-        filename: str = "",
-        upload_date: str = "",
-        user: str = "",
+        duplicados: List[Dict[str, Any]] | None,
+        institution: str,
+        filename: str,
+        upload_date: str,
+        user: str,
     ) -> io.BytesIO:
         report_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
 
@@ -309,11 +309,11 @@ class PDFRepository(IPDFRepository):
         self,
         errors: List[Dict[str, Any]],
         warnings: Dict[str, Any],
-        duplicados: List[Dict[str, Any]] | None = None,
-        institution: str = "",
-        filename: str = "",
-        upload_date: str = "",
-        user: str = "",
+        duplicados: List[Dict[str, Any]] | None,
+        institution: str,
+        filename: str,
+        upload_date: str,
+        user: str,
     ) -> io.BytesIO:
         report_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
 
@@ -493,9 +493,10 @@ class PDFRepository(IPDFRepository):
 
             html += "</table>"
         if warnings:
+            total_adv = int(warnings.get("total_advertencias", 0))
             html += f"""
                 <h3>Advertencias</h3>
-                <p><strong>Total de advertencias:</strong> {warnings["total_advertencias"]}</p>
+                <p><strong>Total de advertencias:</strong> {total_adv}</p>
             """
 
         if duplicados and len(duplicados) > 0:

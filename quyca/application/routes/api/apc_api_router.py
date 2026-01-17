@@ -60,7 +60,7 @@ def apc_search() -> Response | Tuple[Response, int]:
 @apc_api_router.route("/person/<person_id>", methods=["GET"])
 def apc_person(person_id: str) -> Response | Tuple[Response, int]:
     try:
-        pipeline = [
+        pipeline: Sequence[Mapping[str, Any]] = [
             {"$match": {"authors.id": person_id}},
             {
                 "$project": {

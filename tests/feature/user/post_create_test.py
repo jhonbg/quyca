@@ -1,14 +1,14 @@
-# tests/user_crud/post_create_test.py
+from typing import Any
 from unittest.mock import Mock, patch, ANY
 
-ROUTER_MOD = "application.routes.app.user_crud_app_router"
+ROUTER_MOD = "quyca.application.routes.app.user_crud_app_router"
 
 
-def _admin_headers():
+def _admin_headers() -> dict[str, str]:
     return {"Authorization": "Bearer fake.jwt.token"}
 
 
-def test_create_user_no_token(client):
+def test_create_user_no_token(client: Any) -> None:
     resp = client.post(
         "/app/admin/users/test@udea.edu.co",
         json={"institution": "UdeA", "ror_id": "R001", "rol": "staff"},
@@ -17,7 +17,7 @@ def test_create_user_no_token(client):
     assert "Token" in resp.json["msg"]
 
 
-def test_create_user_non_admin(client):
+def test_create_user_non_admin(client: Any) -> None:
     with patch(f"{ROUTER_MOD}.verify_jwt_in_request", return_value=True), patch(
         f"{ROUTER_MOD}.get_jwt", return_value={"rol": "staff"}
     ):
@@ -30,7 +30,7 @@ def test_create_user_non_admin(client):
         assert "Permiso denegado" in resp.json["msg"]
 
 
-def test_create_user_success(client):
+def test_create_user_success(client: Any) -> None:
     usecase_mock = Mock()
     usecase_mock.create_user.return_value = {"success": True, "msg": "Usuario creado correctamente."}
 
@@ -48,7 +48,7 @@ def test_create_user_success(client):
         usecase_mock.create_user.assert_called_once_with("ok@udea.edu.co", "UdeA", "R100", "staff", ANY)
 
 
-def test_create_user_conflict(client):
+def test_create_user_conflict(client: Any) -> None:
     usecase_mock = Mock()
     usecase_mock.create_user.return_value = {
         "success": False,

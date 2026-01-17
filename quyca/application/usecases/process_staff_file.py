@@ -4,7 +4,7 @@ import base64
 import pandas as pd
 from quyca.domain.validators.staff_validator import StaffValidator
 from quyca.domain.services.staff_report_service import StaffReportService
-from quyca.infrastructure.notifications.staff_notification import StaffNotification
+from quyca.infrastructure.notifications.notification import StaffNotification
 
 
 class ProcessStaffFileUseCase:

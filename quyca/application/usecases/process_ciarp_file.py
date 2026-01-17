@@ -4,7 +4,7 @@ import pandas as pd
 import base64
 from quyca.domain.validators.ciarp_validator import CiarpValidator
 from quyca.domain.services.ciarp_report_service import CiarpReportService
-from quyca.infrastructure.notifications.staff_notification import StaffNotification
+from quyca.infrastructure.notifications.notification import StaffNotification
 
 
 class ProcessCiarpFileUseCase:

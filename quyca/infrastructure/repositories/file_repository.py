@@ -19,7 +19,9 @@ class FileRepository:
 
     def save_file(self, file: FileStorage, ror_id: str, institution: str, file_type: str) -> dict[str, Any]:
         timestamp = datetime.now(ZoneInfo("America/Bogota")).strftime("%d_%m_%Y_%H:%M")
-        filename = f"{file_type}_{ror_id}_{timestamp}.xlsx"
+        filename = file.filename or ""
+        original_ext = os.path.splitext(filename)[1]
+        filename = f"{file_type}_{ror_id}_{timestamp}{original_ext}"
 
         temp_path = os.path.join("/tmp", filename)
         file.save(temp_path)

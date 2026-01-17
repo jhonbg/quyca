@@ -1,7 +1,7 @@
 from typing import Any, Optional, List, cast
 from quyca.domain.services.user_service import UserCrudService
 from quyca.infrastructure.repositories.user_crud_repository import UserCrudRepository
-from quyca.infrastructure.notifications.staff_notification import StaffNotification
+from quyca.infrastructure.notifications.notification import StaffNotification
 from quyca.infrastructure.repositories.gmail_repository import GmailRepository
 
 

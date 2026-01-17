@@ -1,19 +1,19 @@
-# tests/feature/user/put_edit_test.py
+from typing import Any
 from unittest.mock import Mock, patch
 
-ROUTER_MOD = "application.routes.app.user_crud_app_router"
+ROUTER_MOD = "quyca.application.routes.app.user_crud_app_router"
 
 
-def _admin_headers():
+def _admin_headers() -> dict[str, str]:
     return {"Authorization": "Bearer fake.jwt.token"}
 
 
-def test_edit_user_no_token(client):
+def test_edit_user_no_token(client: Any) -> None:
     resp = client.put("/app/admin/users/x@x.com", json={"rol": "staff"})
     assert resp.status_code == 401
 
 
-def test_edit_user_non_admin(client):
+def test_edit_user_non_admin(client: Any) -> None:
     with patch(f"{ROUTER_MOD}.verify_jwt_in_request", return_value=True), patch(
         f"{ROUTER_MOD}.get_jwt", return_value={"rol": "staff"}
     ):
@@ -22,7 +22,7 @@ def test_edit_user_non_admin(client):
         assert "Permiso denegado" in resp.json["msg"]
 
 
-def test_edit_user_success(client):
+def test_edit_user_success(client: Any) -> None:
     usecase_mock = Mock()
     usecase_mock.update_user_info.return_value = {"success": True, "msg": "Actualizado"}
 

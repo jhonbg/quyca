@@ -50,6 +50,7 @@ HTTP/1.1 400 Bad Request
 }
 """
 
+
 @user_auth_app_router.route("/login", methods=["POST"])
 def login() -> Tuple[Response, int]:
     try:
@@ -80,6 +81,7 @@ def login() -> Tuple[Response, int]:
         capture_exception(e)
         return jsonify({"success": False, "msg": str(e)}), 500
 
+
 """
 @api {post} /app/logout
 @apiName PostLogoutUser
@@ -100,6 +102,7 @@ HTTP/1.1 200 OK
     "msg": "Session closed successfully"
 }
 """
+
 
 @user_auth_app_router.route("/logout", methods=["POST"])
 def logout() -> Tuple[Response, int]:

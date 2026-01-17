@@ -145,6 +145,18 @@ class Paid(BaseModel):
     value: int | None = None
     value_usd: int | None = None
 
+    @field_validator("value_usd", mode="before")
+    @classmethod
+    def normalize_value_usd(cls, value: Any) -> int | None:
+        if value is None:
+            return None
+        if isinstance(value, list):
+            # If comes as a list, take the first element
+            return int(value[0]) if value else None
+        if isinstance(value, (int, float)):
+            return int(value)
+        return None
+
 
 class APC(BaseModel):
     charges: int | None = None

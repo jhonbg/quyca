@@ -1,3 +1,4 @@
+from typing import Optional
 from bson import ObjectId
 from pydantic import BaseModel, Field, field_validator, model_validator
 from quyca.domain.models.base_model import (
@@ -55,7 +56,7 @@ class Degree(BaseModel):
 class Institution(BaseModel):
     id: str | None
     country_code: str | None
-    country_id: str | None
+    country_id: Optional[str] = None
     display_name: str | None
     lineage: list[str] | None = Field(default_factory=list)
     ror: str | None

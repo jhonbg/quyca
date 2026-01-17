@@ -1,6 +1,7 @@
 import csv
 import io
-from typing import Any, Generator, Iterable, Tuple
+from typing import Any, Generator, Iterable, Mapping, Sequence, Tuple
+from pymongo.command_cursor import CommandCursor
 
 from flask import Blueprint, request, jsonify, Response
 from sentry_sdk import capture_exception
@@ -32,7 +33,8 @@ def apc_search() -> Response | Tuple[Response, int]:
                 }
             }
         ]
-        data = database["works"].aggregate(pipeline)
+        cursor: CommandCursor[dict[str, Any]] = database["works"].aggregate(pipeline)
+        rows: list[dict[str, Any]] = list(cursor)
         fieldnames = [
             "work_doi",
             "work_title",
@@ -42,13 +44,12 @@ def apc_search() -> Response | Tuple[Response, int]:
             "work_apc_value",
             "work_apc_currency",
         ]
-        data = list(data)
         output = io.StringIO()
         writer = csv.DictWriter(output, fieldnames=fieldnames, escapechar="\\", quoting=csv.QUOTE_MINIMAL)
         writer.writeheader()
-        writer.writerows(data)
-        data = output.getvalue()
-        response = Response(data, content_type="text/csv")
+        writer.writerows(rows)
+        csv_data: str = output.getvalue()
+        response = Response(csv_data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=search.csv"
         return response
     except Exception as e:
@@ -75,7 +76,8 @@ def apc_person(person_id: str) -> Response | Tuple[Response, int]:
             },
         ]
 
-        data = database["works"].aggregate(pipeline)
+        cursor: CommandCursor[dict[str, Any]] = database["works"].aggregate(pipeline)
+        rows: list[dict[str, Any]] = list(cursor)
 
         fieldnames = [
             "work_doi",
@@ -87,7 +89,6 @@ def apc_person(person_id: str) -> Response | Tuple[Response, int]:
             "work_apc_currency",
         ]
 
-        data = list(data)
         output = io.StringIO()
         writer = csv.DictWriter(
             output,
@@ -96,10 +97,10 @@ def apc_person(person_id: str) -> Response | Tuple[Response, int]:
             quoting=csv.QUOTE_MINIMAL,
         )
         writer.writeheader()
-        writer.writerows(data)
+        writer.writerows(rows)
 
-        data = output.getvalue()
-        response = Response(data, content_type="text/csv")
+        csv_data: str = output.getvalue()
+        response = Response(csv_data, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=person.csv"
         return response
 
@@ -111,7 +112,7 @@ def apc_person(person_id: str) -> Response | Tuple[Response, int]:
 @apc_api_router.route("/affiliation/<affiliation_id>", methods=["GET"])
 def apc_affiliation(affiliation_id: str) -> Response | Tuple[Response, int]:
     try:
-        pipeline = [
+        pipeline: Sequence[Mapping[str, Any]] = [
             {"$match": {"authors.affiliations.id": affiliation_id}},
             {
                 "$project": {

@@ -31,6 +31,18 @@ class CiarpService:
         institution = claims.get("institution")
         user = claims.get("rol")
 
+        if (
+            not isinstance(email, str)
+            or not isinstance(ror_id, str)
+            or not isinstance(institution, str)
+            or not isinstance(user, str)
+            or not email
+            or not ror_id
+            or not institution
+            or not user
+        ):
+            return {"success": False, "msg": "Token inválido o revocado"}, 401
+
         if not self.user_repo.is_token_valid(email, token):
             return {"success": False, "msg": "Token inválido o revocado"}, 401
 

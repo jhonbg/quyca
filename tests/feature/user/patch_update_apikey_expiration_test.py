@@ -1,19 +1,20 @@
+from typing import Any
 from unittest.mock import patch, Mock
 from quyca.application.routes.app.user_crud_app_router import NotEntityException
 
-ROUTER = "application.routes.app.user_crud_app_router"
+ROUTER = "quyca.application.routes.app.user_crud_app_router"
 
 
-def _headers():
+def _headers() -> dict[str, str]:
     return {"Authorization": "Bearer fake.jwt.token"}
 
 
-def test_update_apikey_exp_no_token(client):
+def test_update_apikey_exp_no_token(client: Any) -> None:
     resp = client.patch("/app/users/test@test.com/apikey")
     assert resp.status_code == 401
 
 
-def test_update_apikey_exp_wrong_user(client):
+def test_update_apikey_exp_wrong_user(client: Any) -> None:
     with patch(f"{ROUTER}.verify_jwt_in_request", return_value=True), patch(
         f"{ROUTER}.get_jwt_identity", return_value="other@test.com"
     ):
@@ -22,7 +23,7 @@ def test_update_apikey_exp_wrong_user(client):
         assert resp.status_code == 403
 
 
-def test_update_apikey_exp_invalid_timestamp(client):
+def test_update_apikey_exp_invalid_timestamp(client: Any) -> None:
     usecase_mock = Mock()
     usecase_mock.update_apikey_expiration.side_effect = NotEntityException("La ficha de expiración debe ser futura")
 
@@ -34,7 +35,7 @@ def test_update_apikey_exp_invalid_timestamp(client):
         assert resp.status_code == 400
 
 
-def test_update_apikey_exp_success(client):
+def test_update_apikey_exp_success(client: Any) -> None:
     usecase_mock = Mock()
     usecase_mock.update_apikey_expiration.return_value = {"success": True, "msg": "Expiración del API key actualizada"}
 

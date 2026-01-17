@@ -1,4 +1,6 @@
 from typing import Tuple
+from quyca.application.usecases.login_user import LoginUserUseCase
+from quyca.infrastructure.security.jwt_token_service import JwtTokenService
 from quyca.infrastructure.repositories.pdf_repository import PDFRepository
 from quyca.infrastructure.repositories.gmail_repository import GmailRepository
 from quyca.infrastructure.repositories.google_drive_repository import GoogleDriveRepository
@@ -75,3 +77,7 @@ def build_scienti_service() -> ScientiService:
     user_repo = UserRepositoryMongo()
 
     return ScientiService(notification=notification, save_usecase=save_usecase, user_repo=user_repo)
+
+
+def build_login_usecase() -> LoginUserUseCase:
+    return LoginUserUseCase(user_repo=UserRepositoryMongo(), token_service=JwtTokenService())

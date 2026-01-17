@@ -1,9 +1,12 @@
 from typing import Tuple
 from flask import Blueprint, request, jsonify, Response
 from sentry_sdk import capture_exception
+
 from quyca.domain.exceptions.not_entity_exception import NotEntityException
-from quyca.domain.services import auth_service
 from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
+from quyca.infrastructure.security.jwt_token_service import JwtTokenService
+from quyca.application.usecases.login_user import LoginUserUseCase
+from quyca.application.usecases.logout_user import LogoutUserUseCase
 
 user_auth_app_router = Blueprint("user_auth_app_router", __name__)
 
@@ -48,32 +51,32 @@ HTTP/1.1 400 Bad Request
 """
 
 
-@user_auth_app_router.route("/login", methods=["POST"])
-def login() -> Tuple[Response, int]:
-    try:
-        data = request.get_json(force=True) or {}
-        email = (data.get("email") or "").strip()
-        password = data.get("password")
+# @user_auth_app_router.route("/login", methods=["POST"])
+# def login() -> Tuple[Response, int]:
+#     try:
+#         data = request.get_json(force=True) or {}
+#         email = (data.get("email") or "").strip()
+#         password = data.get("password")
 
-        if not email or not password:
-            return jsonify({"success": False, "msg": "correo y contraseña requeridos"}), 400
+#         if not email or not password:
+#             return jsonify({"success": False, "msg": "correo y contraseña requeridos"}), 400
 
-        repo = UserRepositoryMongo()
-        result = auth_service.authenticate_user(email, password, repo)
+#         repo = UserRepositoryMongo()
+#         result = auth_service.authenticate_user(email, password, repo)
 
-        if not result.get("success"):
-            return jsonify(result), 401
+#         if not result.get("success"):
+#             return jsonify(result), 401
 
-        return jsonify(result), 200
+#         return jsonify(result), 200
 
-    except NotEntityException as e:
-        msg = str(e)
-        status = 403 if "desactivada" in msg.lower() else 401
-        return jsonify({"success": False, "msg": msg}), status
+#     except NotEntityException as e:
+#         msg = str(e)
+#         status = 403 if "desactivada" in msg.lower() else 401
+#         return jsonify({"success": False, "msg": msg}), status
 
-    except Exception as e:
-        capture_exception(e)
-        return jsonify({"success": False, "msg": str(e)}), 500
+#     except Exception as e:
+#         capture_exception(e)
+#         return jsonify({"success": False, "msg": str(e)}), 500
 
 
 """
@@ -98,17 +101,71 @@ HTTP/1.1 200 OK
 """
 
 
+# @user_auth_app_router.route("/logout", methods=["POST"])
+# def logout() -> Tuple[Response, int]:
+#     try:
+#         data = request.get_json()
+#         token = data.get("token")
+
+#         if not token:
+#             return jsonify({"msg": "Token requerido", "success": False}), 400
+#         repo = UserRepositoryMongo()
+#         result = auth_service.logout_user(token, repo)
+#         status_code = 200 if result.get("success") else 401
+#         return jsonify(result), status_code
+#     except Exception as e:
+#         return jsonify({"success": False, "msg": str(e)}), 500
+
+
+@user_auth_app_router.route("/login", methods=["POST"])
+def login() -> Tuple[Response, int]:
+    try:
+        data = request.get_json(force=True) or {}
+        email = (data.get("email") or "").strip()
+        password = data.get("password") or ""
+
+        if not email or not password:
+            return jsonify({"success": False, "msg": "correo y contraseña requeridos"}), 400
+
+        repo = UserRepositoryMongo()
+        token_service = JwtTokenService()
+        usecase = LoginUserUseCase(user_repo=repo, token_service=token_service)
+
+        result = usecase.execute(email, password)
+
+        if not result.get("success"):
+            return jsonify(result), 401
+
+        return jsonify(result), 200
+
+    except NotEntityException as e:
+        msg = str(e)
+        status = 403 if "dasactivada" in msg.lower() else 401
+        return jsonify({"success": False, "msg": msg}), status
+
+    except Exception as e:
+        capture_exception(e)
+        return jsonify({"success": False, "msg": str(e)}), 500
+
+
 @user_auth_app_router.route("/logout", methods=["POST"])
 def logout() -> Tuple[Response, int]:
     try:
-        data = request.get_json()
-        token = data.get("token")
+        auth = request.headers.get("Authorization", "") or ""
+        token = ""
 
-        if not token:
-            return jsonify({"msg": "Token requerido", "success": False}), 400
+        if auth.lower().startswith("bearer"):
+            token = auth[7:].strip()
+
         repo = UserRepositoryMongo()
-        result = auth_service.logout_user(token, repo)
+        token_service = JwtTokenService()
+        usecase = LogoutUserUseCase(repo, token_service)
+
+        result = usecase.execute(token)
+
         status_code = 200 if result.get("success") else 401
         return jsonify(result), status_code
+
     except Exception as e:
+        capture_exception(e)
         return jsonify({"success": False, "msg": str(e)}), 500

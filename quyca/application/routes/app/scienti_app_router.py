@@ -5,8 +5,8 @@ from zoneinfo import ZoneInfo
 from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 
-from infrastructure.container import build_scienti_service
-from domain.services.scienti_service import ScientiService
+from quyca.infrastructure.container import build_scienti_service
+from quyca.domain.services.scienti_service import ScientiService
 
 scienti_app_router = Blueprint("scienti_app_router", __name__)
 

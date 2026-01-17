@@ -1,7 +1,7 @@
 from quyca.infrastructure.mongo import database as db
 from quyca.infrastructure.generators import news_generator
 from quyca.infrastructure.repositories import base_repository
-from typing import Generator, Optional, Set, Iterable, Any
+from typing import Generator, Mapping, Optional, Set, Iterable, Any
 from quyca.domain.models.base_model import QueryParams
 
 
@@ -92,7 +92,7 @@ def get_news_by_person(person_id: str, query_params: QueryParams) -> Generator:
     if not cc:
         yield []
 
-    pipeline = [
+    pipeline: list[Mapping[str, Any]] = [
         {"$match": {"professor_id": cc}},
         {"$unwind": "$classified_urls_ids"},
         {
@@ -148,7 +148,7 @@ def news_count_by_person(person_id: str) -> int:
     if not cc:
         return 0
 
-    pipeline = [
+    pipeline: list[Mapping[str, Any]] = [
         {"$match": {"professor_id": cc}},
         {"$unwind": "$classified_urls_ids"},
         {
@@ -209,7 +209,7 @@ def get_news_by_affiliation(affiliation_id: str, affiliation_type: str, query_pa
     if not authors_ccs:
         yield []
 
-    pipeline = [
+    pipeline: list[Mapping[str, Any]] = [
         {"$match": {"professor_id": {"$in": list(authors_ccs)}}},
         {"$project": {"classified_urls_ids": 1}},
         {"$unwind": "$classified_urls_ids"},
@@ -276,7 +276,7 @@ def news_count_by_affiliation(affiliation_id: str, affiliation_type: str) -> int
     if not authors_ccs:
         return 0
 
-    pipeline = [
+    pipeline: list[Mapping[str, Any]] = [
         {"$match": {"professor_id": {"$in": list(authors_ccs)}}},
         {"$project": {"classified_urls_ids": 1}},
         {"$unwind": "$classified_urls_ids"},

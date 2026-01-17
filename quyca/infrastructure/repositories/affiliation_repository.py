@@ -1,4 +1,4 @@
-from typing import Any, Generator, Tuple
+from typing import Any, Generator, Mapping, Tuple
 
 
 from quyca.domain.models.base_model import QueryParams
@@ -12,7 +12,7 @@ from quyca.infrastructure.generators import affiliation_generator
 
 
 def get_affiliation_by_id(affiliation_id: str) -> Affiliation:
-    pipeline = [{"$match": {"_id": affiliation_id}}, {"$project": {"works": 0}}]
+    pipeline: list[Mapping[str, Any]] = [{"$match": {"_id": affiliation_id}}, {"$project": {"works": 0}}]
     try:
         affiliation_data = database["affiliations"].aggregate(pipeline).next()
     except:
@@ -52,7 +52,7 @@ def get_groups_by_faculty_or_department(affiliation_id: str) -> Generator[Affili
         .get("relations", {})
         .get("id", None)
     )
-    pipeline = [
+    pipeline: list[Mapping[str, Any]] = [
         {
             "$match": {
                 "affiliations.id": affiliation_id,

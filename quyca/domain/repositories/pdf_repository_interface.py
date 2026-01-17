@@ -12,7 +12,7 @@ class IPDFRepository(ABC):
     def generate_quality_report(
         self,
         errors: List[Dict[str, Any]],
-        warnings: List[Dict[str, Any]],
+        warnings: Dict[str, Any],
         duplicados: List[Dict[str, Any]] | None,
         institution: str,
         filename: str,

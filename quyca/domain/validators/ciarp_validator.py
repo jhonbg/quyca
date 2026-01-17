@@ -92,7 +92,9 @@ class CiarpValidator:
             return {"errores": [], "advertencias": []}
 
         errors.extend(RequiredFieldsCiarpValidator.validate(row, index))
-        errors.extend(DocumentValidator.validate(row.get("tipo_documento"), row.get("identificación"), index))
+        tipo_documento = str(row.get("tipo_documento") or "").strip()
+        identificacion = str(row.get("identificación") or "").strip()
+        errors.extend(DocumentValidator.validate(tipo_documento, identificacion, index))
 
         year_err = YearValidator.validate(row.get("año"), "año", index)
         if year_err:
@@ -123,11 +125,12 @@ class CiarpValidator:
 
     @staticmethod
     def validate_dataframe(df: pd.DataFrame) -> StaffReport:
-        errors, warnings = [], []
+        errors: List[Dict[str, Any]] = []
+        warnings: List[Dict[str, Any]] = []
 
         df = df.dropna(how="all").reset_index(drop=True)
 
-        df = df.apply(lambda x: str(x).strip() if isinstance(x, str) else x)
+        df = df.map(lambda v: v.strip() if isinstance(v, str) else v)
 
         df = df.apply(lambda x: str(int(x)) if isinstance(x, float) and x.is_integer() else x)
 

@@ -50,73 +50,6 @@ HTTP/1.1 400 Bad Request
 }
 """
 
-
-# @user_auth_app_router.route("/login", methods=["POST"])
-# def login() -> Tuple[Response, int]:
-#     try:
-#         data = request.get_json(force=True) or {}
-#         email = (data.get("email") or "").strip()
-#         password = data.get("password")
-
-#         if not email or not password:
-#             return jsonify({"success": False, "msg": "correo y contraseña requeridos"}), 400
-
-#         repo = UserRepositoryMongo()
-#         result = auth_service.authenticate_user(email, password, repo)
-
-#         if not result.get("success"):
-#             return jsonify(result), 401
-
-#         return jsonify(result), 200
-
-#     except NotEntityException as e:
-#         msg = str(e)
-#         status = 403 if "desactivada" in msg.lower() else 401
-#         return jsonify({"success": False, "msg": msg}), status
-
-#     except Exception as e:
-#         capture_exception(e)
-#         return jsonify({"success": False, "msg": str(e)}), 500
-
-
-"""
-@api {post} /app/logout
-@apiName PostLogoutUser
-@apiGroup Authentication
-@apiVersion 1.0.0
-@apiDescription Allows logging out a user by invalidating their JWT token.  
-If the token is valid, it is removed from the database.
-
-@apiBody {String} token JWT token to be invalidated.
-
-@apiSuccess {Boolean} success Indicates whether the logout was successful.
-@apiSuccess {String} msg Confirmation message.
-
-@apiSuccessExample {json} Successful Response:
-HTTP/1.1 200 OK
-{
-    "success": true,
-    "msg": "Session closed successfully"
-}
-"""
-
-
-# @user_auth_app_router.route("/logout", methods=["POST"])
-# def logout() -> Tuple[Response, int]:
-#     try:
-#         data = request.get_json()
-#         token = data.get("token")
-
-#         if not token:
-#             return jsonify({"msg": "Token requerido", "success": False}), 400
-#         repo = UserRepositoryMongo()
-#         result = auth_service.logout_user(token, repo)
-#         status_code = 200 if result.get("success") else 401
-#         return jsonify(result), status_code
-#     except Exception as e:
-#         return jsonify({"success": False, "msg": str(e)}), 500
-
-
 @user_auth_app_router.route("/login", methods=["POST"])
 def login() -> Tuple[Response, int]:
     try:
@@ -147,6 +80,26 @@ def login() -> Tuple[Response, int]:
         capture_exception(e)
         return jsonify({"success": False, "msg": str(e)}), 500
 
+"""
+@api {post} /app/logout
+@apiName PostLogoutUser
+@apiGroup Authentication
+@apiVersion 1.0.0
+@apiDescription Allows logging out a user by invalidating their JWT token.  
+If the token is valid, it is removed from the database.
+
+@apiBody {String} token JWT token to be invalidated.
+
+@apiSuccess {Boolean} success Indicates whether the logout was successful.
+@apiSuccess {String} msg Confirmation message.
+
+@apiSuccessExample {json} Successful Response:
+HTTP/1.1 200 OK
+{
+    "success": true,
+    "msg": "Session closed successfully"
+}
+"""
 
 @user_auth_app_router.route("/logout", methods=["POST"])
 def logout() -> Tuple[Response, int]:

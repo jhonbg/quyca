@@ -25,5 +25,5 @@ class LogoutUserUseCase:
 
             return {"success": True, "msg": "Sesión cerrada correctamente"}
 
-        except Exception as e:
+        except Exception:
             return {"success": False, "msg": "Se presentó un error interno. Intenta nuevamente más tarde."}

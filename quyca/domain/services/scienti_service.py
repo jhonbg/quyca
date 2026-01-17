@@ -64,6 +64,16 @@ class ScientiService:
         institution = claims.get("institution")
         rol = claims.get("rol")
 
+        if not (
+            isinstance(email, str)
+            and isinstance(ror_id, str)
+            and isinstance(institution, str)
+            and email.strip()
+            and ror_id.strip()
+            and institution.strip()
+        ):
+            return {"success": False, "msg": "Token inválido o información incompleta"}, 401
+        
         if not self.user_repo.is_token_valid(email, token):
             return {"success": False, "msg": "Token inválido o revocado"}, 401
 

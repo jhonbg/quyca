@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import verify_jwt_in_request, get_jwt, get_jwt_identity
 from quyca.application.usecases.user_crud import UserCrudUseCase
 from quyca.domain.exceptions.not_entity_exception import NotEntityException
+from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
 
 """
 HTTP routes for admin user management (JWT-protected).
@@ -22,11 +23,19 @@ def check_admin_permission() -> tuple[dict[str, Any] | None, int | None]:
     claims = get_jwt()
     user_rol = claims.get("rol")
 
-    if not isinstance(user_rol, str):
-        return {"success": False, "msg": "Token inválido: rol no especificado."}, 403
-
-    if user_rol.lower() != "admin":
+    if not isinstance(user_rol, str) or user_rol.lower() != "admin":
         return {"success": False, "msg": "Permiso denegado: No pueden realizar esta acción."}, 403
+
+    auth = request.headers.get("Authorization", "") or ""
+    token = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
+
+    email = get_jwt_identity()
+    if not token or not email:
+        return {"success": False, "msg": "Token no encontrado en headers"}, 401
+
+    user_repo = UserRepositoryMongo()
+    if not user_repo.is_token_valid(email, token):
+        return {"success": False, "msg": "Token inválido o expirado"}, 401
 
     return None, None
 

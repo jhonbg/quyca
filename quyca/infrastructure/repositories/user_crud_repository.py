@@ -121,7 +121,7 @@ class UserCrudRepository(IUserCrudRepository):
         updated = self.collection.find_one({"email": update.get("email", old_email)}, {"password": 0, "token": 0})
         if not updated:
             return None
-        
+
         return User(
             id=str(updated["_id"]),
             email=updated["email"],

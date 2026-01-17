@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Tuple
 from zoneinfo import ZoneInfo
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
+from werkzeug.datastructures import FileStorage
 from flask import Blueprint, request, jsonify, Response
 from quyca.infrastructure.container import build_staff_service
 from quyca.domain.services.staff_service import StaffService
@@ -74,8 +75,14 @@ def submit_staff() -> Tuple[Response, int]:
     if not auth_header or not auth_header.startswith("Bearer "):
         return jsonify({"success": False, "msg": "Token no encontrado en headers"}), 401
 
-    token_from_header = auth_header.split(" ")[1]
+    parts = auth_header.split()
+    if len(parts) < 2 or not parts[1].strip():
+        return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
+
+    token_from_header = parts[1].strip()
     file = request.files.get("file")
+    if file is None or not isinstance(file, FileStorage):
+        return jsonify({"success": False, "msg": "Archivo requerido"}), 400
     upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
 
     process_usecase, save_usecase, user_repo = build_staff_service()

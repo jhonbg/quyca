@@ -12,7 +12,7 @@ from quyca.config import Settings
 
 
 def create_app() -> Flask:
-    app_settings = Settings() # type: ignore[call-arg]
+    app_settings = Settings()  # type: ignore[call-arg]
     sentry_sdk.init(
         dsn=app_settings.SENTRY_DSN,
         integrations=[FlaskIntegration()],
@@ -39,7 +39,7 @@ def create_app() -> Flask:
 
 
 if __name__ == "__main__":
-    settings = Settings() # type: ignore[call-arg]
+    settings = Settings()  # type: ignore[call-arg]
     app = create_app()
     limiter.init_app(app)
     app.run(host="0.0.0.0", port=int(settings.APP_PORT), debug=settings.APP_DEBUG, threaded=True)

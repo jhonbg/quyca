@@ -1,10 +1,12 @@
 from datetime import datetime
 from typing import Tuple
 from zoneinfo import ZoneInfo
-from flask_jwt_extended import verify_jwt_in_request, get_jwt
+
 from flask import Blueprint, request, jsonify, Response
+from flask_jwt_extended import verify_jwt_in_request, get_jwt
+
+from quyca.application.services.staff_service import StaffService, StaffUploadError
 from quyca.infrastructure.container import build_staff_service
-from quyca.domain.services.staff_service import StaffService
 
 staff_app_router = Blueprint("staff_app_router", __name__)
 """
@@ -75,11 +77,22 @@ def submit_staff() -> Tuple[Response, int]:
         return jsonify({"success": False, "msg": "Token no encontrado en headers"}), 401
 
     token_from_header = auth_header.split(" ")[1]
+    
     file = request.files.get("file")
     upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
 
     process_usecase, save_usecase, user_repo = build_staff_service()
     service = StaffService(process_usecase, save_usecase, user_repo)
-
-    result, status = service.handle_staff_upload(file, claims, token_from_header, upload_date)
-    return jsonify(result), status
+    
+    outcome = service.handle_staff_upload(file, claims, token_from_header, upload_date)
+    
+    if outcome.error == StaffUploadError.UNAUTHORIZED:
+        return jsonify(outcome.payload), 401
+    
+    if outcome.error == StaffUploadError.UNPROCESSABLE_ENTITY:
+        return jsonify(outcome.payload), 422
+    
+    if outcome.error == StaffUploadError.BAD_REQUEST:
+        return(outcome.payload), 400
+    
+    return jsonify(outcome.payload), 200

@@ -56,7 +56,7 @@ def set_authors_external_ids(workable: Union[Work, Patent, Project]) -> None:
 
     for author in workable.authors:
         if author.id:
-            author.external_ids = person_repository.get_person_by_id(str(author.id)).external_ids
+            author.external_ids = person_repository.get_person_external_ids(str(author.id))
 
 
 def limit_authors(workable: Union[Work, Patent, Project], limit: int = 10) -> None:

@@ -1,8 +1,8 @@
-from typing import Any, Dict, Generator, List, Tuple
+from typing import Any, Dict, Generator, List, Mapping, Sequence, Tuple
 from bson import ObjectId
 
 from quyca.infrastructure.generators import person_generator
-from quyca.domain.models.base_model import QueryParams
+from quyca.domain.models.base_model import ExternalId, QueryParams
 from quyca.infrastructure.repositories import base_repository
 from quyca.domain.exceptions.not_entity_exception import NotEntityException
 from quyca.domain.models.person_model import Person
@@ -139,3 +139,20 @@ def search_persons(query_params: QueryParams, pipeline_params: dict | None = Non
     ]
     total_results = next(database["person"].aggregate(count_pipeline), {"total_results": 0})["total_results"]
     return person_generator.get(persons), total_results
+
+
+def get_person_external_ids(person_id: str) -> list[ExternalId]:
+    match = {"$match": {"_id": person_id}}
+
+    pipeline: Sequence[Mapping[str, Any]] = [
+        match,
+        {"$project": {"external_ids": 1}},
+    ]
+
+    cursor = database["person"].aggregate(pipeline)
+    data = next(cursor, None)
+
+    if not data:
+        return []
+
+    return [ExternalId(**eid) for eid in data.get("external_ids", [])]

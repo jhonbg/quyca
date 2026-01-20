@@ -55,7 +55,7 @@ class Degree(BaseModel):
 
 class Institution(BaseModel):
     id: str | None
-    country_code: str | None
+    country_code: Optional[str] = None
     country_id: Optional[str] = None
     display_name: str | None
     lineage: list[str] | None = Field(default_factory=list)

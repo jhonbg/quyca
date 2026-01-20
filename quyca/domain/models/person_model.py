@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 from bson import ObjectId
 from pydantic import BaseModel, Field, field_validator, model_validator
 from quyca.domain.models.base_model import (
@@ -69,6 +69,13 @@ class RelatedWork(BaseModel):
     provenance: str | None
     source: str | None
     year: int | None = None
+
+    @field_validator("institutions", mode="before")
+    @classmethod
+    def clean_institutions(cls: type, value: Any) -> Any:
+        if not value:
+            return []
+        return [inst for inst in value if inst.get("id") and inst.get("type") is not None]
 
 
 class Person(BaseModel):

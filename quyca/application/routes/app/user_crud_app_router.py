@@ -1,5 +1,5 @@
 from typing import Any
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import verify_jwt_in_request, get_jwt, get_jwt_identity
 from quyca.application.usecases.user_crud import UserCrudUseCase
 from quyca.domain.exceptions.not_entity_exception import NotEntityException
@@ -17,8 +17,12 @@ def check_admin_permission() -> tuple[dict[str, Any] | None, int | None]:
     """Validates JWT exists and role is admin."""
     try:
         verify_jwt_in_request()
-    except Exception:
-        return {"success": False, "msg": "Token no proporcionado o inválido. Por favor, inicia sesión nuevamente."}, 401
+    except Exception as e:
+        return {
+            "success": False,
+            "msg": "Token no proporcionado o inválido. Por favor, inicia sesión nuevamente.",
+            "detail": str(e),
+        }, 401
 
     claims = get_jwt()
     user_rol = claims.get("rol")
@@ -26,12 +30,12 @@ def check_admin_permission() -> tuple[dict[str, Any] | None, int | None]:
     if not isinstance(user_rol, str) or user_rol.lower() != "admin":
         return {"success": False, "msg": "Permiso denegado: No pueden realizar esta acción."}, 403
 
-    auth = request.headers.get("Authorization", "") or ""
-    token = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
+    cookie_name = current_app.config.get("JWT_ACCESS_COOKIE_NAME", "access_token_cookie")
+    token = request.cookies.get(cookie_name, "")
 
     email = get_jwt_identity()
     if not token or not email:
-        return {"success": False, "msg": "Token no encontrado en headers"}, 401
+        return {"success": False, "msg": "Cookie de sesión no encontrada"}, 401
 
     user_repo = UserRepositoryMongo()
     if not user_repo.is_token_valid(email, token):

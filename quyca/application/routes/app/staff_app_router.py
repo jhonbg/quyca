@@ -1,11 +1,12 @@
 from datetime import datetime
 from typing import Tuple
 from zoneinfo import ZoneInfo
+
+from flask import Blueprint, request, jsonify, Response, current_app
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
-from werkzeug.datastructures import FileStorage
-from flask import Blueprint, request, jsonify, Response
+
+from quyca.application.services.staff_service import StaffService, StaffUploadError
 from quyca.infrastructure.container import build_staff_service
-from quyca.domain.services.staff_service import StaffService
 
 staff_app_router = Blueprint("staff_app_router", __name__)
 """
@@ -71,22 +72,26 @@ def submit_staff() -> Tuple[Response, int]:
     except Exception:
         return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
 
-    auth_header = request.headers.get("Authorization", None)
-    if not auth_header or not auth_header.startswith("Bearer "):
-        return jsonify({"success": False, "msg": "Token no encontrado en headers"}), 401
+    cookie_name = current_app.config.get("JWT_ACCESS_COOKIE_NAME", "access_token_cookie")
+    token_from_header = request.cookies.get(cookie_name, "")
+    if not token_from_header:
+        return jsonify({"success": False, "msg": "Cookie de sesión no encontrada"}), 401
 
-    parts = auth_header.split()
-    if len(parts) < 2 or not parts[1].strip():
-        return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
-
-    token_from_header = parts[1].strip()
     file = request.files.get("file")
-    if file is None or not isinstance(file, FileStorage):
-        return jsonify({"success": False, "msg": "Archivo requerido"}), 400
     upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
 
     process_usecase, save_usecase, user_repo = build_staff_service()
     service = StaffService(process_usecase, save_usecase, user_repo)
 
-    result, status = service.handle_staff_upload(file, claims, token_from_header, upload_date)
-    return jsonify(result), status
+    outcome = service.handle_staff_upload(file, claims, token_from_header, upload_date)
+
+    if outcome.error == StaffUploadError.UNAUTHORIZED:
+        return jsonify(outcome.payload), 401
+
+    if outcome.error == StaffUploadError.UNPROCESSABLE_ENTITY:
+        return jsonify(outcome.payload), 422
+
+    if outcome.error == StaffUploadError.BAD_REQUEST:
+        return (outcome.payload), 400
+
+    return jsonify(outcome.payload), 200

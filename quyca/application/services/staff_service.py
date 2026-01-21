@@ -1,11 +1,29 @@
 from __future__ import annotations
 
 import io
-from typing import Any
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any, Optional
+
+from werkzeug.datastructures import FileStorage
+
 from quyca.application.usecases.process_staff_file import ProcessStaffFileUseCase
 from quyca.application.usecases.save_staff_file import SaveStaffFileUseCase
 from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
-from werkzeug.datastructures import FileStorage
+
+
+class StaffUploadError(Enum):
+    """Semantic errors (the router converts them to HTTP)."""
+
+    UNAUTHORIZED = "unathorized"
+    BAD_REQUEST = "bad_request"
+    UNPROCESSABLE_ENTITY = "unprocessable_entity"
+
+
+@dataclass(frozen=True)
+class StaffUploadResult:
+    payload: dict
+    error: Optional[StaffUploadError] = None
 
 
 class StaffService:
@@ -25,7 +43,7 @@ class StaffService:
 
     def handle_staff_upload(
         self, file: FileStorage, claims: dict[str, Any], token: str, upload_date: str
-    ) -> tuple[dict, int]:
+    ) -> StaffUploadResult:
         email = claims.get("sub")
         ror_id = claims.get("_id")
         institution = claims.get("institution")
@@ -41,17 +59,29 @@ class StaffService:
             or not institution
             or not user
         ):
-            return {"success": False, "msg": "Token inválido o revocado"}, 401
+            return StaffUploadResult(
+                {"success": False, "msg": "Token inválido o revocado"},
+                StaffUploadError.UNAUTHORIZED,
+            )
 
         if not self.user_repo.is_token_valid(email, token):
-            return {"success": False, "msg": "Token inválido o revocado"}, 401
+            return StaffUploadResult(
+                {"success": False, "msg": "Token inválido o revocado"},
+                StaffUploadError.UNAUTHORIZED,
+            )
 
         if not file:
-            return {"success": False, "msg": "Archivo requerido"}, 400
+            return StaffUploadResult(
+                {"success": False, "msg": "Archivo requerido"},
+                StaffUploadError.BAD_REQUEST,
+            )
 
         filename = file.filename or ""
         if not filename:
-            return {"success": False, "msg": "Archivo requerido"}, 400
+            return StaffUploadResult(
+                {"success": False, "msg": "Archivo requerido"},
+                StaffUploadError.BAD_REQUEST,
+            )
 
         file.stream.seek(0)
         file_bytes = io.BytesIO(file.stream.read())
@@ -68,12 +98,14 @@ class StaffService:
         )
 
         if not result["success"]:
-            if result.get("msg", "").startswith("El archivo enviado no cumple con el formato requerido de columnas"):
-                return result, 422
-            return result, 400
+            msg = str(result.get("msg", ""))
+            if msg.startswith("El archivo enviado no cumple con el formato requerido de columnas"):
+                return StaffUploadResult(result, StaffUploadError.UNPROCESSABLE_ENTITY)
+            return StaffUploadResult(result, StaffUploadError.BAD_REQUEST)
 
         file.stream.seek(0)
         save_result = self.save_usecase.execute(file, ror_id, institution)
 
         result.update({"file_msg": save_result.get("msg")})
-        return result, 200
+
+        return StaffUploadResult(result, None)

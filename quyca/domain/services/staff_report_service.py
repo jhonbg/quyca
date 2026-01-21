@@ -9,12 +9,16 @@ from quyca.domain.validators.staff_validator import StaffValidator
 
 class StaffReportService:
     """Generates report files (PDF + Excel) from validation results."""
-    
-    def __init__(self, pdf_repo: IPDFRepository, annotator: IDataFrameAnnotator, xlsx_exporter: IXlsxExporter,):
+
+    def __init__(
+        self,
+        pdf_repo: IPDFRepository,
+        annotator: IDataFrameAnnotator,
+        xlsx_exporter: IXlsxExporter,
+    ):
         self.pdf_repo = pdf_repo
         self.annotator = annotator
         self.xlsx_exporter = xlsx_exporter
-
 
     def generate_report(
         self, df: pd.DataFrame, institution: str, filename: str, upload_date: str, user: str
@@ -24,11 +28,7 @@ class StaffReportService:
         attachments: list[dict] = []
         pdf_bytes: io.BytesIO | None = None
 
-        if (
-            staff_report.total_errores > 0 
-            or len(staff_report.advertencias) > 0 
-            or staff_report.total_duplicados > 0
-        ):
+        if staff_report.total_errores > 0 or len(staff_report.advertencias) > 0 or staff_report.total_duplicados > 0:
             pdf_bytes = self.pdf_repo.generate_quality_report(
                 staff_report.errores_agrupados,
                 staff_report.advertencias_agrupadas,

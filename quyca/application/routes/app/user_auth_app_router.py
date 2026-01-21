@@ -1,6 +1,8 @@
 from typing import Tuple
-from flask import Blueprint, request, jsonify, Response
+from flask import Blueprint, request, jsonify, Response, current_app
 from sentry_sdk import capture_exception
+
+from flask_jwt_extended import set_access_cookies, unset_jwt_cookies
 
 from quyca.domain.exceptions.not_entity_exception import NotEntityException
 from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
@@ -50,35 +52,6 @@ HTTP/1.1 400 Bad Request
 }
 """
 
-
-# @user_auth_app_router.route("/login", methods=["POST"])
-# def login() -> Tuple[Response, int]:
-#     try:
-#         data = request.get_json(force=True) or {}
-#         email = (data.get("email") or "").strip()
-#         password = data.get("password")
-
-#         if not email or not password:
-#             return jsonify({"success": False, "msg": "correo y contraseña requeridos"}), 400
-
-#         repo = UserRepositoryMongo()
-#         result = auth_service.authenticate_user(email, password, repo)
-
-#         if not result.get("success"):
-#             return jsonify(result), 401
-
-#         return jsonify(result), 200
-
-#     except NotEntityException as e:
-#         msg = str(e)
-#         status = 403 if "desactivada" in msg.lower() else 401
-#         return jsonify({"success": False, "msg": msg}), status
-
-#     except Exception as e:
-#         capture_exception(e)
-#         return jsonify({"success": False, "msg": str(e)}), 500
-
-
 """
 @api {post} /app/logout
 @apiName PostLogoutUser
@@ -101,22 +74,6 @@ HTTP/1.1 200 OK
 """
 
 
-# @user_auth_app_router.route("/logout", methods=["POST"])
-# def logout() -> Tuple[Response, int]:
-#     try:
-#         data = request.get_json()
-#         token = data.get("token")
-
-#         if not token:
-#             return jsonify({"msg": "Token requerido", "success": False}), 400
-#         repo = UserRepositoryMongo()
-#         result = auth_service.logout_user(token, repo)
-#         status_code = 200 if result.get("success") else 401
-#         return jsonify(result), status_code
-#     except Exception as e:
-#         return jsonify({"success": False, "msg": str(e)}), 500
-
-
 @user_auth_app_router.route("/login", methods=["POST"])
 def login() -> Tuple[Response, int]:
     try:
@@ -133,15 +90,21 @@ def login() -> Tuple[Response, int]:
 
         result = usecase.execute(email, password)
 
-        if not result.get("success"):
-            return jsonify(result), 401
+        status_code = 200 if result.get("success") else 401
 
-        return jsonify(result), 200
+        token = result.get("access_token", "")
+        response_body = {**result}
+
+        response_body.pop("access_token", None)
+
+        response = jsonify(response_body)
+        if status_code == 200 and token:
+            set_access_cookies(response, token)
+
+        return response, status_code
 
     except NotEntityException as e:
-        msg = str(e)
-        status = 403 if "dasactivada" in msg.lower() else 401
-        return jsonify({"success": False, "msg": msg}), status
+        return jsonify({"success": False, "msg": str(e)}), 404
 
     except Exception as e:
         capture_exception(e)
@@ -151,11 +114,12 @@ def login() -> Tuple[Response, int]:
 @user_auth_app_router.route("/logout", methods=["POST"])
 def logout() -> Tuple[Response, int]:
     try:
-        auth = request.headers.get("Authorization", "") or ""
-        token = ""
+        cookie_name = current_app.config.get("JWT_ACCESS_COOKIE_NAME", "access_token_cookie")
+        token = request.cookies.get(cookie_name, "")
 
-        if auth.lower().startswith("bearer"):
-            token = auth[7:].strip()
+        if not token:
+            result = {"success": False, "msg": "No hay sesión válida"}
+            return jsonify(result), 401
 
         repo = UserRepositoryMongo()
         token_service = JwtTokenService()
@@ -164,7 +128,12 @@ def logout() -> Tuple[Response, int]:
         result = usecase.execute(token)
 
         status_code = 200 if result.get("success") else 401
-        return jsonify(result), status_code
+        response = jsonify(result)
+
+        if status_code == 200:
+            unset_jwt_cookies(response)
+
+        return response, status_code
 
     except Exception as e:
         capture_exception(e)

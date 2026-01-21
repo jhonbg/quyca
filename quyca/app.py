@@ -26,13 +26,18 @@ def create_app() -> Flask:
 
     app_factory.config["JWT_SECRET_KEY"] = app_settings.JWT_SECRET_KEY
     app_factory.config["JWT_ACCESS_TOKEN_EXPIRES"] = app_settings.JWT_ACCESS_TOKEN_EXPIRES
+    app_factory.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+    app_factory.config["JWT_ACCESS_COOKIE_NAME"] = "access_token_cookie"
+    app_factory.config["JWT_COOKIE_HTTPONLY"] = True
+    app_factory.config["JWT_COOKIE_SAMESITE"] = "Lax"
+    app_factory.config["JWT_COOKIE_SECURE"] = False
     app_factory.config["LOCAL_STORAGE_PATH"] = app_settings.LOCAL_STORAGE_PATH
     app_factory.config["GOOGLE_CREDENTIALS"] = app_settings.GOOGLE_CREDENTIALS
     app_factory.config["GOOGLE_PARENT_ID"] = app_settings.GOOGLE_PARENT_ID
 
     JWTManager(app_factory)
 
-    CORS(app_factory)
+    CORS(app_factory, supports_credentials=True, origins=["http://localhost:3000"])
     app_factory.register_blueprint(router)
     Compress(app_factory)
     return app_factory

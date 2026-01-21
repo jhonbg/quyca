@@ -14,14 +14,17 @@ from quyca.infrastructure.repositories.user_repository import UserRepositoryMong
 
 class StaffUploadError(Enum):
     """Semantic errors (the router converts them to HTTP)."""
+
     UNAUTHORIZED = "unathorized"
     BAD_REQUEST = "bad_request"
     UNPROCESSABLE_ENTITY = "unprocessable_entity"
 
+
 @dataclass(frozen=True)
 class StaffUploadResult:
     payload: dict
-    error : Optional[StaffUploadError] = None 
+    error: Optional[StaffUploadError] = None
+
 
 class StaffService:
     """
@@ -45,8 +48,8 @@ class StaffService:
         ror_id = claims.get("_id")
         institution = claims.get("institution")
         user = claims.get("rol")
-        
-        if(
+
+        if (
             not isinstance(email, str)
             or not isinstance(ror_id, str)
             or not isinstance(institution, str)
@@ -72,20 +75,20 @@ class StaffService:
                 {"success": False, "msg": "Archivo requerido"},
                 StaffUploadError.BAD_REQUEST,
             )
-        
+
         filename = file.filename or ""
         if not filename:
             return StaffUploadResult(
                 {"success": False, "msg": "Archivo requerido"},
                 StaffUploadError.BAD_REQUEST,
             )
-        
+
         file.stream.seek(0)
         file_bytes = io.BytesIO(file.stream.read())
         file_bytes.seek(0)
 
         result = self.process_usecase.execute(
-            file_bytes, 
+            file_bytes,
             institution,
             filename,
             upload_date,

@@ -54,13 +54,13 @@ class Degree(BaseModel):
 
 
 class Institution(BaseModel):
-    id: str | None
+    id: Optional[str] = None
     country_code: Optional[str] = None
     country_id: Optional[str] = None
-    display_name: str | None
-    lineage: list[str] | None = Field(default_factory=list)
-    ror: str | None
-    type: str | None
+    display_name: Optional[str] = None
+    lineage: list[str] = Field(default_factory=list)
+    ror: Optional[str] = None
+    type: Optional[str] = None
 
 
 class RelatedWork(BaseModel):
@@ -72,10 +72,20 @@ class RelatedWork(BaseModel):
 
     @field_validator("institutions", mode="before")
     @classmethod
-    def clean_institutions(cls: type, value: Any) -> Any:
+    def clean_institutions(cls, value: Any) -> list:
         if not value:
             return []
-        return [inst for inst in value if inst.get("id") and inst.get("type") is not None]
+
+        cleaned = []
+        for inst in value:
+            if not isinstance(inst, dict):
+                continue
+            if inst.get("type") is None:
+                continue
+
+            cleaned.append(inst)
+
+        return cleaned
 
 
 class Person(BaseModel):

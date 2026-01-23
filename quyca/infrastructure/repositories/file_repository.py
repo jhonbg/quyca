@@ -1,3 +1,4 @@
+from quyca.domain.repositories.file_repository_interface import IFileRepository
 import os
 import shutil
 from datetime import datetime
@@ -8,7 +9,7 @@ from quyca.infrastructure.repositories.google_drive_repository import GoogleDriv
 from werkzeug.datastructures import FileStorage
 
 
-class FileRepository:
+class FileRepository(IFileRepository):
     def __init__(self, drive_repo: GoogleDriveRepository):
         self.drive_repo = drive_repo
 

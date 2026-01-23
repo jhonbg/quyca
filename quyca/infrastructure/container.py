@@ -36,7 +36,7 @@ def build_staff_service() -> Tuple[ProcessStaffFileUseCase, SaveStaffFileUseCase
     drive_repo = GoogleDriveRepository()
     file_repo = FileRepository(drive_repo)
 
-    report_service = StaffReportService(pdf_repo, Annotator, XlsxWriteExporter)
+    report_service = StaffReportService(pdf_repo, Annotator(), XlsxWriteExporter())
     notification_service = StaffNotification(gmail_repo)
 
     process_usecase = ProcessStaffFileUseCase(report_service, notification_service)
@@ -57,7 +57,7 @@ def build_ciarp_service() -> Tuple[ProcessCiarpFileUseCase, SaveCiarpFileUseCase
     drive_repo = GoogleDriveRepository()
     file_repo = FileRepository(drive_repo)
 
-    report_service = CiarpReportService(pdf_repo, gmail_repo)
+    report_service = CiarpReportService(pdf_repo, Annotator(), XlsxWriteExporter())
     notification_service = StaffNotification(gmail_repo)
 
     process_usecase = ProcessCiarpFileUseCase(report_service, notification_service)

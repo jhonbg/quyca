@@ -204,6 +204,9 @@ class UserCrudService:
 
         if correo_cambiado:
             new_password = self._generate_password()
+            hashed = hash_password(new_password)
+
+            self.user_repo.update_password(updated_user.email, hashed)
 
             subject = "Tu cuenta en la plataforma ImpactU ha sido creada exitosamente."
             self.notifier.send_custom_email(

@@ -1,3 +1,4 @@
+from quyca.domain.repositories.notification_service_interface import INotificationService
 from typing import Any
 from quyca.infrastructure.repositories.gmail_repository import GmailRepository
 from quyca.infrastructure.email_templates.staff_report_templates import build_email_template
@@ -5,7 +6,7 @@ from quyca.infrastructure.email_templates.scienti_upload_templeates import build
 from quyca.domain.models.staff_report_model import StaffReport
 
 
-class StaffNotification:
+class StaffNotification(INotificationService):
     """
     Injects Gmail repository dependency.
     """

@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 import os
 import io
-import pandas as pd
 import base64
-from quyca.domain.validators.ciarp_validator import CiarpValidator
+from typing import Any, Dict, Optional
+
+import pandas as pd
+
 from quyca.domain.services.ciarp_report_service import CiarpReportService
-from quyca.infrastructure.notifications.notification import StaffNotification
+from quyca.domain.repositories.notification_service_interface import INotificationService
+from quyca.domain.validators.ciarp_validator_interface import ICiarpValidator
+from quyca.domain.validators.ciarp_validator import CiarpValidator
 
 
 class ProcessCiarpFileUseCase:
@@ -12,9 +18,15 @@ class ProcessCiarpFileUseCase:
     Use case: validate, report and notify for CIARP Excel uploads.
     """
 
-    def __init__(self, report_service: CiarpReportService, notification_service: StaffNotification):
+    def __init__(
+        self,
+        report_service: CiarpReportService,
+        notification_service: INotificationService,
+        validator: ICiarpValidator = CiarpValidator,
+    ):
         self.report_service = report_service
         self.notification_service = notification_service
+        self.validator = validator
 
     """
     Reads Excel, validates schema/data (CIARP), generates attachments, sends email, returns summary.
@@ -22,7 +34,7 @@ class ProcessCiarpFileUseCase:
 
     def execute(
         self, file: io.BytesIO, institution: str, filename: str, upload_date: str, user: str, email: str, ror_id: str
-    ) -> dict:
+    ) -> Dict[str, Any]:
         extension = os.path.splitext(filename)[1].lower()
         if extension != ".xlsx":
             return {
@@ -36,7 +48,7 @@ class ProcessCiarpFileUseCase:
                 "success": False,
                 "msg": f"Error al leer el archivo Excel: {str(e)}",
             }
-        valid, errors_columns, _ = CiarpValidator.validate_columns(df)
+        valid, errors_columns, _ = self.validator.validate_columns(df)
         if not valid:
             return {
                 "success": False,
@@ -45,11 +57,12 @@ class ProcessCiarpFileUseCase:
             }
 
         report, attachments = self.report_service.generate_report(df, institution, filename, upload_date, user)
+
         self.notification_service.send_report(
             report, institution, filename, upload_date, user, email, "Ciarp", attachments, ror_id
         )
 
-        pdf_base64 = None
+        pdf_base64: Optional[str] = None
         for att in attachments:
             if att["filename"].endswith(".pdf"):
                 pdf_base64 = base64.b64encode(att["bytes"].read()).decode()

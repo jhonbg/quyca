@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from quyca.infrastructure.repositories.file_repository import FileRepository
+from quyca.domain.repositories.file_repository_interface import IFileRepository
 
 
 class SaveCiarpFileUseCase:
@@ -7,7 +7,7 @@ class SaveCiarpFileUseCase:
     Use case: persist validated CIARP file in Drive (or local fallback).
     """
 
-    def __init__(self, file_repo: FileRepository):
+    def __init__(self, file_repo: IFileRepository):
         self.file_repo = file_repo
 
     """

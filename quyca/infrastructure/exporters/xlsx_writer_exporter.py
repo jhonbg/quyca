@@ -8,8 +8,7 @@ class XlsxWriteExporter:
     Exports annotated DataFrame to XLSX, with row coloring and autofilter.
     """
 
-    @staticmethod
-    def to_excel_bytes(df: pd.DataFrame) -> io.BytesIO:
+    def to_excel_bytes(self, df: pd.DataFrame) -> io.BytesIO:
         output = io.BytesIO()
 
         def sort_identification(val: int) -> Tuple[int, Union[int, str]]:

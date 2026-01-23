@@ -1,19 +1,26 @@
 import io
+
 import pandas as pd
+
 from quyca.domain.models.staff_report_model import StaffReport
-from quyca.domain.validators.ciarp_validator import CiarpValidator
+from quyca.domain.repositories.dataframe_annotator_interface import IDataFrameAnnotator
 from quyca.domain.repositories.pdf_repository_interface import IPDFRepository
-from quyca.infrastructure.repositories.gmail_repository import GmailRepository
-from quyca.infrastructure.exporters.xlsx_writer_exporter import XlsxWriteExporter
-from quyca.infrastructure.annotators.annotator import Annotator
+from quyca.domain.repositories.xlsx_exporter_interface import IXlsxExporter
+from quyca.domain.validators.ciarp_validator import CiarpValidator
 
 
 class CiarpReportService:
     """Generates PDF + Excel reports for CIARP validation results."""
 
-    def __init__(self, pdf_repo: IPDFRepository, gmail_repo: GmailRepository | None = None):
+    def __init__(
+        self,
+        pdf_repo: IPDFRepository,
+        annotator: IDataFrameAnnotator,
+        xlsx_exporter: IXlsxExporter,
+    ):
         self.pdf_repo = pdf_repo
-        self.gmail_repo = gmail_repo
+        self.annotator = annotator
+        self.xlsx_expoter = xlsx_exporter
 
     def generate_report(
         self, df: pd.DataFrame, institution: str, filename: str, upload_date: str, user: str
@@ -38,8 +45,8 @@ class CiarpReportService:
 
             attachments = [{"bytes": pdf_bytes, "filename": "reporte_ciarp.pdf", "mime": "application/pdf"}]
 
-            annotated_df = Annotator.annotate(df, ciarp_report)
-            excel_bytes = XlsxWriteExporter.to_excel_bytes(annotated_df)
+            annotated_df = self.annotator.annotate(df, ciarp_report)
+            excel_bytes = self.xlsx_expoter.to_excel_bytes(annotated_df)
             attachments.append(
                 {
                     "bytes": excel_bytes,

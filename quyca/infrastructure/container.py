@@ -1,5 +1,6 @@
 from typing import Tuple
 
+from quyca.application.usecases.get_me import GetMeUseCase
 from quyca.application.usecases.login_user import LoginUserUseCase
 from quyca.application.usecases.save_staff_file import SaveStaffFileUseCase
 from quyca.application.usecases.save_ciarp_file import SaveCiarpFileUseCase
@@ -7,6 +8,9 @@ from quyca.application.usecases.save_scienti_file import SaveScientiFileUseCase
 from quyca.application.usecases.process_staff_file import ProcessStaffFileUseCase
 from quyca.application.usecases.process_ciarp_file import ProcessCiarpFileUseCase
 
+from quyca.infrastructure.auth.flask_cookie_reader import FlaskJwtCookieReader
+from quyca.infrastructure.auth.flask_jwt_verifier import FlaskJwtVerifier
+from quyca.infrastructure.auth.token_session_repository_mongo import TokenSessionRepositoryMongo
 from quyca.infrastructure.security.jwt_token_service import JwtTokenService
 from quyca.infrastructure.repositories.pdf_repository import PDFRepository
 from quyca.infrastructure.repositories.gmail_repository import GmailRepository
@@ -86,3 +90,12 @@ def build_scienti_service() -> ScientiService:
 
 def build_login_usecase() -> LoginUserUseCase:
     return LoginUserUseCase(user_repo=UserRepositoryMongo(), token_service=JwtTokenService())
+
+
+def build_get_me_usecase() -> GetMeUseCase:
+    user_repo = UserRepositoryMongo()
+    return GetMeUseCase(
+        cookie_reader=FlaskJwtCookieReader(),
+        jwt_verifier=FlaskJwtVerifier(),
+        token_repo=TokenSessionRepositoryMongo(user_repo),
+    )

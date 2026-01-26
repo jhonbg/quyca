@@ -1,7 +1,7 @@
 from typing import Any
 
 from bson import ObjectId
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from quyca.domain.models.base_model import (
     PyObjectId,
@@ -146,3 +146,10 @@ class Work(BaseModel):
 
     class Config:
         json_encoders = {ObjectId: str}
+
+    @field_validator("date_published", mode="before")
+    @classmethod
+    def empty_string_to_none(cls: type, value: str) -> Any:
+        if value in ("", None):
+            return None
+        return value

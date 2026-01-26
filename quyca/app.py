@@ -37,7 +37,14 @@ def create_app() -> Flask:
 
     JWTManager(app_factory)
 
-    CORS(app_factory, supports_credentials=True, origins=["http://localhost:3000"])
+    CORS(
+        app_factory,
+        supports_credentials=True,
+        origins=[
+            "http://localhost:3000",
+            r"https?://.*\.impactu\.colav\.co$"
+        ]
+    )
     app_factory.register_blueprint(router)
     Compress(app_factory)
     return app_factory

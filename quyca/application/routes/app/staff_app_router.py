@@ -1,9 +1,10 @@
 from datetime import datetime
-from typing import Tuple
+from typing import Tuple, Any
 from zoneinfo import ZoneInfo
 
 from flask import Blueprint, request, jsonify, Response, current_app
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
+from werkzeug.datastructures import FileStorage
 
 from quyca.application.services.staff_service import StaffService, StaffUploadError
 from quyca.infrastructure.container import build_staff_service
@@ -68,16 +69,19 @@ HTTP/1.1 400 Bad Request
 def submit_staff() -> Tuple[Response, int]:
     try:
         verify_jwt_in_request()
-        claims = get_jwt()
+        claims: dict[str, Any] = get_jwt()
     except Exception:
         return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
 
     cookie_name = current_app.config.get("JWT_ACCESS_COOKIE_NAME", "access_token_cookie")
-    token_from_header = request.cookies.get(cookie_name, "")
+    token_from_header = request.cookies.get(cookie_name)
     if not token_from_header:
         return jsonify({"success": False, "msg": "Cookie de sesión no encontrada"}), 401
 
-    file = request.files.get("file")
+    file: FileStorage | None = request.files.get("file")
+    if file is None:
+        return jsonify({"success": False, "msg": "Archivo requerido"}), 400
+
     upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
 
     process_usecase, save_usecase, user_repo = build_staff_service()
@@ -92,6 +96,6 @@ def submit_staff() -> Tuple[Response, int]:
         return jsonify(outcome.payload), 422
 
     if outcome.error == StaffUploadError.BAD_REQUEST:
-        return (outcome.payload), 400
+        return jsonify(outcome.payload), 400
 
     return jsonify(outcome.payload), 200

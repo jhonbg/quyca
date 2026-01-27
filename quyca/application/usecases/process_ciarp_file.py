@@ -53,7 +53,7 @@ class ProcessCiarpFileUseCase:
             return {
                 "success": False,
                 "msg": "El archivo enviado no cumple con el formato requerido de columnas",
-                "detalles": errors_columns,
+                "details": errors_columns,
             }
 
         report, attachments = self.report_service.generate_report(df, institution, filename, upload_date, user)
@@ -68,4 +68,10 @@ class ProcessCiarpFileUseCase:
                 pdf_base64 = base64.b64encode(att["bytes"].read()).decode()
                 break
 
-        return {"success": report.total_errores == 0, "errores": report.total_errores, "pdf_base64": pdf_base64}
+        return {
+            "success": report.total_errors == 0,
+            "errors": report.total_errors,
+            "warnings": len(report.warnings),
+            "duplicates": report.total_duplicates,
+            "pdf_base64": pdf_base64,
+        }

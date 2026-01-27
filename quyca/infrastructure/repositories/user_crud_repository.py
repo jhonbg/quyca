@@ -26,7 +26,7 @@ class UserCrudRepository(IUserCrudRepository):
                 "email": user.email,
                 "password": user.password,
                 "institution": user.institution,
-                "rol": user.rol,
+                "role": user.role,
                 "token": user.token,
                 "is_active": user.is_active,
                 "apikey": user.apikey,
@@ -43,7 +43,7 @@ class UserCrudRepository(IUserCrudRepository):
                 email=u["email"],
                 password=None,
                 institution=u["institution"],
-                rol=u["rol"],
+                role=u["role"],
                 token=u.get("token"),
                 is_active=u.get("is_active", True),
                 apikey=u.get("apikey"),
@@ -65,7 +65,7 @@ class UserCrudRepository(IUserCrudRepository):
             email=updated["email"],
             password=None,
             institution=updated["institution"],
-            rol=updated["rol"],
+            role=updated["role"],
             is_active=updated.get("is_active", True),
             token=updated.get("token"),
             apikey=updated.get("apikey"),
@@ -89,7 +89,7 @@ class UserCrudRepository(IUserCrudRepository):
 
         self.collection.update_one({"email": email}, {"$set": {"is_active": True}})
 
-    def update_user_info(self, old_email: str, new_email: str, new_rol: str) -> Optional[User]:
+    def update_user_info(self, old_email: str, new_email: str, new_role: str) -> Optional[User]:
         doc = self.collection.find_one({"email": old_email}, {"password": 0, "token": 0})
         if not doc:
             return None
@@ -101,8 +101,8 @@ class UserCrudRepository(IUserCrudRepository):
                 raise NotEntityException(f"Ya existe un usuario con el correo {new_email}")
             update["email"] = new_email
 
-        if new_rol:
-            update["rol"] = new_rol
+        if new_role:
+            update["role"] = new_role
 
         if not update:
             return User(
@@ -110,7 +110,7 @@ class UserCrudRepository(IUserCrudRepository):
                 email=doc["email"],
                 password=None,
                 institution=doc["institution"],
-                rol=doc["rol"],
+                role=doc["role"],
                 is_active=doc.get("is_active", True),
                 token=doc.get("token"),
                 apikey=doc.get("apikey"),
@@ -127,7 +127,7 @@ class UserCrudRepository(IUserCrudRepository):
             email=updated["email"],
             password=None,
             institution=updated["institution"],
-            rol=updated["rol"],
+            role=updated["role"],
             is_active=updated.get("is_active", True),
             token=updated.get("token"),
             apikey=updated.get("apikey"),
@@ -143,7 +143,7 @@ class UserCrudRepository(IUserCrudRepository):
             email=doc["email"],
             password=None,
             institution=doc["institution"],
-            rol=doc["rol"],
+            role=doc["role"],
             token=doc.get("token"),
             is_active=doc.get("is_active", True),
             apikey=doc.get("apikey"),

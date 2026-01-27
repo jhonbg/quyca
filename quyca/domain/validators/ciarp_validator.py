@@ -78,7 +78,7 @@ class CiarpValidator:
         if extra:
             errors.append(f"Columnas no permitidas: {', '.join(extra)}")
 
-        return (len(errors) == 0, errors, raw_cols)
+        return (len(errors) == 0, errors, usecols)
 
     """
     Applies CIARP row validations: required, document, year, language, country, units + empties as warnings.
@@ -89,7 +89,7 @@ class CiarpValidator:
         errors, warnings = [], []
 
         if all(BaseValidator.is_empty(v) for v in row.values()):
-            return {"errores": [], "advertencias": []}
+            return {"errors": [], "warnings": []}
 
         errors.extend(RequiredFieldsCiarpValidator.validate(row, index))
         tipo_documento = str(row.get("tipo_documento") or "").strip()
@@ -117,7 +117,7 @@ class CiarpValidator:
                     }
                 )
 
-        return {"errores": errors, "advertencias": warnings}
+        return {"errors": errors, "warnings": warnings}
 
     """
     Validates the whole DataFrame (clean blanks, normalize cells, detect duplicates).
@@ -136,8 +136,8 @@ class CiarpValidator:
 
         for idx, row in df.iterrows():
             result = CiarpValidator.validate_row(row.to_dict(), idx)
-            errors.extend(result["errores"])
-            warnings.extend(result["advertencias"])
+            errors.extend(result["errors"])
+            warnings.extend(result["warnings"])
 
         dedupe_cols = [c for c in df.columns if c in REQUIRED_COLUMNS]
 
@@ -159,11 +159,11 @@ class CiarpValidator:
                     )
 
         return StaffReport(
-            total_errores=len(errors),
-            total_duplicados=total_dups,
-            errores=errors,
-            errores_agrupados=ErrorGrouper.group_errors(errors),
-            advertencias=warnings,
-            advertencias_agrupadas=ErrorGrouper.group_warnings(warnings),
-            duplicados=duplicate_info,
+            total_errors=len(errors),
+            total_duplicates=total_dups,
+            errors=errors,
+            grouped_errors=ErrorGrouper.group_errors(errors),
+            warnings=warnings,
+            grouped_warnings=ErrorGrouper.group_warnings(warnings),
+            duplicates=duplicate_info,
         )

@@ -40,10 +40,10 @@ class ProcessStaffFileUseCase:
         if not valid:
             return {
                 "success": False,
-                "errores": len(errores_columnas),
-                "duplicados": 0,
+                "errors": len(errores_columnas),
+                "duplicates": 0,
                 "msg": "El archivo enviado no cumple con el formato requerido de columnas",
-                "detalles": errores_columnas,
+                "details": errores_columnas,
             }
 
         if df.empty or df.dropna(how="all").empty:
@@ -62,8 +62,9 @@ class ProcessStaffFileUseCase:
                 break
 
         return {
-            "success": staff_report.total_errores == 0,
-            "errores": staff_report.total_errores,
-            "duplicados": staff_report.total_duplicados,
+            "success": staff_report.total_errors == 0,
+            "errors": staff_report.total_errors,
+            "warning": len(staff_report.warnings),
+            "duplicates": staff_report.total_duplicates,
             "pdf_base64": pdf_base64,
         }

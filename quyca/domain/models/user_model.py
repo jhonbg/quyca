@@ -11,7 +11,7 @@ class User(BaseModel):
     email: str
     password: Optional[str] = None
     institution: str
-    rol: str
+    role: str
     token: Optional[str] = None
     is_active: bool = True
     apikey: Optional[dict] = None

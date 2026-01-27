@@ -11,7 +11,7 @@ def _admin_headers() -> dict[str, str]:
 def test_create_user_no_token(client: Any) -> None:
     resp = client.post(
         "/app/admin/users/test@udea.edu.co",
-        json={"institution": "UdeA", "ror_id": "R001", "rol": "staff"},
+        json={"institution": "UdeA", "ror_id": "R001", "role": "staff"},
     )
     assert resp.status_code == 401
     assert "Token" in resp.json["msg"]
@@ -19,12 +19,12 @@ def test_create_user_no_token(client: Any) -> None:
 
 def test_create_user_non_admin(client: Any) -> None:
     with patch(f"{ROUTER_MOD}.verify_jwt_in_request", return_value=True), patch(
-        f"{ROUTER_MOD}.get_jwt", return_value={"rol": "staff"}
+        f"{ROUTER_MOD}.get_jwt", return_value={"role": "staff"}
     ):
         resp = client.post(
             "/app/admin/users/staff@udea.edu.co",
             headers=_admin_headers(),
-            json={"institution": "UdeA", "ror_id": "R001", "rol": "staff"},
+            json={"institution": "UdeA", "ror_id": "R001", "role": "staff"},
         )
         assert resp.status_code == 403
         assert "Permiso denegado" in resp.json["msg"]
@@ -35,12 +35,12 @@ def test_create_user_success(client: Any) -> None:
     usecase_mock.create_user.return_value = {"success": True, "msg": "Usuario creado correctamente."}
 
     with patch(f"{ROUTER_MOD}.verify_jwt_in_request", return_value=True), patch(
-        f"{ROUTER_MOD}.get_jwt", return_value={"rol": "admin"}
+        f"{ROUTER_MOD}.get_jwt", return_value={"role": "admin"}
     ), patch(f"{ROUTER_MOD}.usecase", usecase_mock):
         resp = client.post(
             "/app/admin/users/ok@udea.edu.co",
             headers=_admin_headers(),
-            json={"institution": "UdeA", "ror_id": "R100", "rol": "staff"},
+            json={"institution": "UdeA", "ror_id": "R100", "role": "staff"},
         )
         assert resp.status_code == 201
         assert resp.json["success"] is True
@@ -56,12 +56,12 @@ def test_create_user_conflict(client: Any) -> None:
     }
 
     with patch(f"{ROUTER_MOD}.verify_jwt_in_request", return_value=True), patch(
-        f"{ROUTER_MOD}.get_jwt", return_value={"rol": "admin"}
+        f"{ROUTER_MOD}.get_jwt", return_value={"role": "admin"}
     ), patch(f"{ROUTER_MOD}.usecase", usecase_mock):
         resp = client.post(
             "/app/admin/users/dup@udea.edu.co",
             headers=_admin_headers(),
-            json={"institution": "UdeA", "ror_id": "R001", "rol": "staff"},
+            json={"institution": "UdeA", "ror_id": "R001", "role": "staff"},
         )
         assert resp.status_code == 409
         assert resp.json["success"] is False

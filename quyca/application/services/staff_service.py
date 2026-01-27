@@ -47,7 +47,7 @@ class StaffService:
         email = claims.get("sub")
         ror_id = claims.get("_id")
         institution = claims.get("institution")
-        user = claims.get("rol")
+        user = claims.get("role")
 
         if (
             not isinstance(email, str)

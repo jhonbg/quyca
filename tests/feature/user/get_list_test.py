@@ -16,7 +16,7 @@ def test_list_users_no_token(client: Any) -> None:
 
 def test_list_users_non_admin(client: Any) -> None:
     with patch(f"{ROUTER_MOD}.verify_jwt_in_request", return_value=True), patch(
-        f"{ROUTER_MOD}.get_jwt", return_value={"rol": "staff"}
+        f"{ROUTER_MOD}.get_jwt", return_value={"role": "staff"}
     ):
         resp = client.get("/app/admin/users", headers=_admin_headers())
         assert resp.status_code == 403
@@ -25,10 +25,10 @@ def test_list_users_non_admin(client: Any) -> None:
 
 def test_list_users_success(client: Any) -> None:
     usecase_mock = Mock()
-    usecase_mock.get_all_users.return_value = [{"email": "a@a.com", "rol": "staff"}]
+    usecase_mock.get_all_users.return_value = [{"email": "a@a.com", "role": "staff"}]
 
     with patch(f"{ROUTER_MOD}.verify_jwt_in_request", return_value=True), patch(
-        f"{ROUTER_MOD}.get_jwt", return_value={"rol": "admin"}
+        f"{ROUTER_MOD}.get_jwt", return_value={"role": "admin"}
     ), patch(f"{ROUTER_MOD}.usecase", usecase_mock):
         resp = client.get("/app/admin/users", headers=_admin_headers())
         assert resp.status_code == 200

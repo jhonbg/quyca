@@ -19,7 +19,7 @@ class FileRepository(IFileRepository):
     """
 
     def save_file(self, file: FileStorage, ror_id: str, institution: str, file_type: str) -> dict[str, Any]:
-        timestamp = datetime.now(ZoneInfo("America/Bogota")).strftime("%d_%m_%Y_%H:%M")
+        timestamp = datetime.now(ZoneInfo("America/Bogota")).strftime("%Y_%m_%d_%H:%M")
         filename = file.filename or ""
         original_ext = os.path.splitext(filename)[1]
         filename = f"{file_type}_{ror_id}_{timestamp}{original_ext}"
@@ -29,7 +29,8 @@ class FileRepository(IFileRepository):
 
         try:
             root_folder = self.drive_repo.get_or_create_folder(file_type)
-            user_folder_name = f"{ror_id}_{institution}"
+            safe_institution = institution.strip().replace(" ", "-")
+            user_folder_name = f"{ror_id}_{safe_institution}"
             user_folder = self.drive_repo.get_or_create_folder(user_folder_name, parent_id=root_folder)
 
             self.drive_repo.upload_file(temp_path, filename, user_folder)

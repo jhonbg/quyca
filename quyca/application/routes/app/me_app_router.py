@@ -13,7 +13,7 @@ def me() -> tuple[Any, int]:
     status_code = 200 if result.status == "sesion_activa" else 401
 
     payload: dict[str, Any] = {"status": result.status, "msg": result.msg}
-    if result.user is None:
+    if result.user is not None:
         payload["user"] = result.user
 
     return jsonify(payload), status_code

@@ -9,10 +9,10 @@ Contains errors, warnings, and duplicates detected during validation.
 
 @dataclass
 class StaffReport:
-    total_errores: int
-    total_duplicados: int
-    errores: List[Dict[str, Any]]
-    errores_agrupados: List[Dict[str, Any]]
-    advertencias: List[Dict[str, Any]]
-    advertencias_agrupadas: List[Dict[str, Any]]
-    duplicados: List[Dict[str, Any]]
+    total_errors: int
+    total_duplicates: int
+    errors: List[Dict[str, Any]]
+    grouped_errors: List[Dict[str, Any]]
+    warnings: List[Dict[str, Any]]
+    grouped_warnings: List[Dict[str, Any]]
+    duplicates: List[Dict[str, Any]]

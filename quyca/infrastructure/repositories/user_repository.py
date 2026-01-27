@@ -22,7 +22,7 @@ class UserRepositoryMongo(IUserRepository):
 
         user_data = self.collection.find_one(
             {"email": email.strip().lower()},
-            {"password": 1, "email": 1, "institution": 1, "rol": 1, "token": 1, "is_active": 1, "apikey": 1},
+            {"password": 1, "email": 1, "institution": 1, "role": 1, "token": 1, "is_active": 1, "apikey": 1},
         )
 
         if not user_data:
@@ -39,7 +39,7 @@ class UserRepositoryMongo(IUserRepository):
             id=str(user_data["_id"]),
             email=user_data["email"],
             institution=user_data["institution"],
-            rol=user_data["rol"],
+            role=user_data["role"],
             token=user_data.get("token"),
             is_active=user_data.get("is_active", True),
             apikey=user_data.get("apikey"),

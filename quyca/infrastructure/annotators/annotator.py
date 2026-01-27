@@ -12,7 +12,7 @@ class Annotator:
         df_copy["estado_de_validación"] = ""
         df_copy["observación"] = ""
 
-        for err in staff_report.errores:
+        for err in staff_report.errors:
             row = err.get("fila")
             detail = err.get("detalle", "")
             column = err.get("columna", "")
@@ -20,14 +20,14 @@ class Annotator:
                 df_copy.at[row, "estado_de_validación"] += "Error | "
                 df_copy.at[row, "observación"] += f"{detail} {column} | "
 
-        for warn in staff_report.advertencias:
+        for warn in staff_report.warnings:
             row = warn.get("fila")
             detail = warn.get("detalle", "")
             if row in df_copy.index:
                 df_copy.at[row, "estado_de_validación"] += "Advertencia | "
                 df_copy.at[row, "observación"] += f"{detail} | "
 
-        for dup in staff_report.duplicados:
+        for dup in staff_report.duplicates:
             row = dup.get("index")
             if row in df_copy.index:
                 df_copy.at[row, "estado_de_validación"] += "Duplicado | "

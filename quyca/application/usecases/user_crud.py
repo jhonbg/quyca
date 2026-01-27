@@ -19,10 +19,10 @@ class UserCrudUseCase:
         return self.service
 
     def create_user(
-        self, email: str, institution: str, ror_id: str, rol: str, payload: dict[str, Any]
+        self, email: str, institution: str, ror_id: str, role: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
         service = self._ensure_service()
-        return cast(dict[str, Any], service.create_user(email, institution, ror_id, rol, raw_payload=payload))
+        return cast(dict[str, Any], service.create_user(email, institution, ror_id, role, raw_payload=payload))
 
     def get_all_users(self) -> List[dict[str, Any]]:
         service = self._ensure_service()
@@ -40,9 +40,11 @@ class UserCrudUseCase:
         service = self._ensure_service()
         return cast(dict[str, Any], service.update_password(email))
 
-    def update_user_info(self, old_email: str, new_email: str, new_rol: str, payload: dict[str, Any]) -> dict[str, Any]:
+    def update_user_info(
+        self, old_email: str, new_email: str, new_role: str, payload: dict[str, Any]
+    ) -> dict[str, Any]:
         service = self._ensure_service()
-        return cast(dict[str, Any], service.update_user_info(old_email, new_email, new_rol, raw_payload=payload))
+        return cast(dict[str, Any], service.update_user_info(old_email, new_email, new_role, raw_payload=payload))
 
     def create_or_regenerate_apikey(self, email: str, expires: int | None) -> dict[str, Any]:
         service = self._ensure_service()

@@ -48,7 +48,7 @@ class StaffValidator:
     @staticmethod
     def validate_columns(df: pd.DataFrame) -> Tuple[bool, List[str], List[str]]:
         raw_cols = [str(c).strip() for c in df.columns]
-        errores: List[str] = []
+        errors: List[str] = []
         usecols = []
 
         expected = list(REQUIARED_COLUMNS)
@@ -60,7 +60,7 @@ class StaffValidator:
                 continue
             if col.lower().startswith("unnamed") or col == "":
                 if not df.iloc[:, idx].dropna(how="all").empty:
-                    errores.append(f"Columna sin nombre en posición {idx+1}")
+                    errors.append(f"Columna sin nombre en posición {idx+1}")
                 continue
 
             usecols.append(col)
@@ -69,13 +69,13 @@ class StaffValidator:
         extra = [c for c in usecols if c not in expected and c not in EXTRA_ALLOWED]
 
         if missing:
-            errores.append(f"Columnas faltantes: {', '.join(missing)}")
+            errors.append(f"Columnas faltantes: {', '.join(missing)}")
         if extra:
-            errores.append(f"Columnas no permitidas: {', '.join(extra)}")
+            errors.append(f"Columnas no permitidas: {', '.join(extra)}")
 
         usecols = [c for c in usecols if c not in EXTRA_ALLOWED]
 
-        return (len(errores) == 0, errores, usecols)
+        return (len(errors) == 0, errors, usecols)
 
     """
     Validates a single row of the DataFrame.
@@ -106,7 +106,7 @@ class StaffValidator:
 
         errors.extend(UnitValidator.validate(row, index))
 
-        return {"errores": errors, "advertencias": warnings}
+        return {"errors": errors, "warnings": warnings}
 
     """
     Validates the entire DataFrame, checking rows and duplicates.
@@ -124,8 +124,8 @@ class StaffValidator:
 
         for idx, row in df.iterrows():
             r = StaffValidator.validate_row(row.to_dict(), idx)
-            errors.extend(r["errores"])
-            warnings.extend(r["advertencias"])
+            errors.extend(r["errors"])
+            warnings.extend(r["warnings"])
 
         dedupe_cols = [c for c in df.columns if c in REQUIARED_COLUMNS]
 
@@ -147,11 +147,11 @@ class StaffValidator:
                     )
 
         return StaffReport(
-            total_errores=len(errors),
-            total_duplicados=total_dups,
-            errores=errors,
-            errores_agrupados=ErrorGrouper.group_errors(errors),
-            advertencias=warnings,
-            advertencias_agrupadas=ErrorGrouper.group_warnings(warnings),
-            duplicados=duplicate_info,
+            total_errors=len(errors),
+            total_duplicates=total_dups,
+            errors=errors,
+            grouped_errors=ErrorGrouper.group_errors(errors),
+            warnings=warnings,
+            grouped_warnings=ErrorGrouper.group_warnings(warnings),
+            duplicates=duplicate_info,
         )

@@ -28,11 +28,11 @@ class StaffReportService:
         attachments: list[dict] = []
         pdf_bytes: io.BytesIO | None = None
 
-        if staff_report.total_errores > 0 or len(staff_report.advertencias) > 0 or staff_report.total_duplicados > 0:
+        if staff_report.total_errors > 0 or len(staff_report.warnings) > 0 or staff_report.total_duplicates > 0:
             pdf_bytes = self.pdf_repo.generate_quality_report(
-                staff_report.errores_agrupados,
-                staff_report.advertencias_agrupadas,
-                staff_report.duplicados,
+                staff_report.grouped_errors,
+                staff_report.grouped_warnings,
+                staff_report.duplicates,
                 institution,
                 filename,
                 upload_date,

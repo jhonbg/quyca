@@ -15,7 +15,7 @@ def test_update_password_no_token(client: Any) -> None:
 
 def test_update_password_non_admin(client: Any) -> None:
     with patch(f"{ROUTER_MOD}.verify_jwt_in_request", return_value=True), patch(
-        f"{ROUTER_MOD}.get_jwt", return_value={"rol": "staff"}
+        f"{ROUTER_MOD}.get_jwt", return_value={"role": "staff"}
     ):
         resp = client.patch("/app/admin/users/x@x.com", headers=_admin_headers())
         assert resp.status_code == 403
@@ -26,7 +26,7 @@ def test_update_password_success(client: Any) -> None:
     usecase_mock.update_password.return_value = {"success": True, "msg": "Contraseña actualizada"}
 
     with patch(f"{ROUTER_MOD}.verify_jwt_in_request", return_value=True), patch(
-        f"{ROUTER_MOD}.get_jwt", return_value={"rol": "admin"}
+        f"{ROUTER_MOD}.get_jwt", return_value={"role": "admin"}
     ), patch(f"{ROUTER_MOD}.usecase", usecase_mock):
         resp = client.patch("/app/admin/users/x@x.com", headers=_admin_headers())
         assert resp.status_code == 200

@@ -230,7 +230,7 @@ class PDFRepository(IPDFRepository):
             html += "<p><b>Ejemplo de duplicados:</b></p><ul>"
             for dup in eje:
                 dup.get("index") or "?"
-                row = dup.get("row") or {}
+                row = dup.get("fila") or {}
                 preview = {
                     "identificación": row.get("identificación"),
                     "primer_apellido": row.get("primer_apellido"),
@@ -505,7 +505,7 @@ class PDFRepository(IPDFRepository):
             html += "<p><b>Ejemplo de duplicados:</b></p><ul>"
             for dup in eje:
                 dup.get("index") or "?"
-                row = dup.get("row") or {}
+                row = dup.get("fila") or {}
                 preview = {
                     "identificación": row.get("identificación"),
                     "primer_apellido": row.get("primer_apellido"),

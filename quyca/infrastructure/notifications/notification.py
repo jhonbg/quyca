@@ -32,12 +32,12 @@ class StaffNotification(INotificationService):
     ) -> dict[str, Any]:
         tipo_correo = (
             "rechazado"
-            if staff_report.total_errores > 0
-            else ("advertencias" if len(staff_report.advertencias) > 0 else "aceptado")
+            if staff_report.total_errors > 0
+            else ("advertencias" if len(staff_report.warnings) > 0 else "aceptado")
         )
 
         subject, body_html = build_email_template(
-            tipo=tipo_correo, rol=user, institution=institution, filename=filename, upload_date=upload_date
+            status_type=tipo_correo, role=user, institution=institution, filename=filename, upload_date=upload_date
         )
 
         result: dict[str, Any] = self.gmail_repo.send_labeled_email(
@@ -57,12 +57,12 @@ class StaffNotification(INotificationService):
     """
 
     def send_custom_email(
-        self, subject: str, rol: str, institution: str, email: str, password: str, ror_id: str
+        self, subject: str, role: str, institution: str, email: str, password: str, ror_id: str
     ) -> dict[str, Any]:
         body_html = f"""
             <html>
                 <body style='font-family: Arial, sans-serif; line-height: 1.6;'>
-                    <p>Estimado(a) <b>{rol}</b> – {institution},</p>
+                    <p>Estimado(a) <b>{role}</b> – {institution},</p>
                     <p>Nos complace informarte que tu cuenta ha sido creada exitosamente en <b><span style="color:#39658c;">Impact</span><span style="color:#f6a611;">U</span></b></p>
                     <p>Podrás acceder al módulo de <b>carga de datos institucionales</b> a través del siguiente enlace:</p>
                     <p><a href=https://impactu.colav.co/submit>https://impactu.colav.co/submit</p>
@@ -140,7 +140,7 @@ class StaffNotification(INotificationService):
 
     def send_scienti_compressed_received(
         self,
-        rol: str,
+        role: str,
         institution: str,
         filename: str,
         upload_date: str,
@@ -148,7 +148,7 @@ class StaffNotification(INotificationService):
         ror_id: str,
     ) -> dict[str, Any]:
         subject, body_html = build_scienti_received_templete(
-            rol=rol, institution=institution, filename=filename, upload_date=upload_date
+            role=role, institution=institution, filename=filename, upload_date=upload_date
         )
 
         result: dict[str, Any] = self.gmail_repo.send_labeled_email(

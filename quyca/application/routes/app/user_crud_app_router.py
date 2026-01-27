@@ -25,9 +25,9 @@ def check_admin_permission() -> tuple[dict[str, Any] | None, int | None]:
         }, 401
 
     claims = get_jwt()
-    user_rol = claims.get("rol")
+    user_role = claims.get("role")
 
-    if not isinstance(user_rol, str) or user_rol.lower() != "admin":
+    if not isinstance(user_role, str) or user_role.lower() != "admin":
         return {"success": False, "msg": "Permiso denegado: No pueden realizar esta acción."}, 403
 
     cookie_name = current_app.config.get("JWT_ACCESS_COOKIE_NAME", "access_token_cookie")
@@ -77,7 +77,7 @@ Creates a new user in the platform. Only users with role admin can perform this 
 {
     "institution": "Universidad de Antioquia",
     "ror_id": "059yx9a68",
-    "rol": "staff"
+    "role": "staff"
 }
 """
 
@@ -94,9 +94,9 @@ def create_user(email: str) -> tuple[Any, int]:
         email = email.strip().lower()
         institution = data.get("institution")
         ror_id = data.get("ror_id")
-        rol = data.get("rol")
+        role = data.get("role")
 
-        result = usecase.create_user(email, institution, ror_id, rol, data)
+        result = usecase.create_user(email, institution, ror_id, role, data)
 
         if not result.get("success") and "ya existe" in result.get("msg", "").lower():
             return jsonify(result), 409
@@ -122,9 +122,9 @@ Returns a list of all users except those with admin role. Requires admin token.
 @apiSuccess (200) {Boolean} success true
 @apiSuccess (200) {Object[]} data List of users
 @apiSuccess (200) {String} data.email User email
-@apiSuccess (200) {String} data.institucion Institution name
+@apiSuccess (200) {String} data.institution Institution name
 @apiSuccess (200) {String} data.id User identifier
-@apiSuccess (200) {String} data.rol User role
+@apiSuccess (200) {String} data.role User role
 @apiSuccess (200) {Boolean} data.is_active Active status
 
 @apiError (401) {Boolean} success false
@@ -305,13 +305,13 @@ def edit_user(email: str) -> tuple[Any, int]:
         old_email = email.strip().lower()
         data = request.get_json(force=True) or {}
         new_email = (data.get("email") or "").strip().lower()
-        new_rol = (data.get("rol") or "").strip().lower()
+        new_role = (data.get("role") or "").strip().lower()
 
-        if not new_email and not new_rol:
+        if not new_email and not new_role:
             return jsonify({"success": False, "msg": "Debes enviar al menos email o rol."}), 400
 
-        result = usecase.update_user_info(old_email, new_email or old_email, new_rol or "", data)
-        if not result.get("success") and "rol 'admin'" in result.get("msg", "").lower():
+        result = usecase.update_user_info(old_email, new_email or old_email, new_role or "", data)
+        if not result.get("success") and "role 'admin'" in result.get("msg", "").lower():
             return jsonify(result), 403
         return jsonify(result), (200 if result.get("success") else 400)
 

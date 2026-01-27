@@ -42,7 +42,7 @@ class LoginUserUseCase:
         claims: dict[str, Any] = {
             "_id": parse_user["_id"],
             "institution": parse_user["institution"],
-            "rol": parse_user["rol"],
+            "role": parse_user["role"],
         }
 
         token = self.token_service.create_access_token(subject=user.email, claims=claims)

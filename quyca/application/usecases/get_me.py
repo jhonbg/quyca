@@ -42,7 +42,7 @@ class GetMeUseCase:
             user={
                 "_id": claims.get("_id"),
                 "institution": claims.get("institution"),
-                "rol": claims.get("rol"),
+                "role": claims.get("role"),
                 "email": claims.get("sub"),
             },
         )

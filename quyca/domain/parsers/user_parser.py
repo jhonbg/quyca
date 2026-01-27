@@ -4,5 +4,5 @@ from quyca.domain.models.user_model import User
 
 
 def user_ror_id_and_institution(user: User) -> dict:
-    info_user = {"_id": user.id, "institution": user.institution, "rol": user.rol}
+    info_user = {"_id": user.id, "institution": user.institution, "role": user.role}
     return info_user

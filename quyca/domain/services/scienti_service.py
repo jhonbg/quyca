@@ -62,7 +62,7 @@ class ScientiService:
         email = claims.get("sub")
         ror_id = claims.get("_id")
         institution = claims.get("institution")
-        rol = claims.get("rol")
+        role = claims.get("role")
 
         if not (
             isinstance(email, str)
@@ -92,7 +92,7 @@ class ScientiService:
             }, 415
 
         notify_result = self.notification.send_scienti_compressed_received(
-            rol=str(rol),
+            role=str(role),
             institution=institution,
             filename=filename,
             upload_date=upload_date,

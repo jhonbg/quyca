@@ -64,7 +64,7 @@ class ProcessStaffFileUseCase:
         return {
             "success": staff_report.total_errors == 0,
             "errors": staff_report.total_errors,
-            "warning": len(staff_report.warnings),
+            "warnings": len(staff_report.warnings),
             "duplicates": staff_report.total_duplicates,
             "pdf_base64": pdf_base64,
         }

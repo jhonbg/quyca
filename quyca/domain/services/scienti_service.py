@@ -121,7 +121,6 @@ class ScientiService:
         return {
             "success": True,
             "msg": "Archivo SCIENTI recibido con éxito para ser validado.",
-            "filename": filename,
             "upload_date": upload_date,
             "file_msg": save_result.get("msg"),
         }, 200

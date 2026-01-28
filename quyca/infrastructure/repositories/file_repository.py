@@ -19,7 +19,7 @@ class FileRepository(IFileRepository):
     """
 
     def save_file(self, file: FileStorage, ror_id: str, institution: str, file_type: str) -> dict[str, Any]:
-        timestamp = datetime.now(ZoneInfo("America/Bogota")).strftime("%Y_%m_%d_%H:%M")
+        timestamp = datetime.now(ZoneInfo("America/Bogota")).strftime("%Y-%m-%d_%H:%M")
         filename = file.filename or ""
         original_ext = os.path.splitext(filename)[1]
         filename = f"{file_type}_{ror_id}_{timestamp}{original_ext}"

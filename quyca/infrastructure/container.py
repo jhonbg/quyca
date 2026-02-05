@@ -16,6 +16,7 @@ from quyca.infrastructure.repositories.pdf_repository import PDFRepository
 from quyca.infrastructure.repositories.gmail_repository import GmailRepository
 from quyca.infrastructure.repositories.google_drive_repository import GoogleDriveRepository
 from quyca.infrastructure.repositories.file_repository import FileRepository
+from quyca.infrastructure.repositories.excel_cleaner_openpyxl import ExcelCleanerOpenpyxl
 from quyca.infrastructure.notifications.notification import StaffNotification
 from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
 from quyca.infrastructure.annotators.annotator import Annotator
@@ -38,7 +39,8 @@ def build_staff_service() -> Tuple[ProcessStaffFileUseCase, SaveStaffFileUseCase
     pdf_repo = PDFRepository()
     gmail_repo = GmailRepository()
     drive_repo = GoogleDriveRepository()
-    file_repo = FileRepository(drive_repo)
+    excel_cleaner = ExcelCleanerOpenpyxl()
+    file_repo = FileRepository(drive_repo, excel_cleaner)
 
     report_service = StaffReportService(pdf_repo, Annotator(), XlsxWriteExporter())
     notification_service = StaffNotification(gmail_repo)
@@ -59,7 +61,8 @@ def build_ciarp_service() -> Tuple[ProcessCiarpFileUseCase, SaveCiarpFileUseCase
     pdf_repo = PDFRepository()
     gmail_repo = GmailRepository()
     drive_repo = GoogleDriveRepository()
-    file_repo = FileRepository(drive_repo)
+    excel_cleaner = ExcelCleanerOpenpyxl()
+    file_repo = FileRepository(drive_repo, excel_cleaner)
 
     report_service = CiarpReportService(pdf_repo, Annotator(), XlsxWriteExporter())
     notification_service = StaffNotification(gmail_repo)
@@ -79,7 +82,8 @@ ScientiService builder for dependency injection.
 def build_scienti_service() -> ScientiService:
     gmail_repo = GmailRepository()
     drive_repo = GoogleDriveRepository()
-    file_repo = FileRepository(drive_repo)
+    excel_cleaner = ExcelCleanerOpenpyxl()
+    file_repo = FileRepository(drive_repo, excel_cleaner)
 
     notification = StaffNotification(gmail_repo)
     save_usecase = SaveScientiFileUseCase(file_repo)
@@ -99,3 +103,8 @@ def build_get_me_usecase() -> GetMeUseCase:
         jwt_verifier=FlaskJwtVerifier(),
         token_repo=TokenSessionRepositoryMongo(user_repo),
     )
+    
+def build_file_repository() -> FileRepository:
+    drive_repo = GoogleDriveRepository(...)
+    cleaner = ExcelCleanerOpenpyxl()
+    return FileRepository(drive_repo=drive_repo, excel_cleaner=cleaner)

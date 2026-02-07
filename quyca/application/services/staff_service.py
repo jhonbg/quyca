@@ -9,7 +9,6 @@ from werkzeug.datastructures import FileStorage
 
 from quyca.application.usecases.process_staff_file import ProcessStaffFileUseCase
 from quyca.application.usecases.save_staff_file import SaveStaffFileUseCase
-from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
 
 
 class StaffUploadError(Enum):
@@ -35,14 +34,12 @@ class StaffService:
         self,
         process_usecase: ProcessStaffFileUseCase,
         save_usecase: SaveStaffFileUseCase,
-        user_repo: UserRepositoryMongo,
     ):
         self.process_usecase = process_usecase
         self.save_usecase = save_usecase
-        self.user_repo = user_repo
 
     def handle_staff_upload(
-        self, file: FileStorage, claims: dict[str, Any], token: str, upload_date: str
+        self, file: FileStorage, claims: dict[str, Any], upload_date: str
     ) -> StaffUploadResult:
         email = claims.get("sub")
         ror_id = claims.get("_id")
@@ -59,12 +56,6 @@ class StaffService:
             or not institution
             or not user
         ):
-            return StaffUploadResult(
-                {"success": False, "msg": "Token inválido o revocado"},
-                StaffUploadError.UNAUTHORIZED,
-            )
-
-        if not self.user_repo.is_token_valid(email, token):
             return StaffUploadResult(
                 {"success": False, "msg": "Token inválido o revocado"},
                 StaffUploadError.UNAUTHORIZED,

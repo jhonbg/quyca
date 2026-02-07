@@ -1,8 +1,10 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from typing import Any
+
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
+
 from quyca.infrastructure.container import build_ciarp_service
 from quyca.application.services.ciarp_service import CiarpService
 
@@ -65,16 +67,11 @@ def submit_ciarp() -> tuple[Any, int]:
     except Exception:
         return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
 
-    cookie_name = current_app.config.get("JWT_ACCESS_COOKIE_NAME", "access_token_cookie")
-    token_from_header = request.cookies.get(cookie_name, "")
-    if not token_from_header:
-        return jsonify({"success": False, "msg": "Cookie de sesión no encontrada"}), 401
-
     file = request.files.get("file")
     upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
 
-    process_usecase, save_usecase, user_repo = build_ciarp_service()
-    service = CiarpService(process_usecase, save_usecase, user_repo)
+    process_usecase, save_usecase = build_ciarp_service()
+    service = CiarpService(process_usecase, save_usecase)
 
-    result, status = service.handle_ciarp_upload(file, claims, token_from_header, upload_date)
+    result, status = service.handle_ciarp_upload(file, claims, upload_date)
     return jsonify(result), status

@@ -10,7 +10,6 @@ from quyca.application.usecases.process_ciarp_file import ProcessCiarpFileUseCas
 
 from quyca.infrastructure.auth.flask_cookie_reader import FlaskJwtCookieReader
 from quyca.infrastructure.auth.flask_jwt_verifier import FlaskJwtVerifier
-from quyca.infrastructure.auth.token_session_repository_mongo import TokenSessionRepositoryMongo
 from quyca.infrastructure.security.jwt_token_service import JwtTokenService
 from quyca.infrastructure.repositories.pdf_repository import PDFRepository
 from quyca.infrastructure.repositories.gmail_repository import GmailRepository
@@ -35,7 +34,7 @@ Builds and wires dependencies for the Staff service.
 """
 
 
-def build_staff_service() -> Tuple[ProcessStaffFileUseCase, SaveStaffFileUseCase, UserRepositoryMongo]:
+def build_staff_service() -> Tuple[ProcessStaffFileUseCase, SaveStaffFileUseCase]:
     pdf_repo = PDFRepository()
     gmail_repo = GmailRepository()
     drive_repo = GoogleDriveRepository()
@@ -47,9 +46,8 @@ def build_staff_service() -> Tuple[ProcessStaffFileUseCase, SaveStaffFileUseCase
 
     process_usecase = ProcessStaffFileUseCase(report_service, notification_service)
     save_usecase = SaveStaffFileUseCase(file_repo)
-    user_repo = UserRepositoryMongo()
 
-    return process_usecase, save_usecase, user_repo
+    return process_usecase, save_usecase
 
 
 """
@@ -57,7 +55,7 @@ Builds and wires dependencies for the CIARP service.
 """
 
 
-def build_ciarp_service() -> Tuple[ProcessCiarpFileUseCase, SaveCiarpFileUseCase, UserRepositoryMongo]:
+def build_ciarp_service() -> Tuple[ProcessCiarpFileUseCase, SaveCiarpFileUseCase]:
     pdf_repo = PDFRepository()
     gmail_repo = GmailRepository()
     drive_repo = GoogleDriveRepository()
@@ -69,9 +67,8 @@ def build_ciarp_service() -> Tuple[ProcessCiarpFileUseCase, SaveCiarpFileUseCase
 
     process_usecase = ProcessCiarpFileUseCase(report_service, notification_service)
     save_usecase = SaveCiarpFileUseCase(file_repo)
-    user_repo = UserRepositoryMongo()
 
-    return process_usecase, save_usecase, user_repo
+    return process_usecase, save_usecase
 
 
 """
@@ -87,9 +84,8 @@ def build_scienti_service() -> ScientiService:
 
     notification = StaffNotification(gmail_repo)
     save_usecase = SaveScientiFileUseCase(file_repo)
-    user_repo = UserRepositoryMongo()
 
-    return ScientiService(notification=notification, save_usecase=save_usecase, user_repo=user_repo)
+    return ScientiService(notification=notification, save_usecase=save_usecase)
 
 
 def build_login_usecase() -> LoginUserUseCase:
@@ -97,11 +93,9 @@ def build_login_usecase() -> LoginUserUseCase:
 
 
 def build_get_me_usecase() -> GetMeUseCase:
-    user_repo = UserRepositoryMongo()
     return GetMeUseCase(
         cookie_reader=FlaskJwtCookieReader(),
         jwt_verifier=FlaskJwtVerifier(),
-        token_repo=TokenSessionRepositoryMongo(user_repo),
     )
     
 def build_file_repository() -> FileRepository:

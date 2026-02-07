@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Tuple, Any
 from zoneinfo import ZoneInfo
 
-from flask import Blueprint, request, jsonify, Response, current_app
+from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from werkzeug.datastructures import FileStorage
 
@@ -73,21 +73,16 @@ def submit_staff() -> Tuple[Response, int]:
     except Exception:
         return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
 
-    cookie_name = current_app.config.get("JWT_ACCESS_COOKIE_NAME", "access_token_cookie")
-    token_from_header = request.cookies.get(cookie_name)
-    if not token_from_header:
-        return jsonify({"success": False, "msg": "Cookie de sesión no encontrada"}), 401
-
     file: FileStorage | None = request.files.get("file")
     if file is None:
         return jsonify({"success": False, "msg": "Archivo requerido"}), 400
 
     upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
 
-    process_usecase, save_usecase, user_repo = build_staff_service()
-    service = StaffService(process_usecase, save_usecase, user_repo)
+    process_usecase, save_usecase = build_staff_service()
+    service = StaffService(process_usecase, save_usecase)
 
-    outcome = service.handle_staff_upload(file, claims, token_from_header, upload_date)
+    outcome = service.handle_staff_upload(file, claims, upload_date)
 
     if outcome.error == StaffUploadError.UNAUTHORIZED:
         return jsonify(outcome.payload), 401

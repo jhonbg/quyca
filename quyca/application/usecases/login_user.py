@@ -47,8 +47,6 @@ class LoginUserUseCase:
 
         token = self.token_service.create_access_token(subject=user.email, claims=claims)
 
-        self.user_repo.update_token(user.email, token)
-
         return {
             "success": True,
             **parse_user,

@@ -111,7 +111,6 @@ class UserCrudService:
             password=hashe_password,
             institution=institution.strip(),
             role=role.strip(),
-            token="",
             is_active=True,
             apikey=None,
         )

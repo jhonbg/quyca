@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Tuple
 from zoneinfo import ZoneInfo
 
-from flask import Blueprint, request, jsonify, Response, current_app
+from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 
 from quyca.infrastructure.container import build_scienti_service
@@ -43,18 +43,13 @@ def submit_scienti() -> Tuple[Response, int]:
     except Exception:
         return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
 
-    cookie_name = current_app.config.get("JWT_ACCESS_COOKIE_NAME", "access_token_cookie")
-    token_from_header = request.cookies.get(cookie_name, "")
-    if not token_from_header:
-        return jsonify({"success": False, "msg": "Cookie de sesión no encontrada"}), 401
-
     file = request.files.get("file")
     upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
 
     service: ScientiService = build_scienti_service()
 
     result, status = service.handle_scienti_upload(
-        file=file, claims=claims, token=token_from_header, upload_date=upload_date
+        file=file, claims=claims, upload_date=upload_date
     )
 
     return jsonify(result), status

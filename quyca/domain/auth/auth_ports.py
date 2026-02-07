@@ -9,8 +9,3 @@ class IJwtCookieReader(Protocol):
 class IJwtVerifier(Protocol):
     def verify_from_cookies(self) -> dict[str, Any] | None:
         ...
-
-
-class ITokenSessionRepository(Protocol):
-    def is_token_valid(self, email: str, token: str) -> bool:
-        ...

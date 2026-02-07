@@ -2,13 +2,12 @@ from typing import Tuple
 from flask import Blueprint, request, jsonify, Response, current_app
 from sentry_sdk import capture_exception
 
-from flask_jwt_extended import set_access_cookies, unset_jwt_cookies
+from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
 
 from quyca.domain.exceptions.not_entity_exception import NotEntityException
 from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
 from quyca.infrastructure.security.jwt_token_service import JwtTokenService
 from quyca.application.usecases.login_user import LoginUserUseCase
-from quyca.application.usecases.logout_user import LogoutUserUseCase
 
 user_auth_app_router = Blueprint("user_auth_app_router", __name__)
 
@@ -108,7 +107,7 @@ def login() -> Tuple[Response, int]:
 
     except Exception as e:
         capture_exception(e)
-        return jsonify({"success": False, "msg": str(e)}), 500
+        return jsonify({"success": False, "msg": str("Error interno del servidor")}), 500
 
 
 """
@@ -135,28 +134,12 @@ HTTP/1.1 200 OK
 
 @user_auth_app_router.route("/logout", methods=["POST"])
 def logout() -> Tuple[Response, int]:
-    try:
-        cookie_name = current_app.config.get("JWT_ACCESS_COOKIE_NAME", "access_token_cookie")
-        token = request.cookies.get(cookie_name, "")
+    try:        
+        response = jsonify({"success": True, "msg": "Sesión cerrada correctamente"})
+        unset_jwt_cookies(response)
 
-        if not token:
-            result = {"success": False, "msg": "No hay sesión válida"}
-            return jsonify(result), 401
-
-        repo = UserRepositoryMongo()
-        token_service = JwtTokenService()
-        usecase = LogoutUserUseCase(repo, token_service)
-
-        result = usecase.execute(token)
-
-        status_code = 200 if result.get("success") else 401
-        response = jsonify(result)
-
-        if status_code == 200:
-            unset_jwt_cookies(response)
-
-        return response, status_code
+        return response, 200
 
     except Exception as e:
         capture_exception(e)
-        return jsonify({"success": False, "msg": str(e)}), 500
+        return jsonify({"success": False, "msg": f"Error interno del servidor"}), 500

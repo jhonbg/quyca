@@ -3,7 +3,6 @@ from typing import Any, Dict, Tuple
 from werkzeug.datastructures import FileStorage
 from quyca.infrastructure.notifications.notification import StaffNotification
 from quyca.application.usecases.save_scienti_file import SaveScientiFileUseCase
-from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
 
 ALLOWED_COMPRESSED_EXTENSIONS = {
     ".zip",
@@ -31,11 +30,9 @@ class ScientiService:
         self,
         notification: StaffNotification,
         save_usecase: SaveScientiFileUseCase,
-        user_repo: UserRepositoryMongo,
     ) -> None:
         self.notification = notification
         self.save_usecase = save_usecase
-        self.user_repo = user_repo
 
     """
     Checks whether the filename has a valid compressed extension.
@@ -56,7 +53,6 @@ class ScientiService:
         self,
         file: FileStorage | None,
         claims: dict[str, Any],
-        token: str,
         upload_date: str,
     ) -> Tuple[Dict[str, Any], int]:
         email = claims.get("sub")
@@ -73,9 +69,6 @@ class ScientiService:
             and institution.strip()
         ):
             return {"success": False, "msg": "Token inválido o información incompleta"}, 401
-
-        if not self.user_repo.is_token_valid(email, token):
-            return {"success": False, "msg": "Token inválido o revocado"}, 401
 
         if file is None or not isinstance(file, FileStorage):
             return {"success": False, "msg": "Archivo requerido"}, 400

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from quyca.domain.auth.session_status import SessionStatus
-from quyca.domain.auth.auth_ports import IJwtCookieReader, IJwtVerifier, ITokenSessionRepository
+from quyca.domain.auth.auth_ports import IJwtCookieReader, IJwtVerifier
 
 
 @dataclass(frozen=True)
@@ -17,11 +17,9 @@ class GetMeUseCase:
         self,
         cookie_reader: IJwtCookieReader,
         jwt_verifier: IJwtVerifier,
-        token_repo: ITokenSessionRepository,
     ) -> None:
         self.cookie_reader = cookie_reader
         self.jwt_verifier = jwt_verifier
-        self.token_repo = token_repo
 
     def execute(self) -> MeResult:
         token = self.cookie_reader.get_access_token()
@@ -33,7 +31,7 @@ class GetMeUseCase:
             return MeResult(SessionStatus.TOKEN_EXPIRADO, "Token expirado o inválido")
 
         email = claims.get("sub")
-        if not isinstance(email, str) or not self.token_repo.is_token_valid(email, token):
+        if not isinstance(email, str) or not email.strip():
             return MeResult(SessionStatus.TOKEN_EXPIRADO, "Token revocado o inválido")
 
         return MeResult(
@@ -43,6 +41,6 @@ class GetMeUseCase:
                 "_id": claims.get("_id"),
                 "institution": claims.get("institution"),
                 "role": claims.get("role"),
-                "email": claims.get("sub"),
+                "email": email,
             },
         )

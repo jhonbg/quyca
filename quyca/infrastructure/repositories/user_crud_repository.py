@@ -16,7 +16,7 @@ class UserCrudRepository(IUserCrudRepository):
     def create(self, user: User) -> None:
         """Creates a new user if email is unique."""
         email = user.email.strip().lower()
-        existing = self.collection.find_one({"email": email}, {"password": 0, "token": 0})
+        existing = self.collection.find_one({"email": email}, {"password": 0})
         if existing:
             raise NotEntityException(f"El usuario con correo {email} ya existe.")
 
@@ -27,14 +27,13 @@ class UserCrudRepository(IUserCrudRepository):
                 "password": user.password,
                 "institution": user.institution,
                 "role": user.role,
-                "token": user.token,
                 "is_active": user.is_active,
                 "apikey": user.apikey,
             }
         )
 
     def get_all(self) -> List[User]:
-        users_cursor = self.collection.find({}, {"password": 0, "token": 0})
+        users_cursor = self.collection.find({}, {"password": 0})
         users = list(users_cursor)
 
         return [
@@ -44,7 +43,6 @@ class UserCrudRepository(IUserCrudRepository):
                 password=None,
                 institution=u["institution"],
                 role=u["role"],
-                token=u.get("token"),
                 is_active=u.get("is_active", True),
                 apikey=u.get("apikey"),
             )
@@ -57,7 +55,7 @@ class UserCrudRepository(IUserCrudRepository):
         if result.matched_count == 0:
             raise NotEntityException(f"Usuario con correo {email} no encontrado")
 
-        updated = self.collection.find_one({"email": email.lower()}, {"password": 0, "token": 0})
+        updated = self.collection.find_one({"email": email.lower()}, {"password": 0})
         if not updated:
             raise NotEntityException(f"Usuario con correo {email} no encontrado")
         return User(
@@ -67,7 +65,6 @@ class UserCrudRepository(IUserCrudRepository):
             institution=updated["institution"],
             role=updated["role"],
             is_active=updated.get("is_active", True),
-            token=updated.get("token"),
             apikey=updated.get("apikey"),
         )
 
@@ -90,7 +87,7 @@ class UserCrudRepository(IUserCrudRepository):
         self.collection.update_one({"email": email}, {"$set": {"is_active": True}})
 
     def update_user_info(self, old_email: str, new_email: str, new_role: str) -> Optional[User]:
-        doc = self.collection.find_one({"email": old_email}, {"password": 0, "token": 0})
+        doc = self.collection.find_one({"email": old_email}, {"password": 0})
         if not doc:
             return None
 
@@ -112,13 +109,12 @@ class UserCrudRepository(IUserCrudRepository):
                 institution=doc["institution"],
                 role=doc["role"],
                 is_active=doc.get("is_active", True),
-                token=doc.get("token"),
                 apikey=doc.get("apikey"),
             )
 
         self.collection.update_one({"email": old_email}, {"$set": update})
 
-        updated = self.collection.find_one({"email": update.get("email", old_email)}, {"password": 0, "token": 0})
+        updated = self.collection.find_one({"email": update.get("email", old_email)}, {"password": 0})
         if not updated:
             return None
 
@@ -129,12 +125,11 @@ class UserCrudRepository(IUserCrudRepository):
             institution=updated["institution"],
             role=updated["role"],
             is_active=updated.get("is_active", True),
-            token=updated.get("token"),
             apikey=updated.get("apikey"),
         )
 
     def find_by_ror_id(self, ror_id: str) -> Optional[User]:
-        doc = self.collection.find_one({"_id": ror_id}, {"password": 0, "token": 0})
+        doc = self.collection.find_one({"_id": ror_id}, {"password": 0})
         if not doc:
             return None
 
@@ -144,7 +139,6 @@ class UserCrudRepository(IUserCrudRepository):
             password=None,
             institution=doc["institution"],
             role=doc["role"],
-            token=doc.get("token"),
             is_active=doc.get("is_active", True),
             apikey=doc.get("apikey"),
         )

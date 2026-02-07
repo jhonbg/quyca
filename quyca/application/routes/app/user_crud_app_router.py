@@ -3,7 +3,6 @@ from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import verify_jwt_in_request, get_jwt, get_jwt_identity
 from quyca.application.usecases.user_crud import UserCrudUseCase
 from quyca.domain.exceptions.not_entity_exception import NotEntityException
-from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
 
 """
 HTTP routes for admin user management (JWT-protected).
@@ -17,11 +16,10 @@ def check_admin_permission() -> tuple[dict[str, Any] | None, int | None]:
     """Validates JWT exists and role is admin."""
     try:
         verify_jwt_in_request()
-    except Exception as e:
+    except Exception:
         return {
             "success": False,
             "msg": "Token no proporcionado o inválido. Por favor, inicia sesión nuevamente.",
-            "detail": str(e),
         }, 401
 
     claims = get_jwt()
@@ -30,16 +28,9 @@ def check_admin_permission() -> tuple[dict[str, Any] | None, int | None]:
     if not isinstance(user_role, str) or user_role.lower() != "admin":
         return {"success": False, "msg": "Permiso denegado: No pueden realizar esta acción."}, 403
 
-    cookie_name = current_app.config.get("JWT_ACCESS_COOKIE_NAME", "access_token_cookie")
-    token = request.cookies.get(cookie_name, "")
-
     email = get_jwt_identity()
-    if not token or not email:
-        return {"success": False, "msg": "Cookie de sesión no encontrada"}, 401
-
-    user_repo = UserRepositoryMongo()
-    if not user_repo.is_token_valid(email, token):
-        return {"success": False, "msg": "Token inválido o expirado"}, 401
+    if not isinstance(email, str) or not email.strip():
+        return {"success": False, "msg": "Identidad de sesión inválida"}, 401
 
     return None, None
 

@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 
 from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
+from sentry_sdk import capture_exception
 
 from quyca.infrastructure.container import build_scienti_service
 from quyca.domain.services.scienti_service import ScientiService
@@ -38,18 +39,25 @@ No se procesa ni valida el contenido del archivo en este endpoint.
 @scienti_app_router.route("/scienti", methods=["POST"])
 def submit_scienti() -> Tuple[Response, int]:
     try:
-        verify_jwt_in_request()
-        claims: dict[str, Any] = get_jwt()
-    except Exception:
-        return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
+        try:
+            verify_jwt_in_request()
+            claims: dict[str, Any] = get_jwt()
+        except Exception:
+            return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
 
-    file = request.files.get("file")
-    upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
+        file = request.files.get("file")
+        if file is None:
+            return jsonify({"sucess":False, "msg": "Archivo requerido"}), 400
+        
+        upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
 
-    service: ScientiService = build_scienti_service()
+        service: ScientiService = build_scienti_service()
 
-    result, status = service.handle_scienti_upload(
-        file=file, claims=claims, upload_date=upload_date
-    )
+        result, status = service.handle_scienti_upload(
+            file=file, claims=claims, upload_date=upload_date
+        )
 
-    return jsonify(result), status
+        return jsonify(result), status
+    except Exception as e:
+        capture_exception(e)
+        return jsonify({"success": False, "msg": "Error interno del servidor"}), 500

@@ -1,6 +1,7 @@
 from typing import Any
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import verify_jwt_in_request, get_jwt, get_jwt_identity
+from sentry_sdk import capture_exception
 from quyca.application.usecases.user_crud import UserCrudUseCase
 from quyca.domain.exceptions.not_entity_exception import NotEntityException
 
@@ -96,7 +97,8 @@ def create_user(email: str) -> tuple[Any, int]:
     except NotEntityException as e:
         return jsonify({"success": False, "msg": str(e)}), 400
     except Exception as e:
-        return jsonify({"success": False, "msg": str(e)}), 500
+        capture_exception(e)
+        return jsonify({"success": False, "msg": "Error interno del servidor"}), 500
 
 
 """
@@ -134,7 +136,8 @@ def list_users() -> tuple[Any, int]:
         result = usecase.get_all_users()
         return jsonify({"success": True, "data": result}), 200
     except Exception as e:
-        return jsonify({"success": False, "msg": str(e)}), 500
+        capture_exception(e)
+        return jsonify({"success": False, "msg": "Error interno del servidor"}), 500
 
 
 """
@@ -175,7 +178,8 @@ def deactivate_user(email: str) -> tuple[Any, int]:
     except NotEntityException as e:
         return jsonify({"success": False, "msg": str(e)}), 404
     except Exception as e:
-        return jsonify({"success": False, "msg": str(e)}), 500
+        capture_exception(e)
+        return jsonify({"success": False, "msg": "Error interno del servidor"}), 500
 
 
 """
@@ -213,7 +217,8 @@ def activate_user(email: str) -> tuple[Any, int]:
     except NotEntityException as e:
         return jsonify({"success": False, "msg": str(e)}), 404
     except Exception as e:
-        return jsonify({"success": False, "msg": str(e)}), 500
+        capture_exception(e)
+        return jsonify({"success": False, "msg": "Error interno del servidor"}), 500
 
 
 """
@@ -252,7 +257,8 @@ def update_password(email: str) -> tuple[Any, int]:
     except NotEntityException as e:
         return jsonify({"success": False, "msg": str(e)}), 400
     except Exception as e:
-        return jsonify({"success": False, "msg": str(e)}), 500
+        capture_exception(e)
+        return jsonify({"success": False, "msg": "Error interno del servidor"}), 500
 
 
 """
@@ -309,7 +315,8 @@ def edit_user(email: str) -> tuple[Any, int]:
     except NotEntityException as e:
         return jsonify({"success": False, "msg": str(e)}), 404
     except Exception as e:
-        return jsonify({"success": False, "msg": str(e)}), 500
+        capture_exception(e)
+        return jsonify({"success": False, "msg": "Error interno del servidor"}), 500
 
 
 """
@@ -371,7 +378,8 @@ def regenerate_apikey(email: str) -> tuple[Any, int]:
         return jsonify({"success": False, "msg": str(e)}), 400
 
     except Exception as e:
-        return jsonify({"success": False, "msg": "Error interno del servidor", "detail": str(e)}), 500
+        capture_exception(e)
+        return jsonify({"success": False, "msg": "Error interno del servidor"}), 500
 
 
 """
@@ -431,7 +439,8 @@ def update_apikey_expiration(email: str) -> tuple[Any, int]:
     except NotEntityException as e:
         return jsonify({"success": False, "msg": str(e)}), 400
     except Exception as e:
-        return jsonify({"success": False, "msg": str(e)}), 500
+        capture_exception(e)
+        return jsonify({"success": False, "msg": "Error interno del servidor"}), 500
 
 
 """
@@ -486,4 +495,5 @@ def delete_apikey(email: str) -> tuple[Any, int]:
     except NotEntityException as e:
         return jsonify({"success": False, "msg": str(e)}), 404
     except Exception as e:
-        return jsonify({"success": False, "msg": str(e)}), 500
+        capture_exception(e)
+        return jsonify({"success": False, "msg": "Error interno del servidor"}), 500

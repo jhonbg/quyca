@@ -4,6 +4,7 @@ from typing import Any
 
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from flask import Blueprint, request, jsonify
+from sentry_sdk import capture_exception
 
 from quyca.infrastructure.container import build_ciarp_service
 from quyca.application.services.ciarp_service import CiarpService
@@ -62,16 +63,24 @@ curl -X POST https://api.quyca.co/app/submit/ciarp \
 @ciarp_app_router.route("/ciarp", methods=["POST"])
 def submit_ciarp() -> tuple[Any, int]:
     try:
-        verify_jwt_in_request()
-        claims = get_jwt()
-    except Exception:
-        return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
+        try:
+            verify_jwt_in_request()
+            claims = get_jwt()
+        except Exception:
+            return jsonify({"success": False, "msg": "Token inválido o expirado"}), 401
 
-    file = request.files.get("file")
-    upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
+        file = request.files.get("file")
+        if file is None:
+            return jsonify({"success": False, "msg":"Archivo requerido"}), 400
+        
+        upload_date = datetime.now(ZoneInfo("America/Bogota")).strftime("%d/%m/%Y %H:%M")
 
-    process_usecase, save_usecase = build_ciarp_service()
-    service = CiarpService(process_usecase, save_usecase)
+        process_usecase, save_usecase = build_ciarp_service()
+        service = CiarpService(process_usecase, save_usecase)
 
-    result, status = service.handle_ciarp_upload(file, claims, upload_date)
-    return jsonify(result), status
+        result, status = service.handle_ciarp_upload(file, claims, upload_date)
+        return jsonify(result), status
+
+    except Exception as e:
+        capture_exception(e)
+        return jsonify({"succes": False, "msg":"Error interno del servidor"}), 500

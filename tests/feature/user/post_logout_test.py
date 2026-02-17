@@ -1,6 +1,7 @@
 from flask.testing import FlaskClient
 from typing import Any, cast
 
+
 def auth_cookie(client: FlaskClient) -> None:
     from flask_jwt_extended import create_access_token
 

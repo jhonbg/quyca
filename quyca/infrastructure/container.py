@@ -35,6 +35,7 @@ Builds and wires dependencies for the Staff service.
 
 
 def build_staff_service() -> Tuple[ProcessStaffFileUseCase, SaveStaffFileUseCase]:
+    """Build Staff upload use cases."""
     pdf_repo = PDFRepository()
     gmail_repo = GmailRepository()
     drive_repo = GoogleDriveRepository()
@@ -50,12 +51,8 @@ def build_staff_service() -> Tuple[ProcessStaffFileUseCase, SaveStaffFileUseCase
     return process_usecase, save_usecase
 
 
-"""
-Builds and wires dependencies for the CIARP service.
-"""
-
-
 def build_ciarp_service() -> Tuple[ProcessCiarpFileUseCase, SaveCiarpFileUseCase]:
+    """Build CIARP upload use cases."""
     pdf_repo = PDFRepository()
     gmail_repo = GmailRepository()
     drive_repo = GoogleDriveRepository()
@@ -71,12 +68,8 @@ def build_ciarp_service() -> Tuple[ProcessCiarpFileUseCase, SaveCiarpFileUseCase
     return process_usecase, save_usecase
 
 
-"""
-ScientiService builder for dependency injection.
-"""
-
-
 def build_scienti_service() -> ScientiService:
+    """Build Scienti service dependencies."""
     gmail_repo = GmailRepository()
     drive_repo = GoogleDriveRepository()
     excel_cleaner = ExcelCleanerOpenpyxl()
@@ -89,16 +82,20 @@ def build_scienti_service() -> ScientiService:
 
 
 def build_login_usecase() -> LoginUserUseCase:
+    """Build login use case."""
     return LoginUserUseCase(user_repo=UserRepositoryMongo(), token_service=JwtTokenService())
 
 
 def build_get_me_usecase() -> GetMeUseCase:
+    """Build get-me use case."""
     return GetMeUseCase(
         cookie_reader=FlaskJwtCookieReader(),
         jwt_verifier=FlaskJwtVerifier(),
     )
-    
+
+
 def build_file_repository() -> FileRepository:
-    drive_repo = GoogleDriveRepository(...)
+    """Build file repository with Drive and cleaner."""
+    drive_repo = GoogleDriveRepository()
     cleaner = ExcelCleanerOpenpyxl()
     return FileRepository(drive_repo=drive_repo, excel_cleaner=cleaner)

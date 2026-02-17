@@ -7,12 +7,16 @@ from quyca.domain.auth.auth_ports import IJwtCookieReader, IJwtVerifier
 
 @dataclass(frozen=True)
 class MeResult:
+    """Represents the result of the session status query."""
+
     status: SessionStatus
     msg: str
     user: dict[str, Any] | None = None
 
 
 class GetMeUseCase:
+    """Use case that checks the current authenticated session."""
+
     def __init__(
         self,
         cookie_reader: IJwtCookieReader,
@@ -22,6 +26,7 @@ class GetMeUseCase:
         self.jwt_verifier = jwt_verifier
 
     def execute(self) -> MeResult:
+        """Returns the current session status and user info if valid."""
         token = self.cookie_reader.get_access_token()
         if not token:
             return MeResult(SessionStatus.SESION_NO_INICIADA, "Sesión no iniciada")

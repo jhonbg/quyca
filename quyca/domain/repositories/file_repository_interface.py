@@ -4,7 +4,8 @@ from typing import Any, Dict, Protocol
 
 
 class IFileRepository(Protocol):
-    """Port for persisting uploaded files (e.g., Google Drive, local storage.)"""
+    """Defines file persistence operations."""
 
     def save_file(self, file: Any, ror_id: str, institution: str, file_type: str) -> Dict[str, Any]:
-        """Persist file and return a result payload (msg, ids, urls, etc.)"""
+        """Saves the file and returns the storage result payload."""
+        ...

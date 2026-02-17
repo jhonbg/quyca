@@ -10,7 +10,7 @@ from quyca.domain.validators.ciarp_validator import CiarpValidator
 
 
 class CiarpReportService:
-    """Generates PDF + Excel reports for CIARP validation results."""
+    """Generates validation reports for CIARP data."""
 
     def __init__(
         self,
@@ -25,6 +25,7 @@ class CiarpReportService:
     def generate_report(
         self, df: pd.DataFrame, institution: str, filename: str, upload_date: str, user: str
     ) -> tuple[StaffReport, list[dict]]:
+        """Validates the dataframe and generates CIARP report attachments."""
         ciarp_report: StaffReport = CiarpValidator.validate_dataframe(df)
 
         attachments = []

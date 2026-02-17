@@ -12,7 +12,12 @@ from quyca.application.usecases.save_staff_file import SaveStaffFileUseCase
 
 
 class StaffUploadError(Enum):
-    """Semantic errors (the router converts them to HTTP)."""
+    """
+    Enumeration representing semantic upload errors.
+
+    These errors are interpreted by the router layer and translated
+    into the corresponding HTTP responses.
+    """
 
     UNAUTHORIZED = "unathorized"
     BAD_REQUEST = "bad_request"
@@ -21,13 +26,25 @@ class StaffUploadError(Enum):
 
 @dataclass(frozen=True)
 class StaffUploadResult:
+    """
+    Data structure representing the result of a Staff upload operation.
+
+    Attributes:
+        payload (dict): Result payload returned to the client.
+        error (Optional[StaffUploadError]): Semantic error type if the
+        operation failed, otherwise None.
+    """
+
     payload: dict
     error: Optional[StaffUploadError] = None
 
 
 class StaffService:
     """
-    Application service orchestrating Staff upload flow (auth → process → persist).
+    Application service responsible for orchestrating the Staff upload flow.
+
+    This service coordinates authentication validation, file processing,
+    validation execution and final persistence of the uploaded Staff file.
     """
 
     def __init__(
@@ -38,9 +55,14 @@ class StaffService:
         self.process_usecase = process_usecase
         self.save_usecase = save_usecase
 
-    def handle_staff_upload(
-        self, file: FileStorage, claims: dict[str, Any], upload_date: str
-    ) -> StaffUploadResult:
+    def handle_staff_upload(self, file: FileStorage, claims: dict[str, Any], upload_date: str) -> StaffUploadResult:
+        """
+        Handles the Staff file upload process.
+
+        Validates the JWT claims, checks the uploaded file, executes the
+        processing use case, and if successful, persists the file using
+        the save use case.
+        """
         email = claims.get("sub")
         ror_id = claims.get("_id")
         institution = claims.get("institution")

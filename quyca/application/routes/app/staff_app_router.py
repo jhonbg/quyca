@@ -11,58 +11,34 @@ from quyca.application.services.staff_service import StaffService, StaffUploadEr
 from quyca.infrastructure.container import build_staff_service
 
 staff_app_router = Blueprint("staff_app_router", __name__)
+
 """
-@api {post} /app/staff
-@apiName PostStaffFile
+@api {post} /app/submit/staff Subir archivo Staff (.xlsx)
+@apiName SubmitStaff
 @apiGroup Staff
 @apiVersion 1.0.0
-@apiDescription Permite subir un archivo Excel con la información de personal (staff).  
-El sistema valida el archivo, genera un reporte PDF (en base64) y, si no hay errores, lo guarda en Google Drive.
 
-@apiHeader {String} Authorization Token JWT en el header con el formato: "Bearer <token>".
+@apiDescription
+Sube un Excel de Staff para validación, genera reporte (PDF + Excel anotado) y envía notificación.
+Auth por cookie HttpOnly `access_token_cookie`.
 
-@apiBody {File} file Archivo Excel (.xlsx) con la información del staff.  
-Debe incluir las columnas requeridas: tipo_documento, identificación, primer_apellido, nombres, tipo_contrato, jornada_laboral, fecha_nacimiento, fecha_inicial_vinculación, código_unidad_académica, unidad_académica.
+@apiHeader (Auth Cookie) {String} access_token_cookie Cookie JWT HttpOnly.
 
-@apiSuccess {Boolean} success Indica si la validación fue exitosa (no hay errores).
-@apiSuccess {Number} errores Número de errores encontrados en el archivo.
-@apiSuccess {Number} duplicados Número de registros duplicados detectados.
-@apiSuccess {String} pdf_base64 Reporte en formato PDF codificado en Base64.
+@apiBody {File} file Archivo Excel `.xlsx`.
 
-@apiSuccessExample {json} Respuesta exitosa:
-HTTP/1.1 200 OK
-{
-    "success": true,
-    "errores": 0,
-    "duplicados": 2,
-    "pdf_base64": "JVBERi0xLjQKJ..."
-}
+@apiSuccess (200) {Boolean} success
+@apiSuccess (200) {Number} errors
+@apiSuccess (200) {Number} duplicates
+@apiSuccess (200) {String} pdf_base64
+@apiSuccess (200) {String} msg
 
-@apiError {Boolean} success Indica si la validación falló.
-@apiError {String} msg Mensaje de error.
-
-@apiErrorExample {json} Respuesta error por token inválido:
-HTTP/1.1 401 Unauthorized
-{
-    "success": false,
-    "msg": "Token inválido o expirado"
-}
-
-@apiErrorExample {json} Respuesta error por archivo faltante:
-HTTP/1.1 400 Bad Request
-{
-    "success": false,
-    "msg": "Archivo requerido"
-}
-
-@apiErrorExample {json} Respuesta error por errores en el archivo:
-HTTP/1.1 400 Bad Request
-{
-    "success": false,
-    "errores": 3,
-    "duplicados": 1,
-    "pdf_base64": "JVBERi0xLjQKJ..."
-}
+@apiError (400) {Boolean} success false
+@apiError (400) {String} msg "Archivo requerido" | "El archivo cargado está vacío. Verifique que contenga información."
+@apiError (401) {Boolean} success false
+@apiError (401) {String} msg "Token inválido o expirado"
+@apiError (422) {Boolean} success false
+@apiError (422) {String} msg "El archivo enviado no cumple con el formato requerido de columnas"
+@apiError (500) {String} msg "Error interno del servidor"
 """
 
 
@@ -96,7 +72,7 @@ def submit_staff() -> Tuple[Response, int]:
             return jsonify(outcome.payload), 400
 
         return jsonify(outcome.payload), 200
-    
+
     except Exception as e:
         capture_exception(e)
         return jsonify({"success": False, "msg": "Error interno del servidor"}), 500

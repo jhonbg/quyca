@@ -6,6 +6,7 @@ Email templates for validation outcomes (rejected / warnings / accepted).
 def build_email_template(
     status_type: str, role: str, institution: str, filename: str, upload_date: str
 ) -> tuple[str, str]:
+    """Builds the validation result email template based on status."""
     subject = f"Reporte de Validación de Datos {status_type.upper()} - {institution} - {upload_date}"
 
     if status_type == "rechazado":

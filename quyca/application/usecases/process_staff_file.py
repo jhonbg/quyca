@@ -16,13 +16,10 @@ class ProcessStaffFileUseCase:
         self.report_service = report_service
         self.notification_service = notification_service
 
-    """
-    Reads Excel, validates schema/data, generates attachments, sends email, returns summary.
-    """
-
     def execute(
         self, file: io.BytesIO, institution: str, filename: str, upload_date: str, user: str, email: str, ror_id: str
     ) -> dict:
+        """Validates the file, generates reports, sends notifications and returns the result."""
         extension = os.path.splitext(filename)[1].lower()
         if extension != ".xlsx":
             return {

@@ -5,7 +5,8 @@ import pandas as pd
 
 
 class ICiarpValidator(Protocol):
-    """Port for CIARP validation rules."""
+    """Defines CIARP column validation operations."""
 
     def validate_columns(self, df: pd.DataFrame) -> Tuple[bool, List[str], List[str]]:
+        """Validates dataframe columns and returns validation results."""
         ...

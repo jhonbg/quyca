@@ -28,13 +28,10 @@ class ProcessCiarpFileUseCase:
         self.notification_service = notification_service
         self.validator = validator
 
-    """
-    Reads Excel, validates schema/data (CIARP), generates attachments, sends email, returns summary.
-    """
-
     def execute(
         self, file: io.BytesIO, institution: str, filename: str, upload_date: str, user: str, email: str, ror_id: str
     ) -> Dict[str, Any]:
+        """Validates the file, generates the CIARP report and sends notifications."""
         extension = os.path.splitext(filename)[1].lower()
         if extension != ".xlsx":
             return {

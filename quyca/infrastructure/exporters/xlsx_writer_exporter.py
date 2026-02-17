@@ -4,14 +4,14 @@ import pandas as pd
 
 
 class XlsxWriteExporter:
-    """
-    Exports annotated DataFrame to XLSX, with row coloring and autofilter.
-    """
+    """Exports a dataframe to XLSX with basic formatting."""
 
     def to_excel_bytes(self, df: pd.DataFrame) -> io.BytesIO:
+        """Writes the dataframe to an in-memory XLSX file."""
         output = io.BytesIO()
 
         def sort_identification(val: int) -> Tuple[int, Union[int, str]]:
+            """Sort key that prioritizes numeric identification values."""
             try:
                 return (0, int(val))
             except:

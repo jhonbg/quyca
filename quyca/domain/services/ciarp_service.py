@@ -4,9 +4,7 @@ from quyca.application.usecases.save_ciarp_file import SaveCiarpFileUseCase
 
 
 class CiarpService:
-    """
-    Injects use cases and user repository.
-    """
+    """Application service that orchestrates CIARP upload processing."""
 
     def __init__(
         self,
@@ -16,13 +14,8 @@ class CiarpService:
         self.process_usecase = process_usecase
         self.save_usecase = save_usecase
 
-    """
-    Validates token, processes file, emails report, saves file, and returns HTTP result tuple.
-    """
-
-    def handle_ciarp_upload(
-        self, file: Any, claims: dict[str, Any], upload_date: str
-    ) -> tuple[dict[str, Any], int]:
+    def handle_ciarp_upload(self, file: Any, claims: dict[str, Any], upload_date: str) -> tuple[dict[str, Any], int]:
+        """Validates token, processes the file and persists the result."""
         email = claims.get("sub")
         ror_id = claims.get("_id")
         institution = claims.get("institution")

@@ -9,6 +9,8 @@ Contains errors, warnings, and duplicates detected during validation.
 
 @dataclass
 class StaffReport:
+    """Represents the validation result a Excel file."""
+
     total_errors: int
     total_duplicates: int
     errors: List[Dict[str, Any]]

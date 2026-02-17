@@ -12,25 +12,24 @@ Application service for admin user management (create, list, toggle, reset, edit
 
 
 class UserCrudService:
-    """Wires repository and notifier for admin operations."""
+    """Application service for administrative user management."""
 
     def __init__(self, user_repo: IUserCrudRepository, notifier: StaffNotification) -> None:
         self.user_repo = user_repo
         self.notifier = notifier
 
-    """Creates a random alphanumeric password."""
-
     def _generate_password(self, length: int = 10) -> str:
+        """Generates a random alphanumeric password."""
         characters = string.ascii_letters + string.digits
         return "".join(random.choice(characters) for _ in range(length))
 
     def _generate_apikey_id(self, length: int = 10) -> str:
+        """Generates a random API key identifier."""
         chars = string.ascii_letters + string.digits
         return "".join(random.choice(chars) for _ in range(length))
 
-    """Validates that only required fields are present and none are missing."""
-
     def _validate_create_user_payload(self, payload: dict[str, Any]) -> None:
+        """Validates required fields for user creation."""
         required = {"institution", "ror_id", "role"}
         received = set(payload.keys())
 
@@ -45,9 +44,8 @@ class UserCrudService:
                 msg_parts.append("Sobran: " + ", ".join(sorted(extra)))
             raise NotEntityException(" | ".join(msg_parts))
 
-    """Validates that only email and role are present."""
-
     def _validate_edit_user_payload(self, payload: dict[str, Any]) -> None:
+        """Validates fields allowed for user editing."""
         allowed = {"email", "role"}
         received = set(payload.keys())
 
@@ -59,9 +57,8 @@ class UserCrudService:
         if extra:
             raise NotEntityException("Sobran: " + ", ".join(sorted(extra)))
 
-    """Validates that the API key expiration is a future timestamp and at least 1 day ahead."""
-
     def _validate_apikey_expiration(self, expires: int | None) -> None:
+        """Validates API key expiration timestamp."""
         if expires is None:
             return
 
@@ -76,14 +73,10 @@ class UserCrudService:
         if expires - current < 86400:
             raise NotEntityException("La expiración mínima del API key es de 1 día")
 
-    """
-    Creates a user, validates payload strictly, enforces ROR uniqueness,
-    and emails credentials.
-    """
-
     def create_user(
         self, email: str, institution: str, ror_id: str, role: str, raw_payload: dict[str, Any] | None = None
     ) -> dict[str, Any]:
+        """Creates a new user and sends credentials via email."""
         if raw_payload is None:
             raise NotEntityException("Payload requerido: institution, ror_id y role.")
 

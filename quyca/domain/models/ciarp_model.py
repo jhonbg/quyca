@@ -7,6 +7,8 @@ Domain entity for CIARP records (research products metadata).
 
 @dataclass
 class CIARP:
+    """Represents a CIARP research product record."""
+
     academic_unit_code: str
     document_type: str
     identification: str

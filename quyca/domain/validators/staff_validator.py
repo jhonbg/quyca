@@ -33,20 +33,16 @@ EXTRA_ALLOWED = {"estado_de_validación", "observación"}
 
 
 class StaffValidator:
-    """
-    Convert DataFrame index to real Excel row number (header=1, first data row=2).
-    """
+    """Validates Staff dataframe schema and row-level data."""
 
     @staticmethod
     def excel_row_index(idx: int) -> int:
+        """Converts dataframe index to Excel row number."""
         return idx + 2
-
-    """
-    Validates if the DataFrame has the expected columns.
-    """
 
     @staticmethod
     def validate_columns(df: pd.DataFrame) -> Tuple[bool, List[str], List[str]]:
+        """Validates required and extra columns."""
         raw_cols = [str(c).strip() for c in df.columns]
         errors: List[str] = []
         usecols = []
@@ -77,12 +73,9 @@ class StaffValidator:
 
         return (len(errors) == 0, errors, usecols)
 
-    """
-    Validates a single row of the DataFrame.
-    """
-
     @staticmethod
     def validate_row(row: dict, index: int) -> dict:
+        """Validates a single Staff row."""
         errors: List[Dict[str, Any]] = []
         warnings: List[Dict[str, Any]] = []
 
@@ -108,12 +101,9 @@ class StaffValidator:
 
         return {"errors": errors, "warnings": warnings}
 
-    """
-    Validates the entire DataFrame, checking rows and duplicates.
-    """
-
     @staticmethod
     def validate_dataframe(df: pd.DataFrame) -> StaffReport:
+        """Validates the full Staff dataframe and detects duplicates."""
         errors: List[Dict[str, Any]] = []
         warnings: List[Dict[str, Any]] = []
 

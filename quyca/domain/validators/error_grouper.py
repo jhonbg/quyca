@@ -2,8 +2,11 @@ from typing import List, Dict, Any
 
 
 class ErrorGrouper:
+    """Groups validation errors and warnings by column and detail."""
+
     @staticmethod
     def _get(d: Dict[str, Any], *keys: str, default: Any = "") -> Any:
+        """Retrieves the first available key value from a dictionary."""
         for k in keys:
             if k in d:
                 return d[k]
@@ -11,6 +14,7 @@ class ErrorGrouper:
 
     @staticmethod
     def group_errors(errors: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Groups errors by column and detail."""
         grouped: dict[tuple[str, str], dict[str, Any]] = {}
         for e in errors:
             col = ErrorGrouper._get(e, "columna", "columna", default="")
@@ -35,6 +39,7 @@ class ErrorGrouper:
 
     @staticmethod
     def group_warnings(warnings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Groups warnings by column, detail and value."""
         grouped: dict[tuple[str, str, str], dict[str, Any]] = {}
         for w in warnings:
             col = ErrorGrouper._get(w, "columna", "columna", default="")

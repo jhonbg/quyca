@@ -38,20 +38,16 @@ REQUIRED_COLUMNS = [
 
 
 class CiarpValidator:
-    """
-    Maps DataFrame index to Excel row number (header=1 → first row=2).
-    """
+    """Validates CIARP dataframe schema and row-level rules."""
 
     @staticmethod
     def excel_row_index(idx: int) -> int:
+        """Converts dataframe index to Excel row number."""
         return idx + 2
-
-    """
-    Verifies schema: required columns present, extra columns flagged, ignores unnamed/index columns.
-    """
 
     @staticmethod
     def validate_columns(df: pd.DataFrame) -> Tuple[bool, List[str], List[str]]:
+        """Validates required/extra columns and returns validation details."""
         raw_cols = [str(c).lower().strip() for c in df.columns]
         errors: List[str] = []
         usecols: List[str] = []
@@ -80,12 +76,9 @@ class CiarpValidator:
 
         return (len(errors) == 0, errors, usecols)
 
-    """
-    Applies CIARP row validations: required, document, year, language, country, units + empties as warnings.
-    """
-
     @staticmethod
     def validate_row(row: dict, index: int) -> Dict[str, List[Dict[str, Any]]]:
+        """Validates a CIARP row and returns errors and warnings."""
         errors, warnings = [], []
 
         if all(BaseValidator.is_empty(v) for v in row.values()):
@@ -119,12 +112,9 @@ class CiarpValidator:
 
         return {"errors": errors, "warnings": warnings}
 
-    """
-    Validates the whole DataFrame (clean blanks, normalize cells, detect duplicates).
-    """
-
     @staticmethod
     def validate_dataframe(df: pd.DataFrame) -> StaffReport:
+        """Validates the full dataframe and builds a StaffReport."""
         errors: List[Dict[str, Any]] = []
         warnings: List[Dict[str, Any]] = []
 

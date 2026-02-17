@@ -5,7 +5,7 @@ from quyca.domain.models.staff_report_model import StaffReport
 
 
 class INotificationService(Protocol):
-    """Port for sending notifications (email, etc.) about processing results."""
+    """Defines notification sending operations for processing results."""
 
     def send_report(
         self,
@@ -19,4 +19,5 @@ class INotificationService(Protocol):
         attachments: list[dict],
         ror_id: str,
     ) -> dict[str, Any]:
+        """Sends a processing report notification and returns the result."""
         ...

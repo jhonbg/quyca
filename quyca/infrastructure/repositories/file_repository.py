@@ -15,16 +15,14 @@ from quyca.infrastructure.repositories.google_drive_repository import GoogleDriv
 
 
 class FileRepository(IFileRepository):
+    """Persists uploaded files to Google Drive with a local fallback."""
+
     def __init__(self, drive_repo: GoogleDriveRepository, excel_cleaner: IExcelCleaner | None = None):
         self.drive_repo = drive_repo
         self.excel_cleaner = excel_cleaner
 
-    """
-    Saves a file locally, uploads it to Drive in the proper folder, then deletes it from 
-    the temporary server
-    """
-
     def save_file(self, file: FileStorage, ror_id: str, institution: str, file_type: str) -> dict[str, Any]:
+        """Saves the file temporarily, uploads it to Drive, and falls back to local storage."""
         timestamp = datetime.now(ZoneInfo("America/Bogota")).strftime("%Y-%m-%d_%H:%M")
         filename = file.filename or ""
         original_ext = os.path.splitext(filename)[1].lower()
@@ -38,7 +36,7 @@ class FileRepository(IFileRepository):
                 self.excel_cleaner.clean(temp_path)
             except Exception as e:
                 current_app.logger.exception(f"[ExcelCleaner] FALLÓ {temp_path}: {e}")
-        
+
         try:
             root_folder = self.drive_repo.get_or_create_folder(file_type)
             safe_institution = institution.strip().replace(" ", "-")

@@ -5,6 +5,8 @@ from dataclasses import dataclass
 
 @dataclass
 class Staff:
+    """Represents a staff member with identification and employment data."""
+
     document_type: str
     identification: str
     last_name_1: str

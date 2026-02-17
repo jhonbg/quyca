@@ -7,16 +7,10 @@ from quyca.domain.models.staff_report_model import StaffReport
 
 
 class StaffNotification(INotificationService):
-    """
-    Injects Gmail repository dependency.
-    """
+    """Sends notification emails using the Gmail repository."""
 
     def __init__(self, gmail_repo: GmailRepository):
         self.gmail_repo: GmailRepository = gmail_repo
-
-    """
-    Chooses template (accepted/warnings/rejected) and sends email with attachments.
-    """
 
     def send_report(
         self,
@@ -30,6 +24,7 @@ class StaffNotification(INotificationService):
         attachments: list[dict],
         ror_id: str,
     ) -> dict[str, Any]:
+        """Sends the validation report email with attachments."""
         tipo_correo = (
             "rechazado"
             if staff_report.total_errors > 0
@@ -52,13 +47,10 @@ class StaffNotification(INotificationService):
 
         return result
 
-    """
-    Sends a plain custom email — used for user account notifications.
-    """
-
     def send_custom_email(
         self, subject: str, role: str, institution: str, email: str, password: str, ror_id: str
     ) -> dict[str, Any]:
+        """Sends a custom email for user account creation."""
         body_html = f"""
             <html>
                 <body style='font-family: Arial, sans-serif; line-height: 1.6;'>
@@ -100,13 +92,10 @@ class StaffNotification(INotificationService):
 
         return result
 
-    """
-    Sends an email notifying the user that their password was reset.
-    """
-
     def send_email_change_password(
         self, email: str, subject: str, password: str, institution: str, ror_id: str
     ) -> dict[str, Any]:
+        """Sends the password reset notification email."""
         body_html = f"""
         <html>
             <body>
@@ -134,10 +123,6 @@ class StaffNotification(INotificationService):
 
         return result
 
-    """
-    Generic notification for SCIENTI when a compressed file is received.
-    """
-
     def send_scienti_compressed_received(
         self,
         role: str,
@@ -147,6 +132,7 @@ class StaffNotification(INotificationService):
         email: str,
         ror_id: str,
     ) -> dict[str, Any]:
+        """Sends a confirmation email for received SCIENTI compressed files."""
         subject, body_html = build_scienti_received_templete(
             role=role, institution=institution, filename=filename, upload_date=upload_date
         )

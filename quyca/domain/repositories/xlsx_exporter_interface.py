@@ -7,7 +7,8 @@ import pandas as pd
 
 
 class IXlsxExporter(Protocol):
-    """Port for exporting a dataframe to an Excel file in-memory."""
+    """Defines in-memory Excel export operations."""
 
     def to_excel_bytes(self, df: pd.DataFrame) -> io.BytesIO:
+        """Exports the dataframe to Excel and returns it as bytes."""
         ...

@@ -23,9 +23,7 @@ class CiarpService:
     Validates token, processes file, emails report, saves file, and returns HTTP result tuple.
     """
 
-    def handle_ciarp_upload(
-        self, file: Any, claims: dict[str, Any], upload_date: str
-    ) -> tuple[dict[str, Any], int]:
+    def handle_ciarp_upload(self, file: Any, claims: dict[str, Any], upload_date: str) -> tuple[dict[str, Any], int]:
         email = claims.get("sub")
         ror_id = claims.get("_id")
         institution = claims.get("institution")

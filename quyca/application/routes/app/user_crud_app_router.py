@@ -43,15 +43,16 @@ def check_admin_permission() -> tuple[dict[str, Any] | None, int | None]:
 @apiVersion 1.0.0
 
 @apiDescription
-Creates a new user in the platform. Only users with role admin can perform this action.
+Creates a new user in the platform. Requires admin role.
+Authentication uses HttpOnly cookie `access_token_cookie` (token is not sent in JSON).
 
-@apiHeader {String} Authorization JWT token in format "Bearer &lt;token&gt;"
+@apiHeader (Auth Cookie) {String} access_token_cookie JWT access cookie (HttpOnly)
 
 @apiParam (Path) {String} email User email passed in URL
 
 @apiBody {String} institution Institution name
 @apiBody {String} ror_id Institution ROR identifier
-@apiBody {String} rol User role in the application
+@apiBody {String} role User role in the application
 
 @apiSuccess (201) {Boolean} success true
 @apiSuccess (201) {String} msg Success message
@@ -62,14 +63,17 @@ Creates a new user in the platform. Only users with role admin can perform this 
 @apiError (401) {Boolean} success false
 @apiError (401) {String} msg Token missing or invalid
 
+@apiError (403) {Boolean} success false
+@apiError (403) {String} msg Permission denied
+
 @apiError (409) {Boolean} success false
 @apiError (409) {String} msg User already exists for the institution
 
 @apiExample {json} Request Body Example
 {
-    "institution": "Universidad de Antioquia",
-    "ror_id": "059yx9a68",
-    "role": "staff"
+  "institution": "Universidad de Antioquia",
+  "ror_id": "059yx9a68",
+  "role": "staff"
 }
 """
 
@@ -102,15 +106,16 @@ def create_user(email: str) -> tuple[Any, int]:
 
 
 """
-@api {get} /app/users List users (non-admin)
+@api {get} /app/admin/users List users (admin only)
 @apiName ListUsers
 @apiGroup Users
 @apiVersion 1.0.0
 
 @apiDescription
-Returns a list of all users except those with admin role. Requires admin token.
+Returns a list of all users excluding admin accounts. Requires admin session.
+Authentication uses HttpOnly cookie `access_token_cookie`.
 
-@apiHeader {String} Authorization JWT token "Bearer &lt;token&gt;"
+@apiHeader (Auth Cookie) {String} access_token_cookie JWT cookie (HttpOnly)
 
 @apiSuccess (200) {Boolean} success true
 @apiSuccess (200) {Object[]} data List of users
@@ -122,6 +127,9 @@ Returns a list of all users except those with admin role. Requires admin token.
 
 @apiError (401) {Boolean} success false
 @apiError (401) {String} msg Token missing or invalid
+
+@apiError (403) {Boolean} success false
+@apiError (403) {String} msg Permission denied
 """
 
 

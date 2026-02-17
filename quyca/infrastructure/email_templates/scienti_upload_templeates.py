@@ -2,9 +2,7 @@ from typing import Tuple
 
 
 def build_scienti_received_templete(role: str, institution: str, filename: str, upload_date: str) -> Tuple[str, str]:
-    """
-    Email template to confirm receipt of compressed SCIENTI file.
-    """
+    """Builds the email template confirming receipt of a SCIENTI file."""
 
     subject = f"Confirmación de recepción de datos SCIENTI - {institution} - {upload_date}"
 

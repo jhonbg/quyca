@@ -3,11 +3,10 @@ from quyca.domain.models.staff_report_model import StaffReport
 
 
 class Annotator:
-    """
-    Adds validation state/notes to the DataFrame for Excel export.
-    """
+    """Annotates a dataframe with validation status and notes."""
 
     def annotate(self, df: pd.DataFrame, staff_report: StaffReport) -> pd.DataFrame:
+        """Adds validation columns based on errors, warnings and duplicates."""
         df_copy = df.copy()
         df_copy["estado_de_validación"] = ""
         df_copy["observación"] = ""
@@ -36,6 +35,7 @@ class Annotator:
         df_copy["observación"] = df_copy["observación"].str.rstrip(" |")
 
         def clean_state(value: str) -> str:
+            """Normalizes and orders validation states by priority."""
             states = [s.strip() for s in value.split("|") if s.strip()]
             priority = ["Error", "Advertencia", "Duplicado"]
             return " | ".join([p for p in priority if p in states])

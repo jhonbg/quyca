@@ -1,8 +1,8 @@
 from typing import Tuple
-from flask import Blueprint, request, jsonify, Response, current_app
+from flask import Blueprint, request, jsonify, Response
 from sentry_sdk import capture_exception
 
-from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
+from flask_jwt_extended import set_access_cookies, unset_jwt_cookies
 
 from quyca.domain.exceptions.not_entity_exception import NotEntityException
 from quyca.infrastructure.repositories.user_repository import UserRepositoryMongo
@@ -12,64 +12,40 @@ from quyca.application.usecases.login_user import LoginUserUseCase
 user_auth_app_router = Blueprint("user_auth_app_router", __name__)
 
 """
-@api {post} /app/login
+@api {post} /app/login Iniciar sesión
 @apiName PostLoginUser
 @apiGroup Authentication
 @apiVersion 1.0.0
-@apiDescription Allows authenticating a user using their email and password.
-If the credentials are valid, it returns a JWT token along with the user's role.
 
-@apiBody {String} email User email.
-@apiBody {String} password User password.
+@apiDescription
+Autentica con email y contraseña. Si es válido:
+- Responde JSON con datos del usuario (sin token)
+- Setea cookie HttpOnly `access_token_cookie` con el JWT
 
-@apiSuccess {Boolean} success Indicates whether the authentication was successful.
-@apiSuccess {String} rorID ID number associated with the entity.
-@apiSuccess {String} access_token Generated JWT token.
+@apiBody {String} email
+@apiBody {String} password
 
-@apiSuccessExample {json} Successful Response:
-HTTP/1.1 200 OK
+@apiSuccess (200) {Boolean} success true
+@apiSuccess (200) {String} _id
+@apiSuccess (200) {String} institution
+@apiSuccess (200) {String} role
+
+@apiSuccessExample {json} 200 OK
 {
-    "success": true,
-    "rorID": "admin",
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR..."
+  "success": true,
+  "_id": "03bp5hc83",
+  "institution": "Universidad de Antioquia",
+  "role": "admin"
 }
 
-@apiError {Boolean} success Indicates that authentication failed.
-@apiError {String} msg Error message.
-
-@apiErrorExample {json} Error Response - Invalid Credentials:
-HTTP/1.1 401 Unauthorized
-{
-    "success": false
-}
-
-@apiErrorExample {json} Error Response - Missing Fields:
-HTTP/1.1 400 Bad Request
-{
-    "success": false,
-    "msg": "email and password are required"
-}
-"""
-
-"""
-@api {post} /app/logout
-@apiName PostLogoutUser
-@apiGroup Authentication
-@apiVersion 1.0.0
-@apiDescription Allows logging out a user by invalidating their JWT token.  
-If the token is valid, it is removed from the database.
-
-@apiBody {String} token JWT token to be invalidated.
-
-@apiSuccess {Boolean} success Indicates whether the logout was successful.
-@apiSuccess {String} msg Confirmation message.
-
-@apiSuccessExample {json} Successful Response:
-HTTP/1.1 200 OK
-{
-    "success": true,
-    "msg": "Session closed successfully"
-}
+@apiError (400) {Boolean} success false
+@apiError (400) {String} msg "correo y contraseña requeridos"
+@apiError (401) {Boolean} success false
+@apiError (401) {String} msg "Credenciales inválidas"
+@apiError (404) {Boolean} success false
+@apiError (404) {String} msg "El usuario está desactivado..." (o equivalente)
+@apiError (500) {Boolean} success false
+@apiError (500) {String} msg "Error interno del servidor"
 """
 
 
@@ -111,30 +87,26 @@ def login() -> Tuple[Response, int]:
 
 
 """
-@api {post} /app/logout
+@api {post} /app/logout Cerrar sesión
 @apiName PostLogoutUser
 @apiGroup Authentication
 @apiVersion 1.0.0
-@apiDescription Allows logging out a user by invalidating their JWT token.  
-If the token is valid, it is removed from the database.
 
-@apiBody {String} token JWT token to be invalidated.
+@apiDescription
+Cierra sesión limpiando las cookies JWT (unset_jwt_cookies).
+No requiere enviar token en el body.
 
-@apiSuccess {Boolean} success Indicates whether the logout was successful.
-@apiSuccess {String} msg Confirmation message.
+@apiSuccess (200) {Boolean} success true
+@apiSuccess (200) {String} msg "Sesión cerrada correctamente"
 
-@apiSuccessExample {json} Successful Response:
-HTTP/1.1 200 OK
-{
-    "success": true,
-    "msg": "Session closed successfully"
-}
+@apiError (500) {Boolean} success false
+@apiError (500) {String} msg "Error interno del servidor"
 """
 
 
 @user_auth_app_router.route("/logout", methods=["POST"])
 def logout() -> Tuple[Response, int]:
-    try:        
+    try:
         response = jsonify({"success": True, "msg": "Sesión cerrada correctamente"})
         unset_jwt_cookies(response)
 

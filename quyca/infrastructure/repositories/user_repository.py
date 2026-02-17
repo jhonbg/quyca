@@ -10,14 +10,13 @@ MongoDB repository for login + token management.
 
 
 class UserRepositoryMongo(IUserRepository):
-    """Initializes Mongo collection handle."""
+    """MongoDB repository for authenticating users by email/password."""
 
     def __init__(self) -> None:
         self.collection = impactu_database["users"]
 
-    """Validates credentials and returns a user or raises error."""
-
     def get_by_email_and_pass(self, email: str, password: str) -> User:
+        """Validates credentials and returns the user data."""
         email = email.strip().lower()
 
         user_data = self.collection.find_one(
@@ -40,8 +39,6 @@ class UserRepositoryMongo(IUserRepository):
             email=user_data["email"],
             institution=user_data["institution"],
             role=user_data["role"],
-            token=user_data.get("token"),
             is_active=user_data.get("is_active", True),
             apikey=user_data.get("apikey"),
         )
-

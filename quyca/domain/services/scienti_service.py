@@ -16,15 +16,9 @@ ALLOWED_COMPRESSED_EXTENSIONS = {
     ".tar.bz2",
 }
 
-"""
-Handles SCIENTI compressed file uploads.
-"""
-
 
 class ScientiService:
-    """
-    Initializes dependencies for SCIENTI upload processing.
-    """
+    """Application service for handling SCIENTI file uploads."""
 
     def __init__(
         self,
@@ -34,20 +28,13 @@ class ScientiService:
         self.notification = notification
         self.save_usecase = save_usecase
 
-    """
-    Checks whether the filename has a valid compressed extension.
-    """
-
     def _is_compressed_file(self, filename: str) -> bool:
+        """Checks if the file has an allowed compressed extension."""
         filename_lower = filename.lower()
         for ext in ALLOWED_COMPRESSED_EXTENSIONS:
             if filename_lower.endswith(ext):
                 return True
         return False
-
-    """
-    Validates, stores, and notifies the upload of a SCIENTI compressed file.
-    """
 
     def handle_scienti_upload(
         self,
@@ -55,6 +42,7 @@ class ScientiService:
         claims: dict[str, Any],
         upload_date: str,
     ) -> Tuple[Dict[str, Any], int]:
+        """Validates, stores and notifies a SCIENTI compressed file upload."""
         email = claims.get("sub")
         ror_id = claims.get("_id")
         institution = claims.get("institution")

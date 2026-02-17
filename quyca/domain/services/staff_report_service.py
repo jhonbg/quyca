@@ -8,7 +8,7 @@ from quyca.domain.validators.staff_validator import StaffValidator
 
 
 class StaffReportService:
-    """Generates report files (PDF + Excel) from validation results."""
+    """Generates validation reports for Staff data."""
 
     def __init__(
         self,
@@ -23,6 +23,7 @@ class StaffReportService:
     def generate_report(
         self, df: pd.DataFrame, institution: str, filename: str, upload_date: str, user: str
     ) -> tuple[StaffReport, list[dict]]:
+        """Validates the dataframe and generates Staff report attachments."""
         staff_report: StaffReport = StaffValidator.validate_dataframe(df)
 
         attachments: list[dict] = []
